@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -18,8 +18,18 @@ const schema = z.object({
     .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, "ใช้ได้แค่ a-z 0-9 และ - เท่านั้น"),
   description: z.string().max(500).optional().default(""),
   tagline: z.string().max(120).optional().default(""),
-  logoUrl: z.string().optional().default(""),
-  bannerUrl: z.string().optional().default(""),
+  logoUrl: z
+    .string()
+    .url("ต้องเป็น URL ที่ขึ้นต้นด้วย https://")
+    .or(z.literal(""))
+    .optional()
+    .default(""),
+  bannerUrl: z
+    .string()
+    .url("ต้องเป็น URL ที่ขึ้นต้นด้วย https://")
+    .or(z.literal(""))
+    .optional()
+    .default(""),
   primaryColor: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/)
@@ -33,55 +43,36 @@ interface StoreSettingsFormProps {
   defaultValues: FormValues;
 }
 
-async function uploadFile(file: File): Promise<string> {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("/api/uploads", { method: "POST", body: fd });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error ?? "Upload failed");
-  }
-  const data = await res.json();
-  return data.url as string;
-}
-
-function ImageUploader({
+function ImageUrlInput({
   label,
   value,
   onChange,
   aspect,
+  placeholder,
+  error,
 }: {
   label: string;
   value: string;
   onChange: (url: string) => void;
   aspect: "square" | "wide";
+  placeholder: string;
+  error?: string;
 }) {
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  async function handleFile(file: File) {
-    setError("");
-    setUploading(true);
-    try {
-      const url = await uploadFile(file);
-      onChange(url);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed");
-    } finally {
-      setUploading(false);
-    }
-  }
-
   const previewClass =
     aspect === "square"
-      ? "h-24 w-24 rounded-lg object-cover"
-      : "h-24 w-full rounded-lg object-cover";
+      ? "h-24 w-24 rounded-lg object-cover border"
+      : "h-24 w-full rounded-lg object-cover border";
 
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium">{label}</p>
-      {value && (
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="font-mono text-xs"
+      />
+      {value && /^https?:\/\//.test(value) && (
         <div className={aspect === "wide" ? "w-full" : "w-24"}>
           <Image
             src={value}
@@ -93,38 +84,6 @@ function ImageUploader({
           />
         </div>
       )}
-      <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={uploading}
-          onClick={() => inputRef.current?.click()}
-        >
-          {uploading ? "กำลังอัพโหลด…" : value ? "เปลี่ยนรูป" : "อัพโหลดรูป"}
-        </Button>
-        {value && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onChange("")}
-          >
-            ลบ
-          </Button>
-        )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFile(file);
-            e.target.value = "";
-          }}
-        />
-      </div>
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
@@ -234,17 +193,21 @@ export function StoreSettingsForm({ defaultValues }: StoreSettingsFormProps) {
           <CardTitle>รูปภาพ</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <ImageUploader
+          <ImageUrlInput
             label="Logo ร้าน (แนะนำ 200×200)"
             value={logoUrl}
-            onChange={(url) => setValue("logoUrl", url)}
+            onChange={(url) => setValue("logoUrl", url, { shouldValidate: true })}
             aspect="square"
+            placeholder="https://example.com/logo.png"
+            error={errors.logoUrl?.message}
           />
-          <ImageUploader
+          <ImageUrlInput
             label="Banner ร้าน (แนะนำ 1200×300)"
             value={bannerUrl}
-            onChange={(url) => setValue("bannerUrl", url)}
+            onChange={(url) => setValue("bannerUrl", url, { shouldValidate: true })}
             aspect="wide"
+            placeholder="https://example.com/banner.jpg"
+            error={errors.bannerUrl?.message}
           />
         </CardContent>
       </Card>

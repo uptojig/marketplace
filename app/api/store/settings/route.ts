@@ -4,13 +4,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// Accept either an absolute https URL or a relative path under /uploads/
 const imageUrlSchema = z
-  .union([
-    z.string().url(),
-    z.string().regex(/^\/uploads\/[A-Za-z0-9._-]+$/, "Invalid uploaded path"),
-    z.literal(""),
-  ])
+  .union([z.string().url(), z.literal("")])
   .optional();
 
 const schema = z.object({
