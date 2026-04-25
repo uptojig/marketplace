@@ -1,0 +1,284 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { OrderStatus } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { Plus, Clock, Users, Award } from "lucide-react";
+import { ShopAddButton } from "@/components/shop/ShopAddButton";
+import { SortSelect } from "@/components/shop/SortSelect";
+
+export const dynamic = "force-dynamic";
+
+const TABS = [
+  { id: "all", label: "สินค้าทั้งหมด" },
+  { id: "hot", label: "Hot" },
+  { id: "new", label: "New" },
+  { id: "recommended", label: "RECOMMENDED" },
+];
+
+// Orders that count toward "sold" — exclude cancelled/failed but include anything that was paid
+const SOLD_STATUSES: OrderStatus[] = [
+  OrderStatus.PAID,
+  OrderStatus.SUPPLIER_PLACED,
+  OrderStatus.SHIPPED,
+  OrderStatus.DELIVERED,
+];
+
+function formatThaiDate(d: Date) {
+  // Buddhist calendar year (BE = AD + 543)
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear() + 543;
+  return `${day}/${month}/${year}`;
+}
+
+export default async function StorePage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams: { q?: string; sort?: string; tab?: string };
+}) {
+  const tab = searchParams.tab ?? "all";
+  const sort = searchParams.sort ?? (tab === "hot" ? "best-selling" : tab === "new" ? "newest" : "");
+
+  const baseStore = await prisma.store.findUnique({ where: { slug: params.slug } });
+  if (!baseStore) notFound();
+
+  const q = searchParams.q;
+  const productWhere = {
+    storeId: baseStore.id,
+    active: true,
+    ...(q
+      ? {
+          OR: [
+            { title: { contains: q, mode: "insensitive" as const } },
+            { titleTh: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  // Compute sold counts (sum of qty across paid+ orders) for this store's products
+  const soldGroups = await prisma.orderItem.groupBy({
+    by: ["productId"],
+    where: {
+      storeId: baseStore.id,
+      order: { status: { in: SOLD_STATUSES } },
+    },
+    _sum: { qty: true },
+  });
+  const soldMap = new Map(soldGroups.map((g) => [g.productId, g._sum.qty ?? 0]));
+
+  let products = await prisma.product.findMany({
+    where: productWhere,
+    orderBy:
+      sort === "low-to-high"
+        ? { priceTHB: "asc" }
+        : sort === "high-to-low"
+          ? { priceTHB: "desc" }
+          : sort === "newest"
+            ? { createdAt: "desc" }
+            : { createdAt: "desc" },
+    take: 200,
+  });
+
+  if (sort === "best-selling") {
+    products = products
+      .map((p) => ({ p, sold: soldMap.get(p.id) ?? 0 }))
+      .sort((a, b) => b.sold - a.sold || b.p.createdAt.getTime() - a.p.createdAt.getTime())
+      .map((x) => x.p);
+  } else if (sort === "order-by-stock") {
+    // Best-effort: products with hasVariants OR active first; static for now.
+    // Later: join inventory via ProductVariant.inventory.
+  }
+
+  if (tab === "hot") {
+    // Show only items that have actually sold at least once for the HOT tab
+    const onlyHot = products.filter((p) => (soldMap.get(p.id) ?? 0) > 0);
+    products = onlyHot.length > 0 ? onlyHot : products;
+  } else if (tab === "new") {
+    // Show items added in the last 30 days first; fall back to all
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
+    const onlyNew = products.filter((p) => p.createdAt.getTime() >= thirtyDaysAgo);
+    products = onlyNew.length > 0 ? onlyNew : products;
+  }
+
+  products = products.slice(0, 60);
+
+  const store = { ...baseStore, products };
+
+  const primary = store.primaryColor ?? "#008BF8";
+  const updatedAt = formatThaiDate(store.createdAt);
+
+  return (
+    <>
+      {/* Banner area */}
+      <section className="bg-white">
+        <div className="container mx-auto max-w-[1200px] px-4 pt-4">
+          <div className="overflow-hidden rounded-lg">
+            {store.bannerUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={store.bannerUrl}
+                alt={store.name}
+                className="h-auto w-full object-cover"
+              />
+            ) : (
+              <div
+                className="flex aspect-[1179/476] w-full items-center justify-center"
+                style={{
+                  backgroundImage: `linear-gradient(135deg, ${primary}33, ${primary}cc)`,
+                }}
+              >
+                <div className="text-center text-white">
+                  <h2 className="text-3xl font-bold drop-shadow md:text-5xl">{store.name}</h2>
+                  {store.tagline && <p className="mt-2 text-lg drop-shadow">{store.tagline}</p>}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Shop intro */}
+      <section className="container mx-auto max-w-[1200px] px-4 mt-6">
+        <div className="grid gap-4 lg:grid-cols-12 items-center">
+          <div className="lg:col-span-7">
+            <p className="text-gray-700">
+              {store.description ?? store.tagline ?? store.name}
+            </p>
+            <div className="mt-2 flex items-center text-xs text-gray-500">
+              <Clock className="mr-1 h-3 w-3" />
+              ปรับปรุงล่าสุด {updatedAt}
+            </div>
+          </div>
+          <div className="lg:col-span-5">
+            <div className="flex flex-wrap items-center justify-end gap-4">
+              <span className="flex items-center text-sm text-gray-500">
+                <Users className="mr-1 h-3 w-3" />
+                ผู้ติดตาม: 0
+              </span>
+              <span className="flex items-center text-sm text-gray-500">
+                <Award className="mr-1 h-3 w-3" />
+                คะแนน: ใหม่
+              </span>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm text-white"
+                style={{ backgroundColor: primary }}
+              >
+                <Plus className="h-3 w-3" />
+                Follow
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tabs + sort */}
+      <section className="container mx-auto max-w-[1200px] px-4 mt-10">
+        <div className="grid gap-3 lg:grid-cols-12 items-end">
+          <div className="lg:col-span-10">
+            <div className="flex items-end gap-6 overflow-x-auto pb-1">
+              {TABS.map((t) => {
+                const active = (searchParams.tab ?? "all") === t.id;
+                return (
+                  <Link
+                    key={t.id}
+                    href={`/stores/${store.slug}?tab=${t.id}`}
+                    className={`text-nowrap text-base ${
+                      active ? "text-2xl font-bold" : "text-gray-500 hover:text-gray-900"
+                    }`}
+                  >
+                    {t.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+          <div className="lg:col-span-2">
+            <SortSelect defaultValue={searchParams.sort ?? ""} />
+          </div>
+        </div>
+
+        {/* Product grid */}
+        <div className="mt-6 grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {store.products.map((p) => {
+            const compare = p.compareAtPriceTHB ? Number(p.compareAtPriceTHB) : null;
+            const price = Number(p.priceTHB);
+            const salePct = compare && compare > price ? Math.round(((compare - price) / compare) * 100) : 0;
+            const sold = soldMap.get(p.id) ?? 0;
+            return (
+              <article
+                key={p.id}
+                className="group flex flex-col overflow-hidden rounded-lg border bg-white transition hover:shadow"
+              >
+                <Link
+                  href={`/stores/${store.slug}/products/${p.id}`}
+                  className="relative block aspect-square overflow-hidden bg-gray-100"
+                >
+                  {p.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.imageUrl}
+                      alt={p.titleTh ?? p.title}
+                      className="h-full w-full object-cover transition group-hover:scale-105"
+                    />
+                  )}
+                  {salePct > 0 && (
+                    <span className="absolute left-2 top-2 rounded bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
+                      -{salePct}%
+                    </span>
+                  )}
+                  {sold > 0 && (
+                    <span className="absolute right-2 top-2 rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow">
+                      🔥 ขายแล้ว {sold.toLocaleString("th-TH")}
+                    </span>
+                  )}
+                </Link>
+                <div className="flex flex-1 flex-col gap-1 p-3">
+                  <Link
+                    href={`/stores/${store.slug}/products/${p.id}`}
+                    className="line-clamp-2 text-sm hover:underline"
+                  >
+                    {p.titleTh ?? p.title}
+                  </Link>
+                  <div className="mt-auto flex items-baseline gap-2 pt-2">
+                    <span className="text-base font-bold" style={{ color: salePct > 0 ? "#dc2626" : primary }}>
+                      ฿ {price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
+                    </span>
+                    {compare && compare > price && (
+                      <span className="text-xs text-gray-400 line-through">
+                        ฿ {compare.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
+                      </span>
+                    )}
+                  </div>
+                  {sold > 0 && (
+                    <div className="text-[11px] text-gray-500">ขายแล้ว {sold.toLocaleString("th-TH")} ชิ้น</div>
+                  )}
+                  <div className="mt-1">
+                    <ShopAddButton
+                      product={{
+                        id: p.id,
+                        title: p.titleTh ?? p.title,
+                        priceTHB: price,
+                        imageUrl: p.imageUrl ?? undefined,
+                        storeName: store.name,
+                        storeSlug: store.slug,
+                      }}
+                    />
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+          {store.products.length === 0 && (
+            <p className="col-span-full text-center text-sm text-gray-500">
+              ยังไม่มีสินค้าในร้านนี้
+            </p>
+          )}
+        </div>
+      </section>
+    </>
+  );
+}
