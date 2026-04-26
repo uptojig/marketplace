@@ -35,6 +35,20 @@ const schema = z.object({
     .regex(/^#[0-9a-fA-F]{6}$/)
     .default("#2563eb"),
   customDomain: z.string().max(253).optional().default(""),
+  contactEmail: z
+    .string()
+    .email("รูปแบบอีเมลไม่ถูกต้อง")
+    .or(z.literal(""))
+    .optional()
+    .default(""),
+  contactPhone: z.string().max(30).optional().default(""),
+  facebookUrl: z
+    .string()
+    .url("ต้องเป็น URL ที่ขึ้นต้นด้วย https://")
+    .or(z.literal(""))
+    .optional()
+    .default(""),
+  lineId: z.string().max(50).optional().default(""),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -264,6 +278,61 @@ export function StoreSettingsForm({ defaultValues }: StoreSettingsFormProps) {
           <p className="text-xs text-muted-foreground">
             ชี้ CNAME ของโดเมนมาที่ {process.env.NEXT_PUBLIC_BASE_URL?.replace(/^https?:\/\//, "") ?? "marketplace.local"} แล้วใส่โดเมนที่นี่
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Contact channels */}
+      <Card>
+        <CardHeader>
+          <CardTitle>ช่องทางติดต่อ</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            แสดงในส่วนท้ายของหน้าร้าน — เว้นว่างไว้ถ้าไม่มี
+          </p>
+          <div className="space-y-1">
+            <label className="text-sm font-medium">อีเมล</label>
+            <Input
+              {...register("contactEmail")}
+              placeholder="contact@yourshop.com"
+              type="email"
+            />
+            {errors.contactEmail && (
+              <p className="text-xs text-red-500">{errors.contactEmail.message}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium">เบอร์โทร</label>
+            <Input
+              {...register("contactPhone")}
+              placeholder="081-234-5678"
+              type="tel"
+            />
+            {errors.contactPhone && (
+              <p className="text-xs text-red-500">{errors.contactPhone.message}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Facebook Page URL</label>
+            <Input
+              {...register("facebookUrl")}
+              placeholder="https://facebook.com/yourpage"
+              className="font-mono text-xs"
+            />
+            {errors.facebookUrl && (
+              <p className="text-xs text-red-500">{errors.facebookUrl.message}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium">LINE ID</label>
+            <Input
+              {...register("lineId")}
+              placeholder="@yourshop หรือ yourlineid"
+            />
+            {errors.lineId && (
+              <p className="text-xs text-red-500">{errors.lineId.message}</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 

@@ -238,10 +238,59 @@ export default async function ShopLayout({
               <div>
                 <h3 className="mb-3 font-semibold">ติดต่อเรา</h3>
                 <div className="flex gap-3 text-xl text-gray-600">
-                  <a href="#" aria-label="Email">✉</a>
-                  <a href="#" aria-label="Phone">☎</a>
-                  <a href="#" aria-label="Facebook">f</a>
-                  <a href="#" aria-label="Line">L</a>
+                  {store.contactEmail && (
+                    <a
+                      href={`mailto:${store.contactEmail}`}
+                      aria-label="Email"
+                      title={store.contactEmail}
+                      className="hover:opacity-70"
+                    >
+                      ✉
+                    </a>
+                  )}
+                  {store.contactPhone && (
+                    <a
+                      href={`tel:${store.contactPhone.replace(/[^0-9+]/g, "")}`}
+                      aria-label="Phone"
+                      title={store.contactPhone}
+                      className="hover:opacity-70"
+                    >
+                      ☎
+                    </a>
+                  )}
+                  {store.facebookUrl && (
+                    <a
+                      href={store.facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Facebook"
+                      className="hover:opacity-70"
+                    >
+                      f
+                    </a>
+                  )}
+                  {store.lineId && (
+                    <a
+                      href={`https://line.me/R/ti/p/${encodeURIComponent(
+                        store.lineId.replace(/^@/, "~"),
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="LINE"
+                      title={store.lineId}
+                      className="hover:opacity-70"
+                    >
+                      L
+                    </a>
+                  )}
+                  {!store.contactEmail &&
+                    !store.contactPhone &&
+                    !store.facebookUrl &&
+                    !store.lineId && (
+                      <span className="text-xs text-gray-400">
+                        ยังไม่ได้ตั้งค่า
+                      </span>
+                    )}
                 </div>
               </div>
             </div>

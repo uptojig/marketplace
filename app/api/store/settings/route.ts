@@ -24,6 +24,18 @@ const schema = z.object({
     .regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color")
     .optional(),
   customDomain: z.string().max(253).optional().or(z.literal("")).optional(),
+  contactEmail: z
+    .string()
+    .email("รูปแบบอีเมลไม่ถูกต้อง")
+    .or(z.literal(""))
+    .optional(),
+  contactPhone: z.string().max(30).optional().or(z.literal("")).optional(),
+  facebookUrl: z
+    .string()
+    .url("ต้องเป็น URL ที่ขึ้นต้นด้วย https://")
+    .or(z.literal(""))
+    .optional(),
+  lineId: z.string().max(50).optional().or(z.literal("")).optional(),
 });
 
 async function getStore(email: string) {
@@ -65,7 +77,20 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { name, slug, description, tagline, logoUrl, bannerUrl, primaryColor, customDomain } = parsed.data;
+  const {
+    name,
+    slug,
+    description,
+    tagline,
+    logoUrl,
+    bannerUrl,
+    primaryColor,
+    customDomain,
+    contactEmail,
+    contactPhone,
+    facebookUrl,
+    lineId,
+  } = parsed.data;
 
   // Check slug uniqueness (allow own slug)
   if (slug !== store.slug) {
@@ -94,6 +119,10 @@ export async function PATCH(req: Request) {
       bannerUrl: bannerUrl || null,
       primaryColor: primaryColor ?? store.primaryColor,
       customDomain: customDomain || null,
+      contactEmail: contactEmail || null,
+      contactPhone: contactPhone || null,
+      facebookUrl: facebookUrl || null,
+      lineId: lineId || null,
     },
   });
 

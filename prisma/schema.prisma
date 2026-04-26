@@ -90,6 +90,11 @@ model Store {
   primaryColor String?  @default("#2563eb")
   // Custom domain (vendor brings their own); subdomain is derived from slug
   customDomain String?  @unique
+  // Contact channels shown in storefront footer
+  contactEmail String?
+  contactPhone String?
+  facebookUrl  String?
+  lineId       String?
   ownerId      String   @unique
   createdAt    DateTime @default(now())
 

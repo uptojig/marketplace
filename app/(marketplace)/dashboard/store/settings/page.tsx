@@ -50,6 +50,10 @@ export default async function StoreSettingsPage() {
           bannerUrl: store.bannerUrl ?? "",
           primaryColor: store.primaryColor ?? "#2563eb",
           customDomain: store.customDomain ?? "",
+          contactEmail: store.contactEmail ?? "",
+          contactPhone: store.contactPhone ?? "",
+          facebookUrl: store.facebookUrl ?? "",
+          lineId: store.lineId ?? "",
         }}
       />
     </div>
