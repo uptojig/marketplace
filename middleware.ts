@@ -24,6 +24,8 @@ const PASSTHROUGH_PREFIXES = [
   "/_next",
   "/static",
   "/favicon",
+  "/icons",
+  "/uploads",
   "/stores/",
   "/products/",
   "/onboarding",
