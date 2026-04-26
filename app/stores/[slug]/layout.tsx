@@ -251,7 +251,7 @@ export default async function ShopLayout({
         {/* Footer info — 4 columns */}
         <div className="hidden lg:block border-t bg-white">
           <div className="container mx-auto max-w-[1200px] px-4 py-10">
-            <div className="grid gap-8 md:grid-cols-4">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
               <div>
                 <h3 className="mb-3 font-semibold">เกี่ยวกับเรา</h3>
                 <p className="text-sm text-gray-600">
