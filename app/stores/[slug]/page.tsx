@@ -8,11 +8,13 @@ import { SortSelect } from "@/components/shop/SortSelect";
 
 export const dynamic = "force-dynamic";
 
-const TABS = [
+type TabId = "all" | "hot" | "new" | "sale";
+type Tab = { id: TabId; label: string };
+const ALL_TABS: Tab[] = [
   { id: "all", label: "สินค้าทั้งหมด" },
-  { id: "hot", label: "Hot" },
-  { id: "new", label: "New" },
-  { id: "recommended", label: "RECOMMENDED" },
+  { id: "hot", label: "ขายดี" },
+  { id: "new", label: "มาใหม่" },
+  { id: "sale", label: "ลดราคา" },
 ];
 
 // Orders that count toward "sold" — exclude cancelled/failed but include anything that was paid
@@ -94,15 +96,31 @@ export default async function StorePage({
     // Later: join inventory via ProductVariant.inventory.
   }
 
+  // Compute counts per tab so we can hide empty ones (and count badges)
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
+  const tabCounts: Record<TabId, number> = {
+    all: products.length,
+    hot: products.filter((p) => (soldMap.get(p.id) ?? 0) > 0).length,
+    new: products.filter((p) => p.createdAt.getTime() >= thirtyDaysAgo).length,
+    sale: products.filter(
+      (p) =>
+        p.compareAtPriceTHB && Number(p.compareAtPriceTHB) > Number(p.priceTHB),
+    ).length,
+  };
+
+  const tabs: Tab[] = ALL_TABS.filter(
+    (t) => t.id === "all" || tabCounts[t.id] > 0,
+  );
+
   if (tab === "hot") {
-    // Show only items that have actually sold at least once for the HOT tab
-    const onlyHot = products.filter((p) => (soldMap.get(p.id) ?? 0) > 0);
-    products = onlyHot.length > 0 ? onlyHot : products;
+    products = products.filter((p) => (soldMap.get(p.id) ?? 0) > 0);
   } else if (tab === "new") {
-    // Show items added in the last 30 days first; fall back to all
-    const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
-    const onlyNew = products.filter((p) => p.createdAt.getTime() >= thirtyDaysAgo);
-    products = onlyNew.length > 0 ? onlyNew : products;
+    products = products.filter((p) => p.createdAt.getTime() >= thirtyDaysAgo);
+  } else if (tab === "sale") {
+    products = products.filter(
+      (p) =>
+        p.compareAtPriceTHB && Number(p.compareAtPriceTHB) > Number(p.priceTHB),
+    );
   }
 
   products = products.slice(0, 60);
@@ -182,17 +200,27 @@ export default async function StorePage({
         <div className="grid gap-3 lg:grid-cols-12 items-end">
           <div className="lg:col-span-10">
             <div className="flex items-end gap-6 overflow-x-auto pb-1">
-              {TABS.map((t) => {
+              {tabs.map((t) => {
                 const active = (searchParams.tab ?? "all") === t.id;
+                const count = tabCounts[t.id];
+                const params = new URLSearchParams();
+                if (t.id !== "all") params.set("tab", t.id);
+                if (category) params.set("category", category);
+                if (q) params.set("q", q);
+                const href = `/stores/${store.slug}${params.toString() ? `?${params}` : ""}`;
                 return (
                   <Link
                     key={t.id}
-                    href={`/stores/${store.slug}?tab=${t.id}`}
-                    className={`text-nowrap text-base ${
+                    href={href}
+                    scroll={false}
+                    className={`group text-nowrap text-base transition ${
                       active ? "text-2xl font-bold" : "text-gray-500 hover:text-gray-900"
                     }`}
                   >
                     {t.label}
+                    <span className={`ml-1 text-xs ${active ? "text-gray-500" : "text-gray-400"}`}>
+                      ({count})
+                    </span>
                   </Link>
                 );
               })}

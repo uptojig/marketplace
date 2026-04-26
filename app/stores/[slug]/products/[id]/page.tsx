@@ -27,7 +27,7 @@ export default async function ShopProductPage({
   });
 
   return (
-    <div className="space-y-8">
+    <div className="container mx-auto max-w-[1200px] space-y-6 px-4 py-6">
       <Link href={`/stores/${params.slug}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline">
         ← กลับ
       </Link>
