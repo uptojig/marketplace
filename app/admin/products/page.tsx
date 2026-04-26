@@ -3,6 +3,7 @@ import { ExternalLink } from "lucide-react";
 import { Supplier } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
+import { EnrichButton } from "./enrich-button";
 
 export const dynamic = "force-dynamic";
 
@@ -59,9 +60,12 @@ export default async function AdminProductsPage({
 
   return (
     <div className="mx-auto max-w-6xl space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold">สินค้าทั้งหมด</h1>
-        <p className="text-sm text-muted-foreground">{products.length} แสดง (จำกัด 100 ล่าสุด)</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">สินค้าทั้งหมด</h1>
+          <p className="text-sm text-muted-foreground">{products.length} แสดง (จำกัด 100 ล่าสุด)</p>
+        </div>
+        <EnrichButton />
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">
@@ -158,13 +162,21 @@ export default async function AdminProductsPage({
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/stores/${p.store.slug}/products/${p.id}`}
-                      target="_blank"
-                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                    >
-                      ดู <ExternalLink className="h-3 w-3" />
-                    </Link>
+                    <div className="flex justify-end gap-3">
+                      <Link
+                        href={`/admin/products/${p.id}`}
+                        className="text-xs font-medium text-blue-600 hover:underline"
+                      >
+                        แก้ไข
+                      </Link>
+                      <Link
+                        href={`/stores/${p.store.slug}/products/${p.id}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 text-xs text-gray-500 hover:underline"
+                      >
+                        ดู <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))

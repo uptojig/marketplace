@@ -127,15 +127,26 @@ export const cjAdapter: SupplierAdapter = {
 
   async fetchProductById(externalId: string): Promise<NormalizedProduct> {
     const data = await cjFetch<{
-      data?: { pid: string; productNameEn: string; sellPrice: string; productImage: string; description?: string };
+      data?: {
+        pid: string;
+        productNameEn: string;
+        productName?: string;
+        sellPrice: string;
+        productImage: string;
+        productImageSet?: string[] | string;
+        description?: string;
+        productWeight?: string;
+        categoryName?: string;
+      };
     }>(`/product/query?pid=${encodeURIComponent(externalId)}`);
     if (!data.data) throw new Error(`CJ product ${externalId} not found`);
-    const usd = parseFloat(data.data.sellPrice);
-    // Crude USD→THB conversion fallback. Replace with a real FX source for production.
+    const sellPrice = String(data.data.sellPrice ?? "0");
+    // CJ sometimes returns "1.34 -- 1.45" (range); take the lower bound.
+    const usd = parseFloat(sellPrice.split("--")[0].trim()) || 0;
     const fx = parseFloat(process.env.CJ_USD_THB ?? "36");
     return {
       externalProductId: data.data.pid,
-      title: data.data.productNameEn,
+      title: data.data.productNameEn || data.data.productName || externalId,
       description: data.data.description,
       priceTHB: Math.round(usd * fx),
       imageUrl: data.data.productImage,
