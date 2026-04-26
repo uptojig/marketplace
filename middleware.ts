@@ -30,6 +30,7 @@ const PASSTHROUGH_PREFIXES = [
   "/products/",
   "/onboarding",
   "/dashboard",
+  "/admin",
   "/cart",
   "/checkout",
   "/checkout/address",
