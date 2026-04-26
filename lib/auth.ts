@@ -12,6 +12,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      // Safe with Google: emails are verified by Google itself.
+      // Lets users created via cookie-onboarding upgrade to Google sign-in.
+      allowDangerousEmailAccountLinking: true,
     }),
   );
 }
