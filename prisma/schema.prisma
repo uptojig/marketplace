@@ -117,6 +117,7 @@ model Product {
   supplier          Supplier
   externalProductId String
   externalPayload   Json?
+  categoryName      String?
   hasVariants       Boolean  @default(false)
   active            Boolean  @default(true)
   createdAt         DateTime @default(now())

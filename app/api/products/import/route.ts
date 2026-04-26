@@ -109,8 +109,15 @@ export async function POST(req: Request) {
   }
 
   const created = await prisma.$transaction(
-    parsed.data.items.map((item) =>
-      prisma.product.create({
+    parsed.data.items.map((item) => {
+      const raw = (item.raw ?? null) as Record<string, unknown> | null;
+      const categoryName =
+        (raw?.categoryName as string | undefined) ??
+        (raw?.threeCategoryName as string | undefined) ??
+        (raw?.twoCategoryName as string | undefined) ??
+        (raw?.oneCategoryName as string | undefined) ??
+        null;
+      return prisma.product.create({
         data: {
           storeId: storeId!,
           title: item.title,
@@ -120,10 +127,11 @@ export async function POST(req: Request) {
           supplier: item.supplier,
           externalProductId: item.externalProductId,
           externalPayload: (item.raw ?? null) as never,
+          categoryName: categoryName ? String(categoryName).trim() : null,
         },
         select: { id: true, title: true },
-      }),
-    ),
+      });
+    }),
   );
 
   return NextResponse.json({ saved: created.length, ids: created.map((c) => c.id), products: created });

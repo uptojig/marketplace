@@ -36,7 +36,7 @@ export default async function StorePage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { q?: string; sort?: string; tab?: string };
+  searchParams: { q?: string; sort?: string; tab?: string; category?: string };
 }) {
   const tab = searchParams.tab ?? "all";
   const sort = searchParams.sort ?? (tab === "hot" ? "best-selling" : tab === "new" ? "newest" : "");
@@ -45,9 +45,11 @@ export default async function StorePage({
   if (!baseStore) notFound();
 
   const q = searchParams.q;
+  const category = searchParams.category;
   const productWhere = {
     storeId: baseStore.id,
     active: true,
+    ...(category ? { categoryName: category } : {}),
     ...(q
       ? {
           OR: [

@@ -20,6 +20,18 @@ export default async function ShopLayout({
 
   const primary = store.primaryColor ?? "#008BF8";
 
+  // Distinct category names from this store's active products
+  const categoryRows = await prisma.product.findMany({
+    where: { storeId: store.id, active: true, categoryName: { not: null } },
+    select: { categoryName: true },
+    distinct: ["categoryName"],
+    orderBy: { categoryName: "asc" },
+    take: 50,
+  });
+  const categories = categoryRows
+    .map((r) => r.categoryName)
+    .filter((c): c is string => !!c);
+
   return (
     <div
       className="min-h-screen bg-[#f5f6f8]"
@@ -101,15 +113,43 @@ export default async function ShopLayout({
         <div className="hidden lg:block">
           <div className="container mx-auto max-w-[1200px] px-4">
             <div className="flex items-center justify-between">
-              {/* Category mega-menu trigger */}
-              <button
-                type="button"
-                className="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white"
-                style={{ backgroundColor: primary }}
-              >
-                <Menu className="h-4 w-4" />
-                หมวดหมู่สินค้า
-              </button>
+              {/* Category mega-menu */}
+              <div className="group relative">
+                <button
+                  type="button"
+                  className="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white"
+                  style={{ backgroundColor: primary }}
+                >
+                  <Menu className="h-4 w-4" />
+                  หมวดหมู่สินค้า
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                <div className="absolute left-0 top-full z-30 hidden min-w-[260px] rounded-md border bg-white shadow-lg group-hover:block">
+                  {categories.length === 0 ? (
+                    <div className="px-4 py-3 text-xs text-gray-500">
+                      ยังไม่มีหมวดหมู่ — import สินค้าก่อน
+                    </div>
+                  ) : (
+                    <div className="max-h-[400px] overflow-y-auto py-1">
+                      <Link
+                        href={`/stores/${store.slug}`}
+                        className="block px-4 py-2 text-sm font-medium hover:bg-gray-50"
+                      >
+                        ทั้งหมด
+                      </Link>
+                      {categories.map((cat) => (
+                        <Link
+                          key={cat}
+                          href={`/stores/${store.slug}?category=${encodeURIComponent(cat)}`}
+                          className="block px-4 py-2 text-sm hover:bg-gray-50"
+                        >
+                          {cat}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Right nav */}
               <nav className="flex items-center gap-1">
