@@ -118,20 +118,20 @@ export default async function ShopLayout({
                     เกี่ยวกับร้าน <ChevronDown className="h-3 w-3" />
                   </button>
                   <div className="absolute right-0 top-full z-30 hidden min-w-[200px] rounded-md border bg-white shadow-lg group-hover:block">
-                    <Link href={`/stores/${store.slug}/about`} className="block px-4 py-2 text-sm hover:bg-gray-50">
+                    <Link href={`/stores/${store.slug}`} className="block px-4 py-2 text-sm hover:bg-gray-50">
                       รายละเอียดร้าน
                     </Link>
-                    <Link href={`/stores/${store.slug}/faqs`} className="block px-4 py-2 text-sm hover:bg-gray-50">
+                    <Link href={`/stores/${store.slug}/help/faq`} className="block px-4 py-2 text-sm hover:bg-gray-50">
                       คำถามที่พบบ่อย
                     </Link>
-                    <Link href={`/stores/${store.slug}/reviews`} className="block px-4 py-2 text-sm hover:bg-gray-50">
-                      คะแนนร้านค้า
-                    </Link>
-                    <Link href={`/stores/${store.slug}/how-to-order`} className="block px-4 py-2 text-sm hover:bg-gray-50">
+                    <Link href={`/stores/${store.slug}/help/order-guide`} className="block px-4 py-2 text-sm hover:bg-gray-50">
                       วิธีการสั่งซื้อ
                     </Link>
-                    <Link href={`/stores/${store.slug}/privacy`} className="block px-4 py-2 text-sm hover:bg-gray-50">
+                    <Link href={`/stores/${store.slug}/help/privacy`} className="block px-4 py-2 text-sm hover:bg-gray-50">
                       นโยบายความเป็นส่วนตัว
+                    </Link>
+                    <Link href={`/stores/${store.slug}/help/terms`} className="block px-4 py-2 text-sm hover:bg-gray-50">
+                      ข้อกำหนดการใช้งาน
                     </Link>
                   </div>
                 </div>
@@ -219,13 +219,26 @@ export default async function ShopLayout({
                 </p>
               </div>
               <div>
+                <h3 className="mb-3 font-semibold">ลูกค้าสัมพันธ์</h3>
+                <ul className="space-y-1 text-sm text-gray-600">
+                  <li><Link href={`/stores/${store.slug}/help/membership`} className="hover:text-gray-900">การสมัครสมาชิก</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/payment`} className="hover:text-gray-900">วิธีการชำระเงิน</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/tax-invoice`} className="hover:text-gray-900">วิธีการขอใบกำกับภาษี</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/claim`} className="hover:text-gray-900">วิธีการเคลมสินค้า</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/warranty`} className="hover:text-gray-900">การประกันสินค้า</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/faq`} className="hover:text-gray-900">คำถามที่พบบ่อย (FAQs)</Link></li>
+                </ul>
+              </div>
+              <div>
                 <h3 className="mb-3 font-semibold">รู้จักเรา</h3>
                 <ul className="space-y-1 text-sm text-gray-600">
-                  <li><Link href={`/stores/${store.slug}/about`} className="hover:text-gray-900">รายละเอียดร้าน</Link></li>
-                  <li><Link href={`/stores/${store.slug}/how-to-order`} className="hover:text-gray-900">วิธีการสั่งซื้อ</Link></li>
+                  <li><Link href={`/stores/${store.slug}`} className="hover:text-gray-900">รายละเอียดร้าน</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/order-guide`} className="hover:text-gray-900">วิธีการสั่งซื้อ</Link></li>
                   <li><Link href="/orders" className="hover:text-gray-900">การสั่งซื้อของฉัน</Link></li>
-                  <li><Link href={`/stores/${store.slug}/reviews`} className="hover:text-gray-900">คะแนนร้านค้า</Link></li>
-                  <li><Link href={`/stores/${store.slug}/privacy`} className="hover:text-gray-900">นโยบายความเป็นส่วนตัว</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/privacy`} className="hover:text-gray-900">นโยบายความเป็นส่วนตัว</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/terms`} className="hover:text-gray-900">ข้อกำหนดการใช้งาน</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/refund`} className="hover:text-gray-900">นโยบายการคืนเงิน</Link></li>
+                  <li><Link href={`/stores/${store.slug}/help/shipping`} className="hover:text-gray-900">นโยบายการจัดส่ง</Link></li>
                 </ul>
               </div>
               <div>
