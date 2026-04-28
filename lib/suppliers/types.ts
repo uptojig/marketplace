@@ -68,6 +68,39 @@ export interface SupplierCategory {
   count?: number;
 }
 
+export interface NormalizedVariant {
+  externalVariantId: string;
+  sku?: string;
+  attributes: Record<string, string>;
+  priceTHB: number;
+  imageUrl?: string;
+  inventory?: number;
+}
+
+export interface InventoryAtWarehouse {
+  warehouseCode: string;
+  warehouseName?: string;
+  stock: number;
+}
+
+export interface FreightItem {
+  externalVariantId: string;
+  qty: number;
+}
+
+export interface FreightInput {
+  countryCode: string;
+  province?: string;
+  items: FreightItem[];
+}
+
+export interface FreightOption {
+  code: string;
+  name: string;
+  priceTHB: number;
+  eta?: string;
+}
+
 export interface SupplierAdapter {
   name: Supplier;
   fetchProductByUrl(url: string): Promise<NormalizedProduct>;
@@ -76,6 +109,9 @@ export interface SupplierAdapter {
   categories(): Promise<SupplierCategory[]>;
   placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult>;
   getTracking(externalOrderId: string): Promise<TrackingResult>;
+  fetchVariants?(externalProductId: string): Promise<NormalizedVariant[]>;
+  fetchInventory?(externalVariantId: string): Promise<InventoryAtWarehouse[]>;
+  calculateFreight?(input: FreightInput): Promise<FreightOption[]>;
 }
 
 export class NotImplementedError extends Error {
