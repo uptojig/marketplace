@@ -3,7 +3,11 @@ import {
   NotImplementedError,
   type CatalogPage,
   type CatalogQuery,
+  type FreightInput,
+  type FreightOption,
+  type InventoryAtWarehouse,
   type NormalizedProduct,
+  type NormalizedVariant,
   type PlaceOrderInput,
   type PlaceOrderResult,
   type SupplierAdapter,
@@ -13,7 +17,6 @@ import {
 
 const CJ_BASE = process.env.CJ_API_BASE ?? "https://developers.cjdropshipping.com/api2.0/v1";
 
-// Best-effort Thai labels for CJ's top-level categories. Falls back to English when not mapped.
 const CJ_CATEGORY_TH: Record<string, string> = {
   "Women's Clothing": "เสื้อผ้าผู้หญิง",
   "Men's Clothing": "เสื้อผ้าผู้ชาย",
@@ -33,8 +36,8 @@ const CJ_CATEGORY_TH: Record<string, string> = {
   "Home Improvement": "เครื่องมือ & ของแต่งบ้าน",
   "Lights & Lighting": "ไฟ & หลอดไฟ",
   "Mobile Phones & Accessories": "มือถือ & อุปกรณ์เสริม",
-  "Watches": "นาฬิกา",
-  "Apparel": "เสื้อผ้า",
+  Watches: "นาฬิกา",
+  Apparel: "เสื้อผ้า",
   "Underwear & Sleepwears": "ชุดชั้นใน & ชุดนอน",
   "Hair Extensions & Wigs": "ผมต่อ & วิก",
 };
@@ -59,7 +62,6 @@ async function getAccessToken(): Promise<string> {
       throw new Error("CJ_API_KEY not configured (expected format: CJxxx@api@<hexkey>)");
     }
 
-    // Retry up to 3x with backoff to clear CJ's 1-req/sec auth throttle
     let lastErr: unknown = null;
     for (let attempt = 0; attempt < 3; attempt++) {
       const res = await fetch(`${CJ_BASE}/authentication/getAccessToken`, {
@@ -68,7 +70,11 @@ async function getAccessToken(): Promise<string> {
         body: JSON.stringify({ apiKey }),
       });
       const text = await res.text();
-      let parsed: { code?: number; message?: string; data?: { accessToken: string; accessTokenExpiryDate: string } } = {};
+      let parsed: {
+        code?: number;
+        message?: string;
+        data?: { accessToken: string; accessTokenExpiryDate: string };
+      } = {};
       try {
         parsed = JSON.parse(text);
       } catch {
@@ -82,7 +88,9 @@ async function getAccessToken(): Promise<string> {
       }
       if (!res.ok || !parsed.data) {
         const detail = parsed.message ?? text.slice(0, 200);
-        throw new Error(`CJ auth failed (status=${res.status}, code=${parsed.code ?? "?"}): ${detail}`);
+        throw new Error(
+          `CJ auth failed (status=${res.status}, code=${parsed.code ?? "?"}): ${detail}`,
+        );
       }
       cachedAuth = {
         accessToken: parsed.data.accessToken,
@@ -96,6 +104,30 @@ async function getAccessToken(): Promise<string> {
   });
 
   return inflightAuth;
+}
+
+function pickFirstImage(raw: unknown): string | undefined {
+  if (!raw) return undefined;
+  if (Array.isArray(raw)) {
+    const first = raw.find((x): x is string => typeof x === "string" && x.length > 0);
+    return first;
+  }
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith("[")) {
+      try {
+        const arr = JSON.parse(trimmed);
+        if (Array.isArray(arr)) {
+          const first = arr.find((x): x is string => typeof x === "string" && x.length > 0);
+          return first;
+        }
+      } catch {
+        // fall through
+      }
+    }
+    return trimmed || undefined;
+  }
+  return undefined;
 }
 
 async function cjFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -119,8 +151,6 @@ export const cjAdapter: SupplierAdapter = {
   name: Supplier.CJ,
 
   async fetchProductByUrl(url: string): Promise<NormalizedProduct> {
-    // CJ exposes product detail by pid. Extract from URL if present, otherwise the caller
-    // should normalize the URL to a pid first. For MVP we treat the trailing path segment as pid.
     const pid = url.split("/").filter(Boolean).pop() ?? url;
     return this.fetchProductById(pid);
   },
@@ -132,7 +162,7 @@ export const cjAdapter: SupplierAdapter = {
         productNameEn: string;
         productName?: string;
         sellPrice: string;
-        productImage: string;
+        productImage: string | string[];
         productImageSet?: string[] | string;
         description?: string;
         productWeight?: string;
@@ -141,7 +171,6 @@ export const cjAdapter: SupplierAdapter = {
     }>(`/product/query?pid=${encodeURIComponent(externalId)}`);
     if (!data.data) throw new Error(`CJ product ${externalId} not found`);
     const sellPrice = String(data.data.sellPrice ?? "0");
-    // CJ sometimes returns "1.34 -- 1.45" (range); take the lower bound.
     const usd = parseFloat(sellPrice.split("--")[0].trim()) || 0;
     const fx = parseFloat(process.env.CJ_USD_THB ?? "36");
     return {
@@ -149,9 +178,47 @@ export const cjAdapter: SupplierAdapter = {
       title: data.data.productNameEn || data.data.productName || externalId,
       description: data.data.description,
       priceTHB: Math.round(usd * fx),
-      imageUrl: data.data.productImage,
+      imageUrl: pickFirstImage(data.data.productImage),
       raw: data.data,
     };
+  },
+
+  async fetchVariants(externalProductId: string): Promise<NormalizedVariant[]> {
+    const data = await cjFetch<{
+      data?: Array<{
+        vid: string;
+        variantSku?: string;
+        variantNameEn?: string;
+        variantKey?: string;
+        variantImage?: string;
+        variantSellPrice?: string | number;
+        inventoryNum?: number;
+      }>;
+    }>(`/product/variant/query?pid=${encodeURIComponent(externalProductId)}`);
+
+    const fx = parseFloat(process.env.CJ_USD_THB ?? "36");
+    const list = data.data ?? [];
+
+    return list.map((v) => {
+      const usdRaw = String(v.variantSellPrice ?? "0");
+      const usd = parseFloat(usdRaw.split("--")[0].trim()) || 0;
+
+      const attributes: Record<string, string> = {};
+      if (v.variantKey) {
+        attributes["Variant"] = v.variantKey;
+      } else if (v.variantNameEn) {
+        attributes["Variant"] = v.variantNameEn;
+      }
+
+      return {
+        externalVariantId: String(v.vid),
+        sku: v.variantSku ?? undefined,
+        attributes,
+        priceTHB: Math.round(usd * fx),
+        imageUrl: v.variantImage,
+        inventory: typeof v.inventoryNum === "number" ? v.inventoryNum : undefined,
+      };
+    });
   },
 
   async listCatalog(query: CatalogQuery): Promise<CatalogPage> {
@@ -169,7 +236,7 @@ export const cjAdapter: SupplierAdapter = {
           pid: string;
           productNameEn: string;
           sellPrice: string;
-          productImage: string;
+          productImage: string | string[];
           description?: string;
         }>;
         total?: number;
@@ -183,10 +250,9 @@ export const cjAdapter: SupplierAdapter = {
       title: r.productNameEn,
       description: r.description,
       priceTHB: Math.round(parseFloat(r.sellPrice) * fx),
-      imageUrl: r.productImage,
+      imageUrl: pickFirstImage(r.productImage),
       raw: r,
     }));
-    // CJ list API doesn't filter by price — apply client-side as a best-effort filter
     if (typeof query.minPriceTHB === "number") {
       items = items.filter((p) => p.priceTHB >= query.minPriceTHB!);
     }
@@ -205,7 +271,11 @@ export const cjAdapter: SupplierAdapter = {
 
   async categories(): Promise<SupplierCategory[]> {
     const data = await cjFetch<{
-      data?: Array<{ categoryFirstId?: string; categoryFirstName?: string; categoryFirst?: string }>;
+      data?: Array<{
+        categoryFirstId?: string;
+        categoryFirstName?: string;
+        categoryFirst?: string;
+      }>;
     }>(`/product/getCategory`);
     const list = data.data ?? [];
     return list.map((c) => {
@@ -230,16 +300,83 @@ export const cjAdapter: SupplierAdapter = {
       remark: `Internal order ${input.internalOrderId}`,
       products: input.items.map((i) => ({ vid: i.externalProductId, quantity: i.qty })),
     };
-    const data = await cjFetch<{ data?: { orderId: string; orderNum: string } }>("/shopping/order/createOrder", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
+    const data = await cjFetch<{ data?: { orderId: string; orderNum: string } }>(
+      "/shopping/order/createOrder",
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    );
     if (!data.data) throw new Error("CJ createOrder returned no data");
     return {
       externalOrderId: data.data.orderId,
       status: "CREATED",
       raw: data.data,
     };
+  },
+
+  async fetchInventory(externalVariantId: string): Promise<InventoryAtWarehouse[]> {
+    const data = await cjFetch<{
+      data?: Array<{
+        vid?: string;
+        areaEn?: string;
+        countryCode?: string;
+        storageNum?: number;
+        storageNumber?: number;
+        warehouseName?: string;
+        warehouseCode?: string;
+      }>;
+    }>(`/product/stock/queryByVid?vid=${encodeURIComponent(externalVariantId)}`);
+
+    const list = data.data ?? [];
+    return list.map((w) => ({
+      warehouseCode: String(w.warehouseCode ?? w.countryCode ?? w.areaEn ?? "?"),
+      warehouseName: w.warehouseName ?? w.areaEn ?? undefined,
+      stock:
+        typeof w.storageNum === "number"
+          ? w.storageNum
+          : typeof w.storageNumber === "number"
+            ? w.storageNumber
+            : 0,
+    }));
+  },
+
+  async calculateFreight(input: FreightInput): Promise<FreightOption[]> {
+    const fx = parseFloat(process.env.CJ_USD_THB ?? "36");
+    const data = await cjFetch<{
+      data?: Array<{
+        logisticName?: string;
+        logisticEnglishName?: string;
+        logisticCode?: string;
+        logisticPrice?: number | string;
+        logisticAging?: string;
+      }>;
+    }>("/logistic/freightCalculate", {
+      method: "POST",
+      body: JSON.stringify({
+        startCountryCode: "CN",
+        endCountryCode: input.countryCode,
+        province: input.province,
+        products: input.items.map((i) => ({
+          vid: i.externalVariantId,
+          quantity: i.qty,
+        })),
+      }),
+    });
+
+    const list = data.data ?? [];
+    return list.map((opt) => {
+      const usd =
+        typeof opt.logisticPrice === "number"
+          ? opt.logisticPrice
+          : parseFloat(String(opt.logisticPrice ?? "0")) || 0;
+      return {
+        code: String(opt.logisticCode ?? opt.logisticEnglishName ?? opt.logisticName ?? ""),
+        name: String(opt.logisticEnglishName ?? opt.logisticName ?? "Standard"),
+        priceTHB: Math.round(usd * fx),
+        eta: opt.logisticAging,
+      };
+    });
   },
 
   async getTracking(externalOrderId: string): Promise<TrackingResult> {
