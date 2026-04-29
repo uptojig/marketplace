@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
+import { createDemoOrderFromDeposit } from "@/lib/quickpay/demo-order";
 
 /**
  * POST /api/webhook/quickpay/test
  *
  * Simulates a QuickPay DEPOSIT webhook for testing purposes.
- * Only available in non-production environments.
+ * Creates demo order directly (bypasses IP whitelist + signature check).
+ * Only available when ANYPAY_MODE=mock.
  *
  * Body: { amount: number, channel?: string }
  */
 export async function POST(req: Request) {
-  if (process.env.NODE_ENV === "production" && process.env.ANYPAY_MODE !== "mock") {
+  if (process.env.ANYPAY_MODE !== "mock") {
     return NextResponse.json(
-      { ok: false, error: "Test endpoint disabled in production" },
+      { ok: false, error: "Test endpoint disabled — set ANYPAY_MODE=mock to enable" },
       { status: 403 },
     );
   }
@@ -27,42 +29,30 @@ export async function POST(req: Request) {
   const channel = body.channel ?? "PROMPTPAY";
   const transactionId = `TEST-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  // Simulate the webhook by calling our own quickpay webhook endpoint
-  const webhookPayload = {
-    event: "DEPOSIT",
-    transaction_id: transactionId,
-    amount,
-    currency: "THB",
-    channel,
-    customer_name: "ทดสอบ Demo",
-    customer_email: "test@basketplace.co",
-    timestamp: new Date().toISOString(),
-    metadata: { test: true, simulatedAt: new Date().toISOString() },
-  };
+  try {
+    const demoOrder = await createDemoOrderFromDeposit({
+      transactionId,
+      amount,
+      currency: "THB",
+      channel,
+      customerName: "ทดสอบ Demo",
+      customerEmail: "test@basketplace.co",
+      domain: "basketplace.co",
+    });
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-
-  const res = await fetch(`${baseUrl}/api/webhook/quickpay`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-webhook-domain": "basketplace.co",
-      "x-webhook-dedicated-ip": "127.0.0.1",
-      "x-real-ip": "127.0.0.1",
-    },
-    body: JSON.stringify(webhookPayload),
-  });
-
-  const result = await res.json().catch(() => null);
-
-  return NextResponse.json({
-    ok: res.ok,
-    message: res.ok
-      ? `Demo deposit of ${amount} THB created via ${channel}`
-      : "Failed to create demo deposit",
-    transactionId,
-    webhookResponse: result,
-  });
+    return NextResponse.json({
+      ok: true,
+      message: `Demo deposit of ${amount} THB created via ${channel}`,
+      transactionId,
+      demoOrder,
+    });
+  } catch (err) {
+    console.error("[test-webhook] Error creating demo order:", err);
+    return NextResponse.json(
+      { ok: false, error: err instanceof Error ? err.message : "Failed to create demo order" },
+      { status: 500 },
+    );
+  }
 }
 
 /**
@@ -74,15 +64,11 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     description: "QuickPay webhook test endpoint for basketplace.co",
+    mode: process.env.ANYPAY_MODE ?? "unknown",
     usage: "POST with { amount: 500, channel: 'PROMPTPAY' }",
     samplePayload: {
-      event: "DEPOSIT",
-      transaction_id: "TEST-xxx",
       amount: 500,
-      currency: "THB",
       channel: "PROMPTPAY",
-      customer_name: "ทดสอบ Demo",
-      timestamp: new Date().toISOString(),
     },
     endpoints: {
       quickpay: "/api/webhook/quickpay",
