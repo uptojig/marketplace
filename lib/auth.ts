@@ -28,6 +28,12 @@ if (process.env.EMAIL_SERVER && process.env.EMAIL_FROM) {
   );
 }
 
+// Emails that are auto-promoted to ADMIN on sign-in (comma-separated in env)
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
   session: { strategy: "database" },
@@ -40,6 +46,24 @@ export const authOptions: NextAuthOptions = {
           (user as unknown as { role: Role }).role;
       }
       return session;
+    },
+  },
+  events: {
+    async signIn({ user }) {
+      // Auto-promote admin emails on every sign-in
+      if (user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+        const existing = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { role: true },
+        });
+        if (existing && existing.role !== "ADMIN") {
+          await prisma.user.update({
+            where: { email: user.email },
+            data: { role: "ADMIN" },
+          });
+          console.log(`[auth] Auto-promoted ${user.email} to ADMIN`);
+        }
+      }
     },
   },
   pages: {
