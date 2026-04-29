@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,12 @@ export default function SignInPage() {
       <Button onClick={() => signIn("google", { callbackUrl: "/dashboard" })}>
         Continue with Google
       </Button>
+      <p className="text-sm">
+        ยังไม่มีบัญชี?{" "}
+        <Link href="/signup" className="font-medium text-blue-600 hover:underline">
+          สมัครสมาชิก
+        </Link>
+      </p>
     </div>
   );
 }
