@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Mail, Phone, Facebook, MessageCircle, MapPin } from "lucide-react";
+import { Map, MessageCircleMore, Lock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { formatStoreAddressLines } from "@/lib/format/storeAddress";
+import {
+  StoreSocialIcons,
+  StoreContactRows,
+} from "@/components/shop/StoreSocialIcons";
 
 export const dynamic = "force-dynamic";
 
@@ -14,93 +19,99 @@ export default async function StoreContactPage({
     where: { slug: params.slug },
     select: {
       name: true,
+      tagline: true,
+      primaryColor: true,
+      companyName: true,
+      taxId: true,
+      addressLine1: true,
+      addressLine2: true,
+      subdistrict: true,
+      district: true,
+      province: true,
+      postalCode: true,
+      country: true,
       contactEmail: true,
       contactPhone: true,
       facebookUrl: true,
+      messengerUrl: true,
+      twitterUrl: true,
+      instagramUrl: true,
+      websiteUrl: true,
       lineId: true,
-      tagline: true,
-      primaryColor: true,
     },
   });
   if (!store) notFound();
 
-  const channels = [
-    store.contactEmail && {
-      icon: Mail,
-      label: "อีเมล",
-      value: store.contactEmail,
-      href: `mailto:${store.contactEmail}`,
-    },
-    store.contactPhone && {
-      icon: Phone,
-      label: "โทรศัพท์",
-      value: store.contactPhone,
-      href: `tel:${store.contactPhone.replace(/[^0-9+]/g, "")}`,
-    },
-    store.facebookUrl && {
-      icon: Facebook,
-      label: "Facebook",
-      value: store.facebookUrl.replace(/^https?:\/\//, ""),
-      href: store.facebookUrl,
-    },
-    store.lineId && {
-      icon: MessageCircle,
-      label: "LINE",
-      value: store.lineId,
-      href: `https://line.me/R/ti/p/${encodeURIComponent(store.lineId.replace(/^@/, "~"))}`,
-    },
-  ].filter(Boolean) as Array<{
-    icon: typeof Mail;
-    label: string;
-    value: string;
-    href: string;
-  }>;
+  const addressLines = formatStoreAddressLines(store);
+  const hasAnySocials =
+    !!store.facebookUrl ||
+    !!store.messengerUrl ||
+    !!store.twitterUrl ||
+    !!store.instagramUrl ||
+    !!store.websiteUrl ||
+    !!store.lineId;
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-2xl font-bold">ติดต่อ {store.name}</h1>
-      {store.tagline && (
-        <p className="mt-1 text-sm text-muted-foreground">{store.tagline}</p>
-      )}
+    <div className="container mx-auto max-w-[1200px] px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">ติดต่อร้านค้า</h1>
+        {store.tagline && (
+          <p className="mt-1 text-sm text-muted-foreground">{store.tagline}</p>
+        )}
+      </div>
 
-      {channels.length === 0 ? (
-        <div className="mt-8 rounded-lg border bg-yellow-50 p-6 text-sm text-yellow-800">
-          <p className="font-medium">ยังไม่มีช่องทางติดต่อ</p>
-          <p className="mt-2 text-xs">ทางร้านยังไม่ได้กรอกข้อมูลติดต่อ — กรุณากลับมาใหม่ภายหลัง</p>
-        </div>
-      ) : (
-        <div className="mt-8 space-y-3">
-          {channels.map((c, i) => (
-            <a
-              key={i}
-              href={c.href}
-              target={c.href.startsWith("http") ? "_blank" : undefined}
-              rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
-              className="flex items-center gap-4 rounded-lg border bg-white p-4 transition hover:border-gray-400"
+      <div className="grid gap-5 md:grid-cols-[1fr,360px]">
+        {/* Left: message empty-state (signed-out) */}
+        <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-xl border bg-white p-8 text-center">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.06]"
+          >
+            <MessageCircleMore className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 text-gray-400" />
+          </div>
+          <div className="relative space-y-5">
+            <p className="text-sm text-gray-500">
+              เข้าสู่ระบบเพื่อส่งข้อความถึงร้านค้า
+            </p>
+            <Link
+              href={`/signin?callbackUrl=/stores/${params.slug}/contact`}
+              className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+              style={{ backgroundColor: store.primaryColor ?? "#2563eb" }}
             >
-              <div
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: store.primaryColor ?? "#2563eb" }}
-              >
-                <c.icon className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {c.label}
-                </p>
-                <p className="font-medium break-all">{c.value}</p>
-              </div>
-            </a>
-          ))}
+              <Lock className="h-4 w-4" />
+              เข้าสู่ระบบ
+            </Link>
+          </div>
         </div>
-      )}
 
-      <div className="mt-10 flex items-start gap-3 rounded-lg border bg-white p-4 text-sm">
-        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-        <div>
-          <p className="font-medium">ที่อยู่ร้าน</p>
-          <p className="text-muted-foreground">{store.name}, Thailand</p>
-        </div>
+        {/* Right: store info card */}
+        <aside className="space-y-6 rounded-xl border bg-white p-6">
+          <div>
+            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold">
+              <Map className="h-5 w-5 text-gray-400" />
+              ข้อมูลร้าน
+            </h2>
+            {addressLines.length > 0 ? (
+              <div className="space-y-1 text-sm text-gray-700">
+                {addressLines.map((l, i) => (
+                  <p key={i}>{l}</p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400">ยังไม่ได้กรอกที่อยู่</p>
+            )}
+            <div className="mt-3">
+              <StoreContactRows store={store} />
+            </div>
+          </div>
+
+          {hasAnySocials && (
+            <div>
+              <p className="mb-2 text-sm font-medium">ช่องทางติดต่ออื่น ๆ</p>
+              <StoreSocialIcons store={store} />
+            </div>
+          )}
+        </aside>
       </div>
 
       <div className="mt-6 text-center">
