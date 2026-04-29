@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductDetail } from "@/components/shop/ProductDetail";
+import { cleanDescription } from "@/lib/format/cleanDescription";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export default async function ShopProductPage({
         product={{
           id: product.id,
           title: product.titleTh ?? product.title,
-          description: product.descriptionTh ?? product.description ?? "",
+          description: cleanDescription(product.descriptionTh ?? product.description),
           priceTHB: Number(product.priceTHB),
           imageUrl: product.imageUrl ?? undefined,
           images,
