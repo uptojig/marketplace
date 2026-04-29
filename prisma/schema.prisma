@@ -88,13 +88,36 @@ model Store {
   bannerUrl    String?
   tagline      String?
   primaryColor String?  @default("#2563eb")
+  // Header layout — independent toggles per element so admins can mix.
+  // logoPosition: "left" | "center"
+  // menuPosition: "left" | "center" | "right"
+  logoPosition String?  @default("left")
+  menuPosition String?  @default("right")
+  // Deprecated: themeId was a 4-preset system (modern/editorial/minimal/compact)
+  // that bundled too many decisions. Replaced by per-element toggles above.
+  // Column kept to avoid a destructive migration; safe to drop in a future cleanup.
+  themeId      String?  @default("modern")
   // Custom domain (vendor brings their own); subdomain is derived from slug
   customDomain String?  @unique
-  // Contact channels shown in storefront footer
-  contactEmail String?
-  contactPhone String?
-  facebookUrl  String?
-  lineId       String?
+  // Legal/business info shown on contact page + footer
+  companyName  String?
+  taxId        String?
+  addressLine1 String?
+  addressLine2 String?
+  subdistrict  String?
+  district     String?
+  province     String?
+  postalCode   String?
+  country      String?  @default("TH")
+  // Contact channels shown in storefront footer + contact page
+  contactEmail  String?
+  contactPhone  String?
+  facebookUrl   String?
+  messengerUrl  String?
+  twitterUrl    String?
+  instagramUrl  String?
+  websiteUrl    String?
+  lineId        String?
   ownerId      String   @unique
   createdAt    DateTime @default(now())
 
