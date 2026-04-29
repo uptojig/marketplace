@@ -1,10 +1,21 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Search, ShoppingCart, User, ChevronDown, Menu } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  ChevronDown,
+  Menu,
+} from "lucide-react";
 import { ShopCartIndicator } from "@/components/shop/ShopCartIndicator";
 import { ShopFloatingButtons } from "@/components/shop/ShopFloatingButtons";
 import { CookiesBar } from "@/components/shop/CookiesBar";
+import {
+  StoreSocialIcons,
+  StoreContactRows,
+} from "@/components/shop/StoreSocialIcons";
+import { formatStoreAddressLines } from "@/lib/format/storeAddress";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +30,15 @@ export default async function ShopLayout({
   if (!store) notFound();
 
   const primary = store.primaryColor ?? "#008BF8";
+  const logoPosition: "left" | "center" =
+    store.logoPosition === "center" ? "center" : "left";
+  const menuPosition: "left" | "center" | "right" =
+    store.menuPosition === "left"
+      ? "left"
+      : store.menuPosition === "center"
+        ? "center"
+        : "right";
 
-  // Distinct category names from this store's active products
   const categoryRows = await prisma.product.findMany({
     where: { storeId: store.id, active: true, categoryName: { not: null } },
     select: { categoryName: true },
@@ -42,9 +60,25 @@ export default async function ShopLayout({
         {/* Top bar — logo, search, lang, account, cart */}
         <div className="hidden lg:block border-b">
           <div className="container mx-auto max-w-[1200px] px-4 py-4">
-            <div className="flex items-center justify-between gap-4">
-              {/* Logo + brand */}
-              <Link href={`/stores/${store.slug}`} className="flex items-center gap-3">
+            <div
+              className={
+                logoPosition === "center"
+                  ? "grid items-center gap-4"
+                  : "flex items-center justify-between gap-4"
+              }
+              style={
+                logoPosition === "center"
+                  ? { gridTemplateColumns: "1fr auto 1fr" }
+                  : undefined
+              }
+            >
+              {logoPosition === "center" && <div />}
+              <Link
+                href={`/stores/${store.slug}`}
+                className={`flex items-center gap-3 ${
+                  logoPosition === "center" ? "justify-center" : ""
+                }`}
+              >
                 {store.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -63,7 +97,6 @@ export default async function ShopLayout({
                 <h1 className="text-xl font-semibold leading-tight">{store.name}</h1>
               </Link>
 
-              {/* Search + actions */}
               <div className="flex items-center gap-3">
                 <form
                   action={`/stores/${store.slug}`}
@@ -79,7 +112,6 @@ export default async function ShopLayout({
                   </button>
                 </form>
 
-                {/* Language flag */}
                 <button
                   type="button"
                   className="flex items-center gap-1 rounded p-1 hover:bg-gray-50"
@@ -100,9 +132,9 @@ export default async function ShopLayout({
                   <User className="h-4 w-4" />
                 </Link>
 
-                <Link href="/cart" aria-label="Cart" className="relative p-2">
+                <Link href={`/stores/${store.slug}/cart`} aria-label="Cart" className="relative p-2">
                   <ShoppingCart className="h-5 w-5" />
-                  <ShopCartIndicator />
+                  <ShopCartIndicator storeSlug={store.slug} />
                 </Link>
               </div>
             </div>
@@ -112,8 +144,20 @@ export default async function ShopLayout({
         {/* Menu bar — categories + nav */}
         <div className="hidden lg:block">
           <div className="container mx-auto max-w-[1200px] px-4">
-            <div className="flex items-center justify-between">
-              {/* Category mega-menu */}
+            <div
+              className={
+                menuPosition === "center"
+                  ? "grid items-center gap-4"
+                  : menuPosition === "left"
+                    ? "flex items-center justify-start gap-4"
+                    : "flex items-center justify-between gap-4"
+              }
+              style={
+                menuPosition === "center"
+                  ? { gridTemplateColumns: "auto 1fr auto" }
+                  : undefined
+              }
+            >
               <div className="group relative">
                 <button
                   type="button"
@@ -140,7 +184,7 @@ export default async function ShopLayout({
                       {categories.map((cat) => (
                         <Link
                           key={cat}
-                          href={`/stores/${store.slug}?category=${encodeURIComponent(cat)}`}
+                          href={`/stores/${store.slug}/category/${encodeURIComponent(cat)}`}
                           className="block px-4 py-2 text-sm hover:bg-gray-50"
                         >
                           {cat}
@@ -151,8 +195,11 @@ export default async function ShopLayout({
                 </div>
               </div>
 
-              {/* Right nav */}
-              <nav className="flex items-center gap-1">
+              <nav
+                className={`flex items-center gap-1 ${
+                  menuPosition === "center" ? "justify-self-center" : ""
+                }`}
+              >
                 <div className="group relative">
                   <button className="flex items-center gap-1 px-4 py-3 text-sm font-medium hover:text-[var(--shop-primary)]">
                     เกี่ยวกับร้าน <ChevronDown className="h-3 w-3" />
@@ -182,6 +229,7 @@ export default async function ShopLayout({
                   ติดต่อร้านค้า
                 </Link>
               </nav>
+              {menuPosition === "center" && <div />}
             </div>
           </div>
         </div>
@@ -194,7 +242,7 @@ export default async function ShopLayout({
           <Link href={`/stores/${store.slug}`} className="flex-1 text-center text-base font-semibold truncate">
             {store.name}
           </Link>
-          <Link href="/cart" aria-label="Cart" className="relative p-1">
+          <Link href={`/stores/${store.slug}/cart`} aria-label="Cart" className="relative p-1">
             <ShoppingCart className="h-5 w-5" />
             <ShopCartIndicator />
           </Link>
@@ -248,15 +296,32 @@ export default async function ShopLayout({
           </div>
         </div>
 
-        {/* Footer info — 4 columns */}
-        <div className="hidden lg:block border-t bg-white">
+        {/* Footer info — 5 columns */}
+        <div className="border-t bg-white">
           <div className="container mx-auto max-w-[1200px] px-4 py-10">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
               <div>
-                <h3 className="mb-3 font-semibold">เกี่ยวกับเรา</h3>
-                <p className="text-sm text-gray-600">
-                  {store.description ?? store.tagline ?? store.name}
-                </p>
+                <div className="mb-3 flex items-center gap-2">
+                  {store.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={store.logoUrl}
+                      alt={store.name}
+                      className="h-9 w-9 rounded object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="flex h-9 w-9 items-center justify-center rounded text-sm font-bold text-white"
+                      style={{ backgroundColor: primary }}
+                    >
+                      {store.name.slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                  <h3 className="font-semibold">{store.name}</h3>
+                </div>
+                {store.tagline && (
+                  <p className="text-sm text-gray-600">{store.tagline}</p>
+                )}
               </div>
               <div>
                 <h3 className="mb-3 font-semibold">ลูกค้าสัมพันธ์</h3>
@@ -283,68 +348,35 @@ export default async function ShopLayout({
               </div>
               <div>
                 <h3 className="mb-3 font-semibold">ที่อยู่ร้านค้า</h3>
-                <p className="text-sm text-gray-600">
-                  {store.name}<br />
-                  Thailand
-                </p>
+                {(() => {
+                  const lines = formatStoreAddressLines(store);
+                  if (lines.length === 0) {
+                    return (
+                      <p className="text-sm text-gray-500">
+                        {store.name}
+                        <br />
+                        Thailand
+                      </p>
+                    );
+                  }
+                  return (
+                    <div className="space-y-1 text-sm text-gray-600">
+                      {lines.map((l, i) => (
+                        <p key={i}>{l}</p>
+                      ))}
+                    </div>
+                  );
+                })()}
+                <div className="mt-3">
+                  <StoreContactRows store={store} />
+                </div>
               </div>
               <div>
                 <h3 className="mb-3 font-semibold">ติดต่อเรา</h3>
-                <div className="flex gap-3 text-xl text-gray-600">
-                  {store.contactEmail && (
-                    <a
-                      href={`mailto:${store.contactEmail}`}
-                      aria-label="Email"
-                      title={store.contactEmail}
-                      className="hover:opacity-70"
-                    >
-                      ✉
-                    </a>
-                  )}
-                  {store.contactPhone && (
-                    <a
-                      href={`tel:${store.contactPhone.replace(/[^0-9+]/g, "")}`}
-                      aria-label="Phone"
-                      title={store.contactPhone}
-                      className="hover:opacity-70"
-                    >
-                      ☎
-                    </a>
-                  )}
-                  {store.facebookUrl && (
-                    <a
-                      href={store.facebookUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="Facebook"
-                      className="hover:opacity-70"
-                    >
-                      f
-                    </a>
-                  )}
-                  {store.lineId && (
-                    <a
-                      href={`https://line.me/R/ti/p/${encodeURIComponent(
-                        store.lineId.replace(/^@/, "~"),
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="LINE"
-                      title={store.lineId}
-                      className="hover:opacity-70"
-                    >
-                      L
-                    </a>
-                  )}
-                  {!store.contactEmail &&
-                    !store.contactPhone &&
-                    !store.facebookUrl &&
-                    !store.lineId && (
-                      <span className="text-xs text-gray-400">
-                        ยังไม่ได้ตั้งค่า
-                      </span>
-                    )}
-                </div>
+                <StoreSocialIcons
+                  store={store}
+                  emptyText="ยังไม่ได้ตั้งค่า — เพิ่มได้ที่ /admin/stores"
+                />
               </div>
             </div>
           </div>

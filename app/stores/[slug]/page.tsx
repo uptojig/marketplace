@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { Plus, Clock, Users, Award } from "lucide-react";
+import { Clock } from "lucide-react";
 import { ShopAddButton } from "@/components/shop/ShopAddButton";
 import { SortSelect } from "@/components/shop/SortSelect";
 
@@ -17,7 +17,6 @@ const ALL_TABS: Tab[] = [
   { id: "sale", label: "ลดราคา" },
 ];
 
-// Orders that count toward "sold" — exclude cancelled/failed but include anything that was paid
 const SOLD_STATUSES: OrderStatus[] = [
   OrderStatus.PAID,
   OrderStatus.SUPPLIER_PLACED,
@@ -26,7 +25,6 @@ const SOLD_STATUSES: OrderStatus[] = [
 ];
 
 function formatThaiDate(d: Date) {
-  // Buddhist calendar year (BE = AD + 543)
   const day = String(d.getDate()).padStart(2, "0");
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const year = d.getFullYear() + 543;
@@ -62,7 +60,6 @@ export default async function StorePage({
       : {}),
   };
 
-  // Compute sold counts (sum of qty across paid+ orders) for this store's products
   const soldGroups = await prisma.orderItem.groupBy({
     by: ["productId"],
     where: {
@@ -92,11 +89,9 @@ export default async function StorePage({
       .sort((a, b) => b.sold - a.sold || b.p.createdAt.getTime() - a.p.createdAt.getTime())
       .map((x) => x.p);
   } else if (sort === "order-by-stock") {
-    // Best-effort: products with hasVariants OR active first; static for now.
-    // Later: join inventory via ProductVariant.inventory.
+    // best-effort placeholder; later: join via ProductVariant.inventory
   }
 
-  // Compute counts per tab so we can hide empty ones (and count badges)
   const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
   const tabCounts: Record<TabId, number> = {
     all: products.length,
@@ -160,40 +155,18 @@ export default async function StorePage({
         </div>
       </section>
 
-      {/* Shop intro */}
-      <section className="container mx-auto max-w-[1200px] px-4 mt-6">
-        <div className="grid gap-4 lg:grid-cols-12 items-center">
-          <div className="lg:col-span-7">
-            <p className="text-gray-700">
-              {store.description ?? store.tagline ?? store.name}
-            </p>
-            <div className="mt-2 flex items-center text-xs text-gray-500">
-              <Clock className="mr-1 h-3 w-3" />
-              ปรับปรุงล่าสุด {updatedAt}
-            </div>
+      {/* Shop intro — description only, follower/rating stats hidden until real */}
+      {(store.description || store.tagline) && (
+        <section className="container mx-auto max-w-[1200px] px-4 mt-6">
+          <p className="text-gray-700">
+            {store.description ?? store.tagline}
+          </p>
+          <div className="mt-2 flex items-center text-xs text-gray-500">
+            <Clock className="mr-1 h-3 w-3" />
+            ปรับปรุงล่าสุด {updatedAt}
           </div>
-          <div className="lg:col-span-5">
-            <div className="flex flex-wrap items-center justify-end gap-4">
-              <span className="flex items-center text-sm text-gray-500">
-                <Users className="mr-1 h-3 w-3" />
-                ผู้ติดตาม: 0
-              </span>
-              <span className="flex items-center text-sm text-gray-500">
-                <Award className="mr-1 h-3 w-3" />
-                คะแนน: ใหม่
-              </span>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm text-white"
-                style={{ backgroundColor: primary }}
-              >
-                <Plus className="h-3 w-3" />
-                Follow
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Tabs + sort */}
       <section className="container mx-auto max-w-[1200px] px-4 mt-10">
