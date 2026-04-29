@@ -68,11 +68,22 @@ export async function middleware(req: NextRequest) {
   const isMain = hostname === mainNoPort || hostname === `www.${mainNoPort}`;
   const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1";
   if (!isMain && !isLocalhost) {
-    const target = url.clone();
-    target.pathname = "/resolve-domain";
-    target.searchParams.set("host", hostname);
-    target.searchParams.set("path", path);
-    return NextResponse.rewrite(target);
+    try {
+      const resolveUrl = new URL("/api/internal/resolve-domain", url.origin);
+      resolveUrl.searchParams.set("host", hostname);
+      const res = await fetch(resolveUrl, { headers: { "x-middleware-internal": "1" } });
+      if (res.ok) {
+        const { slug } = await res.json();
+        if (slug) {
+          const target = url.clone();
+          target.pathname = path === "/" ? `/stores/${slug}` : `/stores/${slug}${path}`;
+          return NextResponse.rewrite(target);
+        }
+      }
+    } catch {
+      // DB lookup failed, fall through to 404
+    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();
