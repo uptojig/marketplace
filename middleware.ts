@@ -40,6 +40,7 @@ const PASSTHROUGH_PREFIXES = [
   "/mock-payment-gate",
   "/signin",
   "/_resolve-domain",
+  "/api/webhook/quickpay",
 ];
 
 export async function middleware(req: NextRequest) {
