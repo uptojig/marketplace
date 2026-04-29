@@ -39,7 +39,7 @@ const PASSTHROUGH_PREFIXES = [
   "/orders",
   "/mock-payment-gate",
   "/signin",
-  "/_resolve-domain",
+  "/resolve-domain",
   "/api/webhook/quickpay",
 ];
 
@@ -69,7 +69,7 @@ export async function middleware(req: NextRequest) {
   const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1";
   if (!isMain && !isLocalhost) {
     const target = url.clone();
-    target.pathname = "/_resolve-domain";
+    target.pathname = "/resolve-domain";
     target.searchParams.set("host", hostname);
     target.searchParams.set("path", path);
     return NextResponse.rewrite(target);
