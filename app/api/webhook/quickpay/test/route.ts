@@ -30,15 +30,20 @@ export async function POST(req: Request) {
   const transactionId = `TEST-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   try {
-    const demoOrder = await createDemoOrderFromDeposit({
-      transactionId,
-      amount,
-      currency: "THB",
-      channel,
-      customerName: "ทดสอบ Demo",
-      customerEmail: "test@basketplace.co",
-      domain: "basketplace.co",
-    });
+    const demoOrder = await createDemoOrderFromDeposit(
+      {
+        event: "DEPOSIT",
+        transaction_id: transactionId,
+        amount,
+        currency: "THB",
+        channel,
+        customer_name: "ทดสอบ Demo",
+        customer_email: "test@basketplace.co",
+        timestamp: new Date().toISOString(),
+        metadata: { test: true },
+      },
+      "basketplace.co",
+    );
 
     return NextResponse.json({
       ok: true,
