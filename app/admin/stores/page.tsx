@@ -125,13 +125,21 @@ export default async function AdminStoresPage({
                     {s.createdAt.toLocaleDateString("th-TH")}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/stores/${s.slug}`}
-                      target="_blank"
-                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                    >
-                      ดูร้าน <ExternalLink className="h-3 w-3" />
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
+                        href={`/admin/stores/${s.id}`}
+                        className="inline-flex items-center gap-1 text-xs text-gray-600 hover:underline"
+                      >
+                        แก้ไข
+                      </Link>
+                      <Link
+                        href={`/stores/${s.slug}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                      >
+                        ดูร้าน <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))
