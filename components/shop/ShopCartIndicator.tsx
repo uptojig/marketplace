@@ -3,10 +3,15 @@
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 
-export function ShopCartIndicator() {
-  const count = useCart((s) => s.count());
+export function ShopCartIndicator({ storeSlug }: { storeSlug?: string } = {}) {
+  const lines = useCart((s) => s.lines);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  const count = storeSlug
+    ? lines.filter((l) => l.storeSlug === storeSlug).reduce((n, l) => n + l.qty, 0)
+    : lines.reduce((n, l) => n + l.qty, 0);
+
   if (!mounted || count === 0) return null;
   return (
     <span
