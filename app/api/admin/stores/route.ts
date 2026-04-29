@@ -10,10 +10,22 @@ const schema = z.object({
     .string()
     .min(2)
     .max(60)
-    .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, "Slug ใช้ได้เฉพาะ a-z 0-9 และ -"),
-  ownerEmail: z.string().email(),
+    .regex(
+      /^[a-z0-9฀-๿](?:[a-z0-9฀-๿-]*[a-z0-9฀-๿])?$/,
+      "Slug ใช้ได้เฉพาะ a-z, 0-9, ภาษาไทย และ -",
+    ),
+  ownerEmail: z
+    .string()
+    .optional()
+    .transform((v) => (v?.trim() ? v.trim() : undefined))
+    .refine(
+      (v) => v === undefined || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+      "อีเมลไม่ถูกต้อง",
+    ),
   ownerName: z.string().max(80).optional(),
   description: z.string().max(500).optional(),
+  logoPosition: z.enum(["left", "center"]).optional(),
+  menuPosition: z.enum(["left", "center", "right"]).optional(),
 });
 
 async function requireAdmin() {
@@ -40,9 +52,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, slug, ownerEmail, ownerName, description } = parsed.data;
+  const { name, slug, ownerEmail, ownerName, description, logoPosition, menuPosition } =
+    parsed.data;
 
-  // Reject if slug already taken
   const slugTaken = await prisma.store.findUnique({ where: { slug } });
   if (slugTaken) {
     return NextResponse.json(
@@ -51,30 +63,43 @@ export async function POST(req: Request) {
     );
   }
 
-  // Find or create the owner user
-  const owner = await prisma.user.upsert({
-    where: { email: ownerEmail },
-    update: { role: "VENDOR" },
-    create: {
-      email: ownerEmail,
-      name: ownerName ?? null,
-      role: "VENDOR",
-    },
-  });
-
-  // Owner can only have ONE store (Store.ownerId is @unique)
-  const existing = await prisma.store.findUnique({ where: { ownerId: owner.id } });
-  if (existing) {
-    return NextResponse.json(
-      {
-        error: {
-          ownerEmail: [
-            `อีเมลนี้เป็นเจ้าของร้าน "${existing.name}" อยู่แล้ว — 1 user มีได้ 1 ร้าน`,
-          ],
-        },
+  // Postgres treats NULLs as distinct in @unique columns, so multiple
+  // emailless owners can coexist.
+  let owner;
+  if (ownerEmail) {
+    owner = await prisma.user.upsert({
+      where: { email: ownerEmail },
+      update: { role: "VENDOR" },
+      create: {
+        email: ownerEmail,
+        name: ownerName ?? null,
+        role: "VENDOR",
       },
-      { status: 409 },
-    );
+    });
+
+    // Store.ownerId is @unique — block reuse only when an existing user is
+    // being attached; emailless owners are always fresh records.
+    const existing = await prisma.store.findUnique({ where: { ownerId: owner.id } });
+    if (existing) {
+      return NextResponse.json(
+        {
+          error: {
+            ownerEmail: [
+              `อีเมลนี้เป็นเจ้าของร้าน "${existing.name}" อยู่แล้ว — 1 user มีได้ 1 ร้าน`,
+            ],
+          },
+        },
+        { status: 409 },
+      );
+    }
+  } else {
+    owner = await prisma.user.create({
+      data: {
+        email: null,
+        name: ownerName ?? name,
+        role: "VENDOR",
+      },
+    });
   }
 
   const store = await prisma.store.create({
@@ -83,6 +108,8 @@ export async function POST(req: Request) {
       slug,
       ownerId: owner.id,
       description: description ?? null,
+      logoPosition: logoPosition ?? "left",
+      menuPosition: menuPosition ?? "right",
     },
     select: { id: true, slug: true },
   });
