@@ -77,6 +77,11 @@ export default function DemoOrdersPage() {
   const [tab, setTab] = useState<"orders" | "webhooks">("orders");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [showTestModal, setShowTestModal] = useState(false);
+  const [testAmount, setTestAmount] = useState("500");
+  const [testChannel, setTestChannel] = useState("PROMPTPAY");
+  const [testLoading, setTestLoading] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -111,6 +116,31 @@ export default function DemoOrdersPage() {
     return () => clearInterval(interval);
   }, [autoRefresh, fetchData]);
 
+  async function handleTestWebhook() {
+    setTestLoading(true);
+    setTestResult(null);
+    try {
+      const res = await fetch("/api/webhook/quickpay/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(testAmount) || 500,
+          channel: testChannel,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTestResult({ ok: true, msg: `✅ สร้าง Demo Order สำเร็จ — ${formatTHB(data.demoOrder?.amountTHB ?? parseFloat(testAmount))}` });
+        fetchData();
+      } else {
+        setTestResult({ ok: false, msg: `❌ ${data.error ?? "ไม่สำเร็จ"}` });
+      }
+    } catch {
+      setTestResult({ ok: false, msg: "❌ เชื่อมต่อไม่ได้" });
+    }
+    setTestLoading(false);
+  }
+
   const totalAmount = orders.reduce((sum, o) => sum + o.amountTHB, 0);
   const paidCount = orders.filter((o) => o.status === "PAID").length;
   const validWebhooks = logs.filter((l) => l.signatureValid).length;
@@ -128,6 +158,13 @@ export default function DemoOrdersPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => { setShowTestModal(true); setTestResult(null); }}
+            className="flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-violet-700 transition-colors"
+          >
+            <Zap className="h-4 w-4" />
+            ทดสอบ Webhook
+          </button>
           <label className="flex items-center gap-2 text-xs text-gray-500">
             <input
               type="checkbox"
@@ -149,6 +186,84 @@ export default function DemoOrdersPage() {
           </button>
         </div>
       </div>
+
+      {/* Test Webhook Modal */}
+      {showTestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowTestModal(false)}>
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Zap className="h-5 w-5 text-violet-500" />
+              ทดสอบ Deposit Webhook
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">จำลองการฝากเงินเพื่อสร้าง Demo Order</p>
+
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">จำนวนเงิน (บาท)</label>
+                <input
+                  type="number"
+                  value={testAmount}
+                  onChange={(e) => setTestAmount(e.target.value)}
+                  min="1"
+                  className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                  placeholder="500"
+                />
+                <div className="mt-2 flex gap-2">
+                  {[100, 500, 1000, 2500, 5000].map((amt) => (
+                    <button
+                      key={amt}
+                      onClick={() => setTestAmount(String(amt))}
+                      className={`rounded-md border px-3 py-1 text-xs font-medium transition ${
+                        testAmount === String(amt)
+                          ? "border-violet-300 bg-violet-50 text-violet-700"
+                          : "hover:bg-gray-50"
+                      }`}
+                    >
+                      ฿{amt.toLocaleString()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">ช่องทาง</label>
+                <select
+                  value={testChannel}
+                  onChange={(e) => setTestChannel(e.target.value)}
+                  className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                >
+                  <option value="PROMPTPAY">PromptPay</option>
+                  <option value="BANK_TRANSFER">โอนธนาคาร</option>
+                  <option value="CREDIT_CARD">บัตรเครดิต</option>
+                  <option value="TRUEMONEY">TrueMoney Wallet</option>
+                </select>
+              </div>
+
+              {testResult && (
+                <div className={`rounded-lg p-3 text-sm ${testResult.ok ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"}`}>
+                  {testResult.msg}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowTestModal(false)}
+                className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
+              >
+                ปิด
+              </button>
+              <button
+                onClick={handleTestWebhook}
+                disabled={testLoading || !testAmount}
+                className="rounded-lg bg-violet-600 px-5 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50 transition-colors"
+              >
+                {testLoading ? "กำลังทดสอบ..." : `ทดสอบฝาก ${formatTHB(parseFloat(testAmount) || 0)}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
