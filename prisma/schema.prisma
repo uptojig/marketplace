@@ -109,6 +109,15 @@ model Store {
   province     String?
   postalCode   String?
   country      String?  @default("TH")
+  // ── Agent-generated landing page (เป็ด) ──
+  // When `landingBlocks` is set, the storefront at /stores/<slug>
+  // renders these blocks via BlockRenderer instead of the generic
+  // product grid. Each store gets a UNIQUE page generated from its
+  // own brief + products — never the same template twice.
+  landingBlocks       Json?
+  landingTitle        String?
+  landingThemeVariant String?  // "minimal" | "cute"
+  landingGeneratedAt  DateTime?
   // Contact channels shown in storefront footer + contact page
   contactEmail  String?
   contactPhone  String?

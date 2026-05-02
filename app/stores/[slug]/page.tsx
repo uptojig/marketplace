@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { Clock } from "lucide-react";
 import { ShopAddButton } from "@/components/shop/ShopAddButton";
 import { SortSelect } from "@/components/shop/SortSelect";
+import {
+  LandingPage,
+  type Block,
+  type ThemeVariant,
+} from "@/components/landing/BlockRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +48,31 @@ export default async function StorePage({
 
   const baseStore = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!baseStore) notFound();
+
+  // ── Agent-generated landing-page short-circuit ──────────────
+  // When เป็ด has designed a unique landing page for this store, we
+  // render those blocks INSTEAD of the generic product grid below.
+  // The generic grid stays as the fallback for stores whose admin
+  // hasn't triggered a generation yet.
+  const landingBlocks = Array.isArray(baseStore.landingBlocks)
+    ? (baseStore.landingBlocks as unknown[]).filter(
+        (b): b is Block =>
+          !!b &&
+          typeof b === "object" &&
+          typeof (b as Block).blockType === "string",
+      )
+    : [];
+  if (landingBlocks.length > 0) {
+    const theme: ThemeVariant =
+      baseStore.landingThemeVariant === "cute" ? "cute" : "minimal";
+    return (
+      <LandingPage
+        blocks={landingBlocks}
+        theme={theme}
+        storeSlug={baseStore.slug}
+      />
+    );
+  }
 
   const q = searchParams.q;
   const category = searchParams.category;

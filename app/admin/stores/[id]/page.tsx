@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StoreEditForm } from "./edit-form";
+import { LandingForm } from "./landing-form";
 
 export const dynamic = "force-dynamic";
 
@@ -39,11 +40,19 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
       websiteUrl: true,
       lineId: true,
       createdAt: true,
+      // Agent-generated landing-page status
+      landingBlocks: true,
+      landingTitle: true,
+      landingThemeVariant: true,
+      landingGeneratedAt: true,
       owner: { select: { email: true, name: true } },
       _count: { select: { products: true } },
     },
   });
   if (!store) notFound();
+  const landingBlockCount = Array.isArray(store.landingBlocks)
+    ? (store.landingBlocks as unknown[]).length
+    : 0;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -71,6 +80,16 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
           </Link>
         </div>
       </div>
+
+      <LandingForm
+        storeId={store.id}
+        storeSlug={store.slug}
+        hasLandingPage={landingBlockCount > 0}
+        landingTitle={store.landingTitle}
+        landingThemeVariant={store.landingThemeVariant}
+        landingGeneratedAt={store.landingGeneratedAt?.toISOString() ?? null}
+        blockCount={landingBlockCount}
+      />
 
       <StoreEditForm store={store} />
     </div>
