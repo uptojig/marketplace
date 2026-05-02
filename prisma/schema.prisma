@@ -118,6 +118,11 @@ model Store {
   landingTitle        String?
   landingThemeVariant String?  // "minimal" | "cute"
   landingGeneratedAt  DateTime?
+  // Generation lifecycle (slice 2 — for fire-and-forget agent runs)
+  landingStatus       String?  // "generating" | "ready" | "failed"
+  landingError        String?  // populated when status = "failed"
+  landingBrief        String?  // operator-supplied prompt for last run (for "regenerate")
+  landingStartedAt    DateTime?
   // Contact channels shown in storefront footer + contact page
   contactEmail  String?
   contactPhone  String?

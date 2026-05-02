@@ -45,6 +45,50 @@ async function requireAdmin() {
   return user?.role === "ADMIN";
 }
 
+/**
+ * GET — status snapshot for polling. Returns landing-page metadata
+ * and the current generation status so the admin UI can show a
+ * progress indicator without re-fetching the full store row.
+ */
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const store = await prisma.store.findUnique({
+    where: { id: params.id },
+    select: {
+      id: true,
+      slug: true,
+      landingBlocks: true,
+      landingTitle: true,
+      landingThemeVariant: true,
+      landingGeneratedAt: true,
+      landingStatus: true,
+      landingError: true,
+      landingBrief: true,
+      landingStartedAt: true,
+    },
+  });
+  if (!store) {
+    return NextResponse.json({ error: "Store not found" }, { status: 404 });
+  }
+  const blockCount = Array.isArray(store.landingBlocks)
+    ? (store.landingBlocks as unknown[]).length
+    : 0;
+  return NextResponse.json({
+    id: store.id,
+    slug: store.slug,
+    blockCount,
+    title: store.landingTitle,
+    themeVariant: store.landingThemeVariant,
+    status: store.landingStatus,
+    error: store.landingError,
+    brief: store.landingBrief,
+    startedAt: store.landingStartedAt,
+    generatedAt: store.landingGeneratedAt,
+  });
+}
+
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
