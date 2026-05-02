@@ -199,15 +199,19 @@ interface AEProductDetail {
 
 interface AECategoryList {
   aliexpress_ds_category_get_response?: {
-    result?: {
-      categories?: {
-        category?: Array<{
-          category_id?: number;
-          category_name?: string;
-          parent_category_id?: number;
-          level?: number;
-        }>;
+    resp_result?: {
+      result?: {
+        total_result_count?: number;
+        categories?: {
+          category?: Array<{
+            category_id?: number;
+            category_name?: string;
+            parent_category_id?: number;
+          }>;
+        };
       };
+      resp_code?: number;
+      resp_msg?: string;
     };
   };
 }
@@ -387,10 +391,11 @@ export const aliexpressAdapter: SupplierAdapter = {
       target_language: "en",
       ship_to_country: "TH",
       sort: "SALE_PRICE_ASC",
-      feed_name: "DS center",
+      feed_name: process.env.ALIEXPRESS_FEED_NAME ?? "DS_NewArrivals",
     };
     if (query.search) params.search = query.search;
     if (query.category) params.category_id = query.category;
+    if (query.search) params.feed_name = "DS_Home&Kitchen_bestsellers";
 
     const data = await aeFetch<AEFeedProducts>(
       "aliexpress.ds.recommend.feed.get",
@@ -437,11 +442,11 @@ export const aliexpressAdapter: SupplierAdapter = {
     );
 
     const list =
-      data.aliexpress_ds_category_get_response?.result?.categories?.category ?? [];
+      data.aliexpress_ds_category_get_response?.resp_result?.result?.categories?.category ?? [];
 
-    // Return only top-level categories (level=1 or parent=0)
+    // Return only top-level categories (no parent_category_id)
     return list
-      .filter((c) => (c.level ?? 0) <= 1 || (c.parent_category_id ?? 0) === 0)
+      .filter((c) => !c.parent_category_id)
       .map((c) => {
         const name = c.category_name ?? "Unknown";
         return {
