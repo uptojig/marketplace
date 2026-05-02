@@ -76,7 +76,6 @@ export async function GET(req: Request) {
       // CJ list response stashed in `raw` — pull through fields the
       // adapter doesn't surface in NormalizedProduct.
       const raw = (p.raw ?? {}) as {
-        productName?: string;
         categoryName?: string;
         productNum?: number;
       };
@@ -88,10 +87,12 @@ export async function GET(req: Request) {
       return {
         externalProductId: p.externalProductId,
         title: p.title,
-        // CJ ships a translated `productName` (CN/TH-ish) alongside
-        // English `productNameEn`. Pass the local-language one through
-        // as titleTh; PromptPage's agent rewrites it into selling copy.
-        titleTh: raw.productName ?? p.title,
+        // Leave titleTh = English title for now. CJ's `productName` field
+        // returns a JSON-stringified word-array ("[\"Dining\",\"Chair\"]")
+        // that's worse than nothing. PromptPage's agent owns the Thai
+        // rewrite step (system prompt step 2) — it'll produce selling
+        // copy from the English title.
+        titleTh: p.title,
         priceTHB,
         imageUrl: p.imageUrl,
         categoryName: raw.categoryName,
