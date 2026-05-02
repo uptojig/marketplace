@@ -152,7 +152,7 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
   // searchMarketplaceProducts requests get a sentinel reply telling
   // the agent to use the supplied list (defensive — should not fire
   // because the prompt already says "do NOT call").
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   const c = client as any; // beta API surface still typed loosely
   const session = await c.beta.sessions.create({
     agent: agentId,
@@ -161,7 +161,7 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
   });
 
   let captured: GeneratedPageSchema | null = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   const stream = c.beta.sessions.events.stream(session.id) as AsyncIterable<any>;
 
   for await (const event of stream) {
