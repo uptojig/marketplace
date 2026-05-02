@@ -56,7 +56,8 @@ export async function GET(req: Request) {
   }
 
   // Margin policy — env-tunable so ops can change pricing without a deploy.
-  const margin = parseFloat(process.env.MARGIN_MULT ?? "1.3");
+  // Default 1.5 (50% retail markup over CJ cost-in-THB).
+  const margin = parseFloat(process.env.MARGIN_MULT ?? "1.5");
   // Free-shipping threshold (THB after markup). Below this we don't promise it.
   const freeShipMinTHB = parseFloat(
     process.env.FREE_SHIP_MIN_THB ?? "1000",
@@ -87,12 +88,12 @@ export async function GET(req: Request) {
       return {
         externalProductId: p.externalProductId,
         title: p.title,
-        // Leave titleTh = English title for now. CJ's `productName` field
-        // returns a JSON-stringified word-array ("[\"Dining\",\"Chair\"]")
-        // that's worse than nothing. PromptPage's agent owns the Thai
-        // rewrite step (system prompt step 2) — it'll produce selling
-        // copy from the English title.
-        titleTh: p.title,
+        // Always empty — PromptPage's agent (system prompt step 2)
+        // owns the Thai rewrite step. Mothership ships only verifiable
+        // facts; selling copy is the agent's job. CJ's own
+        // `productName` field returns a JSON-stringified word-array
+        // ("[\"Dining\",\"Chair\"]"), which is worse than nothing.
+        titleTh: "",
         priceTHB,
         imageUrl: p.imageUrl,
         categoryName: raw.categoryName,
