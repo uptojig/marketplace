@@ -1,8 +1,8 @@
 /**
  * Lightweight server-side BlockRenderer for agent-generated landing
- * pages. Renders the 13 block types the PromptPage agent emits,
- * styled with Tailwind matching the agent's two themes (cute /
- * minimal). All CTAs link out to Basketplace's existing flows
+ * pages. Renders the block types the PromptPage agent emits, styled
+ * with Tailwind matching the agent's two themes (cute / minimal).
+ * All CTAs link out to Basketplace's existing flows
  * (`/stores/<slug>/products/<id>`, `/stores/<slug>/cart`) so we
  * reuse the cart + checkout infra Basketplace already has.
  *
@@ -11,9 +11,18 @@
  * This renderer is server-rendered HTML with anchor-tag CTAs, which
  * is the right shape for storefronts that own their own checkout.
  *
- * Block types covered: Nav, ProductHero, Hero, Stats, OfferGrid,
- * Features, Pricing, CTA, Testimonial, Gallery, FAQ, Countdown,
- * Footer, ContactForm. Unknown types render a debug card.
+ * Block types covered (Agent 01 v3 — 21 types):
+ *   Branding & Visual:     Logo, Banner, HeroBanner, ImageSlide,
+ *                          LogoCloud, CategoryBanner
+ *   Product & Commerce:    Nav, ProductHero, OfferGrid, Pricing,
+ *                          Gallery, Bundle
+ *   Trust & Persuasion:    Stats, Features, Testimonial, Reviews, FAQ
+ *   Conversion:            CTA, Countdown, Footer, ContactForm
+ * Unknown types render a debug card.
+ *
+ * Image alt-text contract (Agent 01 v3): every <img> MUST have an
+ * `alt` attribute. We pass `altText` from block content through to
+ * each rendered <img> — empty alt = decorative.
  */
 import Link from "next/link";
 import {
@@ -62,8 +71,28 @@ function BlockSwitch({
   theme: ThemeVariant;
   storeSlug: string;
 }) {
+  // Agent 01 v3 emits `type` (not `blockType`); we accept either to stay
+  // backward-compatible with v2 blocks already persisted.
+  const blockType =
+    block.blockType ?? ((block as Record<string, unknown>).type as string | undefined) ?? "";
   const c = (block.content ?? {}) as Record<string, unknown>;
-  switch (block.blockType) {
+  switch (blockType) {
+    case "Logo":
+      return <LogoBlock content={c} theme={theme} storeSlug={storeSlug} />;
+    case "Banner":
+      return <BannerBlock content={c} theme={theme} />;
+    case "HeroBanner":
+      return <HeroBanner content={c} theme={theme} storeSlug={storeSlug} />;
+    case "ImageSlide":
+      return <ImageSlide content={c} theme={theme} />;
+    case "LogoCloud":
+      return <LogoCloud content={c} theme={theme} />;
+    case "Bundle":
+      return <BundleBlock content={c} theme={theme} storeSlug={storeSlug} />;
+    case "Reviews":
+      return <Reviews content={c} theme={theme} />;
+    case "CategoryBanner":
+      return <CategoryBanner content={c} theme={theme} storeSlug={storeSlug} />;
     case "Nav":
       return <Nav content={c} theme={theme} storeSlug={storeSlug} />;
     case "ProductHero":
