@@ -293,9 +293,82 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
         continue;
       }
 
-      // Defensive: if the agent insists on calling searchMarketplaceProducts
-      // or find_products despite the prompt instruction, return a
-      // sentinel that nudges it to use the supplied products instead.
+      // Handle find_products / searchMarketplaceProducts by querying
+      // the CJ API live. This works both from Anthropic Console tests
+      // and marketplace flow (where products may already be in the prompt).
+      if (
+        toolName === "find_products" ||
+        toolName === "searchMarketplaceProducts"
+      ) {
+        let productResults: unknown[] = [];
+        let toolError = false;
+        try {
+          const { cjAdapter } = await import("@/lib/suppliers/cj/adapter");
+          const input = (event.input ?? {}) as Record<string, unknown>;
+          const query = (input.q as string) ?? (input.query as string) ?? "";
+          const limit = Math.min(
+            20,
+            Math.max(1, Number(input.limit ?? input.count ?? 8)),
+          );
+
+          if (input.id) {
+            // Single product lookup
+            const product = await cjAdapter.fetchProductById(String(input.id));
+            productResults = [product];
+          } else if (query) {
+            // Search by keyword
+            const page = await cjAdapter.listCatalog({
+              search: query,
+              pageSize: limit,
+            });
+            const fx = parseFloat(process.env.CJ_USD_THB ?? "36");
+            productResults = page.items.map((p) => ({
+              externalProductId: p.externalProductId,
+              title: p.title,
+              titleTh: null,
+              priceTHB: p.priceTHB,
+              imageUrl: p.imageUrl,
+              description: p.description,
+              categoryName: (p.raw as Record<string, unknown>)?.categoryName ?? null,
+            }));
+          }
+        } catch (err) {
+          toolError = true;
+          productResults = [];
+          console.warn("find_products CJ query failed:", err);
+        }
+
+        await c.beta.sessions.events.send(session.id, {
+          events: [
+            {
+              type: "user.custom_tool_result",
+              custom_tool_use_id: id,
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    toolError
+                      ? {
+                          ok: false,
+                          error: "product_search_failed",
+                          hint: "CJ API query failed. Proceed with generate_page_schema using placeholder product data from the brief.",
+                        }
+                      : {
+                          ok: true,
+                          products: productResults,
+                          count: productResults.length,
+                        },
+                  ),
+                },
+              ],
+              is_error: toolError,
+            },
+          ],
+        });
+        continue;
+      }
+
+      // Catch-all for any other unknown custom tools
       await c.beta.sessions.events.send(session.id, {
         events: [
           {
@@ -306,8 +379,8 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
                 type: "text",
                 text: JSON.stringify({
                   ok: false,
-                  error: "use_supplied_products",
-                  hint: "Skip product search. The user prompt already lists the products to feature. Call generate_page_schema directly.",
+                  error: "unknown_tool",
+                  hint: `Tool "${toolName}" is not handled. Use generate_page_schema to emit the final schema.`,
                 }),
               },
             ],
