@@ -35,8 +35,9 @@ import {
   Star,
   ChevronRight,
 } from "lucide-react";
+import type { ThemeVariant } from "@/lib/landing/families";
 
-export type ThemeVariant = "minimal" | "cute";
+export type { ThemeVariant };
 
 export type Block = {
   blockType: string;
@@ -52,7 +53,7 @@ interface RenderProps {
 /* ─── Public API ─────────────────────────────────────── */
 
 export function LandingPage({ blocks, theme, storeSlug }: RenderProps) {
-  const bg = theme === "cute" ? "bg-pink-50/30" : "bg-[#faf7f2]";
+  const bg = isPlayful(theme) ? "bg-pink-50/30" : "bg-[#faf7f2]";
   return (
     <main className={`min-h-screen ${bg}`}>
       {blocks.map((b, i) => (
@@ -136,9 +137,120 @@ function BlockSwitch({
   }
 }
 
-/* ─── Theme tokens ─────────────────────────────────── */
+/* ─── Theme behaviour helpers ─────────────────────────────────────── */
+
+// Some legacy block branches branched on `theme === "cute"` for playful
+// styling (rounded, pink-ish accents). With 9 v3 families we treat
+// `cute` (legacy) and `I` (Playful Mass Commerce) as the two playful
+// variants — every other family follows the "minimal/editorial" branch.
+function isPlayful(theme: ThemeVariant): boolean {
+  return theme === "cute" || theme === "I";
+}
+
+/* ─── Theme tokens — Agent 01 v3 design families (A-I) + legacy ───── */
 
 const T = {
+  // A — Editorial Minimal Warm (stone + amber, premium furniture/lifestyle)
+  A: {
+    accent: "text-amber-700",
+    bgAccent: "bg-amber-700",
+    bgAccentHover: "hover:bg-amber-800",
+    ring: "ring-amber-200",
+    softBg: "bg-stone-50",
+    headline: "font-medium text-stone-900 tracking-tight",
+    cardRadius: "rounded-none",
+    btnRadius: "rounded-none",
+  },
+  // B — Editorial Soft Feminine (rose + serif, Korean fashion/jewelry)
+  B: {
+    accent: "text-rose-900",
+    bgAccent: "bg-rose-700",
+    bgAccentHover: "hover:bg-rose-800",
+    ring: "ring-rose-200",
+    softBg: "bg-rose-50",
+    headline: "font-serif text-rose-900",
+    cardRadius: "rounded-2xl",
+    btnRadius: "rounded-full",
+  },
+  // C — Luxury Heritage Gold (black + pearl + gold, watches/heritage)
+  C: {
+    accent: "text-amber-400",
+    bgAccent: "bg-amber-400",
+    bgAccentHover: "hover:bg-amber-500",
+    ring: "ring-amber-300",
+    softBg: "bg-stone-900",
+    headline: "font-serif font-bold text-amber-50",
+    cardRadius: "rounded-none",
+    btnRadius: "rounded-none",
+  },
+  // D — Industrial Masculine (zinc + black, men's leather/automotive)
+  D: {
+    accent: "text-zinc-100",
+    bgAccent: "bg-zinc-900",
+    bgAccentHover: "hover:bg-zinc-800",
+    ring: "ring-zinc-300",
+    softBg: "bg-zinc-100",
+    headline: "font-bold uppercase text-zinc-900 tracking-tight",
+    cardRadius: "rounded-none",
+    btnRadius: "rounded-none",
+  },
+  // E — Cyberpunk Gaming Neon (purple + green dual neon, gaming/esports)
+  E: {
+    accent: "text-purple-400",
+    bgAccent: "bg-purple-600",
+    bgAccentHover: "hover:bg-purple-500",
+    ring: "ring-purple-300",
+    softBg: "bg-stone-900",
+    headline: "font-extrabold text-green-400 tracking-wide",
+    cardRadius: "rounded-md",
+    btnRadius: "rounded-md",
+  },
+  // F — Sport Editorial Action (blue + red + yellow, athletic/running)
+  F: {
+    accent: "text-blue-900",
+    bgAccent: "bg-blue-900",
+    bgAccentHover: "hover:bg-red-600",
+    ring: "ring-blue-200",
+    softBg: "bg-blue-50",
+    headline: "font-extrabold uppercase text-blue-900 tracking-tight",
+    cardRadius: "rounded-md",
+    btnRadius: "rounded-md",
+  },
+  // G — Botanical Lifestyle Premium (green + cream, skincare/wellness)
+  G: {
+    accent: "text-green-700",
+    bgAccent: "bg-green-700",
+    bgAccentHover: "hover:bg-green-800",
+    ring: "ring-green-200",
+    softBg: "bg-stone-50",
+    headline: "font-serif font-medium text-green-900",
+    cardRadius: "rounded-2xl",
+    btnRadius: "rounded-full",
+  },
+  // H — Cozy Niche Skeumorphism (warm textured amber, coffee/handmade)
+  H: {
+    accent: "text-amber-800",
+    bgAccent: "bg-amber-700",
+    bgAccentHover: "hover:bg-amber-800",
+    ring: "ring-amber-200",
+    softBg: "bg-amber-50",
+    headline: "font-bold text-amber-900",
+    cardRadius: "rounded-3xl",
+    btnRadius: "rounded-full",
+  },
+  // I — Playful Mass Commerce (pink + yellow + blue, kids/toys/cute)
+  I: {
+    accent: "text-pink-600",
+    bgAccent: "bg-pink-500",
+    bgAccentHover: "hover:bg-pink-600",
+    ring: "ring-pink-200",
+    softBg: "bg-pink-50",
+    headline: "font-extrabold text-stone-900",
+    cardRadius: "rounded-2xl",
+    btnRadius: "rounded-full",
+  },
+  // Legacy aliases — old data persisted before v3 still renders.
+  // "cute" maps to family I (its closest sibling), "minimal" maps to family A.
   cute: {
     accent: "text-pink-600",
     bgAccent: "bg-pink-500",
@@ -275,7 +387,7 @@ function Nav({
   return (
     <nav
       className={`sticky top-0 z-40 flex items-center justify-between border-b ${
-        theme === "cute" ? "border-pink-100 bg-white/90" : "border-stone-200 bg-[#faf7f2]"
+        isPlayful(theme) ? "border-pink-100 bg-white/90" : "border-stone-200 bg-[#faf7f2]"
       } px-5 py-3 backdrop-blur-md sm:px-8`}
     >
       <Link href={`/stores/${storeSlug}`} className={`text-xl font-bold ${t.accent}`}>
@@ -314,7 +426,7 @@ function ProductHero({
   storeSlug: string;
 }) {
   const t = T[theme];
-  const cute = theme === "cute";
+  const cute = isPlayful(theme);
   const headline = s(content.headline) ?? "";
   const sub = s(content.subheadline);
   const badge = s(content.badge);
@@ -414,7 +526,7 @@ function Stats({
   );
   if (items.length === 0) return null;
   return (
-    <section className={`px-6 py-14 ${theme === "cute" ? "bg-white" : "bg-white"}`}>
+    <section className={`px-6 py-14 ${isPlayful(theme) ? "bg-white" : "bg-white"}`}>
       <div className="mx-auto max-w-5xl">
         {s(content.headline) && (
           <h2 className={`mb-10 text-center text-3xl md:text-4xl ${t.headline}`}>
@@ -458,7 +570,7 @@ function OfferGrid({
   return (
     <section
       className={`px-6 py-14 lg:py-20 ${
-        theme === "cute" ? "bg-amber-50/40" : "bg-[#faf7f2]"
+        isPlayful(theme) ? "bg-amber-50/40" : "bg-[#faf7f2]"
       }`}
     >
       <div className="mx-auto max-w-6xl">
@@ -488,14 +600,14 @@ function OfferGrid({
                 key={i}
                 href={href}
                 className={`group flex flex-col overflow-hidden border bg-white shadow-md transition hover:shadow-xl ${t.cardRadius} ${
-                  theme === "cute" ? "border-stone-100" : "border-stone-200"
+                  isPlayful(theme) ? "border-stone-100" : "border-stone-200"
                 }`}
               >
                 <div className="relative aspect-square overflow-hidden bg-stone-100">
                   {s(it.badge) && (
                     <span
                       className={`absolute left-3 top-3 z-10 rounded px-2 py-1 text-xs font-bold shadow-sm backdrop-blur-sm ${
-                        theme === "cute"
+                        isPlayful(theme)
                           ? "bg-white/90 text-pink-600"
                           : "bg-white/95 text-stone-900"
                       }`}
@@ -547,7 +659,7 @@ function OfferGrid({
                     </div>
                     <span
                       className={`inline-flex items-center rounded-lg p-2 text-white ${
-                        theme === "cute" ? "bg-stone-900" : "bg-stone-900"
+                        isPlayful(theme) ? "bg-stone-900" : "bg-stone-900"
                       }`}
                     >
                       <ShoppingCart size={18} />
@@ -590,7 +702,7 @@ function Features({
           {items.map((it, i) => (
             <div
               key={i}
-              className={`p-6 ${t.cardRadius} ${theme === "cute" ? "bg-pink-50" : "border border-stone-200 bg-white"}`}
+              className={`p-6 ${t.cardRadius} ${isPlayful(theme) ? "bg-pink-50" : "border border-stone-200 bg-white"}`}
             >
               <h3 className={`mb-2 text-xl font-bold ${t.accent}`}>
                 {String(it.title ?? "")}
@@ -677,7 +789,7 @@ function CTA({
   const validHref = href && href !== "#" ? href : null;
   return (
     <section
-      className={`px-6 py-14 ${theme === "cute" ? "bg-emerald-50" : "bg-[#b8956a]"}`}
+      className={`px-6 py-14 ${isPlayful(theme) ? "bg-emerald-50" : "bg-[#b8956a]"}`}
     >
       <div
         className={`mx-auto flex max-w-4xl flex-col items-center text-center ${t.cardRadius} bg-white p-8 shadow-lg md:p-12`}
@@ -685,7 +797,7 @@ function CTA({
         {s(content.badge) && (
           <span
             className={`mb-6 rounded-full px-4 py-1.5 font-bold ${
-              theme === "cute" ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-800"
+              isPlayful(theme) ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-800"
             }`}
           >
             {s(content.badge)}
@@ -701,7 +813,7 @@ function CTA({
           <Link
             href={validHref}
             className={`mb-4 inline-flex ${t.btnRadius} ${
-              theme === "cute" ? "bg-emerald-500 hover:bg-emerald-600" : t.bgAccent
+              isPlayful(theme) ? "bg-emerald-500 hover:bg-emerald-600" : t.bgAccent
             } px-10 py-4 text-lg font-bold text-white shadow-md transition`}
           >
             {s(content.cta_text)}
@@ -726,7 +838,7 @@ function Testimonial({
   const quotes = arr<Record<string, unknown>>(content.quotes);
   if (quotes.length === 0) return null;
   return (
-    <section className={`px-6 py-14 ${theme === "cute" ? "bg-pink-50/40" : "bg-white"}`}>
+    <section className={`px-6 py-14 ${isPlayful(theme) ? "bg-pink-50/40" : "bg-white"}`}>
       <div className="mx-auto max-w-5xl">
         {s(content.headline) && (
           <h2 className={`mb-10 text-center text-3xl md:text-4xl ${t.headline}`}>
@@ -743,7 +855,7 @@ function Testimonial({
                 {Array.from({ length: 5 }).map((_, j) => (
                   <Star
                     key={j}
-                    className={`h-4 w-4 ${theme === "cute" ? "text-pink-500" : "text-stone-700"}`}
+                    className={`h-4 w-4 ${isPlayful(theme) ? "text-pink-500" : "text-stone-700"}`}
                     fill="currentColor"
                   />
                 ))}
@@ -811,7 +923,7 @@ function FAQ({
   const items = arr<Record<string, unknown>>(content.items);
   if (items.length === 0) return null;
   return (
-    <section className={`px-6 py-14 ${theme === "cute" ? "bg-pink-50/30" : "bg-[#faf7f2]"}`}>
+    <section className={`px-6 py-14 ${isPlayful(theme) ? "bg-pink-50/30" : "bg-[#faf7f2]"}`}>
       <div className="mx-auto max-w-3xl">
         {s(content.headline) && (
           <h2 className={`mb-10 text-center text-3xl md:text-4xl ${t.headline}`}>
@@ -846,11 +958,11 @@ function Countdown({
 }) {
   const t = T[theme];
   return (
-    <section className={`px-6 py-12 text-center ${theme === "cute" ? "bg-amber-50" : "bg-stone-900 text-white"}`}>
+    <section className={`px-6 py-12 text-center ${isPlayful(theme) ? "bg-amber-50" : "bg-stone-900 text-white"}`}>
       {s(content.headline) && (
         <h2
           className={`mb-3 text-3xl md:text-4xl ${
-            theme === "cute" ? t.headline : "font-medium"
+            isPlayful(theme) ? t.headline : "font-medium"
           }`}
         >
           {s(content.headline)}
@@ -859,7 +971,7 @@ function Countdown({
       {s(content.subheadline) && (
         <p
           className={`mb-6 ${
-            theme === "cute" ? "text-stone-600" : "text-stone-300"
+            isPlayful(theme) ? "text-stone-600" : "text-stone-300"
           }`}
         >
           {s(content.subheadline)}
@@ -885,7 +997,7 @@ function ContactFormBlock({
   const t = T[theme];
   const email = s(content.contact_email);
   return (
-    <section className={`px-6 py-14 ${theme === "cute" ? "bg-pink-50/40" : "bg-[#faf7f2]"}`}>
+    <section className={`px-6 py-14 ${isPlayful(theme) ? "bg-pink-50/40" : "bg-[#faf7f2]"}`}>
       <div className="mx-auto max-w-3xl">
         <div className="text-center">
           <h2 className={`text-3xl md:text-4xl ${t.headline}`}>
@@ -900,14 +1012,14 @@ function ContactFormBlock({
             <a
               href={`mailto:${email}`}
               className={`flex items-center gap-3 border-b px-6 py-4 ${
-                theme === "cute"
+                isPlayful(theme)
                   ? "border-pink-100 bg-gradient-to-r from-pink-100 via-rose-50 to-amber-50"
                   : "border-stone-200 bg-stone-50"
               }`}
             >
               <span
                 className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                  theme === "cute" ? "bg-white/80 text-pink-600" : "bg-white text-stone-700"
+                  isPlayful(theme) ? "bg-white/80 text-pink-600" : "bg-white text-stone-700"
                 } shadow-sm`}
               >
                 <Mail className="h-5 w-5" />
@@ -953,7 +1065,7 @@ function Footer({
   return (
     <footer
       className={`flex flex-col items-center gap-4 px-6 py-12 text-center text-sm ${
-        theme === "cute" ? "bg-stone-900 text-stone-300" : "bg-[#1c1917] text-stone-400"
+        isPlayful(theme) ? "bg-stone-900 text-stone-300" : "bg-[#1c1917] text-stone-400"
       } sm:py-14`}
     >
       {s(content.brand) && (
@@ -1039,7 +1151,7 @@ function BannerBlock({
   return (
     <div
       className={`flex flex-wrap items-center justify-center gap-3 px-4 py-2.5 text-center text-sm font-medium ${
-        theme === "cute" ? "bg-pink-100 text-stone-900" : "bg-stone-900 text-stone-50"
+        isPlayful(theme) ? "bg-pink-100 text-stone-900" : "bg-stone-900 text-stone-50"
       } ${position === "top" ? "" : ""}`}
     >
       <span>{text}</span>
@@ -1047,7 +1159,7 @@ function BannerBlock({
         <Link
           href={ctaLink}
           className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
-            theme === "cute" ? "bg-pink-500 text-white" : "bg-amber-400 text-stone-900"
+            isPlayful(theme) ? "bg-pink-500 text-white" : "bg-amber-400 text-stone-900"
           } ${t.bgAccentHover}`}
         >
           {ctaText} <ChevronRight className="h-3 w-3" />
@@ -1142,7 +1254,7 @@ function ImageSlide({
   if (slides.length === 0) return null;
   // SSR-friendly horizontal scroll-snap carousel — no client JS, swipe/drag works on mobile.
   return (
-    <section className={`${theme === "cute" ? "bg-pink-50/40" : "bg-stone-50"} py-8`}>
+    <section className={`${isPlayful(theme) ? "bg-pink-50/40" : "bg-stone-50"} py-8`}>
       <div className="overflow-x-auto">
         <div
           className="flex snap-x snap-mandatory gap-4 px-6"
@@ -1203,7 +1315,7 @@ function LogoCloud({
   const grayscale = content.grayscale === true;
   if (logos.length === 0) return null;
   return (
-    <section className={`${theme === "cute" ? "bg-white" : "bg-stone-50"} px-6 py-10`}>
+    <section className={`${isPlayful(theme) ? "bg-white" : "bg-stone-50"} px-6 py-10`}>
       <div className="mx-auto max-w-5xl">
         {title && (
           <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-stone-500">
@@ -1255,7 +1367,7 @@ function BundleBlock({
     <section className="px-6 py-12">
       <div
         className={`mx-auto max-w-5xl overflow-hidden ${t.cardRadius} border ${
-          theme === "cute" ? "border-pink-200 bg-white" : "border-stone-200 bg-stone-50"
+          isPlayful(theme) ? "border-pink-200 bg-white" : "border-stone-200 bg-stone-50"
         } p-6 shadow-sm sm:p-10`}
       >
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -1263,7 +1375,7 @@ function BundleBlock({
           {badge && (
             <span
               className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                theme === "cute" ? "bg-pink-500 text-white" : "bg-amber-500 text-white"
+                isPlayful(theme) ? "bg-pink-500 text-white" : "bg-amber-500 text-white"
               }`}
             >
               {badge}
@@ -1349,7 +1461,7 @@ function Reviews({
   const items = arr<Record<string, unknown>>(content.reviews);
   if (items.length === 0) return null;
   return (
-    <section className={`${theme === "cute" ? "bg-pink-50/40" : "bg-stone-50"} px-6 py-12`}>
+    <section className={`${isPlayful(theme) ? "bg-pink-50/40" : "bg-stone-50"} px-6 py-12`}>
       <div className="mx-auto max-w-6xl">
         {title && (
           <h2 className={`mb-2 text-center text-2xl font-bold sm:text-3xl ${t.headline}`}>
@@ -1497,7 +1609,7 @@ function CategoryBanner({
                 {badge && (
                   <span
                     className={`absolute left-3 top-3 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      theme === "cute"
+                      isPlayful(theme)
                         ? "bg-pink-500 text-white"
                         : "bg-amber-500 text-white"
                     }`}

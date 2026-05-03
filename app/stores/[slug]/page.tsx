@@ -10,6 +10,7 @@ import {
   type Block,
   type ThemeVariant,
 } from "@/components/landing/BlockRenderer";
+import { isValidThemeVariant } from "@/lib/landing/families";
 
 export const dynamic = "force-dynamic";
 
@@ -82,8 +83,12 @@ export default async function StorePage({
         )
     : [];
   if (landingBlocks.length > 0) {
-    const theme: ThemeVariant =
-      baseStore.landingThemeVariant === "cute" ? "cute" : "minimal";
+    // Accept any v3 design family (A-I) plus legacy "minimal"/"cute" — fall
+    // back to "A" (Editorial Minimal Warm) for unknown / unset values.
+    const stored = baseStore.landingThemeVariant;
+    const theme: ThemeVariant = isValidThemeVariant(stored ?? "")
+      ? (stored as ThemeVariant)
+      : "A";
     return (
       <LandingPage
         blocks={landingBlocks}

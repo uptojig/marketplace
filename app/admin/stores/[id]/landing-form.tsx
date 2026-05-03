@@ -10,6 +10,11 @@ import {
   Wand2,
   AlertCircle,
 } from "lucide-react";
+import {
+  DESIGN_FAMILIES,
+  isValidThemeVariant,
+  type ThemeVariant,
+} from "@/lib/landing/families";
 
 interface Props {
   storeId: string;
@@ -37,8 +42,10 @@ const POLL_INTERVAL_MS = 4000;
 export function LandingForm(props: Props) {
   const router = useRouter();
   const [brief, setBrief] = useState("");
-  const [theme, setTheme] = useState<"minimal" | "cute">(
-    props.landingThemeVariant === "cute" ? "cute" : "minimal",
+  const [theme, setTheme] = useState<ThemeVariant>(
+    props.landingThemeVariant && isValidThemeVariant(props.landingThemeVariant)
+      ? props.landingThemeVariant
+      : "A",
   );
   const [generating, setGenerating] = useState(false);
   const [status, setStatus] = useState<StatusSnapshot | null>(null);
@@ -250,17 +257,24 @@ export function LandingForm(props: Props) {
         />
         <div className="flex flex-wrap items-center gap-3">
           <label className="text-xs">
-            <span className="mr-2 text-stone-700">Theme hint:</span>
+            <span className="mr-2 text-stone-700">Design family:</span>
             <select
               value={theme}
-              onChange={(e) =>
-                setTheme(e.target.value as "minimal" | "cute")
-              }
+              onChange={(e) => {
+                const v = e.target.value;
+                if (isValidThemeVariant(v)) setTheme(v);
+              }}
               disabled={isGenerating}
-              className="rounded border px-2 py-1 text-sm"
+              className="max-w-[280px] rounded border px-2 py-1 text-sm"
             >
-              <option value="minimal">minimal</option>
-              <option value="cute">cute</option>
+              {DESIGN_FAMILIES.map((f) => (
+                <option key={f.code} value={f.code} title={f.description}>
+                  {f.label}
+                </option>
+              ))}
+              <option disabled>──────────</option>
+              <option value="minimal">minimal (legacy)</option>
+              <option value="cute">cute (legacy)</option>
             </select>
           </label>
           <button

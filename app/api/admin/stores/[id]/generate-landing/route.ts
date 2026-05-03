@@ -22,7 +22,11 @@ export const maxDuration = 300;
 
 const bodySchema = z.object({
   brief: z.string().trim().min(5).max(4000),
-  themeHint: z.enum(["minimal", "cute"]).optional(),
+  // Accept v3 design family codes (A-I) plus legacy "minimal" / "cute"
+  // for back-compat with stores already using the old picker.
+  themeHint: z
+    .enum(["A", "B", "C", "D", "E", "F", "G", "H", "I", "minimal", "cute"])
+    .optional(),
 });
 
 async function requireAdmin() {

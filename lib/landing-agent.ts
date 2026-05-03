@@ -94,7 +94,20 @@ function validateSchema(input: unknown):
 function composePrompt(args: {
   storeName: string;
   brief: string;
-  themeHint?: "minimal" | "cute";
+  // v3 design family codes (A-I) preferred; legacy "minimal" / "cute" still
+  // accepted for stores carrying old data forward.
+  themeHint?:
+    | "A"
+    | "B"
+    | "C"
+    | "D"
+    | "E"
+    | "F"
+    | "G"
+    | "H"
+    | "I"
+    | "minimal"
+    | "cute";
   contactEmail?: string;
   products: Array<{
     externalProductId: string;
@@ -261,7 +274,18 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
 export async function runLandingAgent(args: {
   storeId: string;
   brief: string;
-  themeHint?: "minimal" | "cute";
+  themeHint?:
+    | "A"
+    | "B"
+    | "C"
+    | "D"
+    | "E"
+    | "F"
+    | "G"
+    | "H"
+    | "I"
+    | "minimal"
+    | "cute";
 }): Promise<void> {
   const store = await prisma.store.findUnique({
     where: { id: args.storeId },
