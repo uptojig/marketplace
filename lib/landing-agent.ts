@@ -91,6 +91,13 @@ function validateSchema(input: unknown):
   // Check valid design family
   const validFamilies = ["A","B","C","D","E","F","G","H","I"];
   const validThemes = ["minimal", "cute"];
+  // Agent sometimes double-quotes values: "\"I\"" instead of "I"
+  if (typeof s.designFamily === "string") {
+    s.designFamily = s.designFamily.replace(/^["']+|["']+$/g, "").trim();
+  }
+  if (typeof s.schemaVersion === "string") {
+    s.schemaVersion = s.schemaVersion.replace(/^["']+|["']+$/g, "").trim();
+  }
   const hasFamily = typeof s.designFamily === "string" && validFamilies.includes(s.designFamily);
   const hasTheme = typeof s.themeVariant === "string" && validThemes.includes(s.themeVariant);
 
