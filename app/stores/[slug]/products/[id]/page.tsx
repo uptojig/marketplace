@@ -11,12 +11,19 @@ export default async function ShopProductPage({
 }: {
   params: { slug: string; id: string };
 }) {
-  const product = await prisma.product.findUnique({
-    where: { id: params.id },
+  // Accept either the internal cuid (`Product.id`) or the supplier's
+  // `externalProductId`. Agent-generated landing blocks (เป็ด) historically
+  // embedded externalProductId as the link param; querying by id only
+  // produced 404s for those links. We scope by store slug so an external ID
+  // colliding across stores can't leak across tenants.
+  const product = await prisma.product.findFirst({
+    where: {
+      store: { slug: params.slug },
+      OR: [{ id: params.id }, { externalProductId: params.id }],
+    },
     include: { store: true, variants: { orderBy: { createdAt: "asc" } } },
   });
   if (!product || !product.active) notFound();
-  if (product.store.slug !== params.slug) notFound();
 
   const gallery = (Array.isArray(product.galleryUrls) ? (product.galleryUrls as string[]) : []).filter(Boolean);
   const images = [product.imageUrl, ...gallery].filter((x): x is string => !!x);
