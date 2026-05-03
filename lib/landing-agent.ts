@@ -474,19 +474,64 @@ export async function runLandingAgent(args: {
     return;
   }
 
+  // ── Guard: ไม่มีสินค้าในร้าน → ค้นหาจาก CJ ก่อน ────────────────
+  // ถ้าร้านยังไม่มีสินค้า ให้ใช้ brief เป็น keyword ค้นหาจาก CJ
+  // ถ้า CJ ก็ไม่มี → fail
+  type ProductForPrompt = {
+    externalProductId: string;
+    title: string;
+    titleTh: string | null;
+    priceTHB: number;
+    imageUrl: string | null;
+    categoryName: string | null;
+  };
+
+  let products: ProductForPrompt[] = store.products.map((p) => ({
+    externalProductId: p.externalProductId,
+    title: p.title,
+    titleTh: p.titleTh,
+    priceTHB: Number(p.priceTHB),
+    imageUrl: p.imageUrl,
+    categoryName: p.categoryName,
+  }));
+
+  if (products.length === 0) {
+    try {
+      const { cjAdapter } = await import("@/lib/suppliers/cj/adapter");
+      const result = await cjAdapter.listCatalog({
+        search: args.brief,
+        pageSize: 20,
+      });
+      products = result.items.map((p) => ({
+        externalProductId: p.externalProductId,
+        title: p.title,
+        titleTh: null,
+        priceTHB: p.priceTHB,
+        imageUrl: p.imageUrl ?? null,
+        categoryName: null,
+      }));
+    } catch {
+      // CJ search failed — fall through to 0-check
+    }
+  }
+
+  if (products.length === 0) {
+    await prisma.store.update({
+      where: { id: args.storeId },
+      data: {
+        landingStatus: "failed",
+        landingError: "no_products",
+      },
+    }).catch(() => undefined);
+    return;
+  }
+
   const prompt = composePrompt({
     storeName: store.name,
     brief: args.brief,
     themeHint: args.themeHint,
     contactEmail: store.contactEmail ?? undefined,
-    products: store.products.map((p) => ({
-      externalProductId: p.externalProductId,
-      title: p.title,
-      titleTh: p.titleTh,
-      priceTHB: Number(p.priceTHB),
-      imageUrl: p.imageUrl,
-      categoryName: p.categoryName,
-    })),
+    products,
   });
 
   try {
