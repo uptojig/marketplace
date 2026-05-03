@@ -5,16 +5,28 @@ import { Trash2 } from "lucide-react";
 import { useCart } from "@/lib/store/cart";
 import { formatTHB } from "@/lib/utils";
 
-export function CheckoutCart({ editable = false }: { editable?: boolean }) {
+export function CheckoutCart({
+  editable = false,
+  storeSlug,
+}: {
+  editable?: boolean;
+  /** When set, the "แก้ไขรายการสินค้า" link goes back to the
+   *  per-store cart at /stores/<slug>/cart instead of the
+   *  marketplace-level /cart. Caller should pass this whenever
+   *  the checkout flow is hosted under /stores/[slug]/. */
+  storeSlug?: string;
+}) {
   const lines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
+  const cartHref = storeSlug ? `/stores/${storeSlug}/cart` : "/cart";
 
   return (
     <aside className="space-y-3 rounded-2xl border bg-white p-4">
       <Link
-        href="/cart"
-        className="-mx-1 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-blue-600 hover:bg-muted/70"
+        href={cartHref}
+        className="-mx-1 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm font-medium hover:bg-muted/70"
+        style={{ color: "var(--shop-primary, #2563eb)" }}
       >
         <span className="text-lg">‹</span> แก้ไขรายการสินค้า
       </Link>

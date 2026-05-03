@@ -28,6 +28,10 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
   const otherStoreLines = allLines.filter((l) => l.storeSlug !== store.slug);
   const otherStoreCount = otherStoreLines.length;
 
+  // Note: primary color is read from --shop-primary CSS var set by
+  // the storefront layout (which already applies the design family
+  // cascade). The store.primaryColor prop is only used as a fallback
+  // for the avatar background when no logo image is set.
   const primary = store.primaryColor ?? "#2563eb";
 
   if (!mounted) {
@@ -100,7 +104,7 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
           <Link
             href={`/stores/${store.slug}`}
             className="mt-4 inline-flex rounded-md px-4 py-2 text-sm font-medium text-white"
-            style={{ backgroundColor: primary }}
+            style={{ backgroundColor: "var(--shop-primary)" }}
           >
             เลือกซื้อสินค้า
           </Link>
@@ -130,7 +134,7 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                   >
                     {l.title}
                   </Link>
-                  <div className="mt-1 text-base font-bold" style={{ color: primary }}>
+                  <div className="mt-1 text-base font-bold" style={{ color: "var(--shop-primary)" }}>
                     {formatTHB(l.priceTHB)}
                   </div>
                 </div>
@@ -181,9 +185,9 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
               <span className="text-2xl font-bold">{formatTHB(subtotal)}</span>
             </div>
             <Link
-              href={`/checkout/address?store=${store.slug}`}
+              href={`/stores/${store.slug}/checkout/address`}
               className="mt-4 flex w-full items-center justify-center rounded-lg py-3 text-base font-semibold text-white transition hover:opacity-90"
-              style={{ backgroundColor: primary }}
+              style={{ backgroundColor: "var(--shop-primary)" }}
             >
               ดำเนินการชำระเงิน
             </Link>
