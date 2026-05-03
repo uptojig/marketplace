@@ -154,21 +154,37 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
   // because the prompt already says "do NOT call").
   // eslint-disable-next-line
   const c = client as any; // beta API surface still typed loosely
-  // Anthropic Managed Agents API renamed `agent` + `environment` to
-  // `agent_id` + `environment_id` (and `initialMessage` to
-  // `initial_message`). Old camelCase shape now returns:
-  //   400 invalid_request_error: "environment: Extra inputs are not
-  //   permitted. Did you mean 'environment_id'?"
-  // Snake_case is the canonical wire shape.
+  // Canonical Anthropic Managed Agents shape (verified against the
+  // installed SDK's SessionCreateParams + the working PromptPage
+  // lib/managed-agents/index.ts pattern):
+  //   - sessions.create accepts `agent` (string ID) + `environment_id`
+  //     (snake-case suffix)
+  //   - There is NO `initial_message` / `initialMessage` field.
+  //     The first user turn is sent SEPARATELY via
+  //     sessions.events.send with type "user.message".
+  // Earlier attempts (`agent_id`, `environment`, `initialMessage`)
+  // all returned 400 invalid_request_error from the API.
   const session = await c.beta.sessions.create({
-    agent_id: agentId,
+    agent: agentId,
     environment_id: envId,
-    initial_message: { role: "user", content: prompt },
+  });
+
+  // Subscribe BEFORE sending so we don't miss the agent's first
+  // events. The stream is long-lived and yields events as they fire.
+  // eslint-disable-next-line
+  const stream = (await c.beta.sessions.events.stream(session.id)) as AsyncIterable<any>;
+
+  // Now post the operator's brief as the first user message.
+  await c.beta.sessions.events.send(session.id, {
+    events: [
+      {
+        type: "user.message",
+        content: [{ type: "text", text: prompt }],
+      },
+    ],
   });
 
   let captured: GeneratedPageSchema | null = null;
-  // eslint-disable-next-line
-  const stream = c.beta.sessions.events.stream(session.id) as AsyncIterable<any>;
 
   for await (const event of stream) {
     if (event.type === "agent.custom_tool_use") {
