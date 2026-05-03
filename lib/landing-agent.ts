@@ -43,19 +43,35 @@ type Block = {
 
 type DesignFamily = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I";
 
-type GeneratedPageSchema = {
+/** v12 multi-page schema from agent */
+type GeneratedMultiPageSchema = {
+  schemaVersion: "12";
+  metadata: Record<string, unknown>;
+  designFamily: DesignFamily;
+  globalHeader: Record<string, unknown>;
+  globalFooter: Record<string, unknown>;
+  pages: Array<{
+    slug: string;
+    isHomepage?: boolean;
+    metadata?: Record<string, unknown>;
+    blocks: Block[];
+  }>;
+  reasoning: string;
+};
+
+/** v11 single-page schema (legacy compat) */
+type GeneratedSinglePageSchema = {
   title: string;
   slug?: string;
   description?: string;
-  /** v3: 9 design families */
   designFamily?: DesignFamily;
-  /** v2 legacy */
   themeVariant?: "minimal" | "cute";
-  /** v3: page-level SEO/social */
   metadata?: Record<string, unknown>;
   blocks: Block[];
   reasoning: string;
 };
+
+type GeneratedPageSchema = GeneratedMultiPageSchema | GeneratedSinglePageSchema;
 
 function getClient(): Anthropic {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -69,15 +85,46 @@ function validateSchema(input: unknown):
   if (typeof input !== "object" || input === null) {
     return { ok: false, error: "schema_must_be_object" };
   }
-  const s = input as Partial<GeneratedPageSchema>;
-  if (typeof s.title !== "string" || !s.title.trim()) {
-    return { ok: false, error: "title_required" };
-  }
-  // Accept v3 designFamily (A-I) OR legacy themeVariant (minimal/cute)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const s = input as any;
+
+  // Check valid design family
   const validFamilies = ["A","B","C","D","E","F","G","H","I"];
   const validThemes = ["minimal", "cute"];
   const hasFamily = typeof s.designFamily === "string" && validFamilies.includes(s.designFamily);
   const hasTheme = typeof s.themeVariant === "string" && validThemes.includes(s.themeVariant);
+
+  // v12 multi-page schema
+  if (s.schemaVersion === "12" && Array.isArray(s.pages)) {
+    if (!hasFamily) {
+      return { ok: false, error: "designFamily_required_for_v12" };
+    }
+    if (s.pages.length < 4) {
+      return { ok: false, error: "v12_requires_at_least_4_pages" };
+    }
+    if (!s.globalHeader || typeof s.globalHeader !== "object") {
+      return { ok: false, error: "globalHeader_required" };
+    }
+    if (!s.globalFooter || typeof s.globalFooter !== "object") {
+      return { ok: false, error: "globalFooter_required" };
+    }
+    // Validate each page has slug + blocks
+    for (let p = 0; p < s.pages.length; p++) {
+      const page = s.pages[p];
+      if (!page || typeof page.slug !== "string") {
+        return { ok: false, error: `page_${p}_missing_slug` };
+      }
+      if (!Array.isArray(page.blocks) || page.blocks.length === 0) {
+        return { ok: false, error: `page_${p}_missing_blocks` };
+      }
+    }
+    return { ok: true, schema: s as GeneratedMultiPageSchema };
+  }
+
+  // v11 single-page schema (legacy)
+  if (typeof s.title !== "string" || !s.title.trim()) {
+    return { ok: false, error: "title_required" };
+  }
   if (!hasFamily && !hasTheme) {
     return { ok: false, error: "designFamily_or_themeVariant_required" };
   }
@@ -94,7 +141,7 @@ function validateSchema(input: unknown):
       return { ok: false, error: `block_${i}_missing_content` };
     }
   }
-  return { ok: true, schema: s as GeneratedPageSchema };
+  return { ok: true, schema: s as GeneratedSinglePageSchema };
 }
 
 /**
@@ -229,7 +276,11 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
                   type: "text",
                   text: JSON.stringify(
                     result.ok
-                      ? { ok: true, received_blocks: result.schema.blocks.length }
+                      ? {
+                          ok: true,
+                          version: 'schemaVersion' in result.schema ? 'v12' : 'v11',
+                          pages: 'pages' in result.schema ? result.schema.pages.length : 1,
+                        }
                       : { ok: false, error: result.error },
                   ),
                 },
@@ -348,17 +399,38 @@ export async function runLandingAgent(args: {
 
   try {
     const schema = await runAgentSession(prompt);
-    await prisma.store.update({
-      where: { id: args.storeId },
-      data: {
-        landingBlocks: schema.blocks as never,
-        landingTitle: schema.title,
-        landingThemeVariant: schema.designFamily ?? schema.themeVariant ?? "minimal",
-        landingGeneratedAt: new Date(),
-        landingStatus: "ready",
-        landingError: null,
-      },
-    });
+
+    // v12: store entire multi-page schema as the landingBlocks value.
+    // v11 legacy: store just the blocks array.
+    if ('schemaVersion' in schema && schema.schemaVersion === '12') {
+      // v12 multi-page — store the full schema object
+      const { reasoning, ...schemaData } = schema;
+      await prisma.store.update({
+        where: { id: args.storeId },
+        data: {
+          landingBlocks: schemaData as never,
+          landingTitle: (schema.metadata as Record<string, unknown>)?.title as string ?? store.name,
+          landingThemeVariant: schema.designFamily,
+          landingGeneratedAt: new Date(),
+          landingStatus: "ready",
+          landingError: null,
+        },
+      });
+    } else {
+      // v11 single-page — store blocks array (backward compat)
+      const v11 = schema as GeneratedSinglePageSchema;
+      await prisma.store.update({
+        where: { id: args.storeId },
+        data: {
+          landingBlocks: v11.blocks as never,
+          landingTitle: v11.title,
+          landingThemeVariant: v11.designFamily ?? v11.themeVariant ?? "minimal",
+          landingGeneratedAt: new Date(),
+          landingStatus: "ready",
+          landingError: null,
+        },
+      });
+    }
   } catch (err) {
     const msg =
       err instanceof ManagedAgentNotConfiguredError

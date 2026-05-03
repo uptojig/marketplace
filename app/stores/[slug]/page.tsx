@@ -10,7 +10,9 @@ import {
   type Block,
   type ThemeVariant,
 } from "@/components/landing/BlockRenderer";
+import { MultiPageRenderer } from "@/components/landing/MultiPageRenderer";
 import { isValidThemeVariant } from "@/lib/landing/families";
+import { isV12Schema } from "@/lib/multi-page-migration";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +52,21 @@ export default async function StorePage({
   const baseStore = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!baseStore) notFound();
 
-  // ── Agent-generated landing-page short-circuit ──────────────
+  // ── v12 multi-page schema short-circuit ──────────────────────
+  // When the landing data is a v12 multi-page schema (has schemaVersion: "12"
+  // + pages[] array), render via MultiPageRenderer which provides its own
+  // globalHeader/globalFooter + page routing.
+  if (baseStore.landingBlocks && typeof baseStore.landingBlocks === "object" && isV12Schema(baseStore.landingBlocks)) {
+    return (
+      <MultiPageRenderer
+        schema={baseStore.landingBlocks}
+        pageSlug=""
+        storeSlug={baseStore.slug}
+      />
+    );
+  }
+
+  // ── v11 single-page landing blocks ──────────────────────────
   // When เป็ด has designed a unique landing page for this store, we
   // render those blocks INSTEAD of the generic product grid below.
   // The generic grid stays as the fallback for stores whose admin

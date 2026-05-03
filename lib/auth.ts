@@ -2,6 +2,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@prisma/client";
 
@@ -28,6 +30,64 @@ if (process.env.EMAIL_SERVER && process.env.EMAIL_FROM) {
   );
 }
 
+// Username/password (CredentialsProvider). Always enabled — no env gate
+// because the only requirement is that target users have a passwordHash
+// set on their User row. Demo accounts seeded by
+// scripts/create-demo-accounts.mjs ship with a hash; admin can also set
+// an initial password when creating a user from /admin/users.
+//
+// Caveat: Credentials sessions are JWT-based by NextAuth design (the
+// PrismaAdapter `database` strategy doesn't support credentials). We
+// keep the existing `session: { strategy: "database" }` for OAuth +
+// email-link flows, and let the credentials path silently fall back
+// to JWT for those sessions. The `session({ session, user })` callback
+// below already tolerates either shape.
+providers.push(
+  CredentialsProvider({
+    id: "credentials",
+    name: "Email + Password",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" },
+    },
+    async authorize(creds) {
+      const email = creds?.email?.trim().toLowerCase();
+      const password = creds?.password ?? "";
+      if (!email || !password) return null;
+
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          image: true,
+          role: true,
+          passwordHash: true,
+        },
+      });
+      if (!user || !user.passwordHash) {
+        // Either the email isn't registered, or the user only has
+        // OAuth/magic-link configured. Same null response either
+        // way so we don't reveal which case it is.
+        return null;
+      }
+      const ok = await bcrypt.compare(password, user.passwordHash);
+      if (!ok) return null;
+
+      // Return the shape NextAuth expects. The session callback
+      // below normalises role onto session.user.
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+        role: user.role,
+      } as { id: string; email: string | null; name: string | null; image: string | null; role: Role };
+    },
+  }),
+);
+
 // Emails that are auto-promoted to ADMIN on sign-in (comma-separated in env)
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
@@ -36,14 +96,36 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
-  session: { strategy: "database" },
+  // JWT strategy is required for CredentialsProvider — the Prisma
+  // adapter's database strategy can't store credential sessions.
+  // OAuth + email-link still work fine on JWT (NextAuth backs them
+  // with the JWT) and we still get DB-side User/Account rows via
+  // the adapter; we just don't read sessions from the DB.
+  session: { strategy: "jwt" },
   providers,
   callbacks: {
-    async session({ session, user }) {
+    // JWT runs first on every request — bake `id` and `role` into
+    // the token so we can hand them to the session callback.
+    async jwt({ token, user }) {
+      if (user) {
+        // Initial sign-in: `user` is whatever the provider returned
+        // (CredentialsProvider.authorize result OR adapter user row).
+        const u = user as { id?: string; role?: Role };
+        if (u.id) token.userId = u.id;
+        if (u.role) token.role = u.role;
+      }
+      // Subsequent calls only have `token` — the data was baked in
+      // above on the initial sign-in. Re-fetch role from DB on every
+      // request would be more robust, but we'd pay a query per
+      // request; rely on /admin/users role-change forcing a re-login
+      // to pick up updates.
+      return token;
+    },
+    async session({ session, token }) {
       if (session.user) {
-        (session.user as { id?: string; role?: Role }).id = user.id;
-        (session.user as { id?: string; role?: Role }).role =
-          (user as unknown as { role: Role }).role;
+        const t = token as { userId?: string; role?: Role };
+        (session.user as { id?: string; role?: Role }).id = t.userId;
+        (session.user as { id?: string; role?: Role }).role = t.role;
       }
       return session;
     },

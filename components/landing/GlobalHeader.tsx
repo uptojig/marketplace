@@ -1,0 +1,168 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { ShoppingCart, Search, X, Menu } from "lucide-react";
+import type { GlobalHeader as GlobalHeaderSchema } from "@/types/multi-page-schema";
+import type { ThemeVariant } from "@/lib/landing/families";
+
+interface Props {
+  content: GlobalHeaderSchema;
+  theme: ThemeVariant;
+  storeSlug: string;
+}
+
+export function GlobalHeader({ content, theme, storeSlug }: Props) {
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const stickyClass = content.sticky !== false ? "sticky top-0 z-50" : "";
+  const sizeClass = {
+    sm: "h-8",
+    md: "h-10",
+    lg: "h-14",
+  }[content.logo.size ?? "md"];
+
+  // Rewrite header nav hrefs to be relative to /stores/{slug}
+  const resolveHref = (href: string) => {
+    if (href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) return href;
+    if (href === "/" || href === "") return `/stores/${storeSlug}`;
+    const clean = href.startsWith("/") ? href.slice(1) : href;
+    return `/stores/${storeSlug}/${clean}`;
+  };
+
+  return (
+    <>
+      {/* Announcement banner */}
+      {content.banner && !bannerDismissed && (
+        <div className="relative w-full bg-stone-900 text-white" role="region" aria-label="Announcement">
+          <div className="container mx-auto px-4 py-2.5 flex items-center justify-center gap-3 text-sm">
+            <span className="text-center">{content.banner.text}</span>
+            {content.banner.ctaText && content.banner.ctaLink && (
+              <Link
+                href={resolveHref(content.banner.ctaLink)}
+                className="font-medium underline underline-offset-2 hover:no-underline whitespace-nowrap"
+              >
+                {content.banner.ctaText}
+              </Link>
+            )}
+            {content.banner.dismissible !== false && (
+              <button
+                type="button"
+                onClick={() => setBannerDismissed(true)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:opacity-70"
+                aria-label="ปิด banner"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <header
+        className={`
+          ${stickyClass}
+          bg-white/95 backdrop-blur-md
+          border-b border-stone-200
+        `}
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Logo */}
+            <Link
+              href={resolveHref(content.logo.linkTo ?? "/")}
+              className="flex items-center gap-3"
+              aria-label={content.logo.altText}
+            >
+              {content.logo.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={content.logo.imageUrl}
+                  alt={content.logo.altText}
+                  className={`${sizeClass} w-auto`}
+                  loading="eager"
+                />
+              )}
+              {content.logo.brandText && (
+                <span className="text-lg md:text-xl font-semibold text-stone-900">
+                  {content.logo.brandText}
+                </span>
+              )}
+            </Link>
+
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-8">
+              {content.nav.map((link, i) => (
+                <Link
+                  key={i}
+                  href={resolveHref(link.href)}
+                  target={link.isExternal ? "_blank" : undefined}
+                  rel={link.isExternal ? "noopener noreferrer" : undefined}
+                  className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+                >
+                  {link.text}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Right actions */}
+            <div className="flex items-center gap-3">
+              {content.showSearch && (
+                <Link
+                  href={`/stores/${storeSlug}?q=`}
+                  className="p-2 text-stone-600 hover:text-stone-900"
+                  aria-label="ค้นหา"
+                >
+                  <Search className="h-5 w-5" />
+                </Link>
+              )}
+
+              {content.showCart !== false && (
+                <Link
+                  href={`/stores/${storeSlug}/cart`}
+                  className="p-2 text-stone-600 hover:text-stone-900 relative"
+                  aria-label="ตะกร้าสินค้า"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                </Link>
+              )}
+
+              {/* Mobile menu toggle */}
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2"
+                aria-label="เปิดเมนู"
+                aria-expanded={mobileMenuOpen}
+              >
+                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile nav */}
+          {mobileMenuOpen && (
+            <nav className="md:hidden border-t border-stone-200 py-4">
+              <div className="flex flex-col gap-1">
+                {content.nav.map((link, i) => (
+                  <Link
+                    key={i}
+                    href={resolveHref(link.href)}
+                    target={link.isExternal ? "_blank" : undefined}
+                    rel={link.isExternal ? "noopener noreferrer" : undefined}
+                    className="px-3 py-3 text-base font-medium text-stone-700 hover:bg-stone-50 rounded"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.text}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          )}
+        </div>
+      </header>
+    </>
+  );
+}

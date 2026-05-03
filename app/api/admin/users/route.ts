@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -37,6 +38,10 @@ const createSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
   name: z.string().trim().min(1).max(120).optional(),
   role: z.enum(["CUSTOMER", "VENDOR", "ADMIN"]),
+  // Optional initial password — admin can set one so the new user
+  // can sign in immediately via /signin (CredentialsProvider). If
+  // omitted, the user is restricted to OAuth / magic-link.
+  password: z.string().min(8).max(200).optional(),
 });
 
 export async function POST(req: Request) {
@@ -51,7 +56,8 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const { email, name, role } = parsed.data;
+  const { email, name, role, password } = parsed.data;
+  const passwordHash = password ? await bcrypt.hash(password, 12) : null;
 
   try {
     const user = await prisma.user.create({
@@ -59,6 +65,7 @@ export async function POST(req: Request) {
         email,
         name: name ?? null,
         role,
+        passwordHash,
       },
       select: {
         id: true,

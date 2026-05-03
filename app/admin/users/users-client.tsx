@@ -285,6 +285,7 @@ function CreateUserModal({
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<Role>("CUSTOMER");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -293,6 +294,10 @@ function CreateUserModal({
     setErr(null);
     if (!email.trim()) {
       setErr("กรอกอีเมล");
+      return;
+    }
+    if (password && password.length < 8) {
+      setErr("รหัสผ่านต้องอย่างน้อย 8 ตัวอักษร (หรือเว้นไว้)");
       return;
     }
     setBusy(true);
@@ -304,6 +309,7 @@ function CreateUserModal({
           email: email.trim().toLowerCase(),
           name: name.trim() || undefined,
           role,
+          password: password || undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -372,14 +378,31 @@ function CreateUserModal({
               ))}
             </select>
           </label>
+          <label className="block">
+            <span className="text-sm font-medium">
+              รหัสผ่านเริ่มต้น (optional)
+            </span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={busy}
+              autoComplete="new-password"
+              minLength={8}
+              className="mt-1 w-full rounded-md border px-3 py-2 text-sm disabled:bg-gray-100"
+              placeholder="อย่างน้อย 8 ตัว เว้นว่าง = ใช้ Google/magic-link เท่านั้น"
+            />
+          </label>
           {err && (
             <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
               <AlertCircle className="h-4 w-4" /> {err}
             </div>
           )}
           <div className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900">
-            ผู้ใช้ที่สร้างใหม่จะ login ผ่าน Google หรือ email magic-link
-            ที่อีเมลเดียวกันได้เลย — ไม่มีการส่ง invite email อัตโนมัติ
+            ถ้าตั้งรหัสผ่าน → user login ที่ /signin ด้วยอีเมล + รหัสผ่านได้ทันที
+            <br />
+            ถ้าเว้นว่าง → user ต้อง login ผ่าน Google หรือ email magic-link
+            (ไม่มี invite email อัตโนมัติ)
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button

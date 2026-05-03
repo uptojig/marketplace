@@ -1,28 +1,25 @@
 #!/usr/bin/env node
 /**
  * Seed three demo accounts for QA/walkthrough:
- *   admin@demo.basketplace.co     ADMIN
- *   vendor@demo.basketplace.co    VENDOR
- *   customer@demo.basketplace.co  CUSTOMER
+ *   admin@demo.basketplace.co     ADMIN     password: demo-admin-2026
+ *   vendor@demo.basketplace.co    VENDOR    password: demo-vendor-2026
+ *   customer@demo.basketplace.co  CUSTOMER  password: demo-customer-2026
  *
- * NextAuth uses Google OAuth + email magic-link. We don't store
- * passwords, so this script just inserts/updates the User rows
- * so the demo emails are recognized + role-mapped on first sign-in.
+ * Each account gets a bcrypt-hashed password set so QA can log in via
+ * the credentials form at /signin without needing access to the
+ * EMAIL_SERVER mailbox for magic-link delivery. The same accounts can
+ * also still sign in via Google OAuth or magic-link if the operator
+ * prefers — passwordHash and OAuth/Account rows coexist on User.
  *
- * To actually log in as a demo account:
- *   1. Visit /signin
- *   2. Enter the demo email
- *   3. Click the magic link in the inbox configured by EMAIL_SERVER
- *   4. NextAuth links the OAuth/email session to the existing row
- *
- * Re-running is safe: upserts by email, so role flips back to the
- * intended one if someone changed it via /admin/users.
+ * Re-running is safe: upserts by email, so role + passwordHash flip
+ * back to the canonical values if someone changed them via /admin/users.
  *
  * Usage:
  *   node scripts/create-demo-accounts.mjs
- *   node scripts/create-demo-accounts.mjs --email=foo@bar.com --role=VENDOR
+ *   node scripts/create-demo-accounts.mjs --email=foo@bar.com --role=VENDOR --password=hunter2
  */
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
