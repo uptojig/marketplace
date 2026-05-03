@@ -41,11 +41,18 @@ type Block = {
   tailwindClasses?: string;
 };
 
+type DesignFamily = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I";
+
 type GeneratedPageSchema = {
   title: string;
   slug?: string;
   description?: string;
-  themeVariant: "minimal" | "cute";
+  /** v3: 9 design families */
+  designFamily?: DesignFamily;
+  /** v2 legacy */
+  themeVariant?: "minimal" | "cute";
+  /** v3: page-level SEO/social */
+  metadata?: Record<string, unknown>;
   blocks: Block[];
   reasoning: string;
 };
@@ -66,8 +73,13 @@ function validateSchema(input: unknown):
   if (typeof s.title !== "string" || !s.title.trim()) {
     return { ok: false, error: "title_required" };
   }
-  if (s.themeVariant !== "minimal" && s.themeVariant !== "cute") {
-    return { ok: false, error: "themeVariant_must_be_minimal_or_cute" };
+  // Accept v3 designFamily (A-I) OR legacy themeVariant (minimal/cute)
+  const validFamilies = ["A","B","C","D","E","F","G","H","I"];
+  const validThemes = ["minimal", "cute"];
+  const hasFamily = typeof s.designFamily === "string" && validFamilies.includes(s.designFamily);
+  const hasTheme = typeof s.themeVariant === "string" && validThemes.includes(s.themeVariant);
+  if (!hasFamily && !hasTheme) {
+    return { ok: false, error: "designFamily_or_themeVariant_required" };
   }
   if (!Array.isArray(s.blocks) || s.blocks.length === 0) {
     return { ok: false, error: "blocks_required" };
@@ -341,7 +353,7 @@ export async function runLandingAgent(args: {
       data: {
         landingBlocks: schema.blocks as never,
         landingTitle: schema.title,
-        landingThemeVariant: schema.themeVariant,
+        landingThemeVariant: schema.designFamily ?? schema.themeVariant ?? "minimal",
         landingGeneratedAt: new Date(),
         landingStatus: "ready",
         landingError: null,

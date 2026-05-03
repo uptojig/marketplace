@@ -178,7 +178,7 @@ export default function CreateStorePage() {
             <div>
               <h2 className="text-lg font-semibold">Preview</h2>
               <p className="text-xs text-muted-foreground">
-                {schema.title} • theme: <code>{schema.themeVariant}</code> • {schema.blocks.length} blocks
+                {schema.title} • family: <code>{schema.designFamily ?? schema.themeVariant ?? "?"}</code> • {schema.blocks.length} blocks
               </p>
             </div>
           </div>

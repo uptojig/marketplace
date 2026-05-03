@@ -14,11 +14,31 @@ export interface AgentBlock {
   content: Record<string, unknown>;
 }
 
+export interface PageMetadata {
+  title?: string;
+  description?: string;
+  favicon?: { imageUrl: string; size?: string };
+  ogImage?: { imageUrl: string; altText?: string; width?: number; height?: number };
+  ogTitle?: string;
+  ogDescription?: string;
+  twitterCard?: string;
+  canonicalUrl?: string;
+  language?: string;
+  themeColor?: string;
+}
+
+export type DesignFamily = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I";
+
 export interface GeneratedPageSchema {
   title: string;
   slug?: string;
   description?: string;
-  themeVariant: "minimal" | "cute";
+  /** v3: 9 design families (A-I) */
+  designFamily?: DesignFamily;
+  /** v2 legacy — kept for backward compat with cached pages */
+  themeVariant?: "minimal" | "cute";
+  /** v3: page-level SEO/social/branding */
+  metadata?: PageMetadata;
   blocks: AgentBlock[];
   reasoning: string;
 }
