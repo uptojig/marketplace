@@ -54,12 +54,19 @@ export default async function StorePage({
   // render those blocks INSTEAD of the generic product grid below.
   // The generic grid stays as the fallback for stores whose admin
   // hasn't triggered a generation yet.
+  //
+  // Drop "Nav" and "Footer" blocks: ShopLayout already renders the store's
+  // canonical header (logo / search / cart / categories) and footer (5-column
+  // shipping / contact / policies). Agent-generated chrome is redundant and
+  // showed up as duplicate headers/footers on production.
   const landingBlocks = Array.isArray(baseStore.landingBlocks)
     ? (baseStore.landingBlocks as unknown[]).filter(
         (b): b is Block =>
           !!b &&
           typeof b === "object" &&
-          typeof (b as Block).blockType === "string",
+          typeof (b as Block).blockType === "string" &&
+          (b as Block).blockType !== "Nav" &&
+          (b as Block).blockType !== "Footer",
       )
     : [];
   if (landingBlocks.length > 0) {
