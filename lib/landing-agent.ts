@@ -154,10 +154,16 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
   // because the prompt already says "do NOT call").
   // eslint-disable-next-line
   const c = client as any; // beta API surface still typed loosely
+  // Anthropic Managed Agents API renamed `agent` + `environment` to
+  // `agent_id` + `environment_id` (and `initialMessage` to
+  // `initial_message`). Old camelCase shape now returns:
+  //   400 invalid_request_error: "environment: Extra inputs are not
+  //   permitted. Did you mean 'environment_id'?"
+  // Snake_case is the canonical wire shape.
   const session = await c.beta.sessions.create({
-    agent: agentId,
-    environment: envId,
-    initialMessage: { role: "user", content: prompt },
+    agent_id: agentId,
+    environment_id: envId,
+    initial_message: { role: "user", content: prompt },
   });
 
   let captured: GeneratedPageSchema | null = null;
