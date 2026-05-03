@@ -141,6 +141,12 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   try {
+    // Clear EVERY landing field — including the lifecycle status
+    // ones. Without this, a generation that was killed mid-flight
+    // (Vercel function reclaimed before runLandingAgent's final DB
+    // write) leaves landingStatus="generating" forever and the admin
+    // UI shows the spinner indefinitely. DELETE is the recovery
+    // path; it must reset the row to a fully clean state.
     await prisma.store.update({
       where: { id: params.id },
       data: {
@@ -148,6 +154,10 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
         landingTitle: null,
         landingThemeVariant: null,
         landingGeneratedAt: null,
+        landingStatus: null,
+        landingError: null,
+        landingBrief: null,
+        landingStartedAt: null,
       },
     });
     return NextResponse.json({ ok: true });

@@ -319,17 +319,24 @@ export function LandingForm(props: Props) {
             className="w-full rounded-md border px-3 py-2 font-mono text-xs"
           />
           <div className="flex items-center justify-between">
-            {props.hasLandingPage && (
-              <button
-                type="button"
-                onClick={handleClear}
-                disabled={busy !== null || isGenerating}
-                className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                {busy === "clear" ? "กำลังลบ..." : "ลบ landing page"}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleClear}
+              disabled={busy !== null}
+              className="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+              title={
+                isGenerating
+                  ? "Reset stuck generation — clears all landing fields"
+                  : "ลบ landing page — clears all landing fields"
+              }
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              {busy === "clear"
+                ? "กำลังลบ..."
+                : isGenerating
+                  ? "Reset stuck generation"
+                  : "ลบ / Reset landing page"}
+            </button>
             <button
               type="button"
               onClick={handlePasteSave}
@@ -364,18 +371,43 @@ function StatusCard({
   const s = status?.status;
 
   if (s === "generating") {
+    // Detect stuck runs — Vercel Hobby maxDuration is 60s; if the
+    // run has been "generating" longer than 5min it's almost
+    // certainly killed mid-flight. Surface a stale warning so the
+    // admin doesn't wait forever.
+    const startedMs = status?.startedAt
+      ? Date.now() - new Date(status.startedAt).getTime()
+      : 0;
+    const isStale = startedMs > 5 * 60 * 1000;
     return (
-      <div className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-900">
-        <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-amber-600" />
+      <div
+        className={`flex items-start gap-3 rounded-md border px-3 py-3 text-sm ${
+          isStale
+            ? "border-orange-300 bg-orange-50 text-orange-900"
+            : "border-amber-300 bg-amber-50 text-amber-900"
+        }`}
+      >
+        <Loader2
+          className={`mt-0.5 h-4 w-4 shrink-0 animate-spin ${
+            isStale ? "text-orange-600" : "text-amber-600"
+          }`}
+        />
         <div className="flex-1">
-          <p className="font-semibold">เป็ดกำลังออกแบบหน้าเว็บ...</p>
+          <p className="font-semibold">
+            {isStale
+              ? "การออกแบบดูเหมือนค้าง — น่าจะ Vercel timeout"
+              : "เป็ดกำลังออกแบบหน้าเว็บ..."}
+          </p>
           <p className="mt-0.5 text-xs">
-            ใช้เวลา 30 วินาที – 3 นาที (ขึ้นกับจำนวนสินค้า) — รอสักครู่
-            แล้วระบบจะอัปเดตให้เอง
+            {isStale
+              ? "Agent run ใช้เวลานานกว่าที่ Vercel function อนุญาต (Hobby plan = 60s, Pro = 300s) — กด \"ลบ landing page\" ด้านล่างเพื่อ reset แล้วลองใหม่"
+              : "ใช้เวลา 30 วินาที – 3 นาที (ขึ้นกับจำนวนสินค้า) — รอสักครู่ แล้วระบบจะอัปเดตให้เอง"}
           </p>
           {status?.startedAt && (
-            <p className="text-[11px] text-amber-700/80">
+            <p className="text-[11px] opacity-70">
               เริ่มเมื่อ {new Date(status.startedAt).toLocaleTimeString("th-TH")}
+              {isStale &&
+                ` (${Math.floor(startedMs / 60000)} นาทีก่อน)`}
             </p>
           )}
         </div>
