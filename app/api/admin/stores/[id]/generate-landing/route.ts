@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -8,12 +9,15 @@ import { runLandingAgent } from "@/lib/landing-agent";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Vercel Pro: 300s. Hobby: 60s. We rely on fire-and-forget so the
-// HTTP response returns in <2s; the agent run continues after the
-// response. The agent itself takes 30s–3min, so the function may
-// or may not stay alive long enough on Hobby plans (the unhandled
-// promise will be killed when Vercel reclaims the function). The
-// row stays in "generating" status if so — admin can retry.
+// Vercel Pro: 300s. Hobby: 60s. We use Vercel's `waitUntil` to
+// guarantee the background work runs within the allocated function
+// lifetime — plain `void promise` was being reaped by Vercel the
+// moment the response was flushed, so the Anthropic session never
+// even got created (landingStatus stuck at "generating", no session
+// in Anthropic Console). waitUntil flushes the response first, then
+// keeps the function alive for the background callback up to
+// maxDuration. Next 15's `after()` is the framework-level
+// equivalent; we're on Next 14 so we use the Vercel SDK directly.
 export const maxDuration = 300;
 
 const bodySchema = z.object({
@@ -87,15 +91,33 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     },
   });
 
-  void runLandingAgent({
-    storeId: params.id,
-    brief,
-    themeHint,
-  }).catch((err) => {
-    // Unreachable in normal flow — runLandingAgent does its own
-    // catching. This is just a last-resort safety net.
-    console.error("landing-agent rejected at top level:", err);
-  });
+  // Use waitUntil so the background work has a guaranteed window
+  // (up to maxDuration) — plain `void` was being killed when the
+  // response flushed, leading to the stuck-generating bug.
+  waitUntil(
+    (async () => {
+      try {
+        await runLandingAgent({ storeId: params.id, brief, themeHint });
+      } catch (err) {
+        // runLandingAgent does its own catching, so this only fires
+        // for unexpected throws. Flip the row to failed so the UI
+        // doesn't stay stuck on "generating".
+        console.error("landing-agent rejected at top level:", err);
+        await prisma.store
+          .update({
+            where: { id: params.id },
+            data: {
+              landingStatus: "failed",
+              landingError:
+                err instanceof Error
+                  ? err.message.slice(0, 500)
+                  : "unknown_error_in_waitUntil_block",
+            },
+          })
+          .catch(() => undefined);
+      }
+    })(),
+  );
 
   return NextResponse.json(
     {
