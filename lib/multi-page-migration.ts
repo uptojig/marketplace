@@ -57,13 +57,13 @@ function extractGlobalBlocks(blocks: Block[]): {
   globalFooter: GlobalFooter;
   pageBlocks: Block[];
 } {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   let logoBlock: any = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   let navBlock: any = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   let bannerBlock: any = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   let footerBlock: any = null;
   const pageBlocks: Block[] = [];
 
@@ -126,12 +126,12 @@ function extractGlobalBlocks(blocks: Block[]): {
  * v11: { blocks[] } — no schemaVersion
  * v12: { schemaVersion: "12", pages[] }
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line
 export function isV12Schema(schema: any): schema is MultiPageShopSchema {
   return schema?.schemaVersion === "12" && Array.isArray(schema?.pages);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line
 export function isV11Schema(schema: any): schema is SinglePageSchema {
   return !schema?.schemaVersion && Array.isArray(schema?.blocks) && !schema?.pages;
 }
@@ -140,7 +140,7 @@ export function isV11Schema(schema: any): schema is SinglePageSchema {
  * Auto-migrate any schema to v12 format.
  * Pass through if already v12; migrate if v11.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line
 export function ensureV12Schema(schema: any): MultiPageShopSchema {
   if (isV12Schema(schema)) {
     return schema;

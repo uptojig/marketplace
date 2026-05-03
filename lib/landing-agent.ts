@@ -85,7 +85,7 @@ function validateSchema(input: unknown):
   if (typeof input !== "object" || input === null) {
     return { ok: false, error: "schema_must_be_object" };
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   const s = input as any;
 
   // Check valid design family
