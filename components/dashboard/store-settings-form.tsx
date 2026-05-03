@@ -49,12 +49,23 @@ const schema = z.object({
     .optional()
     .default(""),
   lineId: z.string().max(50).optional().default(""),
+  platformEmailForwardTo: z
+    .string()
+    .email("รูปแบบอีเมลไม่ถูกต้อง")
+    .or(z.literal(""))
+    .optional()
+    .default(""),
 });
 
 type FormValues = z.infer<typeof schema>;
 
 interface StoreSettingsFormProps {
   defaultValues: FormValues;
+  platformEmail: {
+    address: string | null;
+    verified: boolean;
+  };
+  ownerLoginEmail: string | null;
 }
 
 function ImageUrlInput({
@@ -103,9 +114,16 @@ function ImageUrlInput({
   );
 }
 
-export function StoreSettingsForm({ defaultValues }: StoreSettingsFormProps) {
+export function StoreSettingsForm({
+  defaultValues,
+  platformEmail: initialPlatformEmail,
+  ownerLoginEmail,
+}: StoreSettingsFormProps) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+  const [pe, setPe] = useState(initialPlatformEmail);
+  const [provisioning, setProvisioning] = useState(false);
+  const [provisionError, setProvisionError] = useState<string | null>(null);
 
   const {
     register,
@@ -139,12 +157,43 @@ export function StoreSettingsForm({ defaultValues }: StoreSettingsFormProps) {
             : (err.error ?? "บันทึกไม่สำเร็จ");
         setToast({ type: "err", msg });
       } else {
-        setToast({ type: "ok", msg: "บันทึกสำเร็จแล้ว" });
+        const updated = await res.json().catch(() => null);
+        const warnings: string[] = Array.isArray(updated?.warnings) ? updated.warnings : [];
+        if (updated?.platformEmail) {
+          setPe({
+            address: updated.platformEmail,
+            verified: !!updated.platformEmailVerified,
+          });
+        }
+        setToast({
+          type: warnings.length ? "err" : "ok",
+          msg: warnings.length
+            ? `บันทึกแล้ว (มีข้อควรระวัง: ${warnings.join("; ")})`
+            : "บันทึกสำเร็จแล้ว",
+        });
       }
     } catch {
       setToast({ type: "err", msg: "เกิดข้อผิดพลาด กรุณาลองใหม่" });
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function provisionEmail() {
+    setProvisioning(true);
+    setProvisionError(null);
+    try {
+      const res = await fetch("/api/store/platform-email/provision", { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setProvisionError(json.error ?? "ออกอีเมลไม่สำเร็จ");
+        return;
+      }
+      setPe({ address: json.aliasEmail, verified: !!json.verified });
+    } catch {
+      setProvisionError("เกิดข้อผิดพลาด กรุณาลองใหม่");
+    } finally {
+      setProvisioning(false);
     }
   }
 
@@ -278,6 +327,77 @@ export function StoreSettingsForm({ defaultValues }: StoreSettingsFormProps) {
           <p className="text-xs text-muted-foreground">
             ชี้ CNAME ของโดเมนมาที่ {process.env.NEXT_PUBLIC_BASE_URL?.replace(/^https?:\/\//, "") ?? "marketplace.local"} แล้วใส่โดเมนที่นี่
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Platform email + Identity verification (no OTP — auto-verified by login email) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>อีเมลของระบบ (ยืนยันตัวตน)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            ระบบออกอีเมลฟรีให้บนโดเมนกลาง — ใช้เป็นจุดอ้างอิงสำหรับยืนยันตัวตน
+            ออกอัตโนมัติเมื่อตั้ง Custom Domain หรือกดสร้างเอง ยืนยันตัวตน <strong>อัตโนมัติ</strong>
+            เมื่อ forward target ตรงกับอีเมลที่ใช้ login{ownerLoginEmail ? ` (${ownerLoginEmail})` : ""}
+          </p>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium">อีเมลของระบบ</label>
+            <div className="flex items-center gap-2">
+              <Input
+                value={pe.address ?? "— ยังไม่มี —"}
+                readOnly
+                className="font-mono text-sm bg-gray-50"
+              />
+              {pe.address && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigator.clipboard?.writeText(pe.address ?? "")}
+                >
+                  Copy
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {!pe.address && (
+            <Button type="button" onClick={provisionEmail} disabled={provisioning}>
+              {provisioning ? "กำลังสร้าง…" : "สร้างอีเมลให้ฉัน"}
+            </Button>
+          )}
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium">ส่งต่อไปที่ (Forward target)</label>
+            <Input
+              {...register("platformEmailForwardTo")}
+              placeholder={ownerLoginEmail ?? "owner@gmail.com"}
+              type="email"
+            />
+            {errors.platformEmailForwardTo && (
+              <p className="text-xs text-red-500">{errors.platformEmailForwardTo.message}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              ปลายทางที่ระบบจะ forward อีเมลไป — ใส่ตรงกับอีเมล login เพื่อให้ยืนยันตัวตนอัตโนมัติ
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">สถานะ:</span>
+            {pe.verified ? (
+              <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                ยืนยันแล้ว ✓
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+                ยังไม่ยืนยัน
+              </span>
+            )}
+          </div>
+
+          {provisionError && <p className="text-xs text-red-600">{provisionError}</p>}
         </CardContent>
       </Card>
 

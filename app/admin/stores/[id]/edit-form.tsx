@@ -34,6 +34,9 @@ type StoreData = {
   instagramUrl: string | null;
   websiteUrl: string | null;
   lineId: string | null;
+  platformEmail: string | null;
+  platformEmailForwardTo: string | null;
+  platformEmailVerified: boolean;
 };
 
 type FormValues = {
@@ -64,6 +67,7 @@ type FormValues = {
   instagramUrl: string;
   websiteUrl: string;
   lineId: string;
+  platformEmailForwardTo: string;
 };
 
 function toForm(s: StoreData): FormValues {
@@ -95,6 +99,7 @@ function toForm(s: StoreData): FormValues {
     instagramUrl: s.instagramUrl ?? "",
     websiteUrl: s.websiteUrl ?? "",
     lineId: s.lineId ?? "",
+    platformEmailForwardTo: s.platformEmailForwardTo ?? "",
   };
 }
 
@@ -135,7 +140,11 @@ export function StoreEditForm({ store }: { store: StoreData }) {
       setToast({ type: "err", msg: String(msg) });
     } else {
       const updated = await res.json().catch(() => null);
-      setToast({ type: "ok", msg: "บันทึกแล้ว" });
+      const warnings: string[] = Array.isArray(updated?.warnings) ? updated.warnings : [];
+      setToast({
+        type: warnings.length ? "err" : "ok",
+        msg: warnings.length ? `บันทึกแล้ว (มีข้อควรระวัง: ${warnings.join("; ")})` : "บันทึกแล้ว",
+      });
       router.refresh();
       if (updated?.slug && updated.slug !== store.slug) {
         setForm((f) => ({ ...f, slug: updated.slug }));
@@ -492,6 +501,44 @@ export function StoreEditForm({ store }: { store: StoreData }) {
                 className="w-full rounded-md border px-3 py-2 text-sm"
               />
             </Field>
+          </div>
+        </Section>
+
+        <Section title="อีเมลของระบบ (Identity Verification)">
+          <p className="text-xs text-muted-foreground">
+            อีเมลกลางบนโดเมน platform — provision อัตโนมัติเมื่อร้านตั้งค่า Custom Domain
+            ครั้งแรก ยืนยันตัวตนอัตโนมัติเมื่อ forward target = อีเมลที่ใช้ login (ไม่ต้อง OTP)
+          </p>
+          <Field label="อีเมลของระบบ" hint="ระบบสร้างให้เมื่อร้านตั้งค่า Custom Domain">
+            <input
+              value={store.platformEmail ?? "— ยังไม่มี —"}
+              readOnly
+              className="w-full rounded-md border bg-gray-50 px-3 py-2 font-mono text-sm text-gray-700"
+            />
+          </Field>
+          <Field
+            label="ส่งต่อไปที่ (Forward target)"
+            hint="ปลายทางที่อีเมลถูก forward ไป — ถ้าใส่อีเมลที่ตรงกับ owner.email (NextAuth verified) จะ verified อัตโนมัติ"
+          >
+            <input
+              type="email"
+              value={form.platformEmailForwardTo}
+              onChange={(e) => update("platformEmailForwardTo", e.target.value)}
+              placeholder="owner@gmail.com"
+              className="w-full rounded-md border px-3 py-2 text-sm"
+            />
+          </Field>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">สถานะ:</span>
+            {store.platformEmailVerified ? (
+              <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                ยืนยันแล้ว ✓
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+                ยังไม่ยืนยัน
+              </span>
+            )}
           </div>
         </Section>
       </div>

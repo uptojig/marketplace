@@ -39,6 +39,9 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
       instagramUrl: true,
       websiteUrl: true,
       lineId: true,
+      platformEmail: true,
+      platformEmailForwardTo: true,
+      platformEmailVerified: true,
       createdAt: true,
       // Agent-generated landing-page status
       landingBlocks: true,

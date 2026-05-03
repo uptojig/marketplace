@@ -3,6 +3,10 @@ import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  provisionPlatformEmail,
+  updatePlatformEmailForward,
+} from "@/lib/email/provision";
 
 const imageUrlSchema = z
   .union([z.string().url(), z.literal("")])
@@ -36,6 +40,11 @@ const schema = z.object({
     .or(z.literal(""))
     .optional(),
   lineId: z.string().max(50).optional().or(z.literal("")).optional(),
+  platformEmailForwardTo: z
+    .string()
+    .email("รูปแบบอีเมลไม่ถูกต้อง")
+    .or(z.literal(""))
+    .optional(),
 });
 
 async function getStore(email: string) {
@@ -90,6 +99,7 @@ export async function PATCH(req: Request) {
     contactPhone,
     facebookUrl,
     lineId,
+    platformEmailForwardTo,
   } = parsed.data;
 
   // Check slug uniqueness (allow own slug)
@@ -126,5 +136,42 @@ export async function PATCH(req: Request) {
     },
   });
 
-  return NextResponse.json(updated);
+  // Auto-provision platform email when customDomain transitions null/empty → set,
+  // and propagate forwardTo changes to the alias provider. Both are best-effort —
+  // failures don't roll back the settings save but surface as warnings.
+  const warnings: string[] = [];
+
+  const customDomainSetNow =
+    !!customDomain && customDomain !== "" && !store.customDomain;
+  if (customDomainSetNow && !updated.platformEmail) {
+    try {
+      await provisionPlatformEmail(updated.id);
+    } catch (err) {
+      warnings.push(
+        err instanceof Error
+          ? `อีเมลของระบบ: ${err.message}`
+          : "ออกอีเมลของระบบไม่สำเร็จ"
+      );
+    }
+  }
+
+  const desiredForwardTo = platformEmailForwardTo?.trim();
+  if (
+    desiredForwardTo &&
+    desiredForwardTo !== updated.platformEmailForwardTo
+  ) {
+    try {
+      await updatePlatformEmailForward(updated.id, desiredForwardTo);
+    } catch (err) {
+      warnings.push(
+        err instanceof Error
+          ? `อัปเดตปลายทาง forward: ${err.message}`
+          : "อัปเดต forward target ไม่สำเร็จ"
+      );
+    }
+  }
+
+  // Re-read so the response reflects post-provision/sync state.
+  const fresh = await prisma.store.findUnique({ where: { id: updated.id } });
+  return NextResponse.json({ ...(fresh ?? updated), warnings });
 }

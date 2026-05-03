@@ -4,6 +4,10 @@ import { getServerSession } from "next-auth";
 import { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  provisionPlatformEmail,
+  updatePlatformEmailForward,
+} from "@/lib/email/provision";
 
 const slugRegex = /^[a-z0-9฀-๿](?:[a-z0-9฀-๿-]*[a-z0-9฀-๿])?$/;
 const domainRegex = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
@@ -73,6 +77,19 @@ const updateSchema = z.object({
   province: trimNullable,
   postalCode: trimNullable,
   country: trimNullable,
+  // Platform-issued email (forwarding target only — alias itself is system-managed)
+  platformEmailForwardTo: z
+    .string()
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return undefined;
+      const t = v.trim();
+      return t === "" ? null : t;
+    })
+    .refine(
+      (v) => v == null || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+      "อีเมลไม่ถูกต้อง"
+    ),
 });
 
 async function requireAdmin() {
@@ -101,13 +118,70 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (v !== undefined) (data as Record<string, unknown>)[k] = v;
   }
 
+  // Capture before-state for platform email side-effect detection.
+  const before = await prisma.store.findUnique({
+    where: { id: params.id },
+    select: {
+      customDomain: true,
+      platformEmail: true,
+      platformEmailForwardTo: true,
+    },
+  });
+  if (!before) {
+    return NextResponse.json({ error: "Store not found" }, { status: 404 });
+  }
+
   try {
     const store = await prisma.store.update({
       where: { id: params.id },
       data,
-      select: { id: true, slug: true, name: true },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        customDomain: true,
+        platformEmail: true,
+        platformEmailForwardTo: true,
+        platformEmailVerified: true,
+      },
     });
-    return NextResponse.json(store);
+
+    const warnings: string[] = [];
+
+    const customDomainSetNow =
+      !!store.customDomain && !before.customDomain && !store.platformEmail;
+    if (customDomainSetNow) {
+      try {
+        await provisionPlatformEmail(store.id);
+      } catch (err) {
+        warnings.push(
+          err instanceof Error
+            ? `อีเมลของระบบ: ${err.message}`
+            : "ออกอีเมลของระบบไม่สำเร็จ"
+        );
+      }
+    }
+
+    if (
+      parsed.data.platformEmailForwardTo !== undefined &&
+      parsed.data.platformEmailForwardTo !== before.platformEmailForwardTo &&
+      parsed.data.platformEmailForwardTo
+    ) {
+      try {
+        await updatePlatformEmailForward(
+          store.id,
+          parsed.data.platformEmailForwardTo
+        );
+      } catch (err) {
+        warnings.push(
+          err instanceof Error
+            ? `อัปเดตปลายทาง forward: ${err.message}`
+            : "อัปเดต forward target ไม่สำเร็จ"
+        );
+      }
+    }
+
+    return NextResponse.json({ ...store, warnings });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       if (e.code === "P2025") {

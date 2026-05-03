@@ -132,12 +132,22 @@ model Store {
   instagramUrl  String?
   websiteUrl    String?
   lineId        String?
+  // ── Platform-issued email (Cloudflare Email Routing) ──
+  // Auto-provisioned alias on the platform's mail subdomain — used as an
+  // identity-verification anchor. Verified automatically when forwardTo
+  // equals the owner's NextAuth-verified login email; no OTP step.
+  platformEmail              String?   @unique
+  platformEmailForwardTo     String?
+  platformEmailVerified      Boolean   @default(false)
+  platformEmailVerifiedAt    DateTime?
+  platformEmailProvisionedAt DateTime?
   ownerId      String   @unique
   createdAt    DateTime @default(now())
 
-  owner    User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  products Product[]
-  items    OrderItem[]
+  owner                User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products             Product[]
+  items                OrderItem[]
+  identityVerification IdentityVerification?
 }
 
 model Product {
@@ -301,4 +311,30 @@ model WebhookLog {
   receivedAt      DateTime      @default(now())
 
   @@index([source, receivedAt])
+}
+
+// Identity verification record per store. Phase 1 covers email-based
+// verification (status = EMAIL_VERIFIED when the platform email forwards to
+// the owner's NextAuth-verified login email). KYC fields are placeholders
+// for Phase 2 (ID upload + business doc + admin review).
+enum IdentityVerificationStatus {
+  PENDING
+  EMAIL_VERIFIED
+  KYC_VERIFIED
+  REJECTED
+}
+
+model IdentityVerification {
+  id              String                     @id @default(cuid())
+  storeId         String                     @unique
+  status          IdentityVerificationStatus @default(PENDING)
+  emailVerifiedAt DateTime?
+  // Phase 2 (KYC) — unused in Phase 1
+  kycSubmittedAt  DateTime?
+  kycReviewedAt   DateTime?
+  kycEvidence     Json?
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }

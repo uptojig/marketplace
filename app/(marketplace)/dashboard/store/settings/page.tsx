@@ -54,7 +54,13 @@ export default async function StoreSettingsPage() {
           contactPhone: store.contactPhone ?? "",
           facebookUrl: store.facebookUrl ?? "",
           lineId: store.lineId ?? "",
+          platformEmailForwardTo: store.platformEmailForwardTo ?? "",
         }}
+        platformEmail={{
+          address: store.platformEmail,
+          verified: store.platformEmailVerified,
+        }}
+        ownerLoginEmail={user.email}
       />
     </div>
   );
