@@ -16,7 +16,7 @@ import { isValidThemeVariant } from "@/lib/landing/families";
 import { findPageBySlug } from "@/lib/multi-page-migration";
 
 // Reuse existing block renderer (which has all 21 block components + theme tokens)
-import { LandingPage, type Block } from "@/components/landing/BlockRenderer";
+import { LandingPage, type Block } from "@/components/storefront/BlockRenderer";
 
 // New global components for v12
 import { GlobalHeader } from "./GlobalHeader";

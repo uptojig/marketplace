@@ -9,8 +9,8 @@ import {
   LandingPage,
   type Block,
   type ThemeVariant,
-} from "@/components/landing/BlockRenderer";
-import { MultiPageRenderer } from "@/components/landing/MultiPageRenderer";
+} from "@/components/storefront/BlockRenderer";
+import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 import { isValidThemeVariant } from "@/lib/landing/families";
 import { isV12Schema } from "@/lib/multi-page-migration";
 

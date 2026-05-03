@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  *   PATCH /api/admin/stores/<id>/landing
  *     body: { blocks: [...], title?, themeVariant?: "cute" | "minimal" }
  *     - blocks must be a JSON array of { blockType, content } shapes
- *       compatible with components/landing/BlockRenderer
+ *       compatible with components/storefront/BlockRenderer
  *     - When `blocks` is empty array, clears the landing page (store
  *       falls back to the generic product grid renderer).
  *

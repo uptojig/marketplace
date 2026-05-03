@@ -7,7 +7,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isV12Schema } from "@/lib/multi-page-migration";
-import { MultiPageRenderer } from "@/components/landing/MultiPageRenderer";
+import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 
 export const dynamic = "force-dynamic";
 
