@@ -95,7 +95,16 @@ function BlockSwitch({
     case "CategoryBanner":
       return <CategoryBanner content={c} theme={theme} storeSlug={storeSlug} />;
     case "Nav":
-      return <Nav content={c} theme={theme} storeSlug={storeSlug} />;
+      // Storefront layout already renders the marketplace nav (logo,
+      // search, cart, account, language switcher). Agents are
+      // instructed to emit a Nav block per their generic v3 spec, but
+      // when the page is hosted INSIDE basketplace's /stores/<slug>
+      // shell we skip it — otherwise users see two stacked nav bars
+      // ("เมนูสองอัน"), one with working cart/search and one with
+      // dead anchor links from the agent. The Nav component is kept
+      // around for environments where this renderer is used outside
+      // the storefront layout (e.g. /p/<slug> standalone pages).
+      return null;
     case "ProductHero":
     case "Hero":
       return <ProductHero content={c} theme={theme} storeSlug={storeSlug} />;
@@ -125,7 +134,13 @@ function BlockSwitch({
     case "Contact":
       return <ContactFormBlock content={c} theme={theme} storeSlug={storeSlug} />;
     case "Footer":
-      return <Footer content={c} theme={theme} storeSlug={storeSlug} />;
+      // Same reasoning as the Nav case above — basketplace's
+      // storefront layout owns the footer (5-column commerce footer
+      // with policies, customer service, payment icons). Agent's
+      // Footer block would stack a second one beneath. Skip in this
+      // renderer; the standalone /p/<slug> layout that doesn't have
+      // a chrome footer would render Footer via a different path.
+      return null;
     default:
       return (
         <div className="border-y-2 border-dashed border-amber-300 bg-amber-50 px-6 py-4 text-amber-900">
