@@ -132,7 +132,7 @@ export default function CheckoutAddressPage() {
 
       <section className="space-y-4">
         {/* Status header */}
-        <div className="flex items-center gap-3 rounded-2xl border bg-white p-4">
+        <div className="flex items-center gap-3 shop-card !rounded-2xl p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600">
             <MapPin className="h-5 w-5" />
           </div>
@@ -145,7 +145,7 @@ export default function CheckoutAddressPage() {
         </div>
 
         {/* Address selection */}
-        <div className="rounded-2xl border bg-white p-4">
+        <div className="shop-card !rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">1. เลือกที่อยู่จัดส่ง</h2>
             <Button size="sm" variant="outline" onClick={() => setShowForm((s) => !s)}>

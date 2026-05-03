@@ -52,11 +52,11 @@ export default async function ShopLayout({
 
   return (
     <div
-      className="min-h-screen bg-[#f5f6f8]"
+      className="shop-page"
       style={{ ["--shop-primary" as string]: primary }}
     >
       {/* Top header */}
-      <header className="bg-white border-b">
+      <header className="shop-card !rounded-none border-x-0 border-t-0">
         {/* Top bar — logo, search, lang, account, cart */}
         <div className="hidden lg:block border-b">
           <div className="container mx-auto max-w-[1200px] px-4 py-4">
@@ -168,7 +168,7 @@ export default async function ShopLayout({
                   หมวดหมู่สินค้า
                   <ChevronDown className="h-3 w-3" />
                 </button>
-                <div className="absolute left-0 top-full z-30 hidden min-w-[260px] rounded-md border bg-white shadow-lg group-hover:block">
+                <div className="absolute left-0 top-full z-30 hidden min-w-[260px] rounded-md shop-card shadow-lg group-hover:block">
                   {categories.length === 0 ? (
                     <div className="px-4 py-3 text-xs text-gray-500">
                       ยังไม่มีหมวดหมู่ — import สินค้าก่อน
@@ -204,7 +204,7 @@ export default async function ShopLayout({
                   <button className="flex items-center gap-1 px-4 py-3 text-sm font-medium hover:text-[var(--shop-primary)]">
                     เกี่ยวกับร้าน <ChevronDown className="h-3 w-3" />
                   </button>
-                  <div className="absolute right-0 top-full z-30 hidden min-w-[200px] rounded-md border bg-white shadow-lg group-hover:block">
+                  <div className="absolute right-0 top-full z-30 hidden min-w-[200px] rounded-md shop-card shadow-lg group-hover:block">
                     <Link href={`/stores/${store.slug}`} className="block px-4 py-2 text-sm hover:bg-gray-50">
                       รายละเอียดร้าน
                     </Link>
@@ -252,7 +252,7 @@ export default async function ShopLayout({
       <main>{children}</main>
 
       {/* Footer service section */}
-      <footer className="mt-12 bg-white border-t">
+      <footer className="mt-12 shop-card !rounded-none border-x-0 border-b-0">
         <div className="container mx-auto max-w-[1200px] px-4 py-8">
           <div className="grid gap-8 md:grid-cols-2">
             <div>
@@ -297,7 +297,7 @@ export default async function ShopLayout({
         </div>
 
         {/* Footer info — 5 columns */}
-        <div className="border-t bg-white">
+        <div className="shop-card !rounded-none border-x-0 border-b-0 border-t">
           <div className="container mx-auto max-w-[1200px] px-4 py-10">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
               <div>

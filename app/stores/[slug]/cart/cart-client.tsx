@@ -94,20 +94,16 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
       )}
 
       {lines.length === 0 ? (
-        <div className="mt-6 rounded-xl border bg-white p-12 text-center">
+        <div className="mt-6 shop-card p-12 text-center">
           <ShoppingBag className="mx-auto h-10 w-10 text-gray-300" />
           <p className="mt-3 text-sm text-gray-600">ตะกร้าของร้านนี้ยังว่าง</p>
-          <Link
-            href={`/stores/${store.slug}`}
-            className="mt-4 inline-flex rounded-md px-4 py-2 text-sm font-medium text-white"
-            style={{ backgroundColor: primary }}
-          >
+          <Link href={`/stores/${store.slug}`} className="shop-btn-primary mt-4">
             เลือกซื้อสินค้า
           </Link>
         </div>
       ) : (
         <>
-          <div className="mt-5 divide-y rounded-xl border bg-white">
+          <div className="mt-5 divide-y shop-card">
             {lines.map((l) => (
               <div key={l.productId} className="flex items-center gap-4 p-4">
                 <Link
@@ -130,9 +126,7 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                   >
                     {l.title}
                   </Link>
-                  <div className="mt-1 text-base font-bold" style={{ color: primary }}>
-                    {formatTHB(l.priceTHB)}
-                  </div>
+                  <div className="shop-price mt-1">{formatTHB(l.priceTHB)}</div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center rounded-md border">
@@ -175,15 +169,14 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
             ))}
           </div>
 
-          <div className="mt-5 rounded-xl border bg-white p-5">
+          <div className="mt-5 shop-card p-5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">ยอดรวม</span>
               <span className="text-2xl font-bold">{formatTHB(subtotal)}</span>
             </div>
             <Link
               href={`/checkout/address?store=${store.slug}`}
-              className="mt-4 flex w-full items-center justify-center rounded-lg py-3 text-base font-semibold text-white transition hover:opacity-90"
-              style={{ backgroundColor: primary }}
+              className="shop-btn-primary mt-4 w-full py-3 text-base"
             >
               ดำเนินการชำระเงิน
             </Link>

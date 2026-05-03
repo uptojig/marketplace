@@ -128,7 +128,7 @@ export default async function StorePage({
   return (
     <>
       {/* Banner area */}
-      <section className="bg-white">
+      <section className="shop-card !rounded-none border-x-0 border-y-0">
         <div className="container mx-auto max-w-[1200px] px-4 pt-4">
           <div className="overflow-hidden rounded-lg">
             {store.bannerUrl ? (
@@ -214,7 +214,7 @@ export default async function StorePage({
             return (
               <article
                 key={p.id}
-                className="group flex flex-col overflow-hidden rounded-lg border bg-white transition hover:shadow"
+                className="shop-card group flex flex-col overflow-hidden transition hover:shadow"
               >
                 <Link
                   href={`/stores/${store.slug}/products/${p.id}`}
