@@ -10,6 +10,7 @@ import {
   type Block,
   type ThemeVariant,
 } from "@/components/landing/BlockRenderer";
+import { isValidThemeVariant } from "@/lib/landing/families";
 
 export const dynamic = "force-dynamic";
 
@@ -59,19 +60,35 @@ export default async function StorePage({
   // canonical header (logo / search / cart / categories) and footer (5-column
   // shipping / contact / policies). Agent-generated chrome is redundant and
   // showed up as duplicate headers/footers on production.
+  //
+  // Agent 01 v3 emits `type` (not `blockType`) — we accept either for
+  // forward compat. BlockRenderer also handles either internally.
   const landingBlocks = Array.isArray(baseStore.landingBlocks)
-    ? (baseStore.landingBlocks as unknown[]).filter(
-        (b): b is Block =>
-          !!b &&
-          typeof b === "object" &&
-          typeof (b as Block).blockType === "string" &&
-          (b as Block).blockType !== "Nav" &&
-          (b as Block).blockType !== "Footer",
-      )
+    ? (baseStore.landingBlocks as unknown[])
+        .map((b): Block | null => {
+          if (!b || typeof b !== "object") return null;
+          const obj = b as Record<string, unknown>;
+          const t =
+            typeof obj.blockType === "string"
+              ? obj.blockType
+              : typeof obj.type === "string"
+                ? obj.type
+                : null;
+          if (!t) return null;
+          return { ...(obj as Block), blockType: t };
+        })
+        .filter(
+          (b): b is Block =>
+            !!b && b.blockType !== "Nav" && b.blockType !== "Footer",
+        )
     : [];
   if (landingBlocks.length > 0) {
-    const theme: ThemeVariant =
-      baseStore.landingThemeVariant === "cute" ? "cute" : "minimal";
+    // Accept any v3 design family (A-I) plus legacy "minimal"/"cute" — fall
+    // back to "A" (Editorial Minimal Warm) for unknown / unset values.
+    const stored = baseStore.landingThemeVariant;
+    const theme: ThemeVariant = isValidThemeVariant(stored ?? "")
+      ? (stored as ThemeVariant)
+      : "A";
     return (
       <LandingPage
         blocks={landingBlocks}

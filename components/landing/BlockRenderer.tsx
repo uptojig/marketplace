@@ -35,8 +35,9 @@ import {
   Star,
   ChevronRight,
 } from "lucide-react";
+import type { ThemeVariant } from "@/lib/landing/families";
 
-export type ThemeVariant = "minimal" | "cute";
+export type { ThemeVariant };
 
 export type Block = {
   blockType: string;
@@ -52,7 +53,7 @@ interface RenderProps {
 /* ─── Public API ─────────────────────────────────────── */
 
 export function LandingPage({ blocks, theme, storeSlug }: RenderProps) {
-  const bg = theme === "cute" ? "bg-pink-50/30" : "bg-[#faf7f2]";
+  const bg = isPlayful(theme) ? "bg-pink-50/30" : "bg-[#faf7f2]";
   return (
     <main className={`min-h-screen ${bg}`}>
       {blocks.map((b, i) => (
@@ -136,9 +137,120 @@ function BlockSwitch({
   }
 }
 
-/* ─── Theme tokens ─────────────────────────────────── */
+/* ─── Theme behaviour helpers ─────────────────────────────────────── */
+
+// Some legacy block branches branched on `theme === "cute"` for playful
+// styling (rounded, pink-ish accents). With 9 v3 families we treat
+// `cute` (legacy) and `I` (Playful Mass Commerce) as the two playful
+// variants — every other family follows the "minimal/editorial" branch.
+function isPlayful(theme: ThemeVariant): boolean {
+  return theme === "cute" || theme === "I";
+}
+
+/* ─── Theme tokens — Agent 01 v3 design families (A-I) + legacy ───── */
 
 const T = {
+  // A — Editorial Minimal Warm (stone + amber, premium furniture/lifestyle)
+  A: {
+    accent: "text-amber-700",
+    bgAccent: "bg-amber-700",
+    bgAccentHover: "hover:bg-amber-800",
+    ring: "ring-amber-200",
+    softBg: "bg-stone-50",
+    headline: "font-medium text-stone-900 tracking-tight",
+    cardRadius: "rounded-none",
+    btnRadius: "rounded-none",
+  },
+  // B — Editorial Soft Feminine (rose + serif, Korean fashion/jewelry)
+  B: {
+    accent: "text-rose-900",
+    bgAccent: "bg-rose-700",
+    bgAccentHover: "hover:bg-rose-800",
+    ring: "ring-rose-200",
+    softBg: "bg-rose-50",
+    headline: "font-serif text-rose-900",
+    cardRadius: "rounded-2xl",
+    btnRadius: "rounded-full",
+  },
+  // C — Luxury Heritage Gold (black + pearl + gold, watches/heritage)
+  C: {
+    accent: "text-amber-400",
+    bgAccent: "bg-amber-400",
+    bgAccentHover: "hover:bg-amber-500",
+    ring: "ring-amber-300",
+    softBg: "bg-stone-900",
+    headline: "font-serif font-bold text-amber-50",
+    cardRadius: "rounded-none",
+    btnRadius: "rounded-none",
+  },
+  // D — Industrial Masculine (zinc + black, men's leather/automotive)
+  D: {
+    accent: "text-zinc-100",
+    bgAccent: "bg-zinc-900",
+    bgAccentHover: "hover:bg-zinc-800",
+    ring: "ring-zinc-300",
+    softBg: "bg-zinc-100",
+    headline: "font-bold uppercase text-zinc-900 tracking-tight",
+    cardRadius: "rounded-none",
+    btnRadius: "rounded-none",
+  },
+  // E — Cyberpunk Gaming Neon (purple + green dual neon, gaming/esports)
+  E: {
+    accent: "text-purple-400",
+    bgAccent: "bg-purple-600",
+    bgAccentHover: "hover:bg-purple-500",
+    ring: "ring-purple-300",
+    softBg: "bg-stone-900",
+    headline: "font-extrabold text-green-400 tracking-wide",
+    cardRadius: "rounded-md",
+    btnRadius: "rounded-md",
+  },
+  // F — Sport Editorial Action (blue + red + yellow, athletic/running)
+  F: {
+    accent: "text-blue-900",
+    bgAccent: "bg-blue-900",
+    bgAccentHover: "hover:bg-red-600",
+    ring: "ring-blue-200",
+    softBg: "bg-blue-50",
+    headline: "font-extrabold uppercase text-blue-900 tracking-tight",
+    cardRadius: "rounded-md",
+    btnRadius: "rounded-md",
+  },
+  // G — Botanical Lifestyle Premium (green + cream, skincare/wellness)
+  G: {
+    accent: "text-green-700",
+    bgAccent: "bg-green-700",
+    bgAccentHover: "hover:bg-green-800",
+    ring: "ring-green-200",
+    softBg: "bg-stone-50",
+    headline: "font-serif font-medium text-green-900",
+    cardRadius: "rounded-2xl",
+    btnRadius: "rounded-full",
+  },
+  // H — Cozy Niche Skeumorphism (warm textured amber, coffee/handmade)
+  H: {
+    accent: "text-amber-800",
+    bgAccent: "bg-amber-700",
+    bgAccentHover: "hover:bg-amber-800",
+    ring: "ring-amber-200",
+    softBg: "bg-amber-50",
+    headline: "font-bold text-amber-900",
+    cardRadius: "rounded-3xl",
+    btnRadius: "rounded-full",
+  },
+  // I — Playful Mass Commerce (pink + yellow + blue, kids/toys/cute)
+  I: {
+    accent: "text-pink-600",
+    bgAccent: "bg-pink-500",
+    bgAccentHover: "hover:bg-pink-600",
+    ring: "ring-pink-200",
+    softBg: "bg-pink-50",
+    headline: "font-extrabold text-stone-900",
+    cardRadius: "rounded-2xl",
+    btnRadius: "rounded-full",
+  },
+  // Legacy aliases — old data persisted before v3 still renders.
+  // "cute" maps to family I (its closest sibling), "minimal" maps to family A.
   cute: {
     accent: "text-pink-600",
     bgAccent: "bg-pink-500",
@@ -275,7 +387,7 @@ function Nav({
   return (
     <nav
       className={`sticky top-0 z-40 flex items-center justify-between border-b ${
-        theme === "cute" ? "border-pink-100 bg-white/90" : "border-stone-200 bg-[#faf7f2]"
+        isPlayful(theme) ? "border-pink-100 bg-white/90" : "border-stone-200 bg-[#faf7f2]"
       } px-5 py-3 backdrop-blur-md sm:px-8`}
     >
       <Link href={`/stores/${storeSlug}`} className={`text-xl font-bold ${t.accent}`}>
@@ -314,7 +426,7 @@ function ProductHero({
   storeSlug: string;
 }) {
   const t = T[theme];
-  const cute = theme === "cute";
+  const cute = isPlayful(theme);
   const headline = s(content.headline) ?? "";
   const sub = s(content.subheadline);
   const badge = s(content.badge);
@@ -388,7 +500,7 @@ function ProductHero({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={img}
-              alt={s(content.image_alt) ?? headline}
+              alt={s(content.altText) ?? s(content.image_alt) ?? headline}
               loading="lazy"
               className={`aspect-square w-full object-cover shadow-2xl ${
                 cute ? "rounded-2xl border-4 border-white" : ""
@@ -414,7 +526,7 @@ function Stats({
   );
   if (items.length === 0) return null;
   return (
-    <section className={`px-6 py-14 ${theme === "cute" ? "bg-white" : "bg-white"}`}>
+    <section className={`px-6 py-14 ${isPlayful(theme) ? "bg-white" : "bg-white"}`}>
       <div className="mx-auto max-w-5xl">
         {s(content.headline) && (
           <h2 className={`mb-10 text-center text-3xl md:text-4xl ${t.headline}`}>
@@ -458,7 +570,7 @@ function OfferGrid({
   return (
     <section
       className={`px-6 py-14 lg:py-20 ${
-        theme === "cute" ? "bg-amber-50/40" : "bg-[#faf7f2]"
+        isPlayful(theme) ? "bg-amber-50/40" : "bg-[#faf7f2]"
       }`}
     >
       <div className="mx-auto max-w-6xl">
@@ -488,14 +600,14 @@ function OfferGrid({
                 key={i}
                 href={href}
                 className={`group flex flex-col overflow-hidden border bg-white shadow-md transition hover:shadow-xl ${t.cardRadius} ${
-                  theme === "cute" ? "border-stone-100" : "border-stone-200"
+                  isPlayful(theme) ? "border-stone-100" : "border-stone-200"
                 }`}
               >
                 <div className="relative aspect-square overflow-hidden bg-stone-100">
                   {s(it.badge) && (
                     <span
                       className={`absolute left-3 top-3 z-10 rounded px-2 py-1 text-xs font-bold shadow-sm backdrop-blur-sm ${
-                        theme === "cute"
+                        isPlayful(theme)
                           ? "bg-white/90 text-pink-600"
                           : "bg-white/95 text-stone-900"
                       }`}
@@ -517,7 +629,7 @@ function OfferGrid({
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={img}
-                      alt={title}
+                      alt={s(it.altText) ?? title}
                       loading="lazy"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
@@ -547,7 +659,7 @@ function OfferGrid({
                     </div>
                     <span
                       className={`inline-flex items-center rounded-lg p-2 text-white ${
-                        theme === "cute" ? "bg-stone-900" : "bg-stone-900"
+                        isPlayful(theme) ? "bg-stone-900" : "bg-stone-900"
                       }`}
                     >
                       <ShoppingCart size={18} />
@@ -590,7 +702,7 @@ function Features({
           {items.map((it, i) => (
             <div
               key={i}
-              className={`p-6 ${t.cardRadius} ${theme === "cute" ? "bg-pink-50" : "border border-stone-200 bg-white"}`}
+              className={`p-6 ${t.cardRadius} ${isPlayful(theme) ? "bg-pink-50" : "border border-stone-200 bg-white"}`}
             >
               <h3 className={`mb-2 text-xl font-bold ${t.accent}`}>
                 {String(it.title ?? "")}
@@ -677,7 +789,7 @@ function CTA({
   const validHref = href && href !== "#" ? href : null;
   return (
     <section
-      className={`px-6 py-14 ${theme === "cute" ? "bg-emerald-50" : "bg-[#b8956a]"}`}
+      className={`px-6 py-14 ${isPlayful(theme) ? "bg-emerald-50" : "bg-[#b8956a]"}`}
     >
       <div
         className={`mx-auto flex max-w-4xl flex-col items-center text-center ${t.cardRadius} bg-white p-8 shadow-lg md:p-12`}
@@ -685,7 +797,7 @@ function CTA({
         {s(content.badge) && (
           <span
             className={`mb-6 rounded-full px-4 py-1.5 font-bold ${
-              theme === "cute" ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-800"
+              isPlayful(theme) ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-800"
             }`}
           >
             {s(content.badge)}
@@ -701,7 +813,7 @@ function CTA({
           <Link
             href={validHref}
             className={`mb-4 inline-flex ${t.btnRadius} ${
-              theme === "cute" ? "bg-emerald-500 hover:bg-emerald-600" : t.bgAccent
+              isPlayful(theme) ? "bg-emerald-500 hover:bg-emerald-600" : t.bgAccent
             } px-10 py-4 text-lg font-bold text-white shadow-md transition`}
           >
             {s(content.cta_text)}
@@ -726,7 +838,7 @@ function Testimonial({
   const quotes = arr<Record<string, unknown>>(content.quotes);
   if (quotes.length === 0) return null;
   return (
-    <section className={`px-6 py-14 ${theme === "cute" ? "bg-pink-50/40" : "bg-white"}`}>
+    <section className={`px-6 py-14 ${isPlayful(theme) ? "bg-pink-50/40" : "bg-white"}`}>
       <div className="mx-auto max-w-5xl">
         {s(content.headline) && (
           <h2 className={`mb-10 text-center text-3xl md:text-4xl ${t.headline}`}>
@@ -743,7 +855,7 @@ function Testimonial({
                 {Array.from({ length: 5 }).map((_, j) => (
                   <Star
                     key={j}
-                    className={`h-4 w-4 ${theme === "cute" ? "text-pink-500" : "text-stone-700"}`}
+                    className={`h-4 w-4 ${isPlayful(theme) ? "text-pink-500" : "text-stone-700"}`}
                     fill="currentColor"
                   />
                 ))}
@@ -788,7 +900,7 @@ function Gallery({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={img}
-                  alt={s(it.alt) ?? ""}
+                  alt={s(it.altText) ?? s(it.alt) ?? ""}
                   className="aspect-square w-full object-cover"
                 />
               </div>
@@ -811,7 +923,7 @@ function FAQ({
   const items = arr<Record<string, unknown>>(content.items);
   if (items.length === 0) return null;
   return (
-    <section className={`px-6 py-14 ${theme === "cute" ? "bg-pink-50/30" : "bg-[#faf7f2]"}`}>
+    <section className={`px-6 py-14 ${isPlayful(theme) ? "bg-pink-50/30" : "bg-[#faf7f2]"}`}>
       <div className="mx-auto max-w-3xl">
         {s(content.headline) && (
           <h2 className={`mb-10 text-center text-3xl md:text-4xl ${t.headline}`}>
@@ -846,11 +958,11 @@ function Countdown({
 }) {
   const t = T[theme];
   return (
-    <section className={`px-6 py-12 text-center ${theme === "cute" ? "bg-amber-50" : "bg-stone-900 text-white"}`}>
+    <section className={`px-6 py-12 text-center ${isPlayful(theme) ? "bg-amber-50" : "bg-stone-900 text-white"}`}>
       {s(content.headline) && (
         <h2
           className={`mb-3 text-3xl md:text-4xl ${
-            theme === "cute" ? t.headline : "font-medium"
+            isPlayful(theme) ? t.headline : "font-medium"
           }`}
         >
           {s(content.headline)}
@@ -859,7 +971,7 @@ function Countdown({
       {s(content.subheadline) && (
         <p
           className={`mb-6 ${
-            theme === "cute" ? "text-stone-600" : "text-stone-300"
+            isPlayful(theme) ? "text-stone-600" : "text-stone-300"
           }`}
         >
           {s(content.subheadline)}
@@ -885,7 +997,7 @@ function ContactFormBlock({
   const t = T[theme];
   const email = s(content.contact_email);
   return (
-    <section className={`px-6 py-14 ${theme === "cute" ? "bg-pink-50/40" : "bg-[#faf7f2]"}`}>
+    <section className={`px-6 py-14 ${isPlayful(theme) ? "bg-pink-50/40" : "bg-[#faf7f2]"}`}>
       <div className="mx-auto max-w-3xl">
         <div className="text-center">
           <h2 className={`text-3xl md:text-4xl ${t.headline}`}>
@@ -900,14 +1012,14 @@ function ContactFormBlock({
             <a
               href={`mailto:${email}`}
               className={`flex items-center gap-3 border-b px-6 py-4 ${
-                theme === "cute"
+                isPlayful(theme)
                   ? "border-pink-100 bg-gradient-to-r from-pink-100 via-rose-50 to-amber-50"
                   : "border-stone-200 bg-stone-50"
               }`}
             >
               <span
                 className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                  theme === "cute" ? "bg-white/80 text-pink-600" : "bg-white text-stone-700"
+                  isPlayful(theme) ? "bg-white/80 text-pink-600" : "bg-white text-stone-700"
                 } shadow-sm`}
               >
                 <Mail className="h-5 w-5" />
@@ -953,7 +1065,7 @@ function Footer({
   return (
     <footer
       className={`flex flex-col items-center gap-4 px-6 py-12 text-center text-sm ${
-        theme === "cute" ? "bg-stone-900 text-stone-300" : "bg-[#1c1917] text-stone-400"
+        isPlayful(theme) ? "bg-stone-900 text-stone-300" : "bg-[#1c1917] text-stone-400"
       } sm:py-14`}
     >
       {s(content.brand) && (
@@ -986,5 +1098,543 @@ function Footer({
         {s(content.copyright) ?? `© ${new Date().getFullYear()} /stores/${storeSlug}`}
       </div>
     </footer>
+  );
+}
+
+/* ─── Agent 01 v3 — Branding & Visual blocks ───────── */
+
+function LogoBlock({
+  content,
+  theme,
+  storeSlug,
+}: {
+  content: Record<string, unknown>;
+  theme: ThemeVariant;
+  storeSlug: string;
+}) {
+  const t = T[theme];
+  const imageUrl = s(content.imageUrl);
+  const altText = s(content.altText) ?? s(content.brandText) ?? "logo";
+  const brandText = s(content.brandText);
+  const linkTo = s(content.linkTo) ?? `/stores/${storeSlug}`;
+  const size = s(content.size) ?? "md";
+  const sizeClass =
+    size === "sm" ? "h-8" : size === "lg" ? "h-16" : "h-12";
+  return (
+    <div className="flex items-center justify-center px-6 py-6">
+      <Link href={linkTo} className="flex items-center gap-3">
+        {imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt={altText} className={`${sizeClass} w-auto object-contain`} />
+        )}
+        {brandText && (
+          <span className={`text-xl font-bold ${t.accent}`}>{brandText}</span>
+        )}
+      </Link>
+    </div>
+  );
+}
+
+function BannerBlock({
+  content,
+  theme,
+}: {
+  content: Record<string, unknown>;
+  theme: ThemeVariant;
+}) {
+  const t = T[theme];
+  const text = s(content.text);
+  const ctaText = s(content.ctaText);
+  const ctaLink = s(content.ctaLink) ?? "#";
+  const position = s(content.position) ?? "top";
+  if (!text) return null;
+  return (
+    <div
+      className={`flex flex-wrap items-center justify-center gap-3 px-4 py-2.5 text-center text-sm font-medium ${
+        isPlayful(theme) ? "bg-pink-100 text-stone-900" : "bg-stone-900 text-stone-50"
+      } ${position === "top" ? "" : ""}`}
+    >
+      <span>{text}</span>
+      {ctaText && (
+        <Link
+          href={ctaLink}
+          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+            isPlayful(theme) ? "bg-pink-500 text-white" : "bg-amber-400 text-stone-900"
+          } ${t.bgAccentHover}`}
+        >
+          {ctaText} <ChevronRight className="h-3 w-3" />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function HeroBanner({
+  content,
+  theme,
+  storeSlug,
+}: {
+  content: Record<string, unknown>;
+  theme: ThemeVariant;
+  storeSlug: string;
+}) {
+  const t = T[theme];
+  const imageUrl = s(content.imageUrl);
+  const imageMobileUrl = s(content.imageMobileUrl) ?? imageUrl;
+  const altText = s(content.altText) ?? "";
+  const headline = s(content.headline);
+  const subheadline = s(content.subheadline);
+  const ctaText = s(content.ctaText);
+  const ctaLink = s(content.ctaLink) ?? `/stores/${storeSlug}`;
+  const secondaryCtaText = s(content.secondaryCtaText);
+  const secondaryCtaLink = s(content.secondaryCtaLink) ?? "#";
+  const overlayOpacity = n(content.overlayOpacity) ?? 0.4;
+  const textPosition = s(content.textPosition) ?? "center";
+  const align =
+    textPosition === "left"
+      ? "items-start text-left"
+      : textPosition === "right"
+        ? "items-end text-right"
+        : "items-center text-center";
+  return (
+    <section className="relative w-full overflow-hidden">
+      {imageUrl && (
+        <picture>
+          <source media="(max-width: 640px)" srcSet={imageMobileUrl} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imageUrl} alt={altText} className="h-[60vh] min-h-[420px] w-full object-cover sm:h-[75vh]" />
+        </picture>
+      )}
+      <div
+        className="absolute inset-0 bg-black"
+        style={{ opacity: overlayOpacity }}
+        aria-hidden="true"
+      />
+      <div className={`absolute inset-0 flex flex-col justify-center gap-4 px-6 sm:px-12 ${align}`}>
+        {headline && (
+          <h2 className={`max-w-3xl text-3xl font-bold text-white drop-shadow-lg sm:text-5xl md:text-6xl ${t.headline}`}>
+            {headline}
+          </h2>
+        )}
+        {subheadline && (
+          <p className="max-w-2xl text-lg text-white/95 drop-shadow sm:text-xl">{subheadline}</p>
+        )}
+        <div className="flex flex-wrap gap-3">
+          {ctaText && (
+            <Link
+              href={ctaLink}
+              className={`inline-flex items-center ${t.btnRadius} ${t.bgAccent} px-6 py-3 text-base font-semibold text-white shadow-lg transition ${t.bgAccentHover}`}
+            >
+              {ctaText}
+            </Link>
+          )}
+          {secondaryCtaText && (
+            <Link
+              href={secondaryCtaLink}
+              className={`inline-flex items-center ${t.btnRadius} border border-white/80 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/20`}
+            >
+              {secondaryCtaText}
+            </Link>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ImageSlide({
+  content,
+  theme,
+}: {
+  content: Record<string, unknown>;
+  theme: ThemeVariant;
+}) {
+  const slides = arr<Record<string, unknown>>(content.slides);
+  const aspectRatio = s(content.aspectRatio) ?? "16/9";
+  if (slides.length === 0) return null;
+  // SSR-friendly horizontal scroll-snap carousel — no client JS, swipe/drag works on mobile.
+  return (
+    <section className={`${isPlayful(theme) ? "bg-pink-50/40" : "bg-stone-50"} py-8`}>
+      <div className="overflow-x-auto">
+        <div
+          className="flex snap-x snap-mandatory gap-4 px-6"
+          style={{ scrollbarWidth: "none" }}
+        >
+          {slides.map((slide, i) => {
+            const imageUrl = s(slide.imageUrl);
+            const altText = s(slide.altText) ?? `slide ${i + 1}`;
+            const linkTo = s(slide.linkTo);
+            const caption = s(slide.caption);
+            if (!imageUrl) return null;
+            const inner = (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrl}
+                  alt={altText}
+                  className="h-full w-full object-cover"
+                  style={{ aspectRatio }}
+                />
+                {caption && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                    <p className="text-sm font-medium text-white">{caption}</p>
+                  </div>
+                )}
+              </>
+            );
+            return (
+              <div
+                key={i}
+                className="relative w-[88%] flex-shrink-0 snap-center overflow-hidden rounded-lg sm:w-[60%] md:w-[48%]"
+              >
+                {linkTo ? (
+                  <Link href={linkTo} className="block h-full w-full">
+                    {inner}
+                  </Link>
+                ) : (
+                  inner
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LogoCloud({
+  content,
+  theme,
+}: {
+  content: Record<string, unknown>;
+  theme: ThemeVariant;
+}) {
+  const title = s(content.title);
+  const logos = arr<Record<string, unknown>>(content.logos);
+  const grayscale = content.grayscale === true;
+  if (logos.length === 0) return null;
+  return (
+    <section className={`${isPlayful(theme) ? "bg-white" : "bg-stone-50"} px-6 py-10`}>
+      <div className="mx-auto max-w-5xl">
+        {title && (
+          <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-stone-500">
+            {title}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+          {logos.map((logo, i) => {
+            const url = s(logo.imageUrl);
+            const altText = s(logo.altText) ?? `logo ${i + 1}`;
+            if (!url) return null;
+            return (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={url}
+                alt={altText}
+                className={`h-8 w-auto object-contain opacity-80 transition hover:opacity-100 sm:h-10 ${
+                  grayscale ? "grayscale hover:grayscale-0" : ""
+                }`}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BundleBlock({
+  content,
+  theme,
+  storeSlug,
+}: {
+  content: Record<string, unknown>;
+  theme: ThemeVariant;
+  storeSlug: string;
+}) {
+  const t = T[theme];
+  const title = s(content.title);
+  const items = arr<Record<string, unknown>>(content.items);
+  const bundlePrice = n(content.bundlePrice);
+  const originalTotal = n(content.originalTotal);
+  const savings = n(content.savings);
+  const ctaText = s(content.ctaText) ?? "สั่งชุดนี้";
+  const ctaLink = s(content.ctaLink) ?? `/stores/${storeSlug}/cart`;
+  const badge = s(content.badge);
+  return (
+    <section className="px-6 py-12">
+      <div
+        className={`mx-auto max-w-5xl overflow-hidden ${t.cardRadius} border ${
+          isPlayful(theme) ? "border-pink-200 bg-white" : "border-stone-200 bg-stone-50"
+        } p-6 shadow-sm sm:p-10`}
+      >
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          {title && <h2 className={`text-2xl font-bold sm:text-3xl ${t.headline}`}>{title}</h2>}
+          {badge && (
+            <span
+              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                isPlayful(theme) ? "bg-pink-500 text-white" : "bg-amber-500 text-white"
+              }`}
+            >
+              {badge}
+            </span>
+          )}
+        </div>
+
+        {items.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {items.map((item, i) => {
+              const name = s(item.name);
+              const imageUrl = s(item.imageUrl);
+              const altText = s(item.altText) ?? name ?? `item ${i + 1}`;
+              const originalPrice = n(item.originalPrice);
+              return (
+                <div
+                  key={i}
+                  className={`overflow-hidden ${t.cardRadius} bg-white ring-1 ${t.ring}`}
+                >
+                  {imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={imageUrl}
+                      alt={altText}
+                      className="aspect-square w-full object-cover"
+                    />
+                  )}
+                  <div className="p-3">
+                    {name && <p className="text-sm font-medium text-stone-900">{name}</p>}
+                    {typeof originalPrice === "number" && (
+                      <p className="mt-1 text-xs text-stone-500 line-through">
+                        ฿{bahtFormat(originalPrice)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 pt-6">
+          <div>
+            {typeof originalTotal === "number" && (
+              <p className="text-xs text-stone-500 line-through">
+                ฿{bahtFormat(originalTotal)}
+              </p>
+            )}
+            {typeof bundlePrice === "number" && (
+              <p className={`text-3xl font-bold ${t.accent}`}>
+                ฿{bahtFormat(bundlePrice)}
+              </p>
+            )}
+            {typeof savings === "number" && savings > 0 && (
+              <p className="text-sm font-medium text-emerald-600">
+                ประหยัด ฿{bahtFormat(savings)}
+              </p>
+            )}
+          </div>
+          <Link
+            href={ctaLink}
+            className={`inline-flex items-center gap-2 ${t.btnRadius} ${t.bgAccent} px-6 py-3 text-base font-semibold text-white shadow-md transition ${t.bgAccentHover}`}
+          >
+            <ShoppingCart className="h-4 w-4" />
+            {ctaText}
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Reviews({
+  content,
+  theme,
+}: {
+  content: Record<string, unknown>;
+  theme: ThemeVariant;
+}) {
+  const t = T[theme];
+  const title = s(content.title);
+  const subtitle = s(content.subtitle);
+  const items = arr<Record<string, unknown>>(content.reviews);
+  if (items.length === 0) return null;
+  return (
+    <section className={`${isPlayful(theme) ? "bg-pink-50/40" : "bg-stone-50"} px-6 py-12`}>
+      <div className="mx-auto max-w-6xl">
+        {title && (
+          <h2 className={`mb-2 text-center text-2xl font-bold sm:text-3xl ${t.headline}`}>
+            {title}
+          </h2>
+        )}
+        {subtitle && (
+          <p className="mb-8 text-center text-sm text-stone-600">{subtitle}</p>
+        )}
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          {items.map((r, i) => {
+            const name = s(r.name) ?? "ลูกค้า";
+            const rating = Math.max(0, Math.min(5, Math.round(n(r.rating) ?? 5)));
+            const photoUrl = s(r.photoUrl);
+            const altText = s(r.altText) ?? name;
+            const comment = s(r.comment);
+            const location = s(r.location);
+            const date = s(r.date);
+            return (
+              <div
+                key={i}
+                className={`flex flex-col gap-3 ${t.cardRadius} bg-white p-5 ring-1 ${t.ring}`}
+              >
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Star
+                      key={j}
+                      className={`h-4 w-4 ${
+                        j < rating
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-stone-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+                {comment && (
+                  <p className="text-sm leading-relaxed text-stone-700">
+                    &ldquo;{comment}&rdquo;
+                  </p>
+                )}
+                <div className="flex items-center gap-3 border-t border-stone-100 pt-3">
+                  {photoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={photoUrl}
+                      alt={altText}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-stone-900">{name}</p>
+                    {(location || date) && (
+                      <p className="truncate text-xs text-stone-500">
+                        {[location, date].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CategoryBanner({
+  content,
+  theme,
+  storeSlug,
+}: {
+  content: Record<string, unknown>;
+  theme: ThemeVariant;
+  storeSlug: string;
+}) {
+  const t = T[theme];
+  const title = s(content.title);
+  const subtitle = s(content.subtitle);
+  const layout = s(content.layout) ?? "grid-3";
+  const aspectRatio = s(content.aspectRatio) ?? "4/3";
+  const categories = arr<Record<string, unknown>>(content.categories);
+  if (categories.length === 0) return null;
+
+  // Layout → Tailwind grid/scroll classes.
+  const containerClass =
+    layout === "grid-2"
+      ? "grid gap-4 sm:grid-cols-2"
+      : layout === "grid-4"
+        ? "grid grid-cols-2 gap-3 md:grid-cols-4"
+        : layout === "masonry"
+          ? "columns-2 gap-4 md:columns-3"
+          : layout === "carousel"
+            ? "flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2"
+            : "grid gap-4 sm:grid-cols-2 md:grid-cols-3"; // grid-3 default
+
+  return (
+    <section className="px-6 py-12">
+      <div className="mx-auto max-w-6xl">
+        {title && (
+          <h2 className={`mb-2 text-center text-2xl font-bold sm:text-3xl ${t.headline}`}>
+            {title}
+          </h2>
+        )}
+        {subtitle && (
+          <p className="mb-8 text-center text-sm text-stone-600">{subtitle}</p>
+        )}
+        <div className={containerClass}>
+          {categories.map((cat, i) => {
+            const name = s(cat.name);
+            const imageUrl = s(cat.imageUrl);
+            const imageMobileUrl = s(cat.imageMobileUrl) ?? imageUrl;
+            const altText = s(cat.altText) ?? name ?? `category ${i + 1}`;
+            const linkTo = s(cat.linkTo);
+            const ctaText = s(cat.ctaText) ?? "ดูสินค้า";
+            const badge = s(cat.badge);
+            const productCount = n(cat.productCount);
+
+            const href =
+              linkTo && linkTo.startsWith("/") && !linkTo.startsWith(`/stores/`)
+                ? `/stores/${storeSlug}${linkTo}`
+                : linkTo ?? `/stores/${storeSlug}`;
+
+            const cardClass =
+              layout === "carousel"
+                ? `relative w-[80%] flex-shrink-0 snap-center overflow-hidden ${t.cardRadius} bg-white ring-1 ${t.ring} sm:w-[40%]`
+                : layout === "masonry"
+                  ? `relative mb-4 break-inside-avoid overflow-hidden ${t.cardRadius} bg-white ring-1 ${t.ring}`
+                  : `relative overflow-hidden ${t.cardRadius} bg-white ring-1 ${t.ring}`;
+
+            return (
+              <Link key={i} href={href} className={`${cardClass} group block`}>
+                {imageUrl && (
+                  <picture>
+                    <source media="(max-width: 640px)" srcSet={imageMobileUrl} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageUrl}
+                      alt={altText}
+                      className="w-full object-cover transition duration-300 group-hover:scale-105"
+                      style={{ aspectRatio }}
+                    />
+                  </picture>
+                )}
+                {badge && (
+                  <span
+                    className={`absolute left-3 top-3 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                      isPlayful(theme)
+                        ? "bg-pink-500 text-white"
+                        : "bg-amber-500 text-white"
+                    }`}
+                  >
+                    {badge}
+                  </span>
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-4">
+                  {name && (
+                    <p className="text-lg font-bold text-white">{name}</p>
+                  )}
+                  <div className="mt-1 flex items-center justify-between gap-2 text-xs text-white/90">
+                    {typeof productCount === "number" && (
+                      <span>พบ {productCount.toLocaleString("th-TH")} รายการ</span>
+                    )}
+                    <span className="inline-flex items-center gap-1 font-semibold">
+                      {ctaText} <ChevronRight className="h-3 w-3" />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }

@@ -29,10 +29,14 @@ const blockSchema = z.object({
   content: z.record(z.string(), z.unknown()).default({}),
 });
 
+// themeVariant accepts the 9 v3 design families (A-I) plus the two legacy
+// values ("minimal" / "cute") so already-persisted stores keep working.
 const patchSchema = z.object({
   blocks: z.array(blockSchema).max(50),
   title: z.string().max(200).optional(),
-  themeVariant: z.enum(["cute", "minimal"]).optional(),
+  themeVariant: z
+    .enum(["A", "B", "C", "D", "E", "F", "G", "H", "I", "minimal", "cute"])
+    .optional(),
 });
 
 async function requireAdmin() {
