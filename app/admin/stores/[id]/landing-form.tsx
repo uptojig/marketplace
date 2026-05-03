@@ -10,11 +10,11 @@ import {
   Wand2,
   AlertCircle,
 } from "lucide-react";
-import {
-  DESIGN_FAMILIES,
-  isValidThemeVariant,
-  type ThemeVariant,
-} from "@/lib/landing/families";
+// DESIGN_FAMILIES picker removed from the form on operator request —
+// the agent now picks the family automatically from brief content
+// (per v3 design-family decision tree). The store row still records
+// whatever family the agent settled on so the storefront layout's
+// color cascade keeps working.
 
 interface Props {
   storeId: string;
@@ -42,11 +42,6 @@ const POLL_INTERVAL_MS = 4000;
 export function LandingForm(props: Props) {
   const router = useRouter();
   const [brief, setBrief] = useState("");
-  const [theme, setTheme] = useState<ThemeVariant>(
-    props.landingThemeVariant && isValidThemeVariant(props.landingThemeVariant)
-      ? props.landingThemeVariant
-      : "A",
-  );
   const [generating, setGenerating] = useState(false);
   const [status, setStatus] = useState<StatusSnapshot | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -107,7 +102,11 @@ export function LandingForm(props: Props) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ brief: brief.trim(), themeHint: theme }),
+          // Operator no longer picks the family — agent decides
+          // based on brief content (per v3 design-family decision
+          // tree). Backend leaves themeHint optional for the rare
+          // case we want to force one programmatically.
+          body: JSON.stringify({ brief: brief.trim() }),
         },
       );
       const data = await res.json().catch(() => ({}));
@@ -165,10 +164,13 @@ export function LandingForm(props: Props) {
       const res = await fetch(`/api/admin/stores/${props.storeId}/landing`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        // themeVariant intentionally omitted — paste path doesn't
+        // override the family the agent picked; advanced operators
+        // who want to swap should regenerate with a different brief
+        // or hand-edit the row.
         body: JSON.stringify({
           blocks,
           title: pasteTitle.trim() || undefined,
-          themeVariant: theme,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -256,27 +258,9 @@ export function LandingForm(props: Props) {
           className="w-full rounded-md border px-3 py-2 text-sm disabled:bg-stone-50"
         />
         <div className="flex flex-wrap items-center gap-3">
-          <label className="text-xs">
-            <span className="mr-2 text-stone-700">Design family:</span>
-            <select
-              value={theme}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (isValidThemeVariant(v)) setTheme(v);
-              }}
-              disabled={isGenerating}
-              className="max-w-[280px] rounded border px-2 py-1 text-sm"
-            >
-              {DESIGN_FAMILIES.map((f) => (
-                <option key={f.code} value={f.code} title={f.description}>
-                  {f.label}
-                </option>
-              ))}
-              <option disabled>──────────</option>
-              <option value="minimal">minimal (legacy)</option>
-              <option value="cute">cute (legacy)</option>
-            </select>
-          </label>
+          <p className="text-xs text-stone-600">
+            🎨 Design family — เป็ดเลือกให้อัตโนมัติจาก brief
+          </p>
           <button
             type="button"
             onClick={handleGenerate}
