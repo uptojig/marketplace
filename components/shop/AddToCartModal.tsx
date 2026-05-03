@@ -7,9 +7,17 @@ import { useCartConfirmation } from "@/lib/store/cartConfirm";
 export function AddToCartModal() {
   const open = useCartConfirmation((s) => s.open);
   const productTitle = useCartConfirmation((s) => s.productTitle);
+  const storeSlug = useCartConfirmation((s) => s.storeSlug);
   const hide = useCartConfirmation((s) => s.hide);
 
   if (!open) return null;
+
+  // When the user added a product from a store page, send them to
+  // that store's own cart (/stores/<slug>/cart) so the design family
+  // cascade + storefront chrome stay applied. Falls back to the
+  // marketplace-level /cart only if storeSlug isn't known (e.g. a
+  // future entry-point that adds without context).
+  const cartHref = storeSlug ? `/stores/${storeSlug}/cart` : "/cart";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -24,10 +32,10 @@ export function AddToCartModal() {
         {productTitle && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{productTitle}</p>}
         <div className="mt-4 flex flex-col gap-2">
           <Link
-            href="/cart"
+            href={cartHref}
             onClick={hide}
             className="rounded-full px-4 py-2.5 text-sm font-semibold text-white"
-            style={{ backgroundColor: "#dc2626" }}
+            style={{ backgroundColor: "var(--shop-primary, #dc2626)" }}
           >
             สั่งซื้อสินค้าในตะกร้า
           </Link>

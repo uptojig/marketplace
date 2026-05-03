@@ -80,7 +80,7 @@ export function ProductDetail({ product }: { product: Product }) {
       },
       qty,
     );
-    showConfirm(product.title + variantSuffix);
+    showConfirm(product.title + variantSuffix, product.storeSlug);
   }
 
   return (

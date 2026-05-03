@@ -30,7 +30,7 @@ export function ShopAddButton({ product }: { product: Product }) {
           storeSlug: product.storeSlug,
           storeName: product.storeName,
         });
-        showConfirm(product.title);
+        showConfirm(product.title, product.storeSlug);
       }}
       className="rounded-full px-3 py-1 text-xs font-medium text-white transition hover:opacity-90"
       style={{ backgroundColor: "var(--shop-primary, #2563eb)" }}
