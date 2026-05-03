@@ -498,8 +498,10 @@ export async function runLandingAgent(args: {
   if (products.length === 0) {
     try {
       const { cjAdapter } = await import("@/lib/suppliers/cj/adapter");
+      // CJ searches by productNameEn → must convert Thai brief to English keywords
+      const searchQuery = thaiToEnglishSearch(args.brief);
       const result = await cjAdapter.listCatalog({
-        search: args.brief,
+        search: searchQuery,
         pageSize: 20,
       });
       products = result.items.map((p) => ({
@@ -585,4 +587,97 @@ export async function runLandingAgent(args: {
       })
       .catch(() => undefined);
   }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Thai brief → English CJ search keyword                           */
+/* ------------------------------------------------------------------ */
+
+const TH_EN_KEYWORDS: [string, string][] = [
+  // Fashion
+  ["เคสมือถือ", "phone case"],
+  ["เคสโทรศัพท์", "phone case"],
+  ["เคส", "case cover"],
+  ["เสื้อผ้า", "clothing"],
+  ["เสื้อ", "shirt top"],
+  ["กางเกง", "pants"],
+  ["กระโปรง", "skirt"],
+  ["ชุดเดรส", "dress"],
+  ["รองเท้า", "shoes"],
+  ["กระเป๋า", "bag"],
+  ["แฟชั่น", "fashion"],
+  ["เกาหลี", "korean fashion"],
+  ["แว่นตา", "glasses sunglasses"],
+  ["นาฬิกา", "watch"],
+  ["เครื่องประดับ", "jewelry accessories"],
+  ["สร้อย", "necklace"],
+  ["แหวน", "ring"],
+  ["ต่างหู", "earring"],
+  // Electronics
+  ["GPS", "GPS tracker"],
+  ["สัตว์เลี้ยง", "pet"],
+  ["แมว", "cat"],
+  ["สุนัข", "dog"],
+  ["หูฟัง", "earphone headphone"],
+  ["ลำโพง", "speaker bluetooth"],
+  ["ที่ชาร์จ", "charger"],
+  ["สายชาร์จ", "charging cable"],
+  ["แบตเตอรี่", "power bank battery"],
+  ["มือถือ", "phone mobile"],
+  ["โทรศัพท์", "phone"],
+  ["คอมพิวเตอร์", "computer"],
+  ["คีย์บอร์ด", "keyboard"],
+  ["เมาส์", "mouse"],
+  // Home & Living
+  ["บ้าน", "home decor"],
+  ["ของแต่งบ้าน", "home decoration"],
+  ["โคมไฟ", "lamp light"],
+  ["หมอน", "pillow"],
+  ["ผ้าม่าน", "curtain"],
+  ["ครัว", "kitchen"],
+  // Beauty
+  ["เครื่องสำอาง", "cosmetics makeup"],
+  ["สกินแคร์", "skincare"],
+  ["ครีม", "cream"],
+  ["ลิปสติก", "lipstick"],
+  ["แปรงแต่งหน้า", "makeup brush"],
+  // Sports & Outdoor
+  ["กีฬา", "sports"],
+  ["ออกกำลังกาย", "fitness gym"],
+  ["โยคะ", "yoga"],
+  ["ตกปลา", "fishing"],
+  ["แคมป์", "camping"],
+  // Kids
+  ["ของเล่น", "toys"],
+  ["เด็ก", "kids baby"],
+  // Auto
+  ["รถยนต์", "car accessories"],
+  ["มอเตอร์ไซค์", "motorcycle"],
+  // Tracking / GPS
+  ["ติดตาม", "tracker GPS"],
+];
+
+/**
+ * Convert a Thai brief into English search keywords for CJ API.
+ * Matches known Thai words → English equivalents.
+ * Also extracts any English words already in the brief.
+ * Falls back to generic "fashion accessories" if nothing matches.
+ */
+function thaiToEnglishSearch(brief: string): string {
+  const hits: string[] = [];
+
+  // Match Thai keywords
+  for (const [th, en] of TH_EN_KEYWORDS) {
+    if (brief.includes(th)) hits.push(en);
+  }
+
+  // Extract any English words already in the brief
+  const english = brief.match(/[a-zA-Z]{2,}/g);
+  if (english) hits.push(...english);
+
+  if (hits.length === 0) return "fashion accessories";
+
+  // Deduplicate and take first 3 keyword groups
+  const unique = [...new Set(hits)].slice(0, 3);
+  return unique.join(" ");
 }

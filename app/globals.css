@@ -22,7 +22,21 @@
     --input: 214 32% 91%;
     --ring: 222 47% 11%;
     --radius: 0.5rem;
+
+    /* ── Shop brand tokens ──
+       --shop-primary is set by store layout (resolveFamily → themeColor).
+       These derived tokens give every store page a consistent look
+       without hardcoding hex values in components. */
+    --shop-primary: #008BF8;
+    --shop-bg: #f5f6f8;
+    --shop-card: #ffffff;
+    --shop-ink: #1a1a2e;
+    --shop-ink-muted: #6b7280;
+    --shop-border: #e5e7eb;
+    --shop-radius: 0.75rem;
+    --shop-font: var(--font-google-sans), var(--font-noto-thai), system-ui, sans-serif;
   }
+
   * {
     @apply border-border;
   }
@@ -30,3 +44,148 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ── Shop storefront utilities ──
+   Used by cart, checkout, PDP, category, contact, help pages
+   to maintain visual consistency with the store's design family. */
+
+@layer components {
+  /* Page wrapper — consistent background + font for all store pages */
+  .shop-page {
+    background: var(--shop-bg);
+    color: var(--shop-ink);
+    font-family: var(--shop-font);
+    min-height: 100vh;
+  }
+
+  /* Card — product cards, order summary, form containers */
+  .shop-card {
+    background: var(--shop-card);
+    border: 1px solid var(--shop-border);
+    border-radius: var(--shop-radius);
+    padding: 1.5rem;
+  }
+
+  /* Primary button — uses store accent color */
+  .shop-btn-primary {
+    background-color: var(--shop-primary);
+    color: #fff;
+    border-radius: var(--shop-radius);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: opacity 0.15s, transform 0.1s;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .shop-btn-primary:hover {
+    opacity: 0.9;
+  }
+  .shop-btn-primary:active {
+    transform: scale(0.98);
+  }
+
+  /* Outline button — secondary actions */
+  .shop-btn-outline {
+    background: transparent;
+    color: var(--shop-primary);
+    border: 1.5px solid var(--shop-primary);
+    border-radius: var(--shop-radius);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: background-color 0.15s;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .shop-btn-outline:hover {
+    background-color: color-mix(in srgb, var(--shop-primary) 8%, transparent);
+  }
+
+  /* Badge — for tags, status labels */
+  .shop-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: color-mix(in srgb, var(--shop-primary) 12%, transparent);
+    color: var(--shop-primary);
+  }
+
+  /* Section heading */
+  .shop-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--shop-ink);
+    letter-spacing: -0.01em;
+  }
+
+  /* Muted text */
+  .shop-muted {
+    color: var(--shop-ink-muted);
+    font-size: 0.875rem;
+  }
+
+  /* Price display */
+  .shop-price {
+    font-weight: 700;
+    color: var(--shop-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .shop-price-original {
+    color: var(--shop-ink-muted);
+    text-decoration: line-through;
+    font-size: 0.85em;
+  }
+
+  /* Input fields */
+  .shop-input {
+    width: 100%;
+    border: 1px solid var(--shop-border);
+    border-radius: var(--shop-radius);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    color: var(--shop-ink);
+    background: var(--shop-card);
+    transition: border-color 0.15s;
+  }
+  .shop-input:focus {
+    outline: none;
+    border-color: var(--shop-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--shop-primary) 15%, transparent);
+  }
+
+  /* Divider */
+  .shop-divider {
+    border: none;
+    border-top: 1px solid var(--shop-border);
+    margin: 1rem 0;
+  }
+
+  /* Grid for product listing pages */
+  .shop-product-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 640px) {
+    .shop-product-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  @media (min-width: 1024px) {
+    .shop-product-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
+

@@ -198,7 +198,7 @@ export default async function StorePage({
   return (
     <>
       {/* Banner area */}
-      <section className="bg-white">
+      <section style={{ background: 'var(--shop-card)' }}>
         <div className="container mx-auto max-w-[1200px] px-4 pt-4">
           <div className="overflow-hidden rounded-lg">
             {store.bannerUrl ? (
@@ -228,10 +228,10 @@ export default async function StorePage({
       {/* Shop intro — description only, follower/rating stats hidden until real */}
       {(store.description || store.tagline) && (
         <section className="container mx-auto max-w-[1200px] px-4 mt-6">
-          <p className="text-gray-700">
+          <p style={{ color: 'var(--shop-ink)' }}>
             {store.description ?? store.tagline}
           </p>
-          <div className="mt-2 flex items-center text-xs text-gray-500">
+          <div className="mt-2 flex items-center text-xs" style={{ color: 'var(--shop-ink-muted)' }}>
             <Clock className="mr-1 h-3 w-3" />
             ปรับปรุงล่าสุด {updatedAt}
           </div>
@@ -284,7 +284,8 @@ export default async function StorePage({
             return (
               <article
                 key={p.id}
-                className="group flex flex-col overflow-hidden rounded-lg border bg-white transition hover:shadow"
+                className="group flex flex-col overflow-hidden rounded-lg border transition hover:shadow"
+                style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}
               >
                 <Link
                   href={`/stores/${store.slug}/products/${p.id}`}
@@ -346,7 +347,7 @@ export default async function StorePage({
             );
           })}
           {store.products.length === 0 && (
-            <p className="col-span-full text-center text-sm text-gray-500">
+            <p className="col-span-full text-center text-sm" style={{ color: 'var(--shop-ink-muted)' }}>
               ยังไม่มีสินค้าในร้านนี้
             </p>
           )}

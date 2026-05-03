@@ -139,17 +139,17 @@ export default async function StoreHelpPage({
 
   return (
     <div className="container max-w-3xl py-8">
-      <nav className="mb-4 flex items-center gap-1 text-xs text-gray-500">
+      <nav className="mb-4 flex items-center gap-1 text-xs" style={{ color: 'var(--shop-ink-muted)' }}>
         <Link href={`/stores/${params.slug}`} className="hover:underline">
           {store.name}
         </Link>
         <ChevronRight className="h-3 w-3" />
         <span>{HELP_CATEGORY_LABEL[page.category]}</span>
         <ChevronRight className="h-3 w-3" />
-        <span className="text-gray-900">{page.title}</span>
+        <span style={{ color: 'var(--shop-ink)' }}>{page.title}</span>
       </nav>
       <h1 className="text-2xl font-bold">{page.title}</h1>
-      <article className="text-sm text-gray-700">{renderContent(page.content)}</article>
+      <article className="text-sm" style={{ color: 'var(--shop-ink)' }}>{renderContent(page.content)}</article>
     </div>
   );
 }

@@ -64,13 +64,17 @@ export default async function ShopLayout({
 
   return (
     <div
-      className="min-h-screen bg-[#f5f6f8]"
-      style={{ ["--shop-primary" as string]: primary }}
+      className="shop-page min-h-screen"
+      style={{
+        ["--shop-primary" as string]: primary,
+        ["--shop-bg" as string]: "#f5f6f8",
+        ["--shop-card" as string]: "#ffffff",
+      } as React.CSSProperties}
     >
       {/* Top header */}
-      <header className="bg-white border-b">
+      <header className="border-b" style={{ background: 'var(--shop-card)' }}>
         {/* Top bar — logo, search, lang, account, cart */}
-        <div className="hidden lg:block border-b">
+        <div className="hidden lg:block" style={{ borderBottom: '1px solid var(--shop-border)' }}>
           <div className="container mx-auto max-w-[1200px] px-4 py-4">
             <div
               className={
@@ -112,7 +116,8 @@ export default async function ShopLayout({
               <div className="flex items-center gap-3">
                 <form
                   action={`/stores/${store.slug}`}
-                  className="flex items-center rounded-full border bg-white pl-4 pr-1 py-1 w-72"
+                  className="flex items-center rounded-full pl-4 pr-1 py-1 w-72"
+                  style={{ border: '1px solid var(--shop-border)', background: 'var(--shop-card)' }}
                 >
                   <input
                     name="q"
@@ -264,7 +269,7 @@ export default async function ShopLayout({
       <main>{children}</main>
 
       {/* Footer service section */}
-      <footer className="mt-12 bg-white border-t">
+      <footer className="mt-12 border-t" style={{ background: 'var(--shop-card)' }}>
         <div className="container mx-auto max-w-[1200px] px-4 py-8">
           <div className="grid gap-8 md:grid-cols-2">
             <div>
@@ -309,7 +314,7 @@ export default async function ShopLayout({
         </div>
 
         {/* Footer info — 5 columns */}
-        <div className="border-t bg-white">
+        <div className="border-t" style={{ background: 'var(--shop-card)' }}>
           <div className="container mx-auto max-w-[1200px] px-4 py-10">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
               <div>

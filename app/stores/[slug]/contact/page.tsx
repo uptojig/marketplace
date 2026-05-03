@@ -62,7 +62,7 @@ export default async function StoreContactPage({
 
       <div className="grid gap-5 md:grid-cols-[1fr,360px]">
         {/* Left: message empty-state (signed-out) */}
-        <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-xl border bg-white p-8 text-center">
+        <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-xl border p-8 text-center" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-[0.06]"
@@ -70,13 +70,13 @@ export default async function StoreContactPage({
             <MessageCircleMore className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 text-gray-400" />
           </div>
           <div className="relative space-y-5">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm" style={{ color: 'var(--shop-ink-muted)' }}>
               เข้าสู่ระบบเพื่อส่งข้อความถึงร้านค้า
             </p>
             <Link
               href={`/signin?callbackUrl=/stores/${params.slug}/contact`}
               className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
-              style={{ backgroundColor: store.primaryColor ?? "#2563eb" }}
+              style={{ backgroundColor: "var(--shop-primary)" }}
             >
               <Lock className="h-4 w-4" />
               เข้าสู่ระบบ
@@ -85,14 +85,14 @@ export default async function StoreContactPage({
         </div>
 
         {/* Right: store info card */}
-        <aside className="space-y-6 rounded-xl border bg-white p-6">
+        <aside className="space-y-6 rounded-xl border p-6" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
           <div>
             <h2 className="mb-3 flex items-center gap-2 text-base font-semibold">
               <Map className="h-5 w-5 text-gray-400" />
               ข้อมูลร้าน
             </h2>
             {addressLines.length > 0 ? (
-              <div className="space-y-1 text-sm text-gray-700">
+              <div className="space-y-1 text-sm" style={{ color: 'var(--shop-ink)' }}>
                 {addressLines.map((l, i) => (
                   <p key={i}>{l}</p>
                 ))}
@@ -117,7 +117,8 @@ export default async function StoreContactPage({
       <div className="mt-6 text-center">
         <Link
           href={`/stores/${params.slug}`}
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm hover:underline"
+          style={{ color: 'var(--shop-primary)' }}
         >
           ← กลับหน้าหลัก
         </Link>

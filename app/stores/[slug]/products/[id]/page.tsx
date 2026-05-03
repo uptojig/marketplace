@@ -70,7 +70,8 @@ export default async function ShopProductPage({
               <Link
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
-                className="group overflow-hidden rounded-lg border bg-white"
+                className="group overflow-hidden rounded-lg border"
+                style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}
               >
                 <div className="aspect-square overflow-hidden bg-muted">
                   {r.imageUrl && (

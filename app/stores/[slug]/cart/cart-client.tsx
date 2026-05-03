@@ -42,7 +42,8 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
     <div className="container mx-auto max-w-4xl px-4 py-6">
       <Link
         href={`/stores/${store.slug}`}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
+        className="inline-flex items-center gap-1 text-sm hover:opacity-80"
+        style={{ color: 'var(--shop-ink-muted)' }}
       >
         <ChevronLeft className="h-4 w-4" />
         เลือกซื้อสินค้าต่อ
@@ -98,9 +99,9 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
       )}
 
       {lines.length === 0 ? (
-        <div className="mt-6 rounded-xl border bg-white p-12 text-center">
-          <ShoppingBag className="mx-auto h-10 w-10 text-gray-300" />
-          <p className="mt-3 text-sm text-gray-600">ตะกร้าของร้านนี้ยังว่าง</p>
+        <div className="mt-6 rounded-xl border p-12 text-center" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
+          <ShoppingBag className="mx-auto h-10 w-10" style={{ color: 'var(--shop-border)' }} />
+          <p className="mt-3 text-sm" style={{ color: 'var(--shop-ink-muted)' }}>ตะกร้าของร้านนี้ยังว่าง</p>
           <Link
             href={`/stores/${store.slug}`}
             className="mt-4 inline-flex rounded-md px-4 py-2 text-sm font-medium text-white"
@@ -111,7 +112,7 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
         </div>
       ) : (
         <>
-          <div className="mt-5 divide-y rounded-xl border bg-white">
+          <div className="mt-5 divide-y rounded-xl border" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
             {lines.map((l) => (
               <div key={l.productId} className="flex items-center gap-4 p-4">
                 <Link
@@ -179,7 +180,7 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
             ))}
           </div>
 
-          <div className="mt-5 rounded-xl border bg-white p-5">
+          <div className="mt-5 rounded-xl border p-5" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">ยอดรวม</span>
               <span className="text-2xl font-bold">{formatTHB(subtotal)}</span>
