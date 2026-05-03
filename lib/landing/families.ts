@@ -68,6 +68,19 @@ export const DESIGN_FAMILY_CODES = DESIGN_FAMILIES.map((f) => f.code) as readonl
 export const LEGACY_THEME_VARIANTS = ["minimal", "cute"] as const;
 export type LegacyThemeVariant = (typeof LEGACY_THEME_VARIANTS)[number];
 
+// Map legacy values to the closest design family so the storefront's
+// color cascade still works without forcing a row migration.
+//   "minimal" → A (Editorial Minimal Warm — neutral stone+amber)
+//   "cute"    → I (Playful Mass Commerce — pink-forward)
+// This is consulted by storefront layouts that need a primary accent;
+// the LegacyThemeVariant value itself is preserved on the row so the
+// admin picker (which lists legacy options separately) keeps showing
+// the operator's original choice.
+export const LEGACY_TO_FAMILY: Record<LegacyThemeVariant, DesignFamilyCode> = {
+  minimal: "A",
+  cute: "I",
+} as const;
+
 export type ThemeVariant = DesignFamilyCode | LegacyThemeVariant;
 
 export function isDesignFamilyCode(value: string): value is DesignFamilyCode {
@@ -80,4 +93,23 @@ export function isLegacyThemeVariant(value: string): value is LegacyThemeVariant
 
 export function isValidThemeVariant(value: string): value is ThemeVariant {
   return isDesignFamilyCode(value) || isLegacyThemeVariant(value);
+}
+
+/**
+ * Resolve a stored landingThemeVariant value to its DESIGN_FAMILIES entry.
+ * Returns undefined if the value isn't recognised — callers should fall
+ * through to store.primaryColor / brand default in that case.
+ */
+export function resolveFamily(
+  variant: string | null | undefined,
+): (typeof DESIGN_FAMILIES)[number] | undefined {
+  if (!variant) return undefined;
+  if (isDesignFamilyCode(variant)) {
+    return DESIGN_FAMILIES.find((f) => f.code === variant);
+  }
+  if (isLegacyThemeVariant(variant)) {
+    const code = LEGACY_TO_FAMILY[variant];
+    return DESIGN_FAMILIES.find((f) => f.code === code);
+  }
+  return undefined;
 }

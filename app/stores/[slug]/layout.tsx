@@ -16,7 +16,7 @@ import {
   StoreContactRows,
 } from "@/components/shop/StoreSocialIcons";
 import { formatStoreAddressLines } from "@/lib/format/storeAddress";
-import { DESIGN_FAMILIES } from "@/lib/landing/families";
+import { resolveFamily } from "@/lib/landing/families";
 
 export const dynamic = "force-dynamic";
 
@@ -31,18 +31,16 @@ export default async function ShopLayout({
   if (!store) notFound();
 
   // Primary accent precedence:
-  //   1. Design family's themeColor (if landingThemeVariant is one of A-I).
-  //      User picks a family in the landing-form picker, and we expect
-  //      the WHOLE storefront (cart / product / contact / category) to
-  //      cascade to the same accent — not just the agent-rendered home.
-  //   2. Operator-set store.primaryColor (manual override).
-  //   3. Default brand blue.
-  // The family lookup is intentionally tolerant — landingThemeVariant
-  // can also hold legacy values like "minimal" / "cute" which won't
-  // match a family code; in that case we fall through to primaryColor.
-  const family = DESIGN_FAMILIES.find(
-    (f) => f.code === store.landingThemeVariant,
-  );
+  //   1. Design family's themeColor (resolveFamily handles A-I codes
+  //      AND legacy "minimal" / "cute" via LEGACY_TO_FAMILY mapping)
+  //   2. Operator-set store.primaryColor (manual override)
+  //   3. Default brand blue
+  // Operator picks a family in the landing-form picker, and we expect
+  // the WHOLE storefront (cart / product / contact / category) to
+  // cascade to the same accent — not just the agent-rendered home.
+  // Legacy values that pre-date the v3 picker still get a real family
+  // color so old stores aren't stuck on default blue.
+  const family = resolveFamily(store.landingThemeVariant);
   const primary = family?.themeColor ?? store.primaryColor ?? "#008BF8";
   const logoPosition: "left" | "center" =
     store.logoPosition === "center" ? "center" : "left";
