@@ -150,7 +150,7 @@ export default function CheckoutConfirmPage({
                 </div>
               )}
             </div>
-            <Link href={`/stores/${params.slug}/checkout/address`} className="text-sm font-medium text-blue-600 hover:underline">
+            <Link href={`/stores/${params.slug}/checkout/address`} className="text-sm font-medium hover:underline" style={{ color: "var(--shop-primary, #2563eb)" }}>
               เปลี่ยน
             </Link>
           </div>
@@ -167,7 +167,7 @@ export default function CheckoutConfirmPage({
               <label
                 key={opt.id}
                 className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 transition ${
-                  shipping.id === opt.id ? "border-primary ring-2 ring-primary/20" : ""
+                  shipping.id === opt.id ? "border-[var(--shop-primary)] ring-2 ring-[var(--shop-primary)]/20" : ""
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -226,8 +226,8 @@ export default function CheckoutConfirmPage({
           </div>
           <hr className="my-3" />
           <div className="flex items-center justify-between">
-            <span className="text-base font-semibold text-red-600">ยอดรวม</span>
-            <span className="text-xl font-bold text-red-600">{formatTHB(total)}</span>
+            <span className="text-base font-semibold" style={{ color: "var(--shop-primary)" }}>ยอดรวม</span>
+            <span className="text-xl font-bold" style={{ color: "var(--shop-primary)" }}>{formatTHB(total)}</span>
           </div>
         </div>
 

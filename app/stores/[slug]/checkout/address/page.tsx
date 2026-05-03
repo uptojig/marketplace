@@ -182,8 +182,9 @@ export default function CheckoutAddressPage({
                 <label
                   key={a.id}
                   className={`block cursor-pointer rounded-xl border p-4 transition ${
-                    selectedId === a.id ? "border-primary ring-2 ring-primary/20" : "hover:border-primary/50"
+                    selectedId === a.id ? "ring-2" : "hover:border-gray-300"
                   }`}
+                  style={selectedId === a.id ? { borderColor: "var(--shop-primary)", boxShadow: "0 0 0 3px color-mix(in srgb, var(--shop-primary) 20%, transparent)" } : undefined}
                 >
                   <div className="flex items-start gap-3">
                     <input
@@ -197,7 +198,7 @@ export default function CheckoutAddressPage({
                       <div className="flex items-center gap-2">
                         <strong>{a.recipientName}</strong>
                         {idx === 0 && (
-                          <span className="rounded-full bg-blue-500 px-2 py-0.5 text-[10px] font-medium text-white">
+                          <span className="rounded-full px-2 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: "var(--shop-primary)" }}>
                             ที่อยู่หลัก
                           </span>
                         )}
