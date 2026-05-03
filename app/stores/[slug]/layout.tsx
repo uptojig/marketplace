@@ -16,6 +16,7 @@ import {
   StoreContactRows,
 } from "@/components/shop/StoreSocialIcons";
 import { formatStoreAddressLines } from "@/lib/format/storeAddress";
+import { DESIGN_FAMILIES } from "@/lib/landing/families";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,20 @@ export default async function ShopLayout({
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
 
-  const primary = store.primaryColor ?? "#008BF8";
+  // Primary accent precedence:
+  //   1. Design family's themeColor (if landingThemeVariant is one of A-I).
+  //      User picks a family in the landing-form picker, and we expect
+  //      the WHOLE storefront (cart / product / contact / category) to
+  //      cascade to the same accent — not just the agent-rendered home.
+  //   2. Operator-set store.primaryColor (manual override).
+  //   3. Default brand blue.
+  // The family lookup is intentionally tolerant — landingThemeVariant
+  // can also hold legacy values like "minimal" / "cute" which won't
+  // match a family code; in that case we fall through to primaryColor.
+  const family = DESIGN_FAMILIES.find(
+    (f) => f.code === store.landingThemeVariant,
+  );
+  const primary = family?.themeColor ?? store.primaryColor ?? "#008BF8";
   const logoPosition: "left" | "center" =
     store.logoPosition === "center" ? "center" : "left";
   const menuPosition: "left" | "center" | "right" =
