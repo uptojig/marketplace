@@ -17,6 +17,7 @@ import {
 } from "@/components/shop/StoreSocialIcons";
 import { formatStoreAddressLines } from "@/lib/format/storeAddress";
 import { resolveFamily } from "@/lib/landing/families";
+import { isV12Schema } from "@/lib/multi-page-migration";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,12 @@ export default async function ShopLayout({
 }) {
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
+
+  // v12 stores render their own GlobalHeader/GlobalFooter via MultiPageRenderer.
+  // Skip the marketplace layout chrome to avoid double nav/footer.
+  if (store.landingBlocks && typeof store.landingBlocks === "object" && isV12Schema(store.landingBlocks)) {
+    return <>{children}</>;
+  }
 
   // Primary accent precedence:
   //   1. Design family's themeColor (resolveFamily handles A-I codes
