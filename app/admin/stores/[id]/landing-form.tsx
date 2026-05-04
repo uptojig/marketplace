@@ -102,29 +102,50 @@ export function LandingForm(props: Props) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          // Operator no longer picks the family — agent decides
-          // based on brief content (per v3 design-family decision
-          // tree). Backend leaves themeHint optional for the rare
-          // case we want to force one programmatically.
           body: JSON.stringify({ brief: brief.trim() }),
         },
       );
-      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         setMsg({
           ok: false,
-          text:
-            data.detail ??
-            data.error ??
-            `request_failed_${res.status}`,
+          text: data.detail ?? data.error ?? `request_failed_${res.status}`,
         });
         setGenerating(false);
         return;
       }
-      setMsg({
-        ok: true,
-        text: "เริ่มออกแบบหน้าเว็บแล้ว เป็ดกำลังคิด — จะอัปเดตเองเมื่อเสร็จ",
-      });
+      setMsg({ ok: true, text: "เป็ดกำลังออกแบบ... รอสักครู่" });
+
+      // Read the NDJSON stream to keep connection alive
+      if (res.body) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buf += decoder.decode(value, { stream: true });
+            const lines = buf.split("\n");
+            buf = lines.pop() ?? "";
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed) continue;
+              try {
+                const evt = JSON.parse(trimmed) as { type: string; message?: string };
+                if (evt.type === "done") {
+                  setMsg({ ok: true, text: "ออกแบบเสร็จแล้ว ✅" });
+                } else if (evt.type === "error") {
+                  setMsg({ ok: false, text: evt.message ?? "agent_error" });
+                }
+              } catch { /* skip malformed lines */ }
+            }
+          }
+        } catch { /* stream closed */ }
+      }
+
+      setGenerating(false);
+      router.refresh();
     } catch (e) {
       setMsg({
         ok: false,

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -8,22 +7,12 @@ import { runLandingAgent } from "@/lib/landing-agent";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// Vercel Pro: 300s. Hobby: 60s. We use Vercel's `waitUntil` to
-// guarantee the background work runs within the allocated function
-// lifetime — plain `void promise` was being reaped by Vercel the
-// moment the response was flushed, so the Anthropic session never
-// even got created (landingStatus stuck at "generating", no session
-// in Anthropic Console). waitUntil flushes the response first, then
-// keeps the function alive for the background callback up to
-// maxDuration. Next 15's `after()` is the framework-level
-// equivalent; we're on Next 14 so we use the Vercel SDK directly.
+// Streaming keeps the connection alive — Hobby plan won't kill it
+// as long as we're actively sending data.
 export const maxDuration = 300;
 
 const bodySchema = z.object({
   brief: z.string().trim().min(5).max(4000),
-  // Accept v3 design family codes (A-I) plus legacy "minimal" / "cute"
-  // for back-compat with stores already using the old picker.
   themeHint: z
     .enum(["A", "B", "C", "D", "E", "F", "G", "H", "I", "minimal", "cute"])
     .optional(),
@@ -41,12 +30,10 @@ async function requireAdmin() {
 
 /**
  * POST /api/admin/stores/<id>/generate-landing
- *   body: { brief, themeHint? }
  *
- * Fire-and-forget agent run. Sets `landingStatus="generating"`
- * immediately, returns 202. The unhandled promise drives the
- * agent + persists the result via `runLandingAgent`. Admin polls
- * GET /api/admin/stores/<id>/landing for status.
+ * Streams progress as NDJSON while the agent runs. This keeps the
+ * Vercel function alive (streaming responses aren't subject to the
+ * 60s Hobby timeout as long as data is being sent).
  */
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   if (!(await requireAdmin())) {
@@ -62,8 +49,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
   const { brief, themeHint } = parsed.data;
 
-  // Quick guard against double-clicks — refuse if a run is already
-  // in flight. Admin can wait or DELETE the landing row to reset.
   const existing = await prisma.store.findUnique({
     where: { id: params.id },
     select: { id: true, landingStatus: true },
@@ -73,18 +58,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
   if (existing.landingStatus === "generating") {
     return NextResponse.json(
-      {
-        ok: false,
-        error: "already_generating",
-        detail: "Wait for the current run to finish, or DELETE the landing row to cancel.",
-      },
+      { ok: false, error: "already_generating" },
       { status: 409 },
     );
   }
 
-  // Mark as generating BEFORE kicking the background job so the UI
-  // can show progress immediately even if the function is killed
-  // before runLandingAgent's first DB write.
   await prisma.store.update({
     where: { id: params.id },
     data: {
@@ -95,40 +73,45 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     },
   });
 
-  // Use waitUntil so the background work has a guaranteed window
-  // (up to maxDuration) — plain `void` was being killed when the
-  // response flushed, leading to the stuck-generating bug.
-  waitUntil(
-    (async () => {
+  // Stream NDJSON to keep the connection alive while the agent runs.
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const write = (obj: unknown) => {
+        try {
+          controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
+        } catch {
+          // controller may be closed
+        }
+      };
+
+      write({ type: "started", storeId: params.id });
+
       try {
         await runLandingAgent({ storeId: params.id, brief, themeHint });
+        write({ type: "done", ok: true });
       } catch (err) {
-        // runLandingAgent does its own catching, so this only fires
-        // for unexpected throws. Flip the row to failed so the UI
-        // doesn't stay stuck on "generating".
-        console.error("landing-agent rejected at top level:", err);
+        console.error("landing-agent failed:", err);
+        const msg = err instanceof Error ? err.message.slice(0, 500) : "unknown_error";
+        write({ type: "error", message: msg });
         await prisma.store
           .update({
             where: { id: params.id },
-            data: {
-              landingStatus: "failed",
-              landingError:
-                err instanceof Error
-                  ? err.message.slice(0, 500)
-                  : "unknown_error_in_waitUntil_block",
-            },
+            data: { landingStatus: "failed", landingError: msg },
           })
           .catch(() => undefined);
+      } finally {
+        controller.close();
       }
-    })(),
-  );
-
-  return NextResponse.json(
-    {
-      ok: true,
-      status: "generating",
-      message: "Agent run started. Poll GET /api/admin/stores/<id>/landing for status.",
     },
-    { status: 202 },
-  );
+  });
+
+  return new Response(stream, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
