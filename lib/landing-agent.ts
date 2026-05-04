@@ -403,7 +403,7 @@ export async function runLandingAgent(args: {
       console.log(`[landing-agent] CJ search: "${searchQuery}"`);
       const result = await cjAdapter.listCatalog({
         search: searchQuery,
-        pageSize: 20,
+        pageSize: 6,
       });
       products = result.items.map((p) => ({
         externalProductId: p.externalProductId,

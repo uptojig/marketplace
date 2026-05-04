@@ -183,7 +183,7 @@ export async function enrichBriefWithProducts(
     try {
       const result = await cjAdapter.listCatalog({
         search: term,
-        pageSize: Math.min(8, 12 - allProducts.length),
+        pageSize: Math.min(6, 6 - allProducts.length),
       });
       for (const p of result.items) {
         allProducts.push({
@@ -222,7 +222,7 @@ export async function enrichBriefWithProducts(
     return !NSFW_RE.test(haystack);
   });
 
-  const products = safe.slice(0, 12);
+  const products = safe.slice(0, 6);
 
   if (products.length === 0) {
     throw new NoProductsError(
