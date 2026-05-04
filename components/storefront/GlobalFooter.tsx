@@ -18,8 +18,10 @@ const SOCIAL_LABELS: Record<string, string> = {
 };
 
 export function GlobalFooter({ content, theme, storeSlug }: Props) {
+  if (!content) return null;
   // Rewrite footer nav hrefs to be relative to /stores/{slug}
-  const resolveHref = (href: string) => {
+  const resolveHref = (href?: string) => {
+    if (!href) return `/stores/${storeSlug}`;
     if (href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) return href;
     if (href === "/" || href === "") return `/stores/${storeSlug}`;
     const clean = href.startsWith("/") ? href.slice(1) : href;
@@ -57,7 +59,7 @@ export function GlobalFooter({ content, theme, storeSlug }: Props) {
                 {col.title}
               </h4>
               <ul className="space-y-2">
-                {col.links.map((link, j) => (
+                {(col.links ?? []).map((link, j) => (
                   <li key={j}>
                     <Link
                       href={resolveHref(link.href)}

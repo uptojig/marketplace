@@ -16,12 +16,16 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const stickyClass = content.sticky !== false ? "sticky top-0 z-50" : "";
+  // Defensive: Haiku may omit fields
+  const logo = content?.logo ?? {} as GlobalHeaderSchema["logo"];
+  const nav = content?.nav ?? [];
+
+  const stickyClass = content?.sticky !== false ? "sticky top-0 z-50" : "";
   const sizeClass = {
     sm: "h-8",
     md: "h-10",
     lg: "h-14",
-  }[content.logo.size ?? "md"];
+  }[logo?.size ?? "md"];
 
   // Rewrite header nav hrefs to be relative to /stores/{slug}
   const resolveHref = (href: string) => {
@@ -34,19 +38,19 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
   return (
     <>
       {/* Announcement banner */}
-      {content.banner && !bannerDismissed && (
+      {content?.banner && !bannerDismissed && (
         <div className="relative w-full bg-stone-900 text-white" role="region" aria-label="Announcement">
           <div className="container mx-auto px-4 py-2.5 flex items-center justify-center gap-3 text-sm">
-            <span className="text-center">{content.banner.text}</span>
-            {content.banner.ctaText && content.banner.ctaLink && (
+            <span className="text-center">{content?.banner.text}</span>
+            {content?.banner.ctaText && content?.banner.ctaLink && (
               <Link
-                href={resolveHref(content.banner.ctaLink)}
+                href={resolveHref(content?.banner.ctaLink)}
                 className="font-medium underline underline-offset-2 hover:no-underline whitespace-nowrap"
               >
-                {content.banner.ctaText}
+                {content?.banner.ctaText}
               </Link>
             )}
-            {content.banner.dismissible !== false && (
+            {content?.banner.dismissible !== false && (
               <button
                 type="button"
                 onClick={() => setBannerDismissed(true)}
@@ -72,29 +76,29 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <Link
-              href={resolveHref(content.logo.linkTo ?? "/")}
+              href={resolveHref(logo?.linkTo ?? "/")}
               className="flex items-center gap-3"
-              aria-label={content.logo.altText}
+              aria-label={logo?.altText ?? "Logo"}
             >
-              {content.logo.imageUrl && (
+              {logo?.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={content.logo.imageUrl}
-                  alt={content.logo.altText}
+                  src={logo?.imageUrl}
+                  alt={logo?.altText ?? "Logo"}
                   className={`${sizeClass} w-auto`}
                   loading="eager"
                 />
               )}
-              {content.logo.brandText && (
+              {logo?.brandText && (
                 <span className="text-lg md:text-xl font-semibold text-stone-900">
-                  {content.logo.brandText}
+                  {logo?.brandText}
                 </span>
               )}
             </Link>
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-8">
-              {content.nav.map((link, i) => (
+              {nav.map((link, i) => (
                 <Link
                   key={i}
                   href={resolveHref(link.href)}
@@ -109,7 +113,7 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
 
             {/* Right actions */}
             <div className="flex items-center gap-3">
-              {content.showSearch && (
+              {content?.showSearch && (
                 <Link
                   href={`/stores/${storeSlug}?q=`}
                   className="p-2 text-stone-600 hover:text-stone-900"
@@ -119,7 +123,7 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
                 </Link>
               )}
 
-              {content.showCart !== false && (
+              {content?.showCart !== false && (
                 <Link
                   href={`/stores/${storeSlug}/cart`}
                   className="p-2 text-stone-600 hover:text-stone-900 relative"
@@ -146,7 +150,7 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
           {mobileMenuOpen && (
             <nav className="md:hidden border-t border-stone-200 py-4">
               <div className="flex flex-col gap-1">
-                {content.nav.map((link, i) => (
+                {nav.map((link, i) => (
                   <Link
                     key={i}
                     href={resolveHref(link.href)}
