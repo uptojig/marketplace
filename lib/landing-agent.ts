@@ -212,6 +212,8 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
       max_tokens: 16000,
       system: SYSTEM_PROMPT,
       tools: [GENERATE_PAGE_SCHEMA_TOOL],
+      // First turn: force tool use. Retries: let Claude decide.
+      tool_choice: turn === 0 ? { type: "tool", name: "generate_page_schema" } : { type: "auto" },
       messages,
     });
 
