@@ -62,7 +62,7 @@ export function GlobalFooter({ content, theme, storeSlug }: Props) {
                 {(col.links ?? []).map((link, j) => (
                   <li key={j}>
                     <Link
-                      href={resolveHref(link.href ?? link.url ?? "#")}
+                      href={resolveHref(link.href ?? (link as Record<string, unknown>).url as string ?? "#")}
                       className="text-sm text-stone-400 hover:text-white transition-colors"
                     >
                       {link.text}
@@ -137,7 +137,7 @@ export function GlobalFooter({ content, theme, storeSlug }: Props) {
               {content.socialLinks.map((social, i) => (
                 <a
                   key={i}
-                  href={social.href ?? social.url ?? "#"}
+                  href={social.href ?? (social as Record<string, unknown>).url as string ?? "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={SOCIAL_LABELS[social.platform] ?? social.platform}

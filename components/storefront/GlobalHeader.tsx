@@ -102,7 +102,7 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
               {nav.map((link, i) => (
                 <Link
                   key={i}
-                  href={resolveHref(link.href ?? link.url ?? "/")}
+                  href={resolveHref(link.href ?? (link as Record<string, unknown>).url as string ?? "/")}
                   target={link.isExternal ? "_blank" : undefined}
                   rel={link.isExternal ? "noopener noreferrer" : undefined}
                   className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
@@ -154,7 +154,7 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
                 {nav.map((link, i) => (
                   <Link
                     key={i}
-                    href={resolveHref(link.href ?? link.url ?? "/")}
+                    href={resolveHref(link.href ?? (link as Record<string, unknown>).url as string ?? "/")}
                     target={link.isExternal ? "_blank" : undefined}
                     rel={link.isExternal ? "noopener noreferrer" : undefined}
                     className="px-3 py-3 text-base font-medium text-stone-700 hover:bg-stone-50 rounded"
