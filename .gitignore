@@ -15,3 +15,4 @@ prisma/dev.db*
 tsconfig.tsbuildinfo
 public/uploads/*
 !public/uploads/.gitkeep
+.env*.local

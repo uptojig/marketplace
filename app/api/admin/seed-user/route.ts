@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(req: Request) {
   const secret = req.headers.get("x-seed-secret");
-  if (secret !== (process.env.NEXTAUTH_SECRET ?? "")) {
+  if (!secret || secret !== (process.env.SEED_SECRET ?? "")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

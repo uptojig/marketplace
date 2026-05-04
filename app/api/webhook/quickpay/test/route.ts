@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: { amount?: number; channel?: string };
+  let body: { amount?: number; channel?: string; domain?: string };
   try {
     body = await req.json();
   } catch {
@@ -27,6 +27,7 @@ export async function POST(req: Request) {
 
   const amount = body.amount ?? 100;
   const channel = body.channel ?? "PROMPTPAY";
+  const domain = body.domain ?? "basketplace.co";
   const transactionId = `TEST-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   try {
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
         timestamp: new Date().toISOString(),
         metadata: { test: true },
       },
-      "basketplace.co",
+      domain,
     );
 
     return NextResponse.json({

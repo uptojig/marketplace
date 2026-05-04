@@ -80,14 +80,17 @@ export default function DemoOrdersPage() {
   const [showTestModal, setShowTestModal] = useState(false);
   const [testAmount, setTestAmount] = useState("500");
   const [testChannel, setTestChannel] = useState("PROMPTPAY");
+  const [testDomain, setTestDomain] = useState("ready-pay.co");
+  const [storeDomains, setStoreDomains] = useState<string[]>([]);
   const [testLoading, setTestLoading] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
-      const [ordersRes, logsRes] = await Promise.all([
+      const [ordersRes, logsRes, storesRes] = await Promise.all([
         fetch("/api/admin/demo-orders?limit=50"),
         fetch("/api/admin/webhook-logs?limit=50&source=ANYPAY"),
+        fetch("/api/admin/stores"),
       ]);
       if (ordersRes.ok) {
         const data = await ordersRes.json();
@@ -96,6 +99,16 @@ export default function DemoOrdersPage() {
       if (logsRes.ok) {
         const data = await logsRes.json();
         setLogs(data.logs ?? []);
+      }
+      if (storesRes.ok) {
+        const data = await storesRes.json();
+        const domains = (data.stores ?? data ?? [])
+          .map((s: { customDomain?: string | null }) => s.customDomain)
+          .filter(Boolean) as string[];
+        if (domains.length > 0) {
+          setStoreDomains(domains);
+          setTestDomain((prev) => domains.includes(prev) ? prev : domains[0]);
+        }
       }
       setLastRefresh(new Date());
     } catch (err) {
@@ -126,6 +139,7 @@ export default function DemoOrdersPage() {
         body: JSON.stringify({
           amount: parseFloat(testAmount) || 500,
           channel: testChannel,
+          domain: testDomain,
         }),
       });
       const data = await res.json();
@@ -236,6 +250,23 @@ export default function DemoOrdersPage() {
                   <option value="BANK_TRANSFER">โอนธนาคาร</option>
                   <option value="CREDIT_CARD">บัตรเครดิต</option>
                   <option value="TRUEMONEY">TrueMoney Wallet</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">ร้านค้า (โดเมน)</label>
+                <select
+                  value={testDomain}
+                  onChange={(e) => setTestDomain(e.target.value)}
+                  className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                >
+                  {storeDomains.length > 0 ? (
+                    storeDomains.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))
+                  ) : (
+                    <option value="basketplace.co">basketplace.co</option>
+                  )}
                 </select>
               </div>
 
