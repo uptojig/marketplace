@@ -207,20 +207,29 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
   ];
 
   for (let turn = 0; turn < 3; turn++) {
+    console.log(`[landing-agent] turn=${turn} sending to Claude (model=${AGENT_MODEL})...`);
     const response = await client.messages.create({
       model: AGENT_MODEL,
-      max_tokens: 16000,
+      max_tokens: 32000,
       system: SYSTEM_PROMPT,
       tools: [GENERATE_PAGE_SCHEMA_TOOL],
       // First turn: force tool use. Retries: let Claude decide.
       tool_choice: turn === 0 ? { type: "tool", name: "generate_page_schema" } : { type: "auto" },
       messages,
     });
+    console.log(`[landing-agent] turn=${turn} response: stop_reason=${response.stop_reason} blocks=${response.content.length}`);
 
     for (const block of response.content) {
       if (block.type === "tool_use" && block.name === "generate_page_schema") {
+        const input = block.input as Record<string, unknown>;
+        const pageCount = Array.isArray(input.pages) ? input.pages.length : 0;
+        console.log(`[landing-agent] got schema: designFamily=${input.designFamily} pages=${pageCount}`);
         const result = validateSchema(block.input);
-        if (result.ok) return result.schema;
+        if (result.ok) {
+          console.log(`[landing-agent] schema valid ✅`);
+          return result.schema;
+        }
+        console.log(`[landing-agent] schema invalid: ${result.error}`);
 
         // Validation failed — ask agent to retry
         messages.push({
@@ -384,11 +393,14 @@ export async function runLandingAgent(args: {
     imageUrl: p.imageUrl,
     categoryName: p.categoryName,
   }));
+  console.log(`[landing-agent] store="${store.name}" db_products=${products.length} brief="${args.brief.slice(0, 50)}"`);
 
   if (products.length === 0) {
+    console.log(`[landing-agent] 0 products in DB → searching CJ...`);
     try {
       const { cjAdapter } = await import("@/lib/suppliers/cj/adapter");
       const searchQuery = thaiToEnglishSearch(args.brief);
+      console.log(`[landing-agent] CJ search: "${searchQuery}"`);
       const result = await cjAdapter.listCatalog({
         search: searchQuery,
         pageSize: 20,
@@ -401,8 +413,9 @@ export async function runLandingAgent(args: {
         imageUrl: p.imageUrl ?? null,
         categoryName: null,
       }));
-    } catch {
-      // CJ search failed
+      console.log(`[landing-agent] CJ returned ${products.length} products`);
+    } catch (err) {
+      console.error(`[landing-agent] CJ search failed:`, err);
     }
   }
 
