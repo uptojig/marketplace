@@ -1,11 +1,9 @@
 /**
  * Landing-page agent invocation for Basketplace.
  *
- * Reuses the persistent PromptPage agent (ANTHROPIC_AGENT_ID) — the
- * same agent that the /builder page calls — but pipes a different
+ * Uses the standalone Claude Messages API with the same system prompt
+ * and tool definitions as the /create-store flow, but pipes a different
  * prompt that pre-supplies the store's already-curated products.
- * The agent skips searchMarketplaceProducts (no need to discover —
- * admin picked them) and goes straight to generate_page_schema.
  *
  * Architecture:
  *   POST /api/admin/stores/<id>/generate-landing
@@ -14,24 +12,22 @@
  *     ↓ async, fire-and-forget
  *   - Read store + active products from DB
  *   - Compose enriched user prompt with product list
- *   - startBuilderSession (Anthropic Managed Agents)
- *   - Loop tool events until generate_page_schema fires (terminal)
- *   - Save blocks + status="ready" (or "failed" on error)
- *
- * Vercel runtime: this fire-and-forget pattern works on Vercel
- * functions only as long as the function isn't terminated. On Pro
- * (300s maxDuration) the agent run usually fits. On Hobby (60s)
- * long runs may be killed mid-flight — admin sees the row stuck in
- * "generating" forever; recovery = retry.
+ *   - Call Claude Messages API with system prompt + generate_page_schema tool
+ *   - Validate schema → Save blocks + status="ready" (or "failed" on error)
  */
 
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
+import {
+  AGENT_MODEL,
+  SYSTEM_PROMPT,
+  GENERATE_PAGE_SCHEMA_TOOL,
+} from "@/lib/agent/config";
 
-export class ManagedAgentNotConfiguredError extends Error {
+export class AgentNotConfiguredError extends Error {
   constructor() {
-    super("ANTHROPIC_API_KEY / ANTHROPIC_AGENT_ID / ANTHROPIC_ENVIRONMENT_ID missing");
-    this.name = "ManagedAgentNotConfiguredError";
+    super("ANTHROPIC_API_KEY missing");
+    this.name = "AgentNotConfiguredError";
   }
 }
 
@@ -75,7 +71,7 @@ type GeneratedPageSchema = GeneratedMultiPageSchema | GeneratedSinglePageSchema;
 
 function getClient(): Anthropic {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new ManagedAgentNotConfiguredError();
+  if (!apiKey) throw new AgentNotConfiguredError();
   return new Anthropic({ apiKey });
 }
 
@@ -88,10 +84,8 @@ function validateSchema(input: unknown):
   // eslint-disable-next-line
   const s = input as any;
 
-  // Check valid design family
-  const validFamilies = ["A","B","C","D","E","F","G","H","I"];
+  const validFamilies = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
   const validThemes = ["minimal", "cute"];
-  // Agent sometimes double-quotes values: "\"I\"" instead of "I"
   if (typeof s.designFamily === "string") {
     s.designFamily = s.designFamily.replace(/^["']+|["']+$/g, "").trim();
   }
@@ -101,33 +95,23 @@ function validateSchema(input: unknown):
   const hasFamily = typeof s.designFamily === "string" && validFamilies.includes(s.designFamily);
   const hasTheme = typeof s.themeVariant === "string" && validThemes.includes(s.themeVariant);
 
-  // v12 multi-page schema — detect by structure, not just schemaVersion string.
-  // Agent may emit schemaVersion as number 12, string "12", or omit it entirely
-  // while still producing a valid v12 structure (pages + globalHeader + globalFooter).
   const looksV12 =
     Array.isArray(s.pages) &&
     (s.schemaVersion === "12" || s.schemaVersion === 12 ||
      s.globalHeader || s.globalFooter);
 
   if (looksV12) {
-    // Auto-fix: ensure schemaVersion is the canonical string "12"
     s.schemaVersion = "12";
-
-    if (!hasFamily) {
-      // Auto-fix: default to "A" if agent forgot designFamily
-      s.designFamily = "A";
-    }
+    if (!hasFamily) s.designFamily = "A";
     if (!Array.isArray(s.pages) || s.pages.length < 1) {
       return { ok: false, error: "v12_requires_at_least_1_page" };
     }
-    // Be lenient on page count — warn but don't reject
     if (!s.globalHeader || typeof s.globalHeader !== "object") {
       s.globalHeader = { nav: [], showCart: true, sticky: true };
     }
     if (!s.globalFooter || typeof s.globalFooter !== "object") {
       s.globalFooter = { brand: { name: "Shop" }, columns: [] };
     }
-    // Validate each page has slug + blocks
     for (let p = 0; p < s.pages.length; p++) {
       const page = s.pages[p];
       if (!page || typeof page.slug !== "string") {
@@ -140,7 +124,7 @@ function validateSchema(input: unknown):
     return { ok: true, schema: s as GeneratedMultiPageSchema };
   }
 
-  // v11 single-page schema (legacy)
+  // v11 single-page
   if (typeof s.title !== "string" || !s.title.trim()) {
     return { ok: false, error: "title_required" };
   }
@@ -163,29 +147,12 @@ function validateSchema(input: unknown):
   return { ok: true, schema: s as GeneratedSinglePageSchema };
 }
 
-/**
- * Build the user prompt that pipes pre-curated products into the
- * agent. The agent's persistent system prompt already knows the
- * block-tree contract; this user message just supplies the brief +
- * the product inventory it should design around.
- */
 function composePrompt(args: {
   storeName: string;
   brief: string;
-  // v3 design family codes (A-I) preferred; legacy "minimal" / "cute" still
-  // accepted for stores carrying old data forward.
   themeHint?:
-    | "A"
-    | "B"
-    | "C"
-    | "D"
-    | "E"
-    | "F"
-    | "G"
-    | "H"
-    | "I"
-    | "minimal"
-    | "cute";
+    | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I"
+    | "minimal" | "cute";
   contactEmail?: string;
   products: Array<{
     externalProductId: string;
@@ -203,7 +170,7 @@ function composePrompt(args: {
     args.contactEmail ? `Contact email: ${args.contactEmail}` : "",
     args.themeHint ? `Theme hint: prefer "${args.themeHint}".` : "",
     ``,
-    `Products already curated for this store (${args.products.length} items). Use THESE — do NOT call searchMarketplaceProducts again. Build the page around the most visually striking items.`,
+    `Products already curated for this store (${args.products.length} items). Use THESE — do NOT generate fake products. Build the page around the most visually striking items.`,
     ``,
   ].filter(Boolean);
 
@@ -228,219 +195,146 @@ function composePrompt(args: {
 }
 
 /**
- * Drives the agent session through Anthropic Managed Agents until
- * `generate_page_schema` fires. Returns the captured schema.
+ * Call Claude Messages API directly with system prompt + tool.
+ * Retries up to 3 times if schema validation fails.
  */
 async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
   const client = getClient();
-  const agentId = process.env.ANTHROPIC_AGENT_ID;
-  const envId = process.env.ANTHROPIC_ENVIRONMENT_ID;
-  if (!agentId || !envId) throw new ManagedAgentNotConfiguredError();
 
-  // Anthropic Managed Agents: create session, send the prompt,
-  // stream events. Custom-tool calls are dispatched here — the only
-  // tool we serve in this flow is generate_page_schema (terminal).
-  // searchMarketplaceProducts requests get a sentinel reply telling
-  // the agent to use the supplied list (defensive — should not fire
-  // because the prompt already says "do NOT call").
-  // eslint-disable-next-line
-  const c = client as any; // beta API surface still typed loosely
-  // Canonical Anthropic Managed Agents shape (verified against the
-  // installed SDK's SessionCreateParams + the working PromptPage
-  // lib/managed-agents/index.ts pattern):
-  //   - sessions.create accepts `agent` (string ID) + `environment_id`
-  //     (snake-case suffix)
-  //   - There is NO `initial_message` / `initialMessage` field.
-  //     The first user turn is sent SEPARATELY via
-  //     sessions.events.send with type "user.message".
-  // Earlier attempts (`agent_id`, `environment`, `initialMessage`)
-  // all returned 400 invalid_request_error from the API.
-  const session = await c.beta.sessions.create({
-    agent: agentId,
-    environment_id: envId,
-  });
+  type MessageParam = { role: "user" | "assistant"; content: string | Anthropic.ContentBlockParam[] };
+  const messages: MessageParam[] = [
+    { role: "user", content: prompt },
+  ];
 
-  // Subscribe BEFORE sending so we don't miss the agent's first
-  // events. The stream is long-lived and yields events as they fire.
-  // eslint-disable-next-line
-  const stream = (await c.beta.sessions.events.stream(session.id)) as AsyncIterable<any>;
+  for (let turn = 0; turn < 3; turn++) {
+    const response = await client.messages.create({
+      model: AGENT_MODEL,
+      max_tokens: 16000,
+      system: SYSTEM_PROMPT,
+      tools: [GENERATE_PAGE_SCHEMA_TOOL],
+      messages,
+    });
 
-  // Now post the operator's brief as the first user message.
-  await c.beta.sessions.events.send(session.id, {
-    events: [
-      {
-        type: "user.message",
-        content: [{ type: "text", text: prompt }],
-      },
-    ],
-  });
+    for (const block of response.content) {
+      if (block.type === "tool_use" && block.name === "generate_page_schema") {
+        const result = validateSchema(block.input);
+        if (result.ok) return result.schema;
 
-  let captured: GeneratedPageSchema | null = null;
-
-  for await (const event of stream) {
-    if (event.type === "agent.custom_tool_use") {
-      const toolName: string = event.tool_name ?? event.name ?? "";
-      const id: string = event.id;
-
-      if (toolName === "generate_page_schema") {
-        const result = validateSchema(event.input);
-        if (result.ok) captured = result.schema;
-        await c.beta.sessions.events.send(session.id, {
-          events: [
-            {
-              type: "user.custom_tool_result",
-              custom_tool_use_id: id,
-              content: [
-                {
-                  type: "text",
-                  text: JSON.stringify(
-                    result.ok
-                      ? {
-                          ok: true,
-                          version: 'schemaVersion' in result.schema ? 'v12' : 'v11',
-                          pages: 'pages' in result.schema ? result.schema.pages.length : 1,
-                        }
-                      : { ok: false, error: result.error },
-                  ),
-                },
-              ],
-              is_error: !result.ok,
-            },
-          ],
+        // Validation failed — ask agent to retry
+        messages.push({
+          role: "assistant",
+          content: response.content as Anthropic.ContentBlockParam[],
         });
-        if (result.ok) break;
-        continue;
-      }
-
-      // Handle find_products / searchMarketplaceProducts by querying
-      // the CJ API live. This works both from Anthropic Console tests
-      // and marketplace flow (where products may already be in the prompt).
-      if (
-        toolName === "find_products" ||
-        toolName === "searchMarketplaceProducts"
-      ) {
-        let productResults: unknown[] = [];
-        let toolError = false;
-        try {
-          const { cjAdapter } = await import("@/lib/suppliers/cj/adapter");
-          const input = (event.input ?? {}) as Record<string, unknown>;
-          const query = (input.q as string) ?? (input.query as string) ?? "";
-          const limit = Math.min(
-            20,
-            Math.max(1, Number(input.limit ?? input.count ?? 8)),
-          );
-
-          if (input.id) {
-            // Single product lookup
-            const product = await cjAdapter.fetchProductById(String(input.id));
-            productResults = [product];
-          } else if (query) {
-            // Search by keyword
-            const page = await cjAdapter.listCatalog({
-              search: query,
-              pageSize: limit,
-            });
-            const fx = parseFloat(process.env.CJ_USD_THB ?? "36");
-            productResults = page.items.map((p) => ({
-              externalProductId: p.externalProductId,
-              title: p.title,
-              titleTh: null,
-              priceTHB: p.priceTHB,
-              imageUrl: p.imageUrl,
-              description: p.description,
-              categoryName: (p.raw as Record<string, unknown>)?.categoryName ?? null,
-            }));
-          }
-        } catch (err) {
-          toolError = true;
-          productResults = [];
-          console.warn("find_products CJ query failed:", err);
-        }
-
-        await c.beta.sessions.events.send(session.id, {
-          events: [
+        messages.push({
+          role: "user",
+          content: [
             {
-              type: "user.custom_tool_result",
-              custom_tool_use_id: id,
-              content: [
-                {
-                  type: "text",
-                  text: JSON.stringify(
-                    toolError
-                      ? {
-                          ok: false,
-                          error: "product_search_failed",
-                          hint: "CJ API query failed. Proceed with generate_page_schema using placeholder product data from the brief.",
-                        }
-                      : {
-                          ok: true,
-                          products: productResults,
-                          count: productResults.length,
-                        },
-                  ),
-                },
-              ],
-              is_error: toolError,
+              type: "tool_result",
+              tool_use_id: block.id,
+              content: JSON.stringify({
+                ok: false,
+                error: result.error,
+                hint: "Fix the issue and call generate_page_schema again.",
+              }),
+              is_error: true,
             },
-          ],
+          ] as unknown as Anthropic.ContentBlockParam[],
         });
-        continue;
+        break;
       }
-
-      // Catch-all for any other unknown custom tools
-      await c.beta.sessions.events.send(session.id, {
-        events: [
-          {
-            type: "user.custom_tool_result",
-            custom_tool_use_id: id,
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify({
-                  ok: false,
-                  error: "unknown_tool",
-                  hint: `Tool "${toolName}" is not handled. Use generate_page_schema to emit the final schema.`,
-                }),
-              },
-            ],
-            is_error: true,
-          },
-        ],
-      });
-    } else if (
-      event.type === "session.status_terminated" ||
-      (event.type === "session.status_idle" &&
-        event.stop_reason?.type !== "requires_action")
-    ) {
-      break;
     }
+
+    // If agent responded with text only (no tool use), bail out
+    const hasToolUse = response.content.some(
+      (b) => b.type === "tool_use",
+    );
+    if (!hasToolUse) break;
   }
 
-  if (!captured) {
-    throw new Error("agent_did_not_emit_schema");
+  throw new Error("agent_did_not_emit_schema");
+}
+
+/* ------------------------------------------------------------------ */
+/*  Thai brief → English CJ search keyword                           */
+/* ------------------------------------------------------------------ */
+
+const TH_EN_KEYWORDS: [string, string][] = [
+  ["เคสมือถือ", "phone case"],
+  ["เคสโทรศัพท์", "phone case"],
+  ["เคส", "case cover"],
+  ["เสื้อผ้า", "clothing"],
+  ["เสื้อ", "shirt top"],
+  ["กางเกง", "pants"],
+  ["กระโปรง", "skirt"],
+  ["ชุดเดรส", "dress"],
+  ["รองเท้า", "shoes"],
+  ["กระเป๋า", "bag"],
+  ["แฟชั่น", "fashion"],
+  ["เกาหลี", "korean fashion"],
+  ["แว่นตา", "glasses sunglasses"],
+  ["นาฬิกา", "watch"],
+  ["เครื่องประดับ", "jewelry accessories"],
+  ["สร้อย", "necklace"],
+  ["แหวน", "ring"],
+  ["ต่างหู", "earring"],
+  ["GPS", "GPS tracker"],
+  ["สัตว์เลี้ยง", "pet"],
+  ["แมว", "cat"],
+  ["สุนัข", "dog"],
+  ["หูฟัง", "earphone headphone"],
+  ["ลำโพง", "speaker bluetooth"],
+  ["ที่ชาร์จ", "charger"],
+  ["สายชาร์จ", "charging cable"],
+  ["แบตเตอรี่", "power bank battery"],
+  ["มือถือ", "phone mobile"],
+  ["โทรศัพท์", "phone"],
+  ["คอมพิวเตอร์", "computer"],
+  ["คีย์บอร์ด", "keyboard"],
+  ["เมาส์", "mouse"],
+  ["บ้าน", "home decor"],
+  ["ของแต่งบ้าน", "home decoration"],
+  ["โคมไฟ", "lamp light"],
+  ["หมอน", "pillow"],
+  ["ผ้าม่าน", "curtain"],
+  ["ครัว", "kitchen"],
+  ["เครื่องสำอาง", "cosmetics makeup"],
+  ["สกินแคร์", "skincare"],
+  ["ครีม", "cream"],
+  ["ลิปสติก", "lipstick"],
+  ["แปรงแต่งหน้า", "makeup brush"],
+  ["กีฬา", "sports"],
+  ["ออกกำลังกาย", "fitness gym"],
+  ["โยคะ", "yoga"],
+  ["ตกปลา", "fishing"],
+  ["แคมป์", "camping"],
+  ["ของเล่น", "toys"],
+  ["เด็ก", "kids baby"],
+  ["รถยนต์", "car accessories"],
+  ["มอเตอร์ไซค์", "motorcycle"],
+  ["ติดตาม", "tracker GPS"],
+];
+
+function thaiToEnglishSearch(brief: string): string {
+  const hits: string[] = [];
+  for (const [th, en] of TH_EN_KEYWORDS) {
+    if (brief.includes(th)) hits.push(en);
   }
-  return captured;
+  const english = brief.match(/[a-zA-Z]{2,}/g);
+  if (english) hits.push(...english);
+  if (hits.length === 0) return "fashion accessories";
+  const unique = [...new Set(hits)].slice(0, 3);
+  return unique.join(" ");
 }
 
 /**
  * Public entry point — fire-and-forget from the API route.
- * Updates the Store row with the result (or the error message).
  */
 export async function runLandingAgent(args: {
   storeId: string;
   brief: string;
   themeHint?:
-    | "A"
-    | "B"
-    | "C"
-    | "D"
-    | "E"
-    | "F"
-    | "G"
-    | "H"
-    | "I"
-    | "minimal"
-    | "cute";
+    | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I"
+    | "minimal" | "cute";
 }): Promise<void> {
   const store = await prisma.store.findUnique({
     where: { id: args.storeId },
@@ -466,17 +360,11 @@ export async function runLandingAgent(args: {
   if (!store) {
     await prisma.store.update({
       where: { id: args.storeId },
-      data: {
-        landingStatus: "failed",
-        landingError: "store_not_found",
-      },
+      data: { landingStatus: "failed", landingError: "store_not_found" },
     }).catch(() => undefined);
     return;
   }
 
-  // ── Guard: ไม่มีสินค้าในร้าน → ค้นหาจาก CJ ก่อน ────────────────
-  // ถ้าร้านยังไม่มีสินค้า ให้ใช้ brief เป็น keyword ค้นหาจาก CJ
-  // ถ้า CJ ก็ไม่มี → fail
   type ProductForPrompt = {
     externalProductId: string;
     title: string;
@@ -498,7 +386,6 @@ export async function runLandingAgent(args: {
   if (products.length === 0) {
     try {
       const { cjAdapter } = await import("@/lib/suppliers/cj/adapter");
-      // CJ searches by productNameEn → must convert Thai brief to English keywords
       const searchQuery = thaiToEnglishSearch(args.brief);
       const result = await cjAdapter.listCatalog({
         search: searchQuery,
@@ -513,17 +400,14 @@ export async function runLandingAgent(args: {
         categoryName: null,
       }));
     } catch {
-      // CJ search failed — fall through to 0-check
+      // CJ search failed
     }
   }
 
   if (products.length === 0) {
     await prisma.store.update({
       where: { id: args.storeId },
-      data: {
-        landingStatus: "failed",
-        landingError: "no_products",
-      },
+      data: { landingStatus: "failed", landingError: "no_products" },
     }).catch(() => undefined);
     return;
   }
@@ -539,10 +423,7 @@ export async function runLandingAgent(args: {
   try {
     const schema = await runAgentSession(prompt);
 
-    // v12: store entire multi-page schema as the landingBlocks value.
-    // v11 legacy: store just the blocks array.
     if ('schemaVersion' in schema && schema.schemaVersion === '12') {
-      // v12 multi-page — store the full schema object
       const { reasoning, ...schemaData } = schema;
       await prisma.store.update({
         where: { id: args.storeId },
@@ -556,7 +437,6 @@ export async function runLandingAgent(args: {
         },
       });
     } else {
-      // v11 single-page — store blocks array (backward compat)
       const v11 = schema as GeneratedSinglePageSchema;
       await prisma.store.update({
         where: { id: args.storeId },
@@ -572,112 +452,16 @@ export async function runLandingAgent(args: {
     }
   } catch (err) {
     const msg =
-      err instanceof ManagedAgentNotConfiguredError
-        ? "managed_agent_not_configured"
+      err instanceof AgentNotConfiguredError
+        ? "agent_not_configured"
         : err instanceof Error
           ? err.message.slice(0, 500)
           : "unknown_error";
     await prisma.store
       .update({
         where: { id: args.storeId },
-        data: {
-          landingStatus: "failed",
-          landingError: msg,
-        },
+        data: { landingStatus: "failed", landingError: msg },
       })
       .catch(() => undefined);
   }
-}
-
-/* ------------------------------------------------------------------ */
-/*  Thai brief → English CJ search keyword                           */
-/* ------------------------------------------------------------------ */
-
-const TH_EN_KEYWORDS: [string, string][] = [
-  // Fashion
-  ["เคสมือถือ", "phone case"],
-  ["เคสโทรศัพท์", "phone case"],
-  ["เคส", "case cover"],
-  ["เสื้อผ้า", "clothing"],
-  ["เสื้อ", "shirt top"],
-  ["กางเกง", "pants"],
-  ["กระโปรง", "skirt"],
-  ["ชุดเดรส", "dress"],
-  ["รองเท้า", "shoes"],
-  ["กระเป๋า", "bag"],
-  ["แฟชั่น", "fashion"],
-  ["เกาหลี", "korean fashion"],
-  ["แว่นตา", "glasses sunglasses"],
-  ["นาฬิกา", "watch"],
-  ["เครื่องประดับ", "jewelry accessories"],
-  ["สร้อย", "necklace"],
-  ["แหวน", "ring"],
-  ["ต่างหู", "earring"],
-  // Electronics
-  ["GPS", "GPS tracker"],
-  ["สัตว์เลี้ยง", "pet"],
-  ["แมว", "cat"],
-  ["สุนัข", "dog"],
-  ["หูฟัง", "earphone headphone"],
-  ["ลำโพง", "speaker bluetooth"],
-  ["ที่ชาร์จ", "charger"],
-  ["สายชาร์จ", "charging cable"],
-  ["แบตเตอรี่", "power bank battery"],
-  ["มือถือ", "phone mobile"],
-  ["โทรศัพท์", "phone"],
-  ["คอมพิวเตอร์", "computer"],
-  ["คีย์บอร์ด", "keyboard"],
-  ["เมาส์", "mouse"],
-  // Home & Living
-  ["บ้าน", "home decor"],
-  ["ของแต่งบ้าน", "home decoration"],
-  ["โคมไฟ", "lamp light"],
-  ["หมอน", "pillow"],
-  ["ผ้าม่าน", "curtain"],
-  ["ครัว", "kitchen"],
-  // Beauty
-  ["เครื่องสำอาง", "cosmetics makeup"],
-  ["สกินแคร์", "skincare"],
-  ["ครีม", "cream"],
-  ["ลิปสติก", "lipstick"],
-  ["แปรงแต่งหน้า", "makeup brush"],
-  // Sports & Outdoor
-  ["กีฬา", "sports"],
-  ["ออกกำลังกาย", "fitness gym"],
-  ["โยคะ", "yoga"],
-  ["ตกปลา", "fishing"],
-  ["แคมป์", "camping"],
-  // Kids
-  ["ของเล่น", "toys"],
-  ["เด็ก", "kids baby"],
-  // Auto
-  ["รถยนต์", "car accessories"],
-  ["มอเตอร์ไซค์", "motorcycle"],
-  // Tracking / GPS
-  ["ติดตาม", "tracker GPS"],
-];
-
-/**
- * Convert a Thai brief into English search keywords for CJ API.
- * Matches known Thai words → English equivalents.
- * Also extracts any English words already in the brief.
- * Falls back to generic "fashion accessories" if nothing matches.
- */
-function thaiToEnglishSearch(brief: string): string {
-  const hits: string[] = [];
-
-  // Match Thai keywords
-  for (const [th, en] of TH_EN_KEYWORDS) {
-    if (brief.includes(th)) hits.push(en);
-  }
-
-  // Extract any English words already in the brief
-  const english = brief.match(/[a-zA-Z]{2,}/g);
-  if (english) hits.push(...english);
-
-  if (hits.length === 0) return "fashion accessories";
-
-  // Deduplicate and take first 3 keyword groups
-  const unique = [...new Set(hits)].slice(0, 3);
-  return unique.join(" ");
 }

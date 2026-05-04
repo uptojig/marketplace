@@ -1,13 +1,27 @@
 /**
- * Server-side client for PromptPage's managed-agent API.
+ * Standalone store-builder agent — calls Claude Messages API directly.
  *
- * Streams NDJSON events back from /api/managed-agents/run. Caller iterates
- * the async generator and forwards events to its own UI / Response stream.
+ * Instead of proxying through PromptPage or using Anthropic Managed
+ * Agents, this module embeds the full system prompt and tool definitions,
+ * then streams Claude's response with tool-use handling.
  *
- * The Bearer token is read from PROMPTPAGE_AGENT_API_KEY at call time so
- * this module is safe to import from server components/route handlers but
- * MUST NOT be bundled into client code.
+ * Flow:
+ *   1. Enrich brief with CJ products (lib/agent/enrich-brief.ts)
+ *   2. Send to Claude with system prompt + generate_page_schema tool
+ *   3. Stream events back as NDJSON for the client UI
+ *   4. When agent calls generate_page_schema → validate → yield _schema
  */
+
+import Anthropic from "@anthropic-ai/sdk";
+import {
+  AGENT_MODEL,
+  SYSTEM_PROMPT,
+  GENERATE_PAGE_SCHEMA_TOOL,
+} from "@/lib/agent/config";
+import {
+  enrichBriefWithProducts,
+  NoProductsError,
+} from "@/lib/agent/enrich-brief";
 
 export interface AgentBlock {
   blockType: string;
@@ -18,7 +32,12 @@ export interface PageMetadata {
   title?: string;
   description?: string;
   favicon?: { imageUrl: string; size?: string };
-  ogImage?: { imageUrl: string; altText?: string; width?: number; height?: number };
+  ogImage?: {
+    imageUrl: string;
+    altText?: string;
+    width?: number;
+    height?: number;
+  };
   ogTitle?: string;
   ogDescription?: string;
   twitterCard?: string;
@@ -27,17 +46,23 @@ export interface PageMetadata {
   themeColor?: string;
 }
 
-export type DesignFamily = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I";
+export type DesignFamily =
+  | "A"
+  | "B"
+  | "C"
+  | "D"
+  | "E"
+  | "F"
+  | "G"
+  | "H"
+  | "I";
 
 export interface GeneratedPageSchema {
   title: string;
   slug?: string;
   description?: string;
-  /** v3: 9 design families (A-I) */
   designFamily?: DesignFamily;
-  /** v2 legacy — kept for backward compat with cached pages */
   themeVariant?: "minimal" | "cute";
-  /** v3: page-level SEO/social/branding */
   metadata?: PageMetadata;
   blocks: AgentBlock[];
   reasoning: string;
@@ -48,7 +73,6 @@ export type AgentEvent =
   | { type: "_schema"; schema: GeneratedPageSchema }
   | { type: "_done"; terminal_via_tool?: boolean }
   | { type: "_error"; message: string }
-  // Anthropic-side events forwarded verbatim — only `type` is guaranteed.
   | { type: string; [key: string]: unknown };
 
 export interface RunAgentInput {
@@ -59,7 +83,7 @@ export interface RunAgentInput {
 
 export class AgentNotConfiguredError extends Error {
   constructor() {
-    super("PROMPTPAGE_AGENT_API_KEY or PROMPTPAGE_AGENT_URL is not set");
+    super("ANTHROPIC_API_KEY is not set");
     this.name = "AgentNotConfiguredError";
   }
 }
@@ -69,71 +93,268 @@ export class AgentUpstreamError extends Error {
     public status: number,
     public bodyText: string,
   ) {
-    super(`PromptPage agent returned ${status}`);
+    super(`Claude API returned ${status}`);
     this.name = "AgentUpstreamError";
   }
 }
 
+type DesignFamilyType =
+  | "A"
+  | "B"
+  | "C"
+  | "D"
+  | "E"
+  | "F"
+  | "G"
+  | "H"
+  | "I";
+
+type Block = {
+  blockType: string;
+  content: Record<string, unknown>;
+};
+
+/** v12 multi-page schema */
+type MultiPageSchema = {
+  schemaVersion: "12";
+  metadata: Record<string, unknown>;
+  designFamily: DesignFamilyType;
+  globalHeader: Record<string, unknown>;
+  globalFooter: Record<string, unknown>;
+  pages: Array<{
+    slug: string;
+    isHomepage?: boolean;
+    metadata?: Record<string, unknown>;
+    blocks: Block[];
+  }>;
+  reasoning: string;
+};
+
+/** v11 single-page schema (legacy) */
+type SinglePageSchema = {
+  title: string;
+  slug?: string;
+  description?: string;
+  designFamily?: DesignFamilyType;
+  themeVariant?: "minimal" | "cute";
+  metadata?: Record<string, unknown>;
+  blocks: Block[];
+  reasoning: string;
+};
+
 /**
- * POST to PromptPage and yield each NDJSON line as a parsed event.
- * Lines that fail to parse are dropped silently (the upstream event log
- * occasionally contains partial chunks at flush time).
+ * Validate schema from generate_page_schema tool call.
+ * Accepts both v12 (multi-page) and v11 (single-page) formats.
  */
-export async function* runAgent(input: RunAgentInput): AsyncGenerator<AgentEvent> {
-  const url = process.env.PROMPTPAGE_AGENT_URL;
-  const key = process.env.PROMPTPAGE_AGENT_API_KEY;
-  if (!url || !key) throw new AgentNotConfiguredError();
+function validateSchema(
+  input: unknown,
+):
+  | { ok: true; schema: GeneratedPageSchema; version: "v11" | "v12" }
+  | { ok: false; error: string } {
+  if (typeof input !== "object" || input === null) {
+    return { ok: false, error: "schema_must_be_object" };
+  }
+  // eslint-disable-next-line
+  const s = input as any;
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      prompt: input.prompt,
-      ...(input.title ? { title: input.title } : {}),
-    }),
-    signal: input.signal,
-  });
+  const validFamilies = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
 
-  if (!res.ok || !res.body) {
-    const text = await res.text().catch(() => "");
-    throw new AgentUpstreamError(res.status, text);
+  // Strip stray quotes from designFamily/schemaVersion
+  if (typeof s.designFamily === "string") {
+    s.designFamily = s.designFamily.replace(/^["']+|["']+$/g, "").trim();
+  }
+  if (typeof s.schemaVersion === "string") {
+    s.schemaVersion = s.schemaVersion.replace(/^["']+|["']+$/g, "").trim();
   }
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buf = "";
+  // Detect v12 multi-page schema
+  const looksV12 =
+    Array.isArray(s.pages) &&
+    (s.schemaVersion === "12" ||
+      s.schemaVersion === 12 ||
+      s.globalHeader ||
+      s.globalFooter);
 
+  if (looksV12) {
+    s.schemaVersion = "12";
+    if (
+      !validFamilies.includes(s.designFamily)
+    ) {
+      s.designFamily = "A";
+    }
+    if (!Array.isArray(s.pages) || s.pages.length < 1) {
+      return { ok: false, error: "v12_requires_at_least_1_page" };
+    }
+    if (!s.globalHeader || typeof s.globalHeader !== "object") {
+      s.globalHeader = { nav: [], showCart: true, sticky: true };
+    }
+    if (!s.globalFooter || typeof s.globalFooter !== "object") {
+      s.globalFooter = { brand: { name: "Shop" }, columns: [] };
+    }
+    for (let p = 0; p < s.pages.length; p++) {
+      const page = s.pages[p];
+      if (!page || typeof page.slug !== "string") {
+        return { ok: false, error: `page_${p}_missing_slug` };
+      }
+      if (!Array.isArray(page.blocks) || page.blocks.length === 0) {
+        return { ok: false, error: `page_${p}_missing_blocks` };
+      }
+    }
+
+    // For v12: create a GeneratedPageSchema that's compatible with the UI.
+    // Use the homepage blocks as the "blocks" field for backward compat.
+    const homepage = s.pages.find(
+      (p: { isHomepage?: boolean }) => p.isHomepage,
+    ) ?? s.pages[0];
+    const schema: GeneratedPageSchema = {
+      title:
+        (s.metadata as Record<string, unknown>)?.title as string ??
+        "Shop",
+      designFamily: s.designFamily,
+      metadata: s.metadata,
+      blocks: homepage.blocks,
+      reasoning: s.reasoning ?? "",
+      // Attach the full v12 data for the renderer
+      ...(s as object),
+    };
+    return { ok: true, schema, version: "v12" };
+  }
+
+  // v11 single-page
+  if (typeof s.title !== "string" || !s.title.trim()) {
+    return { ok: false, error: "title_required" };
+  }
+  const hasFamily = validFamilies.includes(s.designFamily);
+  const hasTheme =
+    s.themeVariant === "minimal" || s.themeVariant === "cute";
+  if (!hasFamily && !hasTheme) {
+    return { ok: false, error: "designFamily_or_themeVariant_required" };
+  }
+  if (!Array.isArray(s.blocks) || s.blocks.length === 0) {
+    return { ok: false, error: "blocks_required" };
+  }
+  return { ok: true, schema: s as GeneratedPageSchema, version: "v11" };
+}
+
+/**
+ * Run the store-builder agent. Yields NDJSON events for the client UI.
+ *
+ * Steps:
+ *   1. Enrich brief with CJ products
+ *   2. Call Claude Messages API with streaming
+ *   3. Handle generate_page_schema tool call
+ *   4. Yield events for progress display
+ */
+export async function* runAgent(
+  input: RunAgentInput,
+): AsyncGenerator<AgentEvent> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new AgentNotConfiguredError();
+
+  // Step 1: Enrich brief with real products
+  let userMessage: string;
   try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      // NDJSON: split on newline, last fragment may be incomplete.
-      const lines = buf.split("\n");
-      buf = lines.pop() ?? "";
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        try {
-          yield JSON.parse(trimmed) as AgentEvent;
-        } catch {
-          // Drop malformed line; upstream is the source of truth.
-        }
-      }
+    const { enrichedBrief } = await enrichBriefWithProducts(input.prompt);
+    userMessage = input.title
+      ? `Store name: ${input.title}\n\n${enrichedBrief}`
+      : enrichedBrief;
+  } catch (err) {
+    if (err instanceof NoProductsError) {
+      yield {
+        type: "_error",
+        message: `no_products: ${err.reason} — ${err.message}`,
+      };
+      return;
     }
-    // Flush trailing fragment if it's a complete object.
-    const tail = buf.trim();
-    if (tail) {
-      try {
-        yield JSON.parse(tail) as AgentEvent;
-      } catch {
-        // ignore
-      }
-    }
-  } finally {
-    reader.releaseLock();
+    throw err;
   }
+
+  yield { type: "_session", id: `local-${Date.now()}` };
+  yield { type: "agent.message_text", text: "กำลังค้นหาสินค้า... ✓" };
+
+  // Step 2: Call Claude Messages API with streaming
+  const client = new Anthropic({ apiKey });
+
+  type MessageParam = { role: "user" | "assistant"; content: string | Anthropic.ContentBlockParam[] };
+  const messages: MessageParam[] = [
+    { role: "user", content: userMessage },
+  ];
+
+  // Allow up to 3 turns (initial + 2 retries if schema validation fails)
+  for (let turn = 0; turn < 3; turn++) {
+    if (input.signal?.aborted) break;
+
+    yield {
+      type: "agent.message_text",
+      text: turn === 0 ? "agent กำลังออกแบบร้าน..." : "agent กำลังแก้ไข schema...",
+    };
+
+    const response = await client.messages.create({
+      model: AGENT_MODEL,
+      max_tokens: 16000,
+      system: SYSTEM_PROMPT,
+      tools: [GENERATE_PAGE_SCHEMA_TOOL],
+      messages,
+    });
+
+    // Process response content blocks
+    let hasToolUse = false;
+
+    for (const block of response.content) {
+      if (block.type === "text" && block.text) {
+        yield { type: "agent.message_text", text: block.text };
+      }
+
+      if (block.type === "tool_use" && block.name === "generate_page_schema") {
+        hasToolUse = true;
+        yield {
+          type: "agent.custom_tool_use",
+          tool_name: "generate_page_schema",
+          name: "generate_page_schema",
+        };
+
+        const result = validateSchema(block.input);
+        if (result.ok) {
+          yield { type: "_schema", schema: result.schema };
+          yield { type: "_done", terminal_via_tool: true };
+          return;
+        }
+
+        // Schema validation failed — tell agent to fix and retry
+        yield {
+          type: "agent.message_text",
+          text: `schema validation failed: ${result.error} — retrying...`,
+        };
+
+        messages.push({
+          role: "assistant",
+          content: response.content as Anthropic.ContentBlockParam[],
+        });
+        messages.push({
+          role: "user",
+          content: [
+            {
+              type: "tool_result",
+              tool_use_id: block.id,
+              content: JSON.stringify({
+                ok: false,
+                error: result.error,
+                hint: "Fix the issue and call generate_page_schema again.",
+              }),
+              is_error: true,
+            },
+          ] as unknown as Anthropic.ContentBlockParam[],
+        });
+      }
+    }
+
+    // If no tool use, the agent responded with text only (e.g., "ไม่มีสินค้า")
+    if (!hasToolUse) {
+      yield { type: "_done" };
+      return;
+    }
+  }
+
+  yield { type: "_error", message: "agent_did_not_emit_valid_schema_after_retries" };
+  yield { type: "_done" };
 }

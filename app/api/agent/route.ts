@@ -16,12 +16,12 @@ interface Body {
 }
 
 /**
- * POST /api/agent — proxy to PromptPage's managed-agent endpoint.
+ * POST /api/agent — Standalone store-builder agent.
  *
  * Browser sends { prompt, title } here. We auth-check the marketplace
- * session, then forward to PromptPage with the Bearer token (kept
- * server-side, never exposed to the client). The NDJSON stream is
- * piped straight back so client-side fetch() can read it line by line.
+ * session, enrich the brief with CJ products, then call Claude Messages
+ * API directly with embedded system prompt + tool definitions. The NDJSON
+ * stream is piped back so client-side fetch() reads it line by line.
  */
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);

@@ -51,23 +51,32 @@ let cachedAuth: CJAuth | null = null;
 let inflightAuth: Promise<string> | null = null;
 
 async function getAccessToken(): Promise<string> {
+  const apiKey = process.env.CJ_API_KEY;
+  if (!apiKey) {
+    throw new Error("CJ_API_KEY not configured (expected format: CJxxx@api@<hexkey>)");
+  }
+
+  const email = process.env.CJ_EMAIL;
+
+  // If no email, use the API key directly as access token
+  // (CJ v2.0 supports passing apiKey in the CJ-Access-Token header)
+  if (!email) {
+    return apiKey;
+  }
+
+  // Email+apiKey token exchange flow
   if (cachedAuth && cachedAuth.expiresAt > Date.now() + 60_000) {
     return cachedAuth.accessToken;
   }
   if (inflightAuth) return inflightAuth;
 
   inflightAuth = (async () => {
-    const apiKey = process.env.CJ_API_KEY;
-    if (!apiKey) {
-      throw new Error("CJ_API_KEY not configured (expected format: CJxxx@api@<hexkey>)");
-    }
-
     let lastErr: unknown = null;
     for (let attempt = 0; attempt < 3; attempt++) {
       const res = await fetch(`${CJ_BASE}/authentication/getAccessToken`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ apiKey }),
+        body: JSON.stringify({ email, apiKey }),
       });
       const text = await res.text();
       let parsed: {
@@ -249,7 +258,7 @@ export const cjAdapter: SupplierAdapter = {
       externalProductId: r.pid,
       title: r.productNameEn,
       description: r.description,
-      priceTHB: Math.round(parseFloat(r.sellPrice) * fx),
+      priceTHB: Math.round((parseFloat(String(r.sellPrice).split("--")[0].trim()) || 0) * fx),
       imageUrl: pickFirstImage(r.productImage),
       raw: r,
     }));
