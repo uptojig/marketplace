@@ -16,3 +16,5 @@ tsconfig.tsbuildinfo
 public/uploads/*
 !public/uploads/.gitkeep
 .env*.local
+.env.prod
+.env.vercel
