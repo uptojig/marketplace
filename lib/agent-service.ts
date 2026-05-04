@@ -291,7 +291,7 @@ export async function* runAgent(
 
     const response = await client.messages.create({
       model: AGENT_MODEL,
-      max_tokens: 32000,
+      max_tokens: 16000,
       system: SYSTEM_PROMPT,
       tools: [GENERATE_PAGE_SCHEMA_TOOL],
       // First turn: force tool use. Retries: let Claude decide.

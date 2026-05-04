@@ -197,7 +197,7 @@ ${SKILL_CONTENT}
 
 ## HARD RULES
 
-1. **8+ pages required**: home + products + categories + cart + checkout + order-success + about + contact + policy pages
+1. **5-7 pages required**: home + products + about + contact + faq (+ optional: cart, returns)
 2. **Auto-select design family** from brief — NEVER ask operator. See skill for decision table.
 3. **EVERY image MUST have altText** in Thai, 50-125 chars. This includes:
    - HeroBanner imageUrl → altText
@@ -209,7 +209,7 @@ ${SKILL_CONTENT}
    - **Zero tolerance: schema with missing altText = FAIL**
 4. **Ratings 4.6-4.8 only** — never 5.0 or ≤4.5
 5. **No tailwindClasses** — renderer handles styling
-6. **Logo/Nav/Footer in globalHeader/globalFooter ONLY** — never in page blocks
+6. **NO Nav/Footer blocks** — the marketplace platform renders its own nav + footer. globalHeader/globalFooter are for SEO metadata only (logo URL, nav labels, footer text). Do NOT emit Nav or Footer block types in any page.
 7. **Design diversity**: spread across all 9 families (A-I). Don't cluster on A/B.
 
 ## BLOCK TYPES (in pages[].blocks[])
@@ -244,32 +244,23 @@ Rewrite English titles into Thai selling copy for titleTh / headline / item.titl
 - NEVER ask operator to pick design family
 - Always end with design rationale (1-2 sentences)
 
-## PAGE REQUIREMENTS (ALL required)
+## PAGE REQUIREMENTS
 
-Every schema MUST have these pages:
+Every schema MUST have these pages (keep it CONCISE — 3-5 blocks per page to stay under token limit):
 
-### Core shopping pages
-- **home** (slug:"home", isHomepage:true): HeroBanner + CategoryBanner + OfferGrid(สินค้าขายดี) + Stats + Reviews + CTA
-- **products** (slug:"products"): HeroBanner + CategoryBanner + OfferGrid(12+ items) + FAQ
-- **categories** (slug:"categories"): CategoryBanner(4-8 categories with images)
+- **home** (slug:"home", isHomepage:true): HeroBanner + OfferGrid(4-6 สินค้าขายดี) + Stats + CTA
+- **products** (slug:"products"): HeroBanner(small) + OfferGrid(all products) + FAQ(3 items)
+- **about** (slug:"about"): HeroBanner + Features(brand values 3-4 items) + Testimonial
+- **contact** (slug:"contact"): Features(โทร, อีเมล, LINE, เวลาทำการ) + CTA
+- **faq** (slug:"faq"): FAQ(สั่งซื้อ, ชำระเงิน, จัดส่ง, เปลี่ยนคืน — 6-8 คำถาม)
 
-### Cart & Checkout flow
-- **cart** (slug:"cart"): Features(cart summary layout: รายการสินค้า, จำนวน, ราคา, ลบ, subtotal) + CTA("ดำเนินการชำระเงิน") + Stats(trust: ส่งฟรี 990+, คืนได้ 7 วัน, COD ได้)
-- **checkout** (slug:"checkout"): Features(checkout steps: ที่อยู่จัดส่ง, วิธีจัดส่ง Kerry/Flash/EMS, วิธีชำระเงิน PromptPay/บัตรเครดิต/COD) + CTA("สั่งซื้อ")
-- **order-success** (slug:"order-success"): HeroBanner(✓ สั่งซื้อสำเร็จ, หมายเลขคำสั่งซื้อ) + Features(สรุปคำสั่งซื้อ, ที่อยู่จัดส่ง, วิธีชำระเงิน) + CTA("ติดตามสถานะ" + "เพิ่ม LINE เพื่อรับแจ้งเตือน")
+Optional (include if token budget allows):
+- **returns** (slug:"returns"): Features(เงื่อนไข, ระยะเวลา 7 วัน, ขั้นตอน)
+- **shipping** (slug:"shipping"): Features(Kerry/Flash/EMS, ค่าส่ง, ส่งฟรี 990+)
 
-### Trust & Info pages
-- **about** (slug:"about"): HeroBanner + Stats + Features + Gallery + Testimonial + CTA
-- **contact** (slug:"contact"): HeroBanner + Features(โทร, อีเมล, LINE, เวลาทำการ) + CTA
+**IMPORTANT — BE CONCISE:** Cart, checkout, order-success pages are handled by the marketplace platform. Do NOT generate them. Keep total schema output under 20,000 characters.
 
-### Policy pages (ต้องมีครบ — gateway ต้องใช้)
-- **privacy** (slug:"privacy"): HeroBanner("นโยบายความเป็นส่วนตัว") + Features(การเก็บข้อมูล, PDPA, สิทธิผู้ใช้, cookies, การติดต่อ DPO)
-- **terms** (slug:"terms"): HeroBanner("เงื่อนไขการใช้บริการ") + Features(ข้อตกลง, การสั่งซื้อ, การชำระเงิน, ทรัพย์สินทางปัญญา, ข้อจำกัดความรับผิด)
-- **returns** (slug:"returns"): HeroBanner("นโยบายเปลี่ยน/คืนสินค้า") + Features(เงื่อนไข, ระยะเวลา 7 วัน, ขั้นตอน, การคืนเงิน) + FAQ
-- **shipping** (slug:"shipping"): HeroBanner("นโยบายจัดส่ง") + Features(วิธีจัดส่ง Kerry/Flash/EMS, ค่าส่ง, ระยะเวลา 1-3 วัน, ส่งฟรีเมื่อซื้อ 990+) + FAQ
-- **faq** (slug:"faq"): HeroBanner("คำถามที่พบบ่อย") + FAQ(สั่งซื้อ, ชำระเงิน, จัดส่ง, เปลี่ยนคืน, ติดต่อ — 8-12 คำถาม)
-
-Block count: premium families 4-6, mid 6-8, mass 8-10 per page (fewer blocks per page since there are more pages).
+Block count: 3-5 blocks per page maximum. Fewer blocks = faster generation.
 
 ## altText CHECKLIST (run mentally before calling generate_page_schema)
 For EVERY block in EVERY page:
@@ -315,9 +306,9 @@ export const GENERATE_PAGE_SCHEMA_TOOL = {
       },
       pages: {
         type: "array",
-        minItems: 8,
-        maxItems: 16,
-        description: "Pages array. Min 8: home, products, categories, cart, checkout, order-success, about, contact + policy pages.",
+        minItems: 4,
+        maxItems: 8,
+        description: "Pages array. Min: home, products, about, contact, faq.",
         items: {
           type: "object",
           properties: {
