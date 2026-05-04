@@ -289,15 +289,15 @@ export async function* runAgent(
       text: turn === 0 ? "agent กำลังออกแบบร้าน..." : "agent กำลังแก้ไข schema...",
     };
 
-    const response = await client.messages.create({
+    const stream = client.messages.stream({
       model: AGENT_MODEL,
       max_tokens: 16000,
       system: SYSTEM_PROMPT,
       tools: [GENERATE_PAGE_SCHEMA_TOOL],
-      // First turn: force tool use. Retries: let Claude decide.
       tool_choice: turn === 0 ? { type: "tool", name: "generate_page_schema" } : { type: "auto" },
       messages,
     });
+    const response = await stream.finalMessage();
 
     // Process response content blocks
     let hasToolUse = false;
