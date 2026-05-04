@@ -1,11 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  AgentNotConfiguredError,
-  AgentUpstreamError,
-  runAgent,
-} from "@/lib/agent-service";
+import { AgentNotConfiguredError, runAgent } from "@/lib/agent-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,12 +12,12 @@ interface Body {
 }
 
 /**
- * POST /api/agent — proxy to PromptPage's managed-agent endpoint.
+ * POST /api/agent — call Claude (Opus 4.7) directly.
  *
- * Browser sends { prompt, title } here. We auth-check the marketplace
- * session, then forward to PromptPage with the Bearer token (kept
- * server-side, never exposed to the client). The NDJSON stream is
- * piped straight back so client-side fetch() can read it line by line.
+ * Browser sends { prompt, title }. We auth-check the marketplace session,
+ * then stream the model's structured-output JSON back as NDJSON: one event
+ * per line so the client can render thinking + text deltas live and pick
+ * up the validated `_schema` event when generation finishes.
  */
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -58,12 +54,6 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         if (err instanceof AgentNotConfiguredError) {
           write({ type: "_error", message: "agent_not_configured" });
-        } else if (err instanceof AgentUpstreamError) {
-          write({
-            type: "_error",
-            message: `upstream_${err.status}`,
-            detail: err.bodyText.slice(0, 500),
-          });
         } else {
           write({
             type: "_error",

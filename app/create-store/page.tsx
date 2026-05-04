@@ -13,22 +13,28 @@ interface ProgressLine {
 
 function eventToProgress(event: AgentEvent): ProgressLine | null {
   switch (event.type) {
-    case "_session":
-      return { label: "เริ่ม session", detail: (event as { id: string }).id };
+    case "_start":
+      return { label: "เริ่มเรียก", detail: (event as { model: string }).model };
     case "_schema":
       return { label: "ได้ schema สำเร็จ ✓" };
+    case "_usage": {
+      const u = event as {
+        input_tokens: number;
+        output_tokens: number;
+        cache_read_input_tokens: number;
+      };
+      const cached = u.cache_read_input_tokens > 0 ? ` (cached: ${u.cache_read_input_tokens})` : "";
+      return {
+        label: "token usage",
+        detail: `in: ${u.input_tokens}${cached}, out: ${u.output_tokens}`,
+      };
+    }
     case "_done":
       return { label: "เสร็จสิ้น" };
     case "_error":
       return {
         label: "เกิดข้อผิดพลาด",
         detail: (event as { message?: string }).message,
-      };
-    case "agent.message_text":
-      return { label: "agent กำลังคิด..." };
-    case "agent.custom_tool_use":
-      return {
-        label: `เรียก tool: ${(event as { tool_name?: string; name?: string }).tool_name ?? (event as { name?: string }).name ?? "?"}`,
       };
     default:
       return null;
