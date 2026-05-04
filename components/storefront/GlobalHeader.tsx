@@ -28,7 +28,8 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
   }[logo?.size ?? "md"];
 
   // Rewrite header nav hrefs to be relative to /stores/{slug}
-  const resolveHref = (href: string) => {
+  const resolveHref = (href?: string) => {
+    if (!href) return `/stores/${storeSlug}`;
     if (href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) return href;
     if (href === "/" || href === "") return `/stores/${storeSlug}`;
     const clean = href.startsWith("/") ? href.slice(1) : href;
@@ -101,7 +102,7 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
               {nav.map((link, i) => (
                 <Link
                   key={i}
-                  href={resolveHref(link.href)}
+                  href={resolveHref(link.href ?? link.url ?? "/")}
                   target={link.isExternal ? "_blank" : undefined}
                   rel={link.isExternal ? "noopener noreferrer" : undefined}
                   className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
@@ -153,7 +154,7 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
                 {nav.map((link, i) => (
                   <Link
                     key={i}
-                    href={resolveHref(link.href)}
+                    href={resolveHref(link.href ?? link.url ?? "/")}
                     target={link.isExternal ? "_blank" : undefined}
                     rel={link.isExternal ? "noopener noreferrer" : undefined}
                     className="px-3 py-3 text-base font-medium text-stone-700 hover:bg-stone-50 rounded"
