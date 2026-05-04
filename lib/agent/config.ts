@@ -2,7 +2,7 @@
  * Standalone agent config — compact system prompt + tool schema.
  */
 
-export const AGENT_MODEL = "claude-sonnet-4-6";
+export const AGENT_MODEL = "claude-haiku-4-5-20251001";
 
 export const SYSTEM_PROMPT = `You are a Thai e-commerce shop builder. Emit a v12 multi-page JSON schema via generate_page_schema.
 
