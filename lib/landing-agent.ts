@@ -210,7 +210,7 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
     console.log(`[landing-agent] turn=${turn} sending to Claude (model=${AGENT_MODEL})...`);
     const stream = client.messages.stream({
       model: AGENT_MODEL,
-      max_tokens: 16000,
+      max_tokens: 8000,
       system: SYSTEM_PROMPT,
       tools: [GENERATE_PAGE_SCHEMA_TOOL],
       tool_choice: turn === 0 ? { type: "tool", name: "generate_page_schema" } : { type: "auto" },
