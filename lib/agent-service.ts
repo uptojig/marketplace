@@ -291,10 +291,10 @@ export async function* runAgent(
 
     const stream = client.messages.stream({
       model: AGENT_MODEL,
-      max_tokens: 8000,
+      max_tokens: 16000,
       system: SYSTEM_PROMPT,
       tools: [GENERATE_PAGE_SCHEMA_TOOL],
-      tool_choice: turn === 0 ? { type: "tool", name: "generate_page_schema" } : { type: "auto" },
+      tool_choice: turn === 0 ? { type: "tool", name: GENERATE_PAGE_SCHEMA_TOOL.name } : { type: "auto" },
       messages,
     });
     const response = await stream.finalMessage();
@@ -307,7 +307,7 @@ export async function* runAgent(
         yield { type: "agent.message_text", text: block.text };
       }
 
-      if (block.type === "tool_use" && block.name === "generate_page_schema") {
+      if (block.type === "tool_use" && block.name === GENERATE_PAGE_SCHEMA_TOOL.name) {
         hasToolUse = true;
         yield {
           type: "agent.custom_tool_use",

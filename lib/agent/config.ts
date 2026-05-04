@@ -1,45 +1,79 @@
 /**
- * Standalone agent config — compact system prompt + tool schema.
+ * Agent config — generates unique HTML/Tailwind pages for each store.
  */
 
 export const AGENT_MODEL = "claude-haiku-4-5-20251001";
 
-export const SYSTEM_PROMPT = `You are a Thai e-commerce shop builder. Emit a v12 multi-page JSON schema via generate_page_schema.
+export const SYSTEM_PROMPT = `You are an elite Thai e-commerce web designer. You create BEAUTIFUL, UNIQUE storefront pages using HTML + Tailwind CSS. Every store you design must look completely different.
 
-## Design Families (auto-select from brief, NEVER ask)
-A=Nordic(฿2k+,stone+amber) B=K-Fashion(rose+serif) C=Luxe(฿5k+,black+gold) D=Industrial(black+zinc) E=Cyberpunk(purple+green) F=Sport(blue+red) G=Botanical(green+emerald) H=Cozy(cream+brown) I=GenZ(฿49-499,pink+amber)
+## YOUR OUTPUT
+Call generate_shop_html with: headerHtml, footerHtml, pages[{slug, isHomepage?, html}], designFamily, reasoning.
 
-## Schema v12
-{schemaVersion:"12", metadata:{title,description,language:"th",themeColor}, designFamily:"A"-"I", globalHeader:{logo,nav,showCart,sticky}, globalFooter:{brand,columns,contact,copyright}, pages:[{slug,isHomepage?,blocks:[{blockType,content}]}], reasoning}
+## DESIGN PRINCIPLES
+- Every store MUST have a unique visual identity — vary colors, gradients, layout patterns, typography, spacing, shapes
+- Use modern Tailwind CSS: gradients (bg-gradient-to-r), shadows (shadow-xl), rounded corners, backdrop-blur, transitions
+- Mobile-first responsive (sm:, md:, lg: breakpoints)
+- Thai language for ALL user-facing text
+- Professional, high-converting e-commerce design
+- NO <style> tags, NO inline styles — Tailwind classes ONLY
+- NO <script> tags — static HTML only
 
-## Block types
-Visual: HeroBanner, CategoryBanner | Product: ProductHero, OfferGrid, Gallery, Bundle | Trust: Stats, Features, Testimonial, Reviews, FAQ | CTA, Countdown
+## DESIGN VARIETY (pick ONE style per store, make it DISTINCT)
+- Glassmorphism: backdrop-blur, bg-white/10, border border-white/20
+- Gradient hero: bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900
+- Minimal: lots of whitespace, thin borders, subtle shadows
+- Bold typography: text-6xl font-black, uppercase, tracking-tight
+- Card-heavy: rounded-2xl shadow-lg hover:shadow-2xl transition-shadow
+- Dark mode: bg-gray-950 text-white, neon accents
+- Organic: rounded-[2rem], warm colors, soft shadows
+- Grid masonry: asymmetric grid layouts, col-span-2
+- Split layout: grid-cols-2, image left text right (or vice versa)
 
-## Pages (5 required, 3-4 blocks each, BE CONCISE)
-- home: HeroBanner + OfferGrid(4-6 products) + Stats + CTA
-- products: HeroBanner + OfferGrid(all products)
-- about: HeroBanner + Features(3 items) + Testimonial
-- contact: Features(phone,email,LINE,hours) + CTA
-- faq: FAQ(6-8 questions about ordering/shipping/returns)
+## PRODUCTS
+Products come from the brief with: id, title, price (THB), imageUrl. Use them in the HTML:
+- Show product image: <img src="{imageUrl}" alt="{title}" class="..."/>
+- Show Thai title + price: ฿{price}
+- Link to product: href="/stores/{storeSlug}/products/{id}"
+- Rewrite English titles to Thai selling copy
 
-## Rules
-- Products come from the brief. Use ONLY those. Rewrite titles to Thai.
-- If 0 products: reply "ไม่มีสินค้าในระบบ กรุณาเพิ่มสินค้าก่อนสร้างร้าน" and do NOT call tool.
-- Every image needs altText in Thai (50-125 chars).
-- Ratings 4.6-4.8 only. No Nav/Footer blocks (platform handles those).
-- Keep output COMPACT. No unnecessary nesting.`;
+## REQUIRED PAGES (minimum 4, keep each page's HTML concise)
+- **home**: Hero section + featured products (3-6) + trust signals + CTA
+- **products**: All products grid + heading
+- **about**: Brand story + values
+- **contact**: Contact info (email, phone, LINE) + CTA
 
-export const GENERATE_PAGE_SCHEMA_TOOL = {
-  name: "generate_page_schema",
-  description: "Emit the final multi-page shop schema. Call ONCE.",
+## HEADER (headerHtml)
+Sticky nav: logo/brand name + nav links (หน้าแรก, สินค้า, เกี่ยวกับเรา, ติดต่อ) + cart icon
+Links use href="/home", href="/products", etc. (renderer rewrites to /stores/{slug}/...)
+
+## FOOTER (footerHtml)
+Brand info + link columns (สินค้า, ช่วยเหลือ, เกี่ยวกับเรา) + contact + social icons + copyright
+
+## IMPORTANT
+- Keep HTML concise — no unnecessary wrapper divs
+- Each section: one <section> with Tailwind classes
+- Product images use the ACTUAL imageUrl from the brief
+- All prices in THB (฿)`;
+
+export const GENERATE_SHOP_HTML_TOOL = {
+  name: "generate_shop_html",
+  description: "Emit the final HTML/Tailwind shop pages. Call ONCE.",
   input_schema: {
     type: "object" as const,
     properties: {
-      schemaVersion: { type: "string", enum: ["12"] },
-      metadata: { type: "object", description: "title, description, language, themeColor" },
-      designFamily: { type: "string", enum: ["A","B","C","D","E","F","G","H","I"] },
-      globalHeader: { type: "object", description: "logo, nav[], showCart, sticky" },
-      globalFooter: { type: "object", description: "brand, columns[], contact, copyright" },
+      designFamily: {
+        type: "string",
+        enum: ["A", "B", "C", "D", "E", "F", "G", "H", "I"],
+        description: "Design family code for reference.",
+      },
+      headerHtml: {
+        type: "string",
+        description: "Full HTML for the sticky header/nav bar with Tailwind classes.",
+      },
+      footerHtml: {
+        type: "string",
+        description: "Full HTML for the footer with Tailwind classes.",
+      },
       pages: {
         type: "array",
         minItems: 4,
@@ -49,25 +83,22 @@ export const GENERATE_PAGE_SCHEMA_TOOL = {
           properties: {
             slug: { type: "string" },
             isHomepage: { type: "boolean" },
-            blocks: {
-              type: "array",
-              minItems: 1,
-              maxItems: 6,
-              items: {
-                type: "object",
-                properties: {
-                  blockType: { type: "string", enum: ["HeroBanner","CategoryBanner","ProductHero","OfferGrid","Gallery","Bundle","Stats","Features","Testimonial","Reviews","FAQ","CTA","Countdown"] },
-                  content: { type: "object", additionalProperties: true },
-                },
-                required: ["blockType", "content"],
-              },
+            html: {
+              type: "string",
+              description: "Full HTML content for this page with Tailwind classes.",
             },
           },
-          required: ["slug", "blocks"],
+          required: ["slug", "html"],
         },
       },
-      reasoning: { type: "string" },
+      reasoning: {
+        type: "string",
+        description: "1-2 sentences: design style chosen + why.",
+      },
     },
-    required: ["schemaVersion","metadata","designFamily","globalHeader","globalFooter","pages"],
+    required: ["headerHtml", "footerHtml", "pages"],
   },
 };
+
+// Keep old tool export name for backward compat with agent-service.ts
+export const GENERATE_PAGE_SCHEMA_TOOL = GENERATE_SHOP_HTML_TOOL;

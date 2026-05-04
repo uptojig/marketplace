@@ -4,6 +4,7 @@ import { ChevronLeft, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StoreEditForm } from "./edit-form";
 import { LandingForm } from "./landing-form";
+import { BlockEditor } from "./block-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -53,9 +54,18 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
     },
   });
   if (!store) notFound();
-  const landingBlockCount = Array.isArray(store.landingBlocks)
-    ? (store.landingBlocks as unknown[]).length
-    : 0;
+  // Count blocks: v12 schema has pages[].blocks[], v11 is flat array
+  const lb = store.landingBlocks as Record<string, unknown> | unknown[] | null;
+  const landingBlockCount = Array.isArray(lb)
+    ? lb.length
+    : lb && typeof lb === "object" && Array.isArray((lb as Record<string, unknown>).pages)
+      ? ((lb as Record<string, unknown>).pages as unknown[]).reduce(
+          (sum: number, p: unknown) =>
+            sum + (Array.isArray((p as Record<string, unknown>)?.blocks) ? ((p as Record<string, unknown>).blocks as unknown[]).length : 0),
+          0,
+        )
+      : 0;
+  const hasV12Schema = lb && typeof lb === "object" && !Array.isArray(lb) && Array.isArray((lb as Record<string, unknown>).pages);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -93,6 +103,21 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
         landingGeneratedAt={store.landingGeneratedAt?.toISOString() ?? null}
         blockCount={landingBlockCount}
       />
+
+      {landingBlockCount > 0 && (
+        <BlockEditor
+          storeId={store.id}
+          storeSlug={store.slug}
+          schema={
+            hasV12Schema
+              ? (store.landingBlocks as { schemaVersion?: string; designFamily?: string; pages?: unknown[] })
+              : {
+                  schemaVersion: "12",
+                  pages: [{ slug: "home", isHomepage: true, blocks: store.landingBlocks as unknown[] }],
+                }
+          }
+        />
+      )}
 
       <StoreEditForm store={store} />
     </div>

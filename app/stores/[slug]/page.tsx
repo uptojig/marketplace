@@ -11,6 +11,7 @@ import {
   type ThemeVariant,
 } from "@/components/storefront/BlockRenderer";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
+import { HtmlRenderer, isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isValidThemeVariant } from "@/lib/landing/families";
 import { isV12Schema } from "@/lib/multi-page-migration";
 
@@ -52,10 +53,18 @@ export default async function StorePage({
   const baseStore = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!baseStore) notFound();
 
-  // ── v12 multi-page schema short-circuit ──────────────────────
-  // When the landing data is a v12 multi-page schema (has schemaVersion: "12"
-  // + pages[] array), render via MultiPageRenderer which provides its own
-  // globalHeader/globalFooter + page routing.
+  // ── HTML schema (new: unique designs) ────────────────────────
+  if (baseStore.landingBlocks && isHtmlSchema(baseStore.landingBlocks)) {
+    return (
+      <HtmlRenderer
+        schema={baseStore.landingBlocks}
+        pageSlug=""
+        storeSlug={baseStore.slug}
+      />
+    );
+  }
+
+  // ── v12 multi-page schema (legacy) ─────────────────────────
   if (baseStore.landingBlocks && typeof baseStore.landingBlocks === "object" && isV12Schema(baseStore.landingBlocks)) {
     return (
       <MultiPageRenderer

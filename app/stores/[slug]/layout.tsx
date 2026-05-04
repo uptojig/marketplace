@@ -18,6 +18,7 @@ import {
 import { formatStoreAddressLines } from "@/lib/format/storeAddress";
 import { resolveFamily } from "@/lib/landing/families";
 import { isV12Schema } from "@/lib/multi-page-migration";
+import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +32,9 @@ export default async function ShopLayout({
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
 
-  // v12 stores render their own GlobalHeader/GlobalFooter via MultiPageRenderer.
+  // HTML or v12 stores render their own header/footer.
   // Skip the marketplace layout chrome to avoid double nav/footer.
-  if (store.landingBlocks && typeof store.landingBlocks === "object" && isV12Schema(store.landingBlocks)) {
+  if (store.landingBlocks && (isHtmlSchema(store.landingBlocks) || (typeof store.landingBlocks === "object" && isV12Schema(store.landingBlocks)))) {
     return <>{children}</>;
   }
 

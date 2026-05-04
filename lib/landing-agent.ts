@@ -75,76 +75,54 @@ function getClient(): Anthropic {
   return new Anthropic({ apiKey });
 }
 
-function validateSchema(input: unknown):
-  | { ok: true; schema: GeneratedPageSchema }
+/** HTML shop schema from the new generate_shop_html tool */
+type HtmlShopSchema = {
+  type: "html";
+  designFamily?: string;
+  headerHtml: string;
+  footerHtml: string;
+  pages: Array<{ slug: string; isHomepage?: boolean; html: string }>;
+  reasoning?: string;
+};
+
+function validateHtmlSchema(input: unknown):
+  | { ok: true; schema: HtmlShopSchema }
   | { ok: false; error: string } {
   if (typeof input !== "object" || input === null) {
-    return { ok: false, error: "schema_must_be_object" };
+    return { ok: false, error: "input_must_be_object" };
   }
   // eslint-disable-next-line
   const s = input as any;
 
-  const validFamilies = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
-  const validThemes = ["minimal", "cute"];
-  if (typeof s.designFamily === "string") {
-    s.designFamily = s.designFamily.replace(/^["']+|["']+$/g, "").trim();
+  if (typeof s.headerHtml !== "string" || s.headerHtml.length < 10) {
+    return { ok: false, error: "headerHtml_required" };
   }
-  if (typeof s.schemaVersion === "string") {
-    s.schemaVersion = s.schemaVersion.replace(/^["']+|["']+$/g, "").trim();
+  if (typeof s.footerHtml !== "string" || s.footerHtml.length < 10) {
+    return { ok: false, error: "footerHtml_required" };
   }
-  const hasFamily = typeof s.designFamily === "string" && validFamilies.includes(s.designFamily);
-  const hasTheme = typeof s.themeVariant === "string" && validThemes.includes(s.themeVariant);
-
-  const looksV12 =
-    Array.isArray(s.pages) &&
-    (s.schemaVersion === "12" || s.schemaVersion === 12 ||
-     s.globalHeader || s.globalFooter);
-
-  if (looksV12) {
-    s.schemaVersion = "12";
-    if (!hasFamily) s.designFamily = "A";
-    if (!Array.isArray(s.pages) || s.pages.length < 1) {
-      return { ok: false, error: "v12_requires_at_least_1_page" };
+  if (!Array.isArray(s.pages) || s.pages.length < 1) {
+    return { ok: false, error: "pages_required" };
+  }
+  for (let i = 0; i < s.pages.length; i++) {
+    const p = s.pages[i];
+    if (!p || typeof p.slug !== "string") {
+      return { ok: false, error: `page_${i}_missing_slug` };
     }
-    if (!s.globalHeader || typeof s.globalHeader !== "object") {
-      s.globalHeader = { nav: [], showCart: true, sticky: true };
-    }
-    if (!s.globalFooter || typeof s.globalFooter !== "object") {
-      s.globalFooter = { brand: { name: "Shop" }, columns: [] };
-    }
-    for (let p = 0; p < s.pages.length; p++) {
-      const page = s.pages[p];
-      if (!page || typeof page.slug !== "string") {
-        return { ok: false, error: `page_${p}_missing_slug` };
-      }
-      if (!Array.isArray(page.blocks) || page.blocks.length === 0) {
-        return { ok: false, error: `page_${p}_missing_blocks` };
-      }
-    }
-    return { ok: true, schema: s as GeneratedMultiPageSchema };
-  }
-
-  // v11 single-page
-  if (typeof s.title !== "string" || !s.title.trim()) {
-    return { ok: false, error: "title_required" };
-  }
-  if (!hasFamily && !hasTheme) {
-    return { ok: false, error: "designFamily_or_themeVariant_required" };
-  }
-  if (!Array.isArray(s.blocks) || s.blocks.length === 0) {
-    return { ok: false, error: "blocks_required" };
-  }
-  for (let i = 0; i < s.blocks.length; i++) {
-    const b = s.blocks[i] as Partial<Block> | undefined;
-    if (!b || typeof b !== "object") return { ok: false, error: `block_${i}_invalid` };
-    if (typeof b.blockType !== "string" || !b.blockType.trim()) {
-      return { ok: false, error: `block_${i}_missing_blockType` };
-    }
-    if (typeof b.content !== "object" || b.content === null) {
-      return { ok: false, error: `block_${i}_missing_content` };
+    if (typeof p.html !== "string" || p.html.length < 10) {
+      return { ok: false, error: `page_${i}_missing_html` };
     }
   }
-  return { ok: true, schema: s as GeneratedSinglePageSchema };
+  return {
+    ok: true,
+    schema: {
+      type: "html",
+      designFamily: typeof s.designFamily === "string" ? s.designFamily : "A",
+      headerHtml: s.headerHtml,
+      footerHtml: s.footerHtml,
+      pages: s.pages,
+      reasoning: typeof s.reasoning === "string" ? s.reasoning : undefined,
+    },
+  };
 }
 
 function composePrompt(args: {
@@ -198,8 +176,9 @@ function composePrompt(args: {
  * Call Claude Messages API directly with system prompt + tool.
  * Retries up to 3 times if schema validation fails.
  */
-async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
+async function runAgentSession(prompt: string): Promise<HtmlShopSchema> {
   const client = getClient();
+  const toolName = GENERATE_PAGE_SCHEMA_TOOL.name; // "generate_shop_html"
 
   type MessageParam = { role: "user" | "assistant"; content: string | Anthropic.ContentBlockParam[] };
   const messages: MessageParam[] = [
@@ -210,28 +189,27 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
     console.log(`[landing-agent] turn=${turn} sending to Claude (model=${AGENT_MODEL})...`);
     const stream = client.messages.stream({
       model: AGENT_MODEL,
-      max_tokens: 8000,
+      max_tokens: 16000,
       system: SYSTEM_PROMPT,
       tools: [GENERATE_PAGE_SCHEMA_TOOL],
-      tool_choice: turn === 0 ? { type: "tool", name: "generate_page_schema" } : { type: "auto" },
+      tool_choice: turn === 0 ? { type: "tool", name: toolName } : { type: "auto" },
       messages,
     });
     const response = await stream.finalMessage();
-    console.log(`[landing-agent] turn=${turn} response: stop_reason=${response.stop_reason} blocks=${response.content.length}`);
+    console.log(`[landing-agent] turn=${turn} stop_reason=${response.stop_reason}`);
 
     for (const block of response.content) {
-      if (block.type === "tool_use" && block.name === "generate_page_schema") {
+      if (block.type === "tool_use" && block.name === toolName) {
         const input = block.input as Record<string, unknown>;
         const pageCount = Array.isArray(input.pages) ? input.pages.length : 0;
-        console.log(`[landing-agent] got schema: designFamily=${input.designFamily} pages=${pageCount}`);
-        const result = validateSchema(block.input);
+        console.log(`[landing-agent] got HTML: pages=${pageCount}`);
+        const result = validateHtmlSchema(block.input);
         if (result.ok) {
-          console.log(`[landing-agent] schema valid ✅`);
+          console.log(`[landing-agent] HTML schema valid ✅`);
           return result.schema;
         }
-        console.log(`[landing-agent] schema invalid: ${result.error}`);
+        console.log(`[landing-agent] invalid: ${result.error}`);
 
-        // Validation failed — ask agent to retry
         messages.push({
           role: "assistant",
           content: response.content as Anthropic.ContentBlockParam[],
@@ -242,11 +220,7 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
             {
               type: "tool_result",
               tool_use_id: block.id,
-              content: JSON.stringify({
-                ok: false,
-                error: result.error,
-                hint: "Fix the issue and call generate_page_schema again.",
-              }),
+              content: JSON.stringify({ ok: false, error: result.error }),
               is_error: true,
             },
           ] as unknown as Anthropic.ContentBlockParam[],
@@ -255,10 +229,7 @@ async function runAgentSession(prompt: string): Promise<GeneratedPageSchema> {
       }
     }
 
-    // If agent responded with text only (no tool use), bail out
-    const hasToolUse = response.content.some(
-      (b) => b.type === "tool_use",
-    );
+    const hasToolUse = response.content.some((b) => b.type === "tool_use");
     if (!hasToolUse) break;
   }
 
@@ -438,33 +409,21 @@ export async function runLandingAgent(args: {
   try {
     const schema = await runAgentSession(prompt);
 
-    if ('schemaVersion' in schema && schema.schemaVersion === '12') {
-      const { reasoning, ...schemaData } = schema;
-      await prisma.store.update({
-        where: { id: args.storeId },
-        data: {
-          landingBlocks: schemaData as never,
-          landingTitle: (schema.metadata as Record<string, unknown>)?.title as string ?? store.name,
-          landingThemeVariant: schema.designFamily,
-          landingGeneratedAt: new Date(),
-          landingStatus: "ready",
-          landingError: null,
-        },
-      });
-    } else {
-      const v11 = schema as GeneratedSinglePageSchema;
-      await prisma.store.update({
-        where: { id: args.storeId },
-        data: {
-          landingBlocks: v11.blocks as never,
-          landingTitle: v11.title,
-          landingThemeVariant: v11.designFamily ?? v11.themeVariant ?? "minimal",
-          landingGeneratedAt: new Date(),
-          landingStatus: "ready",
-          landingError: null,
-        },
-      });
-    }
+    // Save HTML schema to DB
+    const { reasoning, ...schemaData } = schema;
+    const homePage = schema.pages.find((p) => p.isHomepage) ?? schema.pages[0];
+    await prisma.store.update({
+      where: { id: args.storeId },
+      data: {
+        landingBlocks: schemaData as never,
+        landingTitle: store.name,
+        landingThemeVariant: schema.designFamily ?? "A",
+        landingGeneratedAt: new Date(),
+        landingStatus: "ready",
+        landingError: null,
+      },
+    });
+    console.log(`[landing-agent] saved HTML schema: ${schema.pages.length} pages ✅`);
   } catch (err) {
     const msg =
       err instanceof AgentNotConfiguredError
