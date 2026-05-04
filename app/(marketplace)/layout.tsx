@@ -1,7 +1,16 @@
 import Link from "next/link";
-import { CartIndicator } from "@/components/cart/CartIndicator";
 
-export default function MarketplaceLayout({ children }: { children: React.ReactNode }) {
+// Cart + checkout no longer live at marketplace level — they're
+// per-store at /stores/[slug]/cart and /stores/[slug]/checkout/*.
+// The CartIndicator that used to sit in this nav linked to /cart
+// (now deleted), so we removed it. Customers see their cart only
+// inside the store context, which matches our "each store is its
+// own checkout" model.
+export default function MarketplaceLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <>
       <header className="border-b">
@@ -22,7 +31,6 @@ export default function MarketplaceLayout({ children }: { children: React.ReactN
             <Link href="/orders" className="hover:underline">
               ออเดอร์ของฉัน
             </Link>
-            <CartIndicator />
           </nav>
         </div>
       </header>

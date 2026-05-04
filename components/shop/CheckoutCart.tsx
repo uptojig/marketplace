@@ -19,17 +19,22 @@ export function CheckoutCart({
   const lines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
-  const cartHref = storeSlug ? `/stores/${storeSlug}/cart` : "/cart";
+  // Marketplace-level /cart no longer exists — every cart is per-store.
+  // If a caller forgets to pass storeSlug we render the panel without
+  // the "edit cart" link rather than linking to a 404.
+  const cartHref = storeSlug ? `/stores/${storeSlug}/cart` : null;
 
   return (
     <aside className="space-y-3 rounded-2xl border bg-white p-4">
-      <Link
-        href={cartHref}
-        className="-mx-1 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm font-medium hover:bg-muted/70"
-        style={{ color: "var(--shop-primary, #2563eb)" }}
-      >
-        <span className="text-lg">‹</span> แก้ไขรายการสินค้า
-      </Link>
+      {cartHref && (
+        <Link
+          href={cartHref}
+          className="-mx-1 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm font-medium hover:bg-muted/70"
+          style={{ color: "var(--shop-primary, #2563eb)" }}
+        >
+          <span className="text-lg">‹</span> แก้ไขรายการสินค้า
+        </Link>
+      )}
       <div className="flex items-center justify-between border-b pb-2">
         <h2 className="font-semibold">ตะกร้าสินค้า</h2>
         <span className="text-xl">🛒</span>

@@ -31,10 +31,9 @@ const PASSTHROUGH_PREFIXES = [
   "/onboarding",
   "/dashboard",
   "/admin",
-  "/cart",
-  "/checkout",
-  "/checkout/address",
-  "/checkout/confirm",
+  // /cart and /checkout/* used to live at marketplace level —
+  // they're now per-store at /stores/<slug>/cart and
+  // /stores/<slug>/checkout/* and inherit /stores/ passthrough above.
   "/order-success",
   "/orders",
   "/mock-payment-gate",
