@@ -145,6 +145,15 @@ model Store {
   platformEmailVerified      Boolean   @default(false)
   platformEmailVerifiedAt    DateTime?
   platformEmailProvisionedAt DateTime?
+  // Admin approval gate — stores created via /onboarding start as
+  // PENDING and aren't visible at /stores/<slug> until an ADMIN
+  // approves them via /admin/stores. Existing stores are backfilled
+  // to APPROVED in the migration so no live shop disappears.
+  approvalStatus    StoreApprovalStatus @default(PENDING)
+  approvalNote      String?             // admin's reason on reject
+  approvedAt        DateTime?
+  approvedById      String?
+
   ownerId      String   @unique
   createdAt    DateTime @default(now())
 
@@ -152,6 +161,15 @@ model Store {
   products             Product[]
   items                OrderItem[]
   identityVerification IdentityVerification?
+
+  @@index([approvalStatus])
+}
+
+enum StoreApprovalStatus {
+  PENDING   // freshly created via /onboarding, awaiting admin review
+  APPROVED  // public — visible at /stores/<slug>
+  REJECTED  // admin rejected; owner can edit + resubmit
+  SUSPENDED // previously approved, then taken down (TOS violation, fraud)
 }
 
 model Product {
@@ -171,6 +189,14 @@ model Product {
   categoryName      String?
   hasVariants       Boolean  @default(false)
   active            Boolean  @default(true)
+  // Per-product moderation. Defaults to APPROVED so existing flow
+  // isn't disrupted; new vendor uploads can be set to PENDING via
+  // a settings flag (admin can toggle "require product moderation"
+  // on/off per-store later — for now everything ships at APPROVED).
+  moderationStatus  ProductModerationStatus @default(APPROVED)
+  moderationNote    String?
+  moderatedAt       DateTime?
+  moderatedById     String?
   createdAt         DateTime @default(now())
 
   store    Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -179,6 +205,45 @@ model Product {
 
   @@index([storeId, active])
   @@index([supplier, externalProductId])
+  @@index([moderationStatus])
+}
+
+enum ProductModerationStatus {
+  PENDING   // listed by vendor, waiting for admin review
+  APPROVED  // visible to customers
+  REJECTED  // hidden, vendor sees rejection reason
+}
+
+/// Append-only log of admin actions. Every approve/reject/role-change/
+/// destructive operation should write a row here. Used by /admin/audit-log
+/// to answer "who did what when". Never delete or update existing rows.
+model AuditLog {
+  id           String   @id @default(cuid())
+  // The admin who performed the action.
+  actorId      String
+  actorEmail   String   // denormalised so log survives if user is deleted
+  actorRole    Role
+  // What happened — short stable verb. Examples:
+  //   "store.approve" "store.reject" "store.suspend"
+  //   "product.approve" "product.reject"
+  //   "user.role_change" "user.delete" "user.create"
+  //   "landing.regenerate"
+  action       String
+  // Resource targeted. Optional because some actions (e.g. login) are
+  // actor-only.
+  targetType   String?  // "Store" | "Product" | "User" | "Order" | …
+  targetId     String?
+  // Free-form payload — `before` / `after` snapshot, reason note,
+  // request body fingerprint, etc.
+  metadata     Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([targetType, targetId])
+  @@index([action, createdAt])
+  @@index([createdAt])
 }
 
 model ProductVariant {

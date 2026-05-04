@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { StoreEditForm } from "./edit-form";
 import { LandingForm } from "./landing-form";
 import { BlockEditor } from "./block-editor";
+import { ApprovalPanel } from "./approval-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,10 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
       landingTitle: true,
       landingThemeVariant: true,
       landingGeneratedAt: true,
+      // Approval gate
+      approvalStatus: true,
+      approvalNote: true,
+      approvedAt: true,
       owner: { select: { email: true, name: true } },
       _count: { select: { products: true } },
     },
@@ -94,6 +99,14 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
         </div>
       </div>
 
+      <ApprovalPanel
+        storeId={store.id}
+        storeName={store.slug}
+        initialStatus={store.approvalStatus}
+        initialNote={store.approvalNote}
+        approvedAt={store.approvedAt?.toISOString() ?? null}
+      />
+
       <LandingForm
         storeId={store.id}
         storeSlug={store.slug}
@@ -110,10 +123,25 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
           storeSlug={store.slug}
           schema={
             hasV12Schema
-              ? (store.landingBlocks as { schemaVersion?: string; designFamily?: string; pages?: unknown[] })
+              ? // BlockEditor's Props has its own `Page[]` shape; cast
+                // through `unknown` since landingBlocks is Json from
+                // Prisma. BlockEditor validates internally.
+                (store.landingBlocks as unknown as Parameters<
+                  typeof BlockEditor
+                >[0]["schema"])
               : {
                   schemaVersion: "12",
-                  pages: [{ slug: "home", isHomepage: true, blocks: store.landingBlocks as unknown[] }],
+                  pages: [
+                    {
+                      slug: "home",
+                      isHomepage: true,
+                      blocks: store.landingBlocks as unknown as Parameters<
+                        typeof BlockEditor
+                      >[0]["schema"]["pages"] extends Array<{ blocks: infer B }>
+                        ? B
+                        : never,
+                    },
+                  ],
                 }
           }
         />

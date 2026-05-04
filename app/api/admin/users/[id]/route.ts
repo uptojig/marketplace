@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -101,6 +102,15 @@ export async function PATCH(
     data: { role },
     select: { id: true, email: true, name: true, role: true },
   });
+  await audit("user.role_change", {
+    targetType: "User",
+    targetId: params.id,
+    metadata: {
+      email: target.email,
+      before: { role: target.role },
+      after: { role: updated.role },
+    },
+  });
   return NextResponse.json({ ok: true, user: updated });
 }
 
@@ -148,6 +158,11 @@ export async function DELETE(
 
   try {
     await prisma.user.delete({ where: { id: params.id } });
+    await audit("user.delete", {
+      targetType: "User",
+      targetId: params.id,
+      metadata: { role: target.role },
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     // Foreign-key violation (P2003) — user has orders/store/etc.

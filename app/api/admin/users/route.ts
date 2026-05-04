@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,6 +74,15 @@ export async function POST(req: Request) {
         name: true,
         role: true,
         createdAt: true,
+      },
+    });
+    await audit("user.create", {
+      targetType: "User",
+      targetId: user.id,
+      metadata: {
+        email: user.email,
+        role: user.role,
+        passwordSet: !!passwordHash,
       },
     });
     return NextResponse.json({ ok: true, user }, { status: 201 });

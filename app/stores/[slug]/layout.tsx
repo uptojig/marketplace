@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   Search,
@@ -32,9 +34,31 @@ export default async function ShopLayout({
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
 
-  // HTML or v12 stores render their own header/footer.
-  // Skip the marketplace layout chrome to avoid double nav/footer.
-  if (store.landingBlocks && (isHtmlSchema(store.landingBlocks) || (typeof store.landingBlocks === "object" && isV12Schema(store.landingBlocks)))) {
+  // Approval gate (must run BEFORE the HTML/v12 short-circuit so
+  // non-approved stores can't bypass via that path either).
+  // PENDING / REJECTED / SUSPENDED → 404 for the public; ADMINs
+  // can still preview via the same URL for review purposes.
+  if (store.approvalStatus !== "APPROVED") {
+    const session = await getServerSession(authOptions);
+    const viewer = session?.user?.email
+      ? await prisma.user.findUnique({
+          where: { email: session.user.email },
+          select: { role: true },
+        })
+      : null;
+    if (viewer?.role !== "ADMIN") {
+      notFound();
+    }
+  }
+
+  // HTML or v12 stores render their own header/footer — skip the
+  // marketplace layout chrome to avoid double nav/footer.
+  if (
+    store.landingBlocks &&
+    (isHtmlSchema(store.landingBlocks) ||
+      (typeof store.landingBlocks === "object" &&
+        isV12Schema(store.landingBlocks)))
+  ) {
     return <>{children}</>;
   }
 

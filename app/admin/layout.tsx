@@ -9,6 +9,7 @@ import {
   Package,
   ExternalLink,
   FlaskConical,
+  Shield,
 } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -21,6 +22,7 @@ const NAV = [
   { href: "/admin/users", label: "ผู้ใช้", icon: Users },
   { href: "/admin/orders", label: "คำสั่งซื้อ", icon: ShoppingCart },
   { href: "/admin/products", label: "สินค้า", icon: Package },
+  { href: "/admin/audit-log", label: "Audit log", icon: Shield },
   { href: "/admin/demo-orders", label: "Demo Orders", icon: FlaskConical },
 ];
 

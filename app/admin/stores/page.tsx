@@ -1,8 +1,27 @@
 import Link from "next/link";
 import { Plus, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import type { StoreApprovalStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+const STATUS_BADGE: Record<StoreApprovalStatus, { label: string; cls: string }> = {
+  PENDING: { label: "รอตรวจ", cls: "bg-amber-100 text-amber-800" },
+  APPROVED: { label: "อนุมัติ", cls: "bg-green-100 text-green-800" },
+  REJECTED: { label: "ปฏิเสธ", cls: "bg-red-100 text-red-800" },
+  SUSPENDED: { label: "ระงับ", cls: "bg-gray-200 text-gray-700" },
+};
+
+function ApprovalBadge({ status }: { status: StoreApprovalStatus }) {
+  const { label, cls } = STATUS_BADGE[status];
+  return (
+    <span
+      className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium ${cls}`}
+    >
+      {label}
+    </span>
+  );
+}
 
 export default async function AdminStoresPage({
   searchParams,
@@ -28,6 +47,8 @@ export default async function AdminStoresPage({
       logoUrl: true,
       customDomain: true,
       createdAt: true,
+      approvalStatus: true,
+      approvalNote: true,
       owner: { select: { email: true, name: true } },
       _count: { select: { products: true } },
     },
@@ -70,6 +91,7 @@ export default async function AdminStoresPage({
           <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
             <tr>
               <th className="px-4 py-3">ร้าน</th>
+              <th className="px-4 py-3">สถานะ</th>
               <th className="px-4 py-3">เจ้าของ</th>
               <th className="px-4 py-3 text-center">สินค้า</th>
               <th className="px-4 py-3">โดเมน</th>
@@ -80,7 +102,7 @@ export default async function AdminStoresPage({
           <tbody className="divide-y">
             {stores.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
                   ไม่พบร้านค้า
                 </td>
               </tr>
@@ -106,6 +128,14 @@ export default async function AdminStoresPage({
                         <p className="text-xs text-muted-foreground">/{s.slug}</p>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <ApprovalBadge status={s.approvalStatus} />
+                    {s.approvalNote && (
+                      <p className="mt-1 text-[11px] text-muted-foreground line-clamp-2">
+                        {s.approvalNote}
+                      </p>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <p>{s.owner.name ?? "—"}</p>
