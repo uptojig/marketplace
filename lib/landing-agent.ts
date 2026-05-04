@@ -164,9 +164,10 @@ function composePrompt(args: {
 
   lines.push(
     ``,
-    `Output the schema directly via generate_page_schema. Use ProductHero for one hero product, OfferGrid for the rest, Stats / Features / FAQ / Testimonial blocks to round out, and ALWAYS finish with ContactForm + Footer (both with contact_email = ${args.contactEmail ?? "contact@readypay.co"}).`,
-    `Each block's product references must use \`content.product_id\` set to the supplied externalProductId.`,
-    `Rewrite English titles into Thai selling copy in titleTh / headline / item.title fields — that's your job, not the source data's.`,
+    `Use these REAL products in the HTML — show their ACTUAL imageUrl, translate titles to Thai, show ฿ prices.`,
+    `Each product card must link to: /products/{externalProductId}`,
+    `Show product images with: <img src="{imageUrl}" alt="{Thai title}" class="..."/>`,
+    `Contact email: ${args.contactEmail ?? "contact@readypay.co"}`,
   );
 
   return lines.join("\n");
