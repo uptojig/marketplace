@@ -119,6 +119,101 @@ function composePrompt(args: {
 // header. The string is the public managed-agents beta version.
 const MANAGED_BETAS = ["managed-agents-2026-04-01"] as unknown as never[];
 
+/**
+ * Walk the agent-emitted schema and collect Thai title/description
+ * overrides per externalProductId. Then update the matching DB
+ * Product rows so non-schema surfaces (cart drawer, product detail,
+ * checkout) also show Thai copy.
+ *
+ * Looks at:
+ *   - OfferGrid blocks: `content.products[].titleTh` keyed by `product_id`
+ *   - ProductHero blocks: `content.product_id` + `content.titleTh / headline`
+ *
+ * Skips entries whose product_id doesn't match any DB row (e.g. agent
+ * hallucinated an id) so the update is purely additive.
+ */
+async function syncProductTranslationsFromSchema(
+  storeId: string,
+  schema: Record<string, unknown> | null,
+): Promise<number> {
+  if (!schema) return 0;
+
+  type Override = { titleTh?: string; descriptionTh?: string };
+  const byExternalId = new Map<string, Override>();
+
+  const pages = (schema.pages as unknown[]) ?? [];
+  for (const page of pages) {
+    const blocks = ((page as Record<string, unknown>).blocks as unknown[]) ?? [];
+    for (const block of blocks) {
+      const b = block as Record<string, unknown>;
+      const blockType = (b.blockType ?? b.type) as string | undefined;
+      const c = (b.content ?? {}) as Record<string, unknown>;
+
+      if (blockType === "OfferGrid") {
+        const list = ((c.products as unknown[]) ?? (c.items as unknown[])) ?? [];
+        for (const item of list) {
+          const it = item as Record<string, unknown>;
+          const externalId = (it.product_id ??
+            it.productId ??
+            it.id) as string | undefined;
+          if (!externalId) continue;
+          const titleTh = (it.titleTh ?? it.title_th) as string | undefined;
+          const descTh = (it.descriptionTh ??
+            it.description_th ??
+            it.description) as string | undefined;
+          if (titleTh || descTh) {
+            const prev = byExternalId.get(externalId) ?? {};
+            byExternalId.set(externalId, {
+              titleTh: prev.titleTh ?? titleTh,
+              descriptionTh: prev.descriptionTh ?? descTh,
+            });
+          }
+        }
+      }
+
+      if (blockType === "ProductHero" || blockType === "Hero") {
+        const externalId = (c.product_id ?? c.productId) as string | undefined;
+        if (!externalId) continue;
+        const titleTh = (c.titleTh ?? c.headline ?? c.title) as
+          | string
+          | undefined;
+        const descTh = (c.descriptionTh ?? c.subheadline ?? c.description) as
+          | string
+          | undefined;
+        if (titleTh || descTh) {
+          const prev = byExternalId.get(externalId) ?? {};
+          byExternalId.set(externalId, {
+            titleTh: prev.titleTh ?? titleTh,
+            descriptionTh: prev.descriptionTh ?? descTh,
+          });
+        }
+      }
+    }
+  }
+
+  if (byExternalId.size === 0) return 0;
+
+  // Run all updates in parallel — `updateMany` would let DB do the
+  // matching but we have a per-row payload, so a Promise.all of
+  // individual updates (scoped to this store) is the cleanest path.
+  const updates = await Promise.all(
+    Array.from(byExternalId.entries()).map(([externalId, override]) =>
+      prisma.product
+        .updateMany({
+          where: { storeId, externalProductId: externalId },
+          data: {
+            ...(override.titleTh ? { titleTh: override.titleTh } : {}),
+            ...(override.descriptionTh
+              ? { descriptionTh: override.descriptionTh }
+              : {}),
+          },
+        })
+        .catch(() => ({ count: 0 })),
+    ),
+  );
+  return updates.reduce((sum, r) => sum + (r.count ?? 0), 0);
+}
+
 function readIds(): { agentId: string; environmentId: string } {
   const agentId = process.env.ANTHROPIC_AGENT_ID;
   const environmentId = process.env.ANTHROPIC_ENVIRONMENT_ID;
@@ -460,6 +555,20 @@ export async function runLandingAgentManaged(args: {
     console.log(
       `[managed-agent] saved schema! title="${derivedTitle}" family=${capturedDesignFamily} color=${capturedThemeColor} ✅`,
     );
+
+    // Sync agent's Thai product translations back into DB so product
+    // detail pages (/stores/<slug>/products/<id>) and other surfaces
+    // that read from prisma.product show titleTh instead of the raw
+    // English supplier title.
+    const synced = await syncProductTranslationsFromSchema(
+      args.storeId,
+      capturedSchema,
+    );
+    if (synced > 0) {
+      console.log(
+        `[managed-agent] synced ${synced} product titleTh translations from schema`,
+      );
+    }
   } catch (err) {
     const msg =
       err instanceof ManagedAgentNotConfiguredError
