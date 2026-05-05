@@ -368,13 +368,22 @@ export async function runLandingAgentManaged(args: {
         if (toolName === "generate_page_schema" || toolName === "generate_shop_html") {
           const input = toolEvent.input ?? {};
           capturedSchema = input;
-          capturedTitle = (input.title as string) ?? null;
+          // metadata is the v3 nesting location; legacy schemas put these at
+          // the top level. Read both so primaryColor cascades onto storefront.
+          const meta = (input.metadata ?? {}) as Record<string, unknown>;
+          capturedTitle =
+            (input.title as string) ?? (meta.title as string) ?? null;
           capturedDesignFamily =
             (input.designFamily as string) ??
             (input.design_family as string) ??
+            (meta.designFamily as string) ??
             null;
           capturedThemeColor =
-            (input.themeColor as string) ?? (input.theme_color as string) ?? null;
+            (input.themeColor as string) ??
+            (input.theme_color as string) ??
+            (meta.themeColor as string) ??
+            (meta.theme_color as string) ??
+            null;
 
           // Acknowledge so the agent finishes cleanly.
           await client.beta.sessions.events.send(session.id, {
