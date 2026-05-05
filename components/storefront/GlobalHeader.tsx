@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, Search, X, Menu } from "lucide-react";
+import { CartDrawer } from "@/components/shop/CartDrawer";
 import type { GlobalHeader as GlobalHeaderSchema } from "@/types/multi-page-schema";
 import type { ThemeVariant } from "@/lib/landing/families";
 
@@ -81,15 +82,20 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
               className="flex items-center gap-3"
               aria-label={logo?.altText ?? "Logo"}
             >
-              {logo?.imageUrl && (
+              {logo?.svgCode ? (
+                <div
+                  className={`${sizeClass} w-auto flex items-center [&>svg]:w-full [&>svg]:h-full`}
+                  dangerouslySetInnerHTML={{ __html: logo.svgCode }}
+                />
+              ) : logo?.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={logo?.imageUrl}
+                  src={logo.imageUrl}
                   alt={logo?.altText ?? "Logo"}
                   className={`${sizeClass} w-auto`}
                   loading="eager"
                 />
-              )}
+              ) : null}
               {logo?.brandText && (
                 <span className="text-lg md:text-xl font-semibold text-stone-900">
                   {logo?.brandText}
@@ -125,13 +131,7 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
               )}
 
               {content?.showCart !== false && (
-                <Link
-                  href={`/stores/${storeSlug}/cart`}
-                  className="p-2 text-stone-600 hover:text-stone-900 relative"
-                  aria-label="ตะกร้าสินค้า"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                </Link>
+                <CartDrawer />
               )}
 
               {/* Mobile menu toggle */}

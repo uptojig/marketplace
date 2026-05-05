@@ -24,6 +24,7 @@ const notoSansThai = Noto_Sans_Thai({
 export const metadata: Metadata = {
   title: "Marketplace",
   description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
+  referrer: "no-referrer",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

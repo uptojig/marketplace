@@ -7,7 +7,7 @@ import type { MultiPageShopSchema, GlobalHeader as GlobalHeaderSchema, GlobalFoo
 import type { ThemeVariant } from "@/lib/landing/families";
 import { isValidThemeVariant } from "@/lib/landing/families";
 import { findPageBySlug } from "@/lib/multi-page-migration";
-import { LandingPage, type Block } from "@/components/storefront/BlockRenderer";
+import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
 import { GlobalHeader } from "./GlobalHeader";
 import { GlobalFooter } from "./GlobalFooter";
 
@@ -15,13 +15,14 @@ interface MultiPageRendererProps {
   schema: MultiPageShopSchema;
   pageSlug?: string;
   storeSlug: string;
+  storeName?: string;
 }
 
 /** Safe defaults so components never crash on undefined fields */
-function safeHeader(raw: unknown, storeSlug: string): GlobalHeaderSchema {
+export function safeHeader(raw: unknown, storeSlug: string, storeName?: string): GlobalHeaderSchema {
   if (!raw || typeof raw !== "object") {
     return {
-      logo: { imageUrl: "", altText: storeSlug, linkTo: "/" },
+      logo: { imageUrl: "", altText: storeName || storeSlug, linkTo: "/", brandText: storeName },
       nav: [],
       showCart: true,
       sticky: true,
@@ -43,10 +44,11 @@ function safeHeader(raw: unknown, storeSlug: string): GlobalHeaderSchema {
   return {
     logo: {
       imageUrl: String(logo.imageUrl ?? logo.image_url ?? logo.src ?? ""),
-      altText: String(logo.altText ?? logo.alt ?? storeSlug),
+      altText: String(logo.altText ?? logo.alt ?? storeName ?? storeSlug),
       linkTo: String(logo.linkTo ?? logo.href ?? "/"),
-      brandText: logo.brandText ? String(logo.brandText) : undefined,
+      brandText: logo.brandText ? String(logo.brandText) : storeName ? storeName : undefined,
       size: (logo.size as "sm" | "md" | "lg") ?? "md",
+      svgCode: logo.svgCode ? String(logo.svgCode) : undefined,
     },
     nav,
     showCart: h.showCart !== false,
@@ -55,8 +57,15 @@ function safeHeader(raw: unknown, storeSlug: string): GlobalHeaderSchema {
   };
 }
 
-function safeFooter(raw: unknown): GlobalFooterSchema | null {
-  if (!raw || typeof raw !== "object") return null;
+export function safeFooter(raw: unknown, storeName?: string): GlobalFooterSchema {
+  const defaultFooter: GlobalFooterSchema = {
+    brand: { name: storeName ?? "Store" },
+    copyright: `© ${new Date().getFullYear()} ${storeName || "Store"}. All rights reserved.`,
+    columns: [],
+    socialLinks: []
+  };
+
+  if (!raw || typeof raw !== "object") return defaultFooter;
   const f = raw as Record<string, unknown>;
   const columns = Array.isArray(f.columns)
     ? f.columns.map((col: unknown) => {
@@ -85,48 +94,53 @@ function safeFooter(raw: unknown): GlobalFooterSchema | null {
         };
       })
     : [];
-  return { ...f, columns, socialLinks } as GlobalFooterSchema;
+  return { 
+    ...f, 
+    brand: f.brand ? (f.brand as any) : { name: storeName ?? "Store" },
+    copyright: f.copyright ? String(f.copyright) : defaultFooter.copyright,
+    columns, 
+    socialLinks 
+  } as GlobalFooterSchema;
 }
 
-export function MultiPageRenderer({ schema, pageSlug = "", storeSlug }: MultiPageRendererProps) {
+export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeName }: MultiPageRendererProps) {
   const raw = schema.designFamily ?? "A";
   const theme: ThemeVariant = isValidThemeVariant(raw) ? raw : "A";
   const page = findPageBySlug(schema, pageSlug);
 
-  const header = safeHeader(schema.globalHeader, storeSlug);
-  const footer = safeFooter(schema.globalFooter);
+  const header = safeHeader(schema.globalHeader, storeSlug, storeName);
+  const footer = safeFooter(schema.globalFooter, storeName);
 
   if (!page) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <GlobalHeader content={header} theme={theme} storeSlug={storeSlug} />
-        <main className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center max-w-lg">
-            <h1 className="text-6xl font-bold text-stone-900 mb-4">404</h1>
-            <p className="text-xl text-stone-500 mb-8">ไม่พบหน้านี้</p>
-            <a href={`/stores/${storeSlug}`} className="inline-block px-6 py-3 bg-stone-900 text-white rounded hover:bg-stone-800 transition">
-              กลับหน้าแรก
-            </a>
-          </div>
-        </main>
-        {footer && <GlobalFooter content={footer} theme={theme} storeSlug={storeSlug} />}
-      </div>
+      <main className="flex-1 flex items-center justify-center px-4">
+        <div className="text-center max-w-lg">
+          <h1 className="text-6xl font-bold text-stone-900 mb-4">404</h1>
+          <p className="text-xl text-stone-500 mb-8">ไม่พบหน้านี้</p>
+          <a href={`/stores/${storeSlug}`} className="inline-block px-6 py-3 bg-stone-900 text-white rounded hover:bg-stone-800 transition">
+            กลับหน้าแรก
+          </a>
+        </div>
+      </main>
     );
   }
 
-  const blocks: Block[] = (page.blocks ?? []).map((b) => ({
-    ...b,
-    blockType: b.blockType ?? b.type ?? "",
-    content: b.content ?? {},
+  const blocks = (page.blocks ?? []).map((b) => ({
+    type: b.blockType ?? b.type ?? "",
+    props: b.content ?? {},
   }));
 
+  const primaryColor = typeof schema.designFamily === 'string' ? undefined : undefined; // we rely on the layout's --shop-primary variable!
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <GlobalHeader content={header} theme={theme} storeSlug={storeSlug} />
-      <main className="flex-1">
-        <LandingPage blocks={blocks} theme={theme} storeSlug={storeSlug} />
-      </main>
-      {footer && <GlobalFooter content={footer} theme={theme} storeSlug={storeSlug} />}
-    </div>
+    <main className="flex-1">
+      {blocks.map((block, i) => (
+        <DynamicBlockRenderer
+          key={i}
+          block={block as any}
+          storeSlug={storeSlug}
+        />
+      ))}
+    </main>
   );
 }

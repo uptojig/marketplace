@@ -68,8 +68,8 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
           </div>
         )}
         <div>
-          <h1 className="text-xl font-bold">ตะกร้าของ {store.name}</h1>
-          <p className="text-xs text-muted-foreground">
+          <h1 className="text-xl font-bold" style={{ color: 'var(--shop-ink)' }}>ตะกร้าของ {store.name}</h1>
+          <p className="text-xs" style={{ color: 'var(--shop-ink-muted)' }}>
             {lines.length === 0
               ? "ยังไม่มีสินค้าในตะกร้า"
               : `${lines.reduce((n, l) => n + l.qty, 0)} ชิ้น`}
@@ -117,7 +117,8 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
               <div key={l.productId} className="flex items-center gap-4 p-4">
                 <Link
                   href={`/stores/${store.slug}/products/${l.productId}`}
-                  className="block h-20 w-20 shrink-0 overflow-hidden rounded bg-muted"
+                  className="block h-20 w-20 shrink-0 overflow-hidden rounded"
+                  style={{ backgroundColor: 'var(--shop-bg)' }}
                 >
                   {l.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -132,6 +133,7 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                   <Link
                     href={`/stores/${store.slug}/products/${l.productId}`}
                     className="line-clamp-2 text-sm font-medium hover:underline"
+                    style={{ color: 'var(--shop-ink)' }}
                   >
                     {l.title}
                   </Link>
@@ -144,8 +146,9 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                     <button
                       type="button"
                       onClick={() => setQty(l.productId, l.qty - 1)}
-                      className="px-3 py-1.5 text-sm hover:bg-gray-50"
+                      className="px-3 py-1.5 text-sm opacity-80 hover:opacity-100"
                       aria-label="ลดจำนวน"
+                      style={{ color: 'var(--shop-ink)' }}
                     >
                       −
                     </button>
@@ -156,13 +159,15 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                       onChange={(e) =>
                         setQty(l.productId, parseInt(e.target.value, 10) || 1)
                       }
-                      className="w-12 border-x py-1.5 text-center text-sm focus:outline-none"
+                      className="w-12 py-1.5 text-center text-sm focus:outline-none"
+                      style={{ backgroundColor: 'transparent', color: 'var(--shop-ink)', borderLeft: '1px solid var(--shop-border)', borderRight: '1px solid var(--shop-border)' }}
                     />
                     <button
                       type="button"
                       onClick={() => setQty(l.productId, l.qty + 1)}
-                      className="px-3 py-1.5 text-sm hover:bg-gray-50"
+                      className="px-3 py-1.5 text-sm opacity-80 hover:opacity-100"
                       aria-label="เพิ่มจำนวน"
+                      style={{ color: 'var(--shop-ink)' }}
                     >
                       +
                     </button>
@@ -170,8 +175,9 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                   <button
                     type="button"
                     onClick={() => remove(l.productId)}
-                    className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                    className="rounded p-1.5 opacity-60 hover:opacity-100 hover:text-red-500"
                     aria-label="ลบ"
+                    style={{ color: 'var(--shop-ink)' }}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -182,8 +188,8 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
 
           <div className="mt-5 rounded-xl border p-5" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">ยอดรวม</span>
-              <span className="text-2xl font-bold">{formatTHB(subtotal)}</span>
+              <span className="text-sm" style={{ color: 'var(--shop-ink-muted)' }}>ยอดรวม</span>
+              <span className="text-2xl font-bold" style={{ color: 'var(--shop-ink)' }}>{formatTHB(subtotal)}</span>
             </div>
             <Link
               href={`/stores/${store.slug}/checkout/address`}

@@ -122,7 +122,7 @@ export default function CheckoutAddressPage({
   if (lines.length === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">ตะกร้าว่าง</h1>
+        <h1 className="text-2xl font-semibold" style={{ color: 'var(--shop-ink)' }}>ตะกร้าว่าง</h1>
         <Button asChild>
           <Link href="/">กลับไปเลือกซื้อสินค้า</Link>
         </Button>
@@ -137,21 +137,21 @@ export default function CheckoutAddressPage({
       <section className="space-y-4">
         {/* Status header */}
         <div className="flex items-center gap-3 rounded-2xl border p-4" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: 'var(--shop-primary)', color: '#fff', opacity: 0.9 }}>
             <MapPin className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-base font-semibold">
+            <div className="text-base font-semibold" style={{ color: 'var(--shop-ink)' }}>
               ยอดที่ต้องชำระ: <span className="font-bold">{formatTHB(subtotal)}</span>
             </div>
-            <div className="text-xs text-muted-foreground">เลือกที่อยู่จัดส่ง</div>
+            <div className="text-xs" style={{ color: 'var(--shop-ink-muted)' }}>เลือกที่อยู่จัดส่ง</div>
           </div>
         </div>
 
         {/* Address selection */}
         <div className="rounded-2xl border p-4" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">1. เลือกที่อยู่จัดส่ง</h2>
+            <h2 className="font-semibold" style={{ color: 'var(--shop-ink)' }}>1. เลือกที่อยู่จัดส่ง</h2>
             <Button size="sm" variant="outline" onClick={() => setShowForm((s) => !s)}>
               {showForm ? <X className="mr-1 h-4 w-4" /> : <Plus className="mr-1 h-4 w-4" />}
               {showForm ? "ปิด" : "เพิ่มที่อยู่ใหม่"}
@@ -174,7 +174,7 @@ export default function CheckoutAddressPage({
             </form>
           )}
 
-          {loading && <p className="mt-4 text-sm text-muted-foreground">กำลังโหลด…</p>}
+          {loading && <p className="mt-4 text-sm" style={{ color: 'var(--shop-ink-muted)' }}>กำลังโหลด…</p>}
 
           {!loading && (
             <div className="mt-4 space-y-3">
@@ -194,7 +194,7 @@ export default function CheckoutAddressPage({
                       onChange={() => setSelectedId(a.id)}
                       className="mt-1"
                     />
-                    <div className="flex-1">
+                    <div className="flex-1" style={{ color: 'var(--shop-ink)' }}>
                       <div className="flex items-center gap-2">
                         <strong>{a.recipientName}</strong>
                         {idx === 0 && (
@@ -203,7 +203,7 @@ export default function CheckoutAddressPage({
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 text-sm text-muted-foreground">
+                      <div className="mt-1 text-sm" style={{ color: 'var(--shop-ink-muted)' }}>
                         {[a.line1, a.line2, a.subdistrict, a.district].filter(Boolean).join(" ")}
                         <br />
                         {a.province} {a.postalCode} {a.country}
@@ -211,7 +211,7 @@ export default function CheckoutAddressPage({
                         <span className="text-xs">โทร {a.phone}</span>
                       </div>
                     </div>
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <MapPin className="h-5 w-5" style={{ color: 'var(--shop-ink-muted)' }} />
                   </div>
                 </label>
               ))}

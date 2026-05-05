@@ -59,6 +59,7 @@ export interface GlobalHeader {
     linkTo?: string;
     brandText?: string;
     size?: "sm" | "md" | "lg";
+    svgCode?: string;
   };
   nav: Array<{
     text: string;

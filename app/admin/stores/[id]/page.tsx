@@ -63,13 +63,17 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
   const lb = store.landingBlocks as Record<string, unknown> | unknown[] | null;
   const landingBlockCount = Array.isArray(lb)
     ? lb.length
-    : lb && typeof lb === "object" && Array.isArray((lb as Record<string, unknown>).pages)
-      ? ((lb as Record<string, unknown>).pages as unknown[]).reduce(
-          (sum: number, p: unknown) =>
-            sum + (Array.isArray((p as Record<string, unknown>)?.blocks) ? ((p as Record<string, unknown>).blocks as unknown[]).length : 0),
-          0,
-        )
-      : 0;
+    : lb && typeof lb === "object" && (lb as Record<string, unknown>).type === "block_registry_v1"
+      ? Array.isArray((lb as Record<string, unknown>).blocks)
+        ? ((lb as Record<string, unknown>).blocks as unknown[]).length
+        : 0
+      : lb && typeof lb === "object" && Array.isArray((lb as Record<string, unknown>).pages)
+        ? ((lb as Record<string, unknown>).pages as unknown[]).reduce(
+            (sum: number, p: unknown) =>
+              sum + (Array.isArray((p as Record<string, unknown>)?.blocks) ? ((p as Record<string, unknown>).blocks as unknown[]).length : 0),
+            0,
+          )
+        : 0;
   const hasV12Schema = lb && typeof lb === "object" && !Array.isArray(lb) && Array.isArray((lb as Record<string, unknown>).pages);
 
   return (
@@ -117,7 +121,7 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
         blockCount={landingBlockCount}
       />
 
-      {landingBlockCount > 0 && (
+      {landingBlockCount > 0 && !(lb && typeof lb === "object" && (lb as Record<string, unknown>).type === "block_registry_v1") && (
         <BlockEditor
           storeId={store.id}
           storeSlug={store.slug}

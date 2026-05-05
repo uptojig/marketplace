@@ -581,7 +581,16 @@ function OfferGrid({
 }) {
   const t = T[theme];
   const items = arr<Record<string, unknown>>(content.items);
+  const layoutStyle = s(content.layoutStyle) || "grid";
   if (items.length === 0) return null;
+  
+  let wrapperClass = "grid gap-6 sm:grid-cols-2 lg:grid-cols-3";
+  if (layoutStyle === "carousel") {
+    wrapperClass = "flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 w-full hide-scrollbar";
+  } else if (layoutStyle === "bento") {
+    wrapperClass = "grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-3 auto-rows-fr";
+  }
+
   return (
     <section
       className={`px-6 py-14 lg:py-20 ${
@@ -601,7 +610,7 @@ function OfferGrid({
             )}
           </div>
         )}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={wrapperClass}>
           {items.map((it, i) => {
             const href = productHref(storeSlug, it.product_id);
             const img = s(it.image_url);
@@ -610,15 +619,23 @@ function OfferGrid({
             const price = n(it.price_thb);
             const compare = n(it.compare_at_thb);
             const stock = n(it.stockRemaining);
+            let itemClass = `group flex flex-col overflow-hidden border bg-white shadow-md transition hover:shadow-xl ${t.cardRadius} ${isPlayful(theme) ? "border-stone-100" : "border-stone-200"}`;
+            let imgWrapperClass = "relative aspect-square overflow-hidden bg-stone-100";
+            
+            if (layoutStyle === "carousel") {
+              itemClass += " w-[280px] shrink-0 snap-center";
+            } else if (layoutStyle === "bento" && i === 0) {
+              itemClass += " sm:col-span-2 sm:row-span-2";
+              imgWrapperClass = "relative aspect-[4/3] sm:aspect-auto sm:flex-1 overflow-hidden bg-stone-100";
+            }
+
             return (
               <Link
                 key={i}
                 href={href}
-                className={`group flex flex-col overflow-hidden border bg-white shadow-md transition hover:shadow-xl ${t.cardRadius} ${
-                  isPlayful(theme) ? "border-stone-100" : "border-stone-200"
-                }`}
+                className={itemClass}
               >
-                <div className="relative aspect-square overflow-hidden bg-stone-100">
+                <div className={imgWrapperClass}>
                   {s(it.badge) && (
                     <span
                       className={`absolute left-3 top-3 z-10 rounded px-2 py-1 text-xs font-bold shadow-sm backdrop-blur-sm ${
@@ -650,8 +667,8 @@ function OfferGrid({
                     />
                   )}
                 </div>
-                <div className="flex flex-1 flex-col p-5">
-                  <h3 className="mb-2 line-clamp-1 text-lg font-bold text-stone-800 group-hover:text-pink-600">
+                <div className={`flex flex-col p-5 ${layoutStyle === "bento" && i === 0 ? "sm:p-8" : "flex-1"}`}>
+                  <h3 className={`mb-2 line-clamp-1 font-bold text-stone-800 group-hover:text-pink-600 ${layoutStyle === "bento" && i === 0 ? "text-2xl" : "text-lg"}`}>
                     {title}
                   </h3>
                   {desc && (
@@ -1195,6 +1212,7 @@ function HeroBanner({
 }) {
   const t = T[theme];
   const imageUrl = s(content.imageUrl);
+  const svgCode = s(content.svgCode);
   const imageMobileUrl = s(content.imageMobileUrl) ?? imageUrl;
   const altText = s(content.altText) ?? "";
   const headline = s(content.headline);
@@ -1213,13 +1231,18 @@ function HeroBanner({
         : "items-center text-center";
   return (
     <section className="relative w-full overflow-hidden">
-      {imageUrl && (
+      {svgCode ? (
+        <div 
+          className="absolute inset-0 flex items-center justify-center opacity-40 [&>svg]:w-full [&>svg]:h-full [&>svg]:object-cover"
+          dangerouslySetInnerHTML={{ __html: svgCode }} 
+        />
+      ) : imageUrl ? (
         <picture>
           <source media="(max-width: 640px)" srcSet={imageMobileUrl} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={imageUrl} alt={altText} className="h-[60vh] min-h-[420px] w-full object-cover sm:h-[75vh]" />
         </picture>
-      )}
+      ) : null}
       <div
         className="absolute inset-0 bg-black"
         style={{ opacity: overlayOpacity }}

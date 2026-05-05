@@ -7,6 +7,8 @@ import {
   StoreSocialIcons,
   StoreContactRows,
 } from "@/components/shop/StoreSocialIcons";
+import { isV12Schema } from "@/lib/multi-page-migration";
+import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -38,9 +40,31 @@ export default async function StoreContactPage({
       instagramUrl: true,
       websiteUrl: true,
       lineId: true,
+      landingBlocks: true,
+      slug: true,
     },
   });
   if (!store) notFound();
+
+  // Only render if store has v12 multi-page schema with a "contact" page
+  if (
+    store.landingBlocks &&
+    typeof store.landingBlocks === "object" &&
+    isV12Schema(store.landingBlocks)
+  ) {
+    const hasContactPage = store.landingBlocks.pages.some(
+      (p: { slug: string }) => p.slug === "contact"
+    );
+    if (hasContactPage) {
+      return (
+        <MultiPageRenderer
+          schema={store.landingBlocks}
+          pageSlug="contact"
+          storeSlug={store.slug}
+        />
+      );
+    }
+  }
 
   const addressLines = formatStoreAddressLines(store);
   const hasAnySocials =

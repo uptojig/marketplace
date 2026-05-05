@@ -87,7 +87,7 @@ export function ProductDetail({ product }: { product: Product }) {
     <div className="grid gap-8 md:grid-cols-2">
       {/* Gallery */}
       <div className="space-y-3">
-        <div className="aspect-square overflow-hidden rounded-xl border bg-muted">
+        <div className="aspect-square overflow-hidden rounded-xl border" style={{ backgroundColor: 'var(--shop-bg)', borderColor: 'var(--shop-border)' }}>
           {activeImage && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={activeImage} alt={product.title} className="h-full w-full object-cover" />
@@ -115,16 +115,16 @@ export function ProductDetail({ product }: { product: Product }) {
 
       {/* Info */}
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold leading-tight">{product.title}</h1>
-        <div className="text-sm text-muted-foreground">ราคาสินค้า</div>
-        <div className="text-3xl font-bold" style={{ color: product.storePrimaryColor }}>
+        <h1 className="text-2xl font-semibold leading-tight" style={{ color: 'var(--shop-ink)' }}>{product.title}</h1>
+        <div className="text-sm" style={{ color: 'var(--shop-ink-muted)' }}>ราคาสินค้า</div>
+        <div className="text-3xl font-bold" style={{ color: 'var(--shop-primary)' }}>
           {formatTHB(displayPrice)}
         </div>
 
         {/* Variant chips */}
         {Object.entries(attributeGroups).map(([attrName, values]) => (
           <div key={attrName} className="space-y-2">
-            <div className="text-sm font-medium">{attrName}</div>
+            <div className="text-sm font-medium" style={{ color: 'var(--shop-ink)' }}>{attrName}</div>
             <div className="flex flex-wrap gap-2">
               {values.map((val) => {
                 const picked = selectedAttrs[attrName] === val;
@@ -135,10 +135,14 @@ export function ProductDetail({ product }: { product: Product }) {
                     onClick={() =>
                       setSelectedAttrs((prev) => ({ ...prev, [attrName]: prev[attrName] === val ? "" : val }))
                     }
-                    className={`rounded-md border px-3 py-1.5 text-sm ${
-                      picked ? "text-white" : "hover:bg-accent"
+                    className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                      picked ? "text-white" : ""
                     }`}
-                    style={picked ? { backgroundColor: product.storePrimaryColor, borderColor: product.storePrimaryColor } : {}}
+                    style={
+                      picked 
+                        ? { backgroundColor: 'var(--shop-primary)', borderColor: 'var(--shop-primary)' } 
+                        : { borderColor: 'var(--shop-border)', color: 'var(--shop-ink)' }
+                    }
                   >
                     {val}
                   </button>
@@ -150,12 +154,13 @@ export function ProductDetail({ product }: { product: Product }) {
 
         {/* Quantity + stock */}
         <div className="flex items-center gap-4">
-          <div className="text-sm font-medium">จำนวน</div>
-          <div className="inline-flex h-9 items-center rounded-md border">
+          <div className="text-sm font-medium" style={{ color: 'var(--shop-ink)' }}>จำนวน</div>
+          <div className="inline-flex h-9 items-center rounded-md border" style={{ borderColor: 'var(--shop-border)' }}>
             <button
               type="button"
               onClick={() => setQty((q) => Math.max(1, q - 1))}
               className="px-3 text-lg disabled:opacity-50"
+              style={{ color: 'var(--shop-ink)' }}
             >
               −
             </button>
@@ -164,14 +169,15 @@ export function ProductDetail({ product }: { product: Product }) {
               min={1}
               value={qty}
               onChange={(e) => setQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-              className="h-full w-14 border-x text-center text-sm focus:outline-none"
+              className="h-full w-14 text-center text-sm focus:outline-none"
+              style={{ backgroundColor: 'transparent', color: 'var(--shop-ink)', borderLeft: '1px solid var(--shop-border)', borderRight: '1px solid var(--shop-border)' }}
             />
-            <button type="button" onClick={() => setQty((q) => q + 1)} className="px-3 text-lg">
+            <button type="button" onClick={() => setQty((q) => q + 1)} className="px-3 text-lg" style={{ color: 'var(--shop-ink)' }}>
               +
             </button>
           </div>
           {stock != null && (
-            <span className="text-xs text-muted-foreground">{stock > 0 ? `${stock} ชิ้น` : "หมด"}</span>
+            <span className="text-xs" style={{ color: 'var(--shop-ink-muted)' }}>{stock > 0 ? `${stock} ชิ้น` : "หมด"}</span>
           )}
         </div>
 
@@ -180,8 +186,12 @@ export function ProductDetail({ product }: { product: Product }) {
           type="button"
           onClick={handleAdd}
           disabled={!canAdd}
-          className="mt-2 w-full rounded-lg py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
-          style={{ backgroundColor: canAdd ? "#16a34a" : "#9ca3af" }}
+          className="mt-2 w-full rounded-lg border-2 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60"
+          style={{ 
+            borderColor: canAdd ? product.storePrimaryColor : "#9ca3af",
+            color: canAdd ? product.storePrimaryColor : "#9ca3af",
+            backgroundColor: "transparent"
+          }}
         >
           {requiresVariant && !allAttrsPicked
             ? `กรุณาเลือก${Object.keys(attributeGroups).join(" / ")}`
@@ -194,15 +204,15 @@ export function ProductDetail({ product }: { product: Product }) {
           onClick={handleAdd}
           disabled={!canAdd}
           className="w-full rounded-lg py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
-          style={{ backgroundColor: canAdd ? "#dc2626" : "#9ca3af" }}
+          style={{ backgroundColor: canAdd ? product.storePrimaryColor : "#9ca3af" }}
         >
           ซื้อทันที
         </button>
 
         {product.description && (
-          <details className="rounded-md border p-3 text-sm">
-            <summary className="cursor-pointer font-medium">รายละเอียดสินค้า</summary>
-            <div className="mt-2 whitespace-pre-line text-sm text-muted-foreground">{product.description}</div>
+          <details className="rounded-md border p-3 text-sm" style={{ borderColor: 'var(--shop-border)' }}>
+            <summary className="cursor-pointer font-medium" style={{ color: 'var(--shop-ink)' }}>รายละเอียดสินค้า</summary>
+            <div className="mt-2 whitespace-pre-line text-sm" style={{ color: 'var(--shop-ink-muted)' }}>{product.description}</div>
           </details>
         )}
       </div>

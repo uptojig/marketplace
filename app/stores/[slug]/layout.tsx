@@ -21,6 +21,9 @@ import { formatStoreAddressLines } from "@/lib/format/storeAddress";
 import { resolveFamily } from "@/lib/landing/families";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
+import { GlobalHeader } from "@/components/storefront/GlobalHeader";
+import { GlobalFooter } from "@/components/storefront/GlobalFooter";
+import { safeHeader, safeFooter } from "@/components/storefront/MultiPageRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -51,15 +54,55 @@ export default async function ShopLayout({
     }
   }
 
-  // HTML or v12 stores render their own header/footer — skip the
-  // marketplace layout chrome to avoid double nav/footer.
-  if (
-    store.landingBlocks &&
-    (isHtmlSchema(store.landingBlocks) ||
-      (typeof store.landingBlocks === "object" &&
-        isV12Schema(store.landingBlocks)))
-  ) {
+  // 🟢 โค้ดใหม่ที่ปรับปรุงแล้ว
+  const blocksData = store.landingBlocks as any;
+
+  // 1. ตรวจสอบว่าเป็นเว็บที่ใช้ AI Multi-page หรือไม่
+  // (ถ้าระบบ v12Schema เช็คไม่เจอ ให้เช็คสำรองจากโครงสร้าง globalHeader และ pages ที่เราเจนมา)
+  const isAiMultiPage =
+    blocksData &&
+    typeof blocksData === "object" &&
+    (isV12Schema(blocksData) ||
+      (blocksData.globalHeader && Array.isArray(blocksData.pages)) ||
+      blocksData.type === "block_registry_v1");
+
+  // 2. ถ้าเป็น HTML เดิม ให้ Return {children} แบบเพียวๆ ทันที (HtmlRenderer จัดการ header/footer ให้แล้ว)
+  if (blocksData && isHtmlSchema(blocksData)) {
     return <>{children}</>;
+  }
+
+  // 3. ถ้าเป็น AI Multi-page ให้ครอบด้วย GlobalHeader และ GlobalFooter สำหรับทุกหน้าในร้าน!
+  if (isAiMultiPage) {
+    const header = safeHeader(blocksData.globalHeader, store.slug, store.name);
+    const footer = safeFooter(blocksData.globalFooter, store.name);
+    const family = resolveFamily(blocksData.designFamily || store.landingThemeVariant);
+    const primary = family?.themeColor ?? store.primaryColor ?? "#008BF8";
+    const theme = (blocksData.designFamily || "A") as any;
+    const bgHex = family?.bgHex ?? (theme === "cute" || theme === "I" ? "#fdf2f8" : "#faf7f2");
+    const textHex = family?.textHex ?? "#1a1a2e";
+    const cardHex = family?.cardHex ?? "#ffffff";
+    
+    const fontClass = family?.fontClass ?? "font-sans";
+    
+    return (
+      <div 
+        className={`shop-page min-h-screen flex flex-col ${fontClass}`} 
+        style={{
+          ["--shop-primary" as string]: primary,
+          ["--shop-bg" as string]: bgHex,
+          ["--shop-ink" as string]: textHex,
+          ["--shop-ink-muted" as string]: "color-mix(in srgb, var(--shop-ink) 60%, transparent)",
+          ["--shop-card" as string]: cardHex,
+          ["--shop-border" as string]: "color-mix(in srgb, var(--shop-ink) 15%, transparent)",
+        } as React.CSSProperties}
+      >
+        <GlobalHeader content={header} theme={theme} storeSlug={store.slug} />
+        <main className="flex-1">{children}</main>
+        {footer && <GlobalFooter content={footer} theme={theme} storeSlug={store.slug} />}
+        <CookiesBar />
+        <ShopFloatingButtons primaryColor={primary} />
+      </div>
+    );
   }
 
   // Primary accent precedence:

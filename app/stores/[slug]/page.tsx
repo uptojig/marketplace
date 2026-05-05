@@ -14,6 +14,7 @@ import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 import { HtmlRenderer, isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isValidThemeVariant } from "@/lib/landing/families";
 import { isV12Schema } from "@/lib/multi-page-migration";
+import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,31 @@ export default async function StorePage({
     );
   }
 
+  // ── block_registry_v1 (AI block system) ─────────────────────
+  if (
+    baseStore.landingBlocks &&
+    typeof baseStore.landingBlocks === "object" &&
+    (baseStore.landingBlocks as any).type === "block_registry_v1"
+  ) {
+    const data = baseStore.landingBlocks as any;
+    let blocks = Array.isArray(data.blocks) ? data.blocks : [];
+    if (blocks.length === 0 && Array.isArray(data.pages) && data.pages.length > 0) {
+      const homePage = data.pages.find((p: any) => p.slug === "home") || data.pages[0];
+      if (homePage && Array.isArray(homePage.blocks)) {
+        blocks = homePage.blocks;
+      }
+    }
+    
+    return (
+      <div className="flex flex-col min-h-screen" style={data.themeColor ? { "--primary": data.themeColor } as React.CSSProperties : {}}>
+        {blocks.map((block: any, index: number) => {
+          if (block.type === "Nav" || block.type === "Footer") return null;
+          return <DynamicBlockRenderer key={index} block={block} themeColor={data.themeColor} storeSlug={baseStore.slug} />;
+        })}
+      </div>
+    );
+  }
+
   // ── v12 multi-page schema (legacy) ─────────────────────────
   if (baseStore.landingBlocks && typeof baseStore.landingBlocks === "object" && isV12Schema(baseStore.landingBlocks)) {
     return (
@@ -71,6 +97,7 @@ export default async function StorePage({
         schema={baseStore.landingBlocks}
         pageSlug=""
         storeSlug={baseStore.slug}
+        storeName={baseStore.name}
       />
     );
   }
