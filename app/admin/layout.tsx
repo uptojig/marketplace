@@ -10,6 +10,7 @@ import {
   ExternalLink,
   FlaskConical,
   Shield,
+  LogOut,
 } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -45,9 +46,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <p className="mt-2 text-xs text-muted-foreground">
           คุณ login เป็น <code>{session.user.email}</code> (role: {user?.role ?? "unknown"})
         </p>
-        <Link href="/dashboard" className="mt-6 inline-block text-sm text-blue-600 hover:underline">
-          ← กลับไป Dashboard
-        </Link>
+        <div className="mt-6 flex items-center justify-center gap-4">
+          <Link href="/dashboard" className="text-sm text-blue-600 hover:underline">
+            ← กลับไป Dashboard
+          </Link>
+          <span className="text-gray-300">|</span>
+          <Link
+            href="/api/auth/signout?callbackUrl=/signin"
+            className="text-sm text-red-600 hover:underline"
+          >
+            ออกจากระบบ
+          </Link>
+        </div>
       </div>
     );
   }
@@ -88,6 +98,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               {user.role}
             </p>
           </div>
+          <Link
+            href="/api/auth/signout?callbackUrl=/signin"
+            className="mt-2 flex items-center gap-2 rounded-md px-3 py-2 text-xs text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="h-3 w-3" />
+            ออกจากระบบ
+          </Link>
         </div>
       </aside>
 
