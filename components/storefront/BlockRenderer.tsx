@@ -442,14 +442,20 @@ function ProductHero({
 }) {
   const t = T[theme];
   const cute = isPlayful(theme);
-  const headline = s(content.headline) ?? "";
-  const sub = s(content.subheadline);
+  // Accept both v3 camelCase (titleTh / imageUrl / priceTHB / ctaText) and
+  // v12 snake_case (headline / image_url / price_thb / cta_text).
+  const headline =
+    s(content.headline) ?? s(content.titleTh) ?? s(content.title) ?? "";
+  const sub = s(content.subheadline) ?? s(content.subtitle);
   const badge = s(content.badge);
-  const img = s(content.image_url);
-  const cta = s(content.cta_text) ?? "ซื้อเลย";
-  const href = productHref(storeSlug, content.product_id);
-  const price = n(content.price_thb);
-  const compare = n(content.compare_at_thb);
+  const img = s(content.image_url) ?? s(content.imageUrl);
+  const cta = s(content.cta_text) ?? s(content.ctaText) ?? "ซื้อเลย";
+  const href = productHref(storeSlug, content.product_id ?? content.productId);
+  const price = n(content.price_thb) ?? n(content.priceTHB) ?? n(content.price);
+  const compare =
+    n(content.compare_at_thb) ??
+    n(content.compareAtPriceTHB) ??
+    n(content.compareAtTHB);
   const onSale = price !== undefined && compare !== undefined && compare > price;
   return (
     <section
@@ -580,7 +586,11 @@ function OfferGrid({
   storeSlug: string;
 }) {
   const t = T[theme];
-  const items = arr<Record<string, unknown>>(content.items);
+  // Agent v3 emits `products`, older v12 schemas use `items`. Accept both —
+  // per-field normalization happens at usage site below.
+  const items = arr<Record<string, unknown>>(
+    (content.items as unknown[]) ?? (content.products as unknown[]),
+  );
   const layoutStyle = s(content.layoutStyle) || "grid";
   if (items.length === 0) return null;
   
@@ -612,12 +622,24 @@ function OfferGrid({
         )}
         <div className={wrapperClass}>
           {items.map((it, i) => {
-            const href = productHref(storeSlug, it.product_id);
-            const img = s(it.image_url);
-            const title = s(it.title) ?? "";
-            const desc = s(it.description);
-            const price = n(it.price_thb);
-            const compare = n(it.compare_at_thb);
+            // Read both v3 camelCase + v12 snake_case at usage site —
+            // safer than upstream remapping which gets shadowed by hot
+            // reload edge cases.
+            const href = productHref(
+              storeSlug,
+              it.product_id ?? it.productId,
+            );
+            const img = s(it.image_url) ?? s(it.imageUrl);
+            const title =
+              s(it.title) ?? s(it.titleTh) ?? s(it.name) ?? "";
+            const desc =
+              s(it.description) ?? s(it.descriptionTh) ?? s(it.subtitle);
+            const price =
+              n(it.price_thb) ?? n(it.priceTHB) ?? n(it.price);
+            const compare =
+              n(it.compare_at_thb) ??
+              n(it.compareAtPriceTHB) ??
+              n(it.compareAtTHB);
             const stock = n(it.stockRemaining);
             let itemClass = `group flex flex-col overflow-hidden border bg-white shadow-md transition hover:shadow-xl ${t.cardRadius} ${isPlayful(theme) ? "border-stone-100" : "border-stone-200"}`;
             let imgWrapperClass = "relative aspect-square overflow-hidden bg-stone-100";

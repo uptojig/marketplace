@@ -33,7 +33,14 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
   กางเกง: ["pants", "trousers"],
   กระโปรง: ["skirt"],
   ชุดเดรส: ["dress"],
+  ชุดนอน: ["pajamas", "sleepwear"],
+  ชุดชั้นใน: ["underwear", "lingerie"],
   รองเท้า: ["shoes", "sneakers"],
+  ถุงเท้า: ["socks"],
+  ถุงน่อง: ["stockings", "tights"],
+  หมวก: ["hat", "cap"],
+  เข็มขัด: ["belt"],
+  ผ้าพันคอ: ["scarf"],
   กระเป๋า: ["bag", "handbag"],
   แฟชั่น: ["fashion", "clothing"],
   เกาหลี: ["korean fashion"],
@@ -90,6 +97,9 @@ const EN_KEYWORDS: Record<string, string[]> = {
   laptop: ["laptop", "computer"],
   fashion: ["fashion", "clothing"],
   shoes: ["shoes", "sneakers"],
+  socks: ["socks", "cotton socks"],
+  sock: ["socks", "cotton socks"],
+  pajamas: ["pajamas", "sleepwear"],
   bag: ["bag", "handbag"],
   beauty: ["beauty", "skincare"],
   kitchen: ["kitchen", "kitchenware"],
@@ -99,6 +109,7 @@ const EN_KEYWORDS: Record<string, string[]> = {
   jewelry: ["jewelry", "accessories"],
   furniture: ["furniture", "sofa"],
   electronics: ["electronics", "gadget"],
+  muji: ["minimalist", "japanese style"],
 };
 
 /**

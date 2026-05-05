@@ -130,7 +130,26 @@ export async function runLandingAgentManaged(args: {
   storeId: string;
   brief: string;
   themeHint?: string;
+  /**
+   * If true, delete all existing products before fetching new ones from
+   * CJ/AE based on the brief. Use when the operator changes the store
+   * direction (e.g. previous brief was "kitchen", new brief is "socks") —
+   * stale products from the old direction would mislead the agent.
+   */
+  refreshProducts?: boolean;
 }): Promise<void> {
+  // Optionally wipe existing products so fresh CJ/AE search can populate
+  // them based on the new brief. Done BEFORE the store-load query so the
+  // products list reflects the post-wipe state.
+  if (args.refreshProducts) {
+    const deleted = await prisma.product.deleteMany({
+      where: { storeId: args.storeId },
+    });
+    console.log(
+      `[managed-agent] refreshProducts: deleted ${deleted.count} existing products`,
+    );
+  }
+
   const store = await prisma.store.findUnique({
     where: { id: args.storeId },
     select: {

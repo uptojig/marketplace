@@ -32,19 +32,22 @@ export function GlobalFooter({ content, theme, storeSlug }: Props) {
     <footer className="bg-stone-900 text-stone-300">
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-          {/* Brand column */}
+          {/* Brand column — image OR name, not both. */}
           {content.brand && (
             <div>
               <div className="flex items-center gap-3 mb-4">
-                {content.brand.logoUrl && content.brand.logoAlt && (
+                {content.brand.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={content.brand.logoUrl}
-                    alt={content.brand.logoAlt}
+                    alt={content.brand.logoAlt ?? content.brand.name ?? "Logo"}
                     className="h-10 w-auto"
                   />
-                )}
-                <span className="text-lg font-semibold text-white">{content.brand.name}</span>
+                ) : content.brand.name ? (
+                  <span className="text-lg font-semibold text-white">
+                    {content.brand.name}
+                  </span>
+                ) : null}
               </div>
               {content.brand.description && (
                 <p className="text-sm text-stone-400 leading-relaxed">{content.brand.description}</p>

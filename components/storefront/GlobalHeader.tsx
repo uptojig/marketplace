@@ -76,11 +76,11 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo */}
+            {/* Logo — image OR text, not both. Image (svg/img) wins when present. */}
             <Link
               href={resolveHref(logo?.linkTo ?? "/")}
               className="flex items-center gap-3"
-              aria-label={logo?.altText ?? "Logo"}
+              aria-label={logo?.altText ?? logo?.brandText ?? "Logo"}
             >
               {logo?.svgCode ? (
                 <div
@@ -91,16 +91,15 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={logo.imageUrl}
-                  alt={logo?.altText ?? "Logo"}
+                  alt={logo?.altText ?? logo?.brandText ?? "Logo"}
                   className={`${sizeClass} w-auto`}
                   loading="eager"
                 />
-              ) : null}
-              {logo?.brandText && (
+              ) : logo?.brandText ? (
                 <span className="text-lg md:text-xl font-semibold text-stone-900">
-                  {logo?.brandText}
+                  {logo.brandText}
                 </span>
-              )}
+              ) : null}
             </Link>
 
             {/* Desktop nav */}

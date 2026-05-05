@@ -41,13 +41,18 @@ const SELLING_ANGLES = [
 ];
 
 const TH_EN_KEYWORDS: [string, string][] = [
+  // Apparel & accessories
   ["เคสมือถือ", "phone case"], ["เสื้อผ้า", "clothing"], ["รองเท้า", "shoes"],
+  ["ถุงเท้า", "socks"], ["ถุงน่อง", "stockings tights"],
+  ["หมวก", "hat cap"], ["เข็มขัด", "belt"], ["ผ้าพันคอ", "scarf"],
+  ["ชุดชั้นใน", "underwear lingerie"], ["ชุดนอน", "pajamas sleepwear"],
   ["กระเป๋า", "bag"], ["แฟชั่น", "fashion"], ["เกาหลี", "korean fashion"],
   ["แว่นตา", "glasses sunglasses"], ["เครื่องประดับ", "jewelry accessories"],
+  // Tech / lifestyle
   ["สัตว์เลี้ยง", "pet"], ["หูฟัง", "earphone headphone"], ["ลำโพง", "speaker bluetooth"],
   ["แบตเตอรี่", "power bank battery"], ["คอมพิวเตอร์", "computer"], ["บ้าน", "home decor"],
   ["ครัว", "kitchen"], ["เครื่องสำอาง", "cosmetics makeup"], ["สกินแคร์", "skincare"],
-  ["กีฬา", "sports"], ["ออกกำลังกาย", "fitness gym"], ["แคมป์", "camping"], 
+  ["กีฬา", "sports"], ["ออกกำลังกาย", "fitness gym"], ["แคมป์", "camping"],
   ["ของเล่น", "toys"], ["เด็ก", "kids baby"], ["รถยนต์", "car accessories"],
 ];
 
