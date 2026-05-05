@@ -45,6 +45,11 @@ export function LandingForm(props: Props) {
   const [generating, setGenerating] = useState(false);
   const [status, setStatus] = useState<StatusSnapshot | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  // Engine: "local" = multi-step pipeline (default), "managed" = single-shot
+  // via Anthropic Managed Agent (landing-builder agent_011...). The
+  // managed path goes through the v3 prompt centrally maintained on
+  // Anthropic's side and reads agent_id from ANTHROPIC_AGENT_ID.
+  const [engine, setEngine] = useState<"local" | "managed">("local");
 
   // Paste-fallback (slice-1 path, kept for hand-tuned overrides)
   const [json, setJson] = useState("");
@@ -97,14 +102,14 @@ export function LandingForm(props: Props) {
     }
     setGenerating(true);
     try {
-      const res = await fetch(
-        `/api/admin/stores/${props.storeId}/generate-landing`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ brief: brief.trim() }),
-        },
-      );
+      const url =
+        `/api/admin/stores/${props.storeId}/generate-landing` +
+        (engine === "managed" ? "?engine=managed" : "");
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brief: brief.trim() }),
+      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setMsg({
@@ -282,6 +287,18 @@ export function LandingForm(props: Props) {
           <p className="text-xs text-stone-600">
             🎨 Design family — เป็ดเลือกให้อัตโนมัติจาก brief
           </p>
+          <label className="flex items-center gap-1.5 text-xs text-stone-700">
+            <input
+              type="checkbox"
+              checked={engine === "managed"}
+              onChange={(e) => setEngine(e.target.checked ? "managed" : "local")}
+              disabled={isGenerating}
+              className="h-3.5 w-3.5 rounded border-stone-300"
+            />
+            <span title="ใช้ Anthropic Managed Agent (v3 landing-builder) — single-shot, prompt updated centrally">
+              🤖 ใช้ Managed Agent
+            </span>
+          </label>
           <button
             type="button"
             onClick={handleGenerate}

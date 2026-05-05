@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { runLandingAgent } from "@/lib/landing-agent";
+import { runLandingAgentManaged } from "@/lib/landing-agent-managed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -87,9 +88,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
       write({ type: "started", storeId: params.id });
 
+      // Engine selection — `?engine=managed` switches to the Anthropic
+      // Managed Agent path (single-shot via agent_id from env), default
+      // is the local multi-step pipeline.
+      const url = new URL(req.url);
+      const engine = url.searchParams.get("engine");
+      const useManaged = engine === "managed";
+
       try {
-        await runLandingAgent({ storeId: params.id, brief, themeHint });
-        write({ type: "done", ok: true });
+        if (useManaged) {
+          await runLandingAgentManaged({ storeId: params.id, brief, themeHint });
+        } else {
+          await runLandingAgent({ storeId: params.id, brief, themeHint });
+        }
+        write({ type: "done", ok: true, engine: useManaged ? "managed" : "local" });
       } catch (err) {
         console.error("landing-agent failed:", err);
         const msg = err instanceof Error ? err.message.slice(0, 500) : "unknown_error";
