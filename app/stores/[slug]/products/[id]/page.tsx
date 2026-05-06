@@ -5,6 +5,7 @@ import { ProductDetail } from "@/components/shop/ProductDetail";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { GlobalHeader } from "@/components/storefront/GlobalHeader";
 import { GlobalFooter } from "@/components/storefront/GlobalFooter";
+import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { resolveFamily, type ThemeVariant } from "@/lib/landing/families";
 
@@ -56,9 +57,19 @@ export default async function ShopProductPage({
 
       <main className="flex-1">
         <div className="container mx-auto max-w-[1200px] space-y-6 px-4 py-6">
-          <Link href={`/stores/${params.slug}`} className="inline-flex items-center gap-1 text-sm hover:underline" style={{ color: 'var(--shop-ink, #57534e)' }}>
-        ← กลับ
-      </Link>
+          <Breadcrumbs
+            items={[
+              { label: "หน้าแรก", href: `/stores/${params.slug}` },
+              ...(product.categoryName
+                ? [{ label: product.categoryName, href: `/stores/${params.slug}/category?cat=${encodeURIComponent(product.categoryName)}` }]
+                : [{ label: "สินค้าทั้งหมด", href: `/stores/${params.slug}/category` }]),
+              { label: product.titleTh ?? product.title },
+            ]}
+          />
+          {/* Mobile back link (Breadcrumbs hidden on mobile to save space) */}
+          <Link href={`/stores/${params.slug}`} className="sm:hidden inline-flex items-center gap-1 text-sm hover:underline" style={{ color: 'var(--shop-ink-muted)' }}>
+            ← กลับ
+          </Link>
 
       <ProductDetail
         product={{

@@ -16,6 +16,7 @@ import Link from "next/link";
 import { ChevronDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
+import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
@@ -111,8 +112,17 @@ export default async function CategoryIndexPage({
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="pt-8 sm:pt-10">
+          <Breadcrumbs
+            items={[
+              { label: "หน้าแรก", href: `/stores/${store.slug}` },
+              { label: "สินค้าทั้งหมด" },
+            ]}
+          />
+        </div>
+
         {/* ── Page header ──────────────────────────────────────── */}
-        <div className="flex items-baseline justify-between border-b pb-6 pt-12 lg:pt-16" style={{ borderColor: "var(--shop-border)" }}>
+        <div className="flex items-baseline justify-between border-b pb-6 pt-2" style={{ borderColor: "var(--shop-border)" }}>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ color: "var(--shop-ink)" }}>
             สินค้าทั้งหมด
           </h1>

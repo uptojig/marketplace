@@ -26,11 +26,17 @@
  * Theme cascade through var(--shop-*) so each store's design family
  * carries the accent.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { useCartConfirmation } from "@/lib/store/cartConfirm";
 import { formatTHB } from "@/lib/utils";
-import { ChevronDown, ShoppingBag } from "lucide-react";
+import {
+  ChevronDown,
+  ShoppingBag,
+  Truck,
+  RotateCcw,
+  Banknote,
+} from "lucide-react";
 
 interface Variant {
   id: string;
@@ -63,6 +69,24 @@ export function ProductDetail({ product }: { product: Product }) {
   const showConfirm = useCartConfirmation((s) => s.show);
 
   const [qty, setQty] = useState(1);
+
+  // Sticky mobile bottom bar visibility — show when the in-flow CTA
+  // scrolls out of viewport. IntersectionObserver is the cheapest
+  // way to do this; no scroll listeners needed. Per the multi-page
+  // builder spec: "DON'T ship without a sticky mobile bottom-bar on
+  // PDP. Lost conversions."
+  const ctaRef = useRef<HTMLButtonElement | null>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  useEffect(() => {
+    const node = ctaRef.current;
+    if (!node) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { rootMargin: "-80px 0px 0px 0px" /* offset for sticky header */ },
+    );
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, []);
 
   // ── Variant attribute groups ─────────────────────────────────
   const attributeGroups = useMemo(() => {
@@ -235,6 +259,7 @@ export function ProductDetail({ product }: { product: Product }) {
 
         {/* Primary CTA — single, full-width, solid */}
         <button
+          ref={ctaRef}
           type="button"
           onClick={handleAdd}
           disabled={!canAdd}
@@ -253,6 +278,37 @@ export function ProductDetail({ product }: { product: Product }) {
               ? "แจ้งเตือนเมื่อสินค้าเข้า"
               : "เพิ่มลงตะกร้า"}
         </button>
+
+        {/* Trust strip — Thai market staples right below the CTA.
+            Three icons: free shipping over ฿990, 7-day return, COD ok. */}
+        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+          {[
+            { icon: Truck, label: "ส่งฟรี ฿990+" },
+            { icon: RotateCcw, label: "คืนได้ 7 วัน" },
+            { icon: Banknote, label: "เก็บเงินปลายทาง" },
+          ].map(({ icon: Icon, label }, i) => (
+            <div
+              key={i}
+              className="flex flex-col items-center gap-1 py-2 rounded-lg"
+              style={{
+                background:
+                  "color-mix(in srgb, var(--shop-card) 88%, transparent)",
+                border: "1px solid var(--shop-border)",
+              }}
+            >
+              <Icon
+                className="h-4 w-4"
+                style={{ color: "var(--shop-primary)" }}
+              />
+              <span
+                className="text-xs"
+                style={{ color: "var(--shop-ink-muted)" }}
+              >
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
 
         {/* Description + meta */}
         {product.description && (
@@ -314,6 +370,52 @@ export function ProductDetail({ product }: { product: Product }) {
             </a>
           </p>
         </Disclosure>
+      </div>
+
+      {/* Sticky mobile bottom bar — appears once the in-flow CTA scrolls
+          out of viewport. Mobile only (hidden on md+). Re-engages without
+          forcing scroll-to-top. Per multi-page spec: "DON'T ship without
+          a sticky mobile bottom-bar on PDP. Lost conversions." */}
+      <div
+        className={`md:hidden fixed inset-x-0 bottom-0 z-50 border-t shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-200 ${
+          showStickyBar ? "translate-y-0" : "translate-y-full"
+        }`}
+        style={{
+          background: "var(--shop-card)",
+          borderColor: "var(--shop-border)",
+          paddingBottom: "env(safe-area-inset-bottom, 0)",
+        }}
+      >
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="flex-1 min-w-0">
+            <div
+              className="text-xs truncate"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
+              {product.title}
+            </div>
+            <div
+              className="text-base font-bold"
+              style={{ color: "var(--shop-ink)" }}
+            >
+              {formatTHB(displayPrice)}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!canAdd}
+            className="inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-bold text-white shrink-0 transition-opacity hover:opacity-90 disabled:opacity-50"
+            style={{
+              backgroundColor: canAdd
+                ? "var(--shop-primary)"
+                : "var(--shop-ink-muted)",
+            }}
+          >
+            <ShoppingBag className="h-4 w-4" />
+            {requiresVariant && !allAttrsPicked ? "เลือกตัวเลือก" : "เพิ่ม"}
+          </button>
+        </div>
       </div>
     </div>
   );
