@@ -94,9 +94,13 @@ export function LandingForm(props: Props) {
   }, [props.storeId, generating, router]);
 
   /* ── Generate (the headline UX) ── */
-  async function handleGenerate() {
+  async function handleGenerate(mode: "marketing" | "compliance" = "marketing") {
     setMsg(null);
-    if (!brief.trim() || brief.trim().length < 5) {
+    const briefForCall =
+      mode === "compliance" && !brief.trim()
+        ? `compliance pages for store: ${props.storeSlug}`
+        : brief.trim();
+    if (!briefForCall || briefForCall.length < 5) {
       setMsg({ ok: false, text: "ใส่ brief อย่างน้อย 5 ตัวอักษร" });
       return;
     }
@@ -108,7 +112,7 @@ export function LandingForm(props: Props) {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brief: brief.trim() }),
+        body: JSON.stringify({ brief: briefForCall, mode }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -301,7 +305,7 @@ export function LandingForm(props: Props) {
           </label>
           <button
             type="button"
-            onClick={handleGenerate}
+            onClick={() => handleGenerate("marketing")}
             disabled={isGenerating || !brief.trim()}
             className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-amber-500 px-5 py-2 text-sm font-bold text-white shadow-md hover:bg-amber-600 disabled:opacity-50"
           >
@@ -318,6 +322,34 @@ export function LandingForm(props: Props) {
             )}
           </button>
         </div>
+        {/* Step 2 — compliance pages (FAQ / Shipping / Returns / Privacy / Terms).
+            Lives in a separate call so the marketing pages stay fast and the
+            compliance pages can be regenerated without redoing the whole shop. */}
+        {props.hasLandingPage && engine === "managed" && (
+          <div className="flex flex-wrap items-center gap-3 border-t border-stone-200 pt-3">
+            <p className="text-xs text-stone-600">
+              📋 ขั้นที่ 2 — สร้างหน้าระบบ (FAQ / นโยบายส่ง / คืนสินค้า / Privacy / Terms)
+            </p>
+            <button
+              type="button"
+              onClick={() => handleGenerate("compliance")}
+              disabled={isGenerating}
+              className="ml-auto inline-flex items-center gap-1.5 rounded-md border-2 border-amber-500 bg-white px-4 py-1.5 text-sm font-bold text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  กำลังสร้าง...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-4 w-4" />
+                  สร้างหน้าเงื่อนไข
+                </>
+              )}
+            </button>
+          </div>
+        )}
         {msg && (
           <p
             className={`rounded-md px-3 py-2 text-sm ${

@@ -232,6 +232,17 @@ export async function runLandingAgentManaged(args: {
    * stale products from the old direction would mislead the agent.
    */
   refreshProducts?: boolean;
+  /**
+   * Generation mode:
+   *   - "marketing" (default): Home/Products/About/Contact — 4 pages
+   *   - "compliance": FAQ/Shipping/Returns/Privacy/Terms — 5 pages, merged
+   *     into the existing schema (preserves globalHeader / globalFooter /
+   *     metadata / marketing pages)
+   * Splitting these into two calls keeps each generation under Anthropic's
+   * SSE body timeout (~5min) and lets operators regenerate either set
+   * independently.
+   */
+  mode?: "marketing" | "compliance";
 }): Promise<void> {
   // Optionally wipe existing products so fresh CJ/AE search can populate
   // them based on the new brief. Done BEFORE the store-load query so the
@@ -252,6 +263,9 @@ export async function runLandingAgentManaged(args: {
       name: true,
       slug: true,
       contactEmail: true,
+      // Compliance-mode merge needs to read existing schema (we ONLY append
+      // the new compliance pages; preserve marketing pages + chrome).
+      landingBlocks: true,
       products: {
         where: { active: true },
         select: {
@@ -397,9 +411,20 @@ export async function runLandingAgentManaged(args: {
     const { agentId, environmentId } = readIds();
     const client = new Anthropic({ timeout: 5 * 60 * 1000 });
 
+    const mode = args.mode ?? "marketing";
+    // Compliance mode prepends a SKILL-recognized phrase so the agent
+    // (per its mode-aware rule 8) emits ONLY faq/shipping/returns/
+    // privacy/terms instead of the marketing 4. Existing
+    // globalHeader/globalFooter/metadata are preserved on the marketplace
+    // side via merge below — agent doesn't need to re-emit them.
+    const briefForAgent =
+      mode === "compliance"
+        ? `Generate compliance pages for the storefront below.\nหน้าเงื่อนไข — emit only FAQ + Shipping + Returns + Privacy + Terms (5 pages). Skip globalHeader/globalFooter — they're already set.\n\n${args.brief}`
+        : args.brief;
+
     const prompt = composePrompt({
       storeName: store.name,
-      brief: args.brief,
+      brief: briefForAgent,
       contactEmail: store.contactEmail ?? undefined,
       themeHint: args.themeHint,
       products,
@@ -539,21 +564,73 @@ export async function runLandingAgentManaged(args: {
       capturedTitle ??
       (args.brief.length > 50 ? `${args.brief.substring(0, 50)}...` : args.brief);
 
+    let schemaToSave: Record<string, unknown> = capturedSchema;
+
+    if (mode === "compliance") {
+      // Merge: keep existing globalHeader / globalFooter / metadata /
+      // marketing pages, ONLY swap in the new compliance pages by slug.
+      const existingSchema = (store.landingBlocks ?? null) as Record<
+        string,
+        unknown
+      > | null;
+      const existingPages =
+        ((existingSchema?.pages as unknown[]) ?? []) as Array<
+          Record<string, unknown>
+        >;
+      const newPages = ((capturedSchema.pages as unknown[]) ?? []) as Array<
+        Record<string, unknown>
+      >;
+      const newSlugs = new Set(newPages.map((p) => p.slug as string));
+
+      // Drop any pre-existing compliance pages then append fresh ones.
+      const merged = [
+        ...existingPages.filter(
+          (p) => !newSlugs.has(p.slug as string),
+        ),
+        ...newPages,
+      ];
+
+      schemaToSave = {
+        ...existingSchema,
+        ...capturedSchema,
+        pages: merged,
+        // Keep the existing chrome — agent doesn't re-emit these in
+        // compliance mode; if it accidentally did, ignore in favour
+        // of what we already had.
+        globalHeader:
+          existingSchema?.globalHeader ?? capturedSchema.globalHeader,
+        globalFooter:
+          existingSchema?.globalFooter ?? capturedSchema.globalFooter,
+        metadata: existingSchema?.metadata ?? capturedSchema.metadata,
+      };
+      console.log(
+        `[managed-agent] compliance merge: kept ${existingPages.length - newPages.length} existing + ${newPages.length} new pages = ${merged.length} total`,
+      );
+    }
+
     await prisma.store.update({
       where: { id: args.storeId },
       data: {
-        landingBlocks: capturedSchema as never,
-        landingTitle: derivedTitle,
-        landingThemeVariant: capturedDesignFamily ?? "A",
+        landingBlocks: schemaToSave as never,
+        // Marketing-mode generation owns title/family/color; compliance
+        // mode preserves whatever's already set.
+        ...(mode === "marketing"
+          ? {
+              landingTitle: derivedTitle,
+              landingThemeVariant: capturedDesignFamily ?? "A",
+              ...(capturedThemeColor
+                ? { primaryColor: capturedThemeColor }
+                : {}),
+            }
+          : {}),
         landingGeneratedAt: new Date(),
         landingStatus: "ready",
         landingError: null,
-        ...(capturedThemeColor ? { primaryColor: capturedThemeColor } : {}),
       },
     });
 
     console.log(
-      `[managed-agent] saved schema! title="${derivedTitle}" family=${capturedDesignFamily} color=${capturedThemeColor} ✅`,
+      `[managed-agent] saved ${mode} schema! title="${derivedTitle}" family=${capturedDesignFamily} color=${capturedThemeColor} ✅`,
     );
 
     // Sync agent's Thai product translations back into DB so product

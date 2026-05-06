@@ -17,6 +17,7 @@ const bodySchema = z.object({
   themeHint: z
     .enum(["A", "B", "C", "D", "E", "F", "G", "H", "I", "minimal", "cute"])
     .optional(),
+  mode: z.enum(["marketing", "compliance"]).optional(),
 });
 
 async function requireAdmin() {
@@ -48,7 +49,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       { status: 400 },
     );
   }
-  const { brief, themeHint } = parsed.data;
+  const { brief, themeHint, mode } = parsed.data;
 
   const existing = await prisma.store.findUnique({
     where: { id: params.id },
@@ -97,7 +98,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
       try {
         if (useManaged) {
-          await runLandingAgentManaged({ storeId: params.id, brief, themeHint });
+          await runLandingAgentManaged({
+            storeId: params.id,
+            brief,
+            themeHint,
+            mode: mode ?? "marketing",
+          });
         } else {
           await runLandingAgent({ storeId: params.id, brief, themeHint });
         }
