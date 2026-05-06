@@ -13,7 +13,7 @@
  */
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
 
@@ -25,14 +25,16 @@ const SORT_OPTIONS: Record<string, { label: string; orderBy: { [k: string]: "asc
   "price-desc": { label: "ราคาสูง → ต่ำ", orderBy: { priceTHB: "desc" } },
 };
 
+const PAGE_SIZE = 12;
+
 export default async function CategoryIndexPage({
   params,
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { cat?: string | string[]; sort?: string };
+  searchParams: { cat?: string | string[]; sort?: string; page?: string };
 }) {
-  // ── Resolve filter + sort from URL ─────────────────────────────
+  // ── Resolve filter + sort + page from URL ──────────────────────
   const selectedCats = Array.isArray(searchParams.cat)
     ? searchParams.cat
     : searchParams.cat
@@ -43,6 +45,7 @@ export default async function CategoryIndexPage({
       ? searchParams.sort
       : "newest";
   const sort = SORT_OPTIONS[sortKey];
+  const requestedPage = Math.max(1, parseInt(searchParams.page ?? "1", 10) || 1);
 
   // ── Load store with filtered + sorted products ─────────────────
   const store = await prisma.store.findUnique({
@@ -77,8 +80,21 @@ export default async function CategoryIndexPage({
       })
     : store.products;
 
-  // Build URL helper — preserves sort, toggles cat
-  const buildUrl = (toggleCat?: string) => {
+  // ── Pagination ────────────────────────────────────────────────
+  const totalCount = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  // Clamp to a valid page if URL had a stale page=N after filter narrowed
+  // the result set (e.g. switching from "all" to a small category drops
+  // page=10 → page=1 instead of showing an empty grid).
+  const currentPage = Math.min(requestedPage, totalPages);
+  const startIdx = (currentPage - 1) * PAGE_SIZE;
+  const pageProducts = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+
+  // Build URL helper — preserves sort + filters + page
+  // Filter toggles always reset page to 1 (per TUI Plus convention —
+  // changing filters means the user wants a fresh list, not a deep
+  // page from the previous filter state).
+  const buildUrl = (toggleCat?: string, page?: number) => {
     const params = new URLSearchParams();
     if (sortKey !== "newest") params.set("sort", sortKey);
     const next = toggleCat
@@ -87,6 +103,7 @@ export default async function CategoryIndexPage({
         : [...selectedCats, toggleCat]
       : selectedCats;
     for (const c of next) params.append("cat", c);
+    if (page && page > 1) params.set("page", String(page));
     const qs = params.toString();
     return `/stores/${store.slug}/category${qs ? `?${qs}` : ""}`;
   };
@@ -164,15 +181,27 @@ export default async function CategoryIndexPage({
               {filtered.length === 0 ? (
                 <EmptyState />
               ) : (
-                <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-                  {filtered.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      storeSlug={store.slug}
+                <>
+                  <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+                    {pageProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        storeSlug={store.slug}
+                      />
+                    ))}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalCount={totalCount}
+                      pageSize={PAGE_SIZE}
+                      buildPageUrl={(p) => buildUrl(undefined, p)}
                     />
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -400,6 +429,194 @@ function ProductCard({
       </div>
     </div>
   );
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * Pagination — Tailwind UI Plus pattern
+ *   ← Previous   1 ... 4 [5] 6 ... 12   Next →
+ * Page numbers logic: always show 1 + last; current ± 2; ellipsis
+ * fills gaps so the strip stays compact even at 50+ pages.
+ * ────────────────────────────────────────────────────────────── */
+function Pagination({
+  currentPage,
+  totalPages,
+  totalCount,
+  pageSize,
+  buildPageUrl,
+}: {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  pageSize: number;
+  buildPageUrl: (page: number) => string;
+}) {
+  const pages = computePageNumbers(currentPage, totalPages);
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalCount);
+
+  return (
+    <nav
+      className="mt-16 border-t flex flex-col items-center gap-3 px-4 sm:px-0 sm:flex-row sm:justify-between"
+      style={{ borderColor: "var(--shop-border)" }}
+      aria-label="Pagination"
+    >
+      {/* Range summary — visible on desktop, hidden on mobile */}
+      <p
+        className="hidden sm:block text-sm pt-4"
+        style={{ color: "var(--shop-ink-muted)" }}
+      >
+        แสดง <span className="font-medium" style={{ color: "var(--shop-ink)" }}>{startItem.toLocaleString()}</span>
+        {" – "}
+        <span className="font-medium" style={{ color: "var(--shop-ink)" }}>{endItem.toLocaleString()}</span>
+        {" / "}
+        <span className="font-medium" style={{ color: "var(--shop-ink)" }}>{totalCount.toLocaleString()}</span>{" "}
+        รายการ
+      </p>
+
+      <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-1 -mt-px">
+        {/* Prev */}
+        <PageLink
+          href={currentPage > 1 ? buildPageUrl(currentPage - 1) : null}
+          ariaLabel="หน้าก่อน"
+          variant="prev"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">ก่อนหน้า</span>
+        </PageLink>
+
+        {/* Page numbers — desktop only */}
+        <div className="hidden md:flex items-center -mt-px">
+          {pages.map((p, i) =>
+            p === "…" ? (
+              <span
+                key={`gap-${i}`}
+                className="inline-flex items-center px-4 pt-4 text-sm"
+                style={{ color: "var(--shop-ink-muted)" }}
+              >
+                …
+              </span>
+            ) : (
+              <PageLink
+                key={p}
+                href={p === currentPage ? null : buildPageUrl(p)}
+                ariaLabel={`หน้า ${p}`}
+                ariaCurrent={p === currentPage ? "page" : undefined}
+                variant="number"
+                active={p === currentPage}
+              >
+                {p}
+              </PageLink>
+            ),
+          )}
+        </div>
+
+        {/* Mobile compact: "X / Y" */}
+        <span
+          className="md:hidden text-sm font-medium"
+          style={{ color: "var(--shop-ink)" }}
+        >
+          {currentPage} / {totalPages}
+        </span>
+
+        {/* Next */}
+        <PageLink
+          href={currentPage < totalPages ? buildPageUrl(currentPage + 1) : null}
+          ariaLabel="หน้าถัดไป"
+          variant="next"
+        >
+          <span className="hidden sm:inline">ถัดไป</span>
+          <ArrowRight className="h-4 w-4" />
+        </PageLink>
+      </div>
+    </nav>
+  );
+}
+
+/**
+ * One page-strip link. Matches TUI Plus: top-border accent on the
+ * active page (border-t-2 with primary color); muted text otherwise.
+ * Accepts href=null to render a disabled lookalike (so first/last
+ * page disables the prev/next without removing the visual slot).
+ */
+function PageLink({
+  href,
+  children,
+  ariaLabel,
+  ariaCurrent,
+  variant,
+  active,
+}: {
+  href: string | null;
+  children: React.ReactNode;
+  ariaLabel: string;
+  ariaCurrent?: "page";
+  variant: "prev" | "next" | "number";
+  active?: boolean;
+}) {
+  const baseClasses =
+    "inline-flex items-center gap-2 border-t-2 pt-4 text-sm font-medium transition-colors";
+  const padding = variant === "number" ? "px-4" : variant === "prev" ? "pr-1" : "pl-1";
+
+  const inactiveStyle = {
+    borderColor: "transparent",
+    color: "var(--shop-ink-muted)",
+  };
+  const activeStyle = {
+    borderColor: "var(--shop-primary)",
+    color: "var(--shop-primary)",
+  };
+
+  if (href === null) {
+    return (
+      <span
+        aria-disabled
+        aria-current={ariaCurrent}
+        className={`${baseClasses} ${padding} cursor-default`}
+        style={active ? activeStyle : { ...inactiveStyle, opacity: 0.4 }}
+      >
+        {children}
+      </span>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      aria-label={ariaLabel}
+      aria-current={ariaCurrent}
+      scroll
+      className={`${baseClasses} ${padding} hover:border-current`}
+      style={active ? activeStyle : inactiveStyle}
+    >
+      {children}
+    </Link>
+  );
+}
+
+/**
+ * Compact list of page numbers around the current page with leading/
+ * trailing ellipsis. Always includes 1 and last.
+ *
+ *   total=12 current=5  → [1, "…", 4, 5, 6, "…", 12]
+ *   total=4  current=2  → [1, 2, 3, 4]
+ *   total=8  current=1  → [1, 2, 3, "…", 8]
+ *   total=8  current=8  → [1, "…", 6, 7, 8]
+ */
+function computePageNumbers(
+  current: number,
+  total: number,
+): Array<number | "…"> {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  const out: Array<number | "…"> = [1];
+  const left = Math.max(2, current - 1);
+  const right = Math.min(total - 1, current + 1);
+  if (left > 2) out.push("…");
+  for (let p = left; p <= right; p++) out.push(p);
+  if (right < total - 1) out.push("…");
+  out.push(total);
+  return out;
 }
 
 /* ──────────────────────────────────────────────────────────────
