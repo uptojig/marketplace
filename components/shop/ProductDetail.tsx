@@ -345,15 +345,23 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
     );
   }
 
+  // Balenciaga reference's source images are natural portrait (3:4-ish).
+  // CJ/AliExpress catalog photos default to 1:1 — looks too short next
+  // to the info column. Force `aspect-[3/4]` + object-cover so every
+  // store gets the same tall, gallery-style hero regardless of supplier
+  // image dimensions.
+  const imgClass =
+    "w-full rounded aspect-[3/4] object-cover bg-[var(--shop-bg)]";
+
   return (
     <>
-      {/* Desktop: two stacked images */}
+      {/* Desktop: two stacked portrait images */}
       <div className="xl:w-2/6 lg:w-2/5 w-80 md:block hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={hero}
           alt={title}
-          className="w-full rounded"
+          className={imgClass}
           referrerPolicy="no-referrer"
         />
         {second && (
@@ -361,19 +369,21 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
           <img
             src={second}
             alt={title}
-            className="mt-6 w-full rounded"
+            className={`${imgClass} mt-6`}
             referrerPolicy="no-referrer"
           />
         )}
       </div>
 
-      {/* Mobile: hero + 4 thumbnail row */}
+      {/* Mobile: hero + 4 thumbnail row.
+          Hero matches desktop 3:4. Thumbs stay 1:1 — they're meant to
+          read as "more views" affordances, not full-size galleries. */}
       <div className="md:hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={hero}
           alt={title}
-          className="w-full rounded"
+          className={imgClass}
           referrerPolicy="no-referrer"
         />
         {thumbs.length > 1 && (
@@ -384,7 +394,7 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
                 key={i}
                 src={img}
                 alt=""
-                className="w-1/4 aspect-square object-cover rounded"
+                className="w-1/4 aspect-square object-cover rounded bg-[var(--shop-bg)]"
                 loading="lazy"
                 referrerPolicy="no-referrer"
               />
