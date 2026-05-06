@@ -731,7 +731,9 @@
 }
 
 /* Family C — Luxury Heritage Gold
- * Sharp corners, italic serif, tracking-widest uppercase microcopy */
+ * Sharp corners, italic serif, tracking-widest uppercase microcopy.
+ * Adds gold underline accent on links and first-letter drop-cap on
+ * description blocks for the editorial-luxury feel. */
 .theme-C {
   --shop-radius: 0;
 }
@@ -751,6 +753,47 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   font-size: 0.75rem;
+}
+
+/* Animated gold underline grow on text links — luxury subtle */
+.theme-C a:not([class*="bg-"]):not([class*="rounded-full"]) {
+  position: relative;
+  text-decoration: none;
+  background-image: linear-gradient(
+    var(--shop-primary),
+    var(--shop-primary)
+  );
+  background-size: 0% 1px;
+  background-position: 0% 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.4s ease;
+}
+.theme-C a:not([class*="bg-"]):not([class*="rounded-full"]):hover {
+  background-size: 100% 1px;
+}
+
+/* First-letter drop-cap on long description paragraphs.
+ * Targets the prose paragraphs inside disclosures + product description
+ * sections — only paragraphs WITH at least a few words, not micro-copy. */
+.theme-C details > div > p:first-child::first-letter,
+.theme-C .prose > p:first-child::first-letter {
+  font-family: ui-serif, Georgia, serif;
+  font-size: 3rem;
+  line-height: 0.9;
+  font-weight: 700;
+  color: var(--shop-primary);
+  float: left;
+  padding: 0.25rem 0.5rem 0 0;
+}
+
+/* Card lift on hover — minimal, luxury restraint (no scale, just lift) */
+.theme-C .group {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.5s ease;
+}
+.theme-C .group:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.25);
 }
 
 /* Family D — Industrial Masculine
@@ -807,9 +850,12 @@
 }
 
 /* Family G — Botanical Lifestyle Premium
- * Very rounded (soft + organic), large display typography */
+ * Very rounded (soft + organic), large display typography,
+ * 3D tilt cards on hover, floating gradient orb backdrop. */
 .theme-G {
   --shop-radius: 1.5rem;
+  position: relative;
+  overflow-x: hidden;
 }
 .theme-G h1, .theme-G h2 {
   font-weight: 900;
@@ -825,8 +871,67 @@
   border-radius: 1.75rem;
 }
 
+/* Pure-CSS 3D tilt on product cards. Targets the `.group` wrapper
+ * pattern that OfferGridBlock and the category page both use —
+ * lift + slight perspective rotation on hover. Pure CSS so no
+ * client wrapper is needed; mouse-tracking version (per the spec)
+ * can be added as an opt-in component later if needed. */
+.theme-G .group {
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.theme-G .group:hover {
+  transform: perspective(1000px) translateZ(8px) rotateX(2deg) rotateY(-3deg);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.18);
+}
+
+/* Atmospheric floating gradient orbs — fixed position so they
+ * parallax naturally as the user scrolls. shop-primary tint at low
+ * opacity + heavy blur for the "alive, fresh, conscious-premium"
+ * mood the spec calls for. */
+.theme-G::before,
+.theme-G::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(100px);
+  opacity: 0.18;
+  border-radius: 50%;
+}
+.theme-G::before {
+  top: 10%;
+  right: -15vw;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(
+    circle,
+    var(--shop-primary) 0%,
+    transparent 70%
+  );
+}
+.theme-G::after {
+  bottom: 10%;
+  left: -15vw;
+  width: 40vw;
+  height: 40vw;
+  background: radial-gradient(
+    circle,
+    var(--shop-accent, var(--shop-primary)) 0%,
+    transparent 70%
+  );
+}
+.theme-G > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* Family H — Cozy Niche Skeumorphism
- * Serif display, warm radius, subtle paper-grain feel via blend */
+ * Serif display, warm radius, subtle paper-grain feel,
+ * book-cover-style hover on product cards (rotate-on-spine). */
 .theme-H {
   --shop-radius: 0.625rem;
 }
@@ -838,6 +943,21 @@
 .theme-H .shop-card,
 .theme-H [class*="rounded-xl"][class*="border"] {
   box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+}
+
+/* Book-cover hover — subtle rotate-from-left-spine on product cards.
+ * Spec calls for 3D physical object simulation; this is the lightweight
+ * pure-CSS version that works on any product image without needing
+ * specific book artwork. */
+.theme-H .group {
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  transform-origin: left center;
+}
+.theme-H .group:hover {
+  transform: rotateY(-8deg) translateZ(6px);
+  box-shadow: -12px 14px 28px rgba(74, 59, 50, 0.18);
 }
 
 /* Family I — Playful Mass Commerce
