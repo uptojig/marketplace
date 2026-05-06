@@ -25,6 +25,7 @@ import { formatTHB } from "@/lib/utils";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import { RecentlyViewedRail } from "@/components/storefront/RecentlyViewed";
 import { WishlistButton } from "@/components/storefront/Wishlist";
+import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
 
 export const dynamic = "force-dynamic";
 
@@ -308,7 +309,10 @@ type ProductCardData = {
   id: string;
   title: string;
   titleTh: string | null;
+  description: string | null;
+  descriptionTh: string | null;
   priceTHB: unknown;
+  compareAtPriceTHB: unknown;
   imageUrl: string | null;
   categoryName: string | null;
 };
@@ -335,6 +339,26 @@ function ProductCard({
             title,
             priceTHB: price,
             imageUrl: imageUrl ?? null,
+          }}
+        />
+      </div>
+
+      {/* Family C only — Story Quick-View trigger (CSS-gated to theme-C) */}
+      <div className="absolute top-2 left-2 z-10">
+        <StoryQuickViewTrigger
+          storeSlug={storeSlug}
+          product={{
+            id: product.id,
+            title: product.title,
+            titleTh: product.titleTh,
+            description: product.description,
+            descriptionTh: product.descriptionTh,
+            priceTHB: price,
+            compareAtPriceTHB: product.compareAtPriceTHB
+              ? Number(product.compareAtPriceTHB)
+              : null,
+            imageUrl,
+            categoryName: product.categoryName,
           }}
         />
       </div>

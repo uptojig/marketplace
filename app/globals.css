@@ -796,6 +796,27 @@
   box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.25);
 }
 
+/* Story Quick-View trigger — only visible inside Family C.
+ * The component renders the button with `hidden` (display:none) on
+ * every card; this rule flips it on for theme-C and reveals it on
+ * card hover so it never competes with the tile-still aesthetic. */
+.theme-C [data-story-quick-view-trigger] {
+  display: inline-flex;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.theme-C .group:hover [data-story-quick-view-trigger],
+.theme-C [data-story-quick-view-trigger]:focus-visible {
+  opacity: 1;
+}
+/* On touch devices we can't hover — keep the trigger always visible
+ * so mobile users can tap it. (matches TUI Plus behavior) */
+@media (hover: none) {
+  .theme-C [data-story-quick-view-trigger] {
+    opacity: 1;
+  }
+}
+
 /* Family D — Industrial Masculine
  * ALL CAPS aggressively, square corners, monospace data, no warmth */
 .theme-D {

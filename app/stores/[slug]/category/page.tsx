@@ -19,6 +19,7 @@ import { formatTHB } from "@/lib/utils";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import { RecentlyViewedRail } from "@/components/storefront/RecentlyViewed";
 import { WishlistButton } from "@/components/storefront/Wishlist";
+import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
 
 export const dynamic = "force-dynamic";
 
@@ -398,6 +399,28 @@ function ProductCard({
             title,
             priceTHB: price,
             imageUrl: imageUrl ?? null,
+          }}
+        />
+      </div>
+
+      {/* Family C only — Story Quick-View trigger, mirror to wishlist
+          at top-left.  CSS-gated to .theme-C; renders nothing visually
+          on other families. */}
+      <div className="absolute top-2 left-2 z-10">
+        <StoryQuickViewTrigger
+          storeSlug={storeSlug}
+          product={{
+            id: product.id,
+            title: product.title,
+            titleTh: product.titleTh ?? null,
+            description: product.description ?? null,
+            descriptionTh: product.descriptionTh ?? null,
+            priceTHB: price,
+            compareAtPriceTHB: product.compareAtPriceTHB
+              ? Number(product.compareAtPriceTHB)
+              : null,
+            imageUrl: imageUrl ?? null,
+            categoryName: product.categoryName ?? null,
           }}
         />
       </div>
