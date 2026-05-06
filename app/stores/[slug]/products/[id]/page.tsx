@@ -64,6 +64,9 @@ export default async function ShopProductPage({
         product={{
           id: product.id,
           title: product.titleTh ?? product.title,
+          // Subtitle = category collection (matches reference's
+          // "Balenciaga Fall Collection" position above the title)
+          subtitle: product.categoryName ?? product.store.name,
           description: cleanDescription(product.descriptionTh ?? product.description),
           priceTHB: Number(product.priceTHB),
           imageUrl: product.imageUrl ?? undefined,
@@ -71,6 +74,8 @@ export default async function ShopProductPage({
           storeName: product.store.name,
           storeSlug: product.store.slug,
           storePrimaryColor: primaryColor,
+          // Supplier SKU exposed in the meta strip
+          productCode: product.externalProductId,
           variants: product.variants.map((v) => ({
             id: v.id,
             externalVariantId: v.externalVariantId,

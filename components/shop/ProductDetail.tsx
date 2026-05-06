@@ -1,29 +1,36 @@
 "use client";
 
 /**
- * Product detail page — matches Tailwind UI Plus "Product Overview"
- * pattern (https://tailwindcss.com/plus/ui-blocks#product-ecommerce):
+ * Product detail — refit to match the user-supplied reference
+ * (tailwinduikit "Balenciaga Signature Sweatshirt" pattern):
  *
- *   ┌─ gallery ────────┬─ info ──────────────────┐
- *   │ hero image       │ Title (large)            │
- *   │                  │ ฿XXX                     │
- *   │ thumbs strip     │ ─── divider ───          │
- *   │                  │ Color picker             │
- *   │                  │ Size picker              │
- *   │                  │ Quantity + stock         │
- *   │                  │ [ADD TO BAG] (primary)   │
- *   │                  │ ─── divider ───          │
- *   │                  │ Description body         │
- *   │                  │ ▼ Details (disclosure)   │
- *   └──────────────────┴──────────────────────────┘
+ *   ┌─ gallery (md:flex) ──┬─ info (xl:w-2/5) ──────────┐
+ *   │ ▣ stacked image 1     │ Subtitle (collection)       │
+ *   │                       │ Title                       │
+ *   │ ▣ stacked image 2     │ ─────                       │
+ *   │                       │ Colours: Smoke Blue ▾       │
+ *   │ (mobile: 1 hero +     │ ─────                       │
+ *   │  4 thumb row)         │ Size: 38.2 ▾                │
+ *   │                       │ ─────                       │
+ *   │                       │ [● Add to cart] (full-width)│
+ *   │                       │ Description body            │
+ *   │                       │ Product Code:               │
+ *   │                       │ ▾ Shipping and returns      │
+ *   │                       │ ▾ Contact us                │
+ *   └───────────────────────┴─────────────────────────────┘
+ *
+ * Color/Size rows are <details> — collapsed by default, showing
+ * the current value + chevron in the summary, expanding to reveal
+ * a chip picker (so variant browsing without burying interaction).
  *
  * Theme cascade through var(--shop-*) so each store's design family
- * carries the accent color (caselnw stays purple, others stay theirs).
+ * carries the accent.
  */
 import { useMemo, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { useCartConfirmation } from "@/lib/store/cartConfirm";
 import { formatTHB } from "@/lib/utils";
+import { ChevronDown, ShoppingBag } from "lucide-react";
 
 interface Variant {
   id: string;
@@ -37,6 +44,8 @@ interface Variant {
 interface Product {
   id: string;
   title: string;
+  /** Optional collection / category subtitle shown above the title */
+  subtitle?: string;
   description: string;
   priceTHB: number;
   imageUrl?: string;
@@ -45,18 +54,17 @@ interface Product {
   storeSlug: string;
   storePrimaryColor: string;
   variants: Variant[];
+  /** Optional supplier SKU shown in the meta strip */
+  productCode?: string;
 }
 
 export function ProductDetail({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
   const showConfirm = useCartConfirmation((s) => s.show);
 
-  const [activeImage, setActiveImage] = useState<string | undefined>(
-    product.imageUrl ?? product.images[0],
-  );
   const [qty, setQty] = useState(1);
 
-  // Derive attribute groups: { "Size": ["XS","S","M",...], "Color": [...] }
+  // ── Variant attribute groups ─────────────────────────────────
   const attributeGroups = useMemo(() => {
     const map: Record<string, string[]> = {};
     for (const v of product.variants) {
@@ -94,7 +102,7 @@ export function ProductDetail({ product }: { product: Product }) {
   const displayPrice = matchingVariant?.priceTHB ?? product.priceTHB;
   const stock = matchingVariant?.inventory ?? null;
 
-  // All product images merged with main imageUrl (deduped)
+  // All product images (deduped)
   const allImages = useMemo(() => {
     const set = new Set<string>();
     if (product.imageUrl) set.add(product.imageUrl);
@@ -122,156 +130,61 @@ export function ProductDetail({ product }: { product: Product }) {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14 lg:max-w-7xl lg:px-8">
-      <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
-        {/* ── Gallery ──────────────────────────────────────── */}
-        <div className="flex flex-col-reverse">
-          {/* Thumbnails — show only when multiple images */}
-          {allImages.length > 1 && (
-            <div className="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
-              <div className="grid grid-cols-4 gap-4">
-                {allImages.slice(0, 4).map((img) => {
-                  const active = activeImage === img;
-                  return (
-                    <button
-                      key={img}
-                      type="button"
-                      onClick={() => setActiveImage(img)}
-                      className="relative flex aspect-square cursor-pointer items-center justify-center rounded-md overflow-hidden ring-1 ring-inset transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                      style={{
-                        ringColor: active
-                          ? "var(--shop-primary)"
-                          : "var(--shop-border)",
-                      } as React.CSSProperties}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={img}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                      />
-                      {active && (
-                        <span
-                          aria-hidden
-                          className="pointer-events-none absolute inset-0 rounded-md ring-2 ring-inset"
-                          style={{ ringColor: "var(--shop-primary)" } as React.CSSProperties}
-                        />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+    <div className="md:flex items-start justify-center py-8 2xl:px-20 md:px-6 px-0">
+      {/* ── Gallery (desktop: stacked, mobile: hero + thumb row) ── */}
+      <Gallery images={allImages} title={product.title} />
+
+      {/* ── Info column ────────────────────────────────────────── */}
+      <div className="xl:w-2/5 md:w-1/2 lg:ml-8 md:ml-6 md:mt-0 mt-6 px-4 md:px-0">
+        {/* Subtitle + title */}
+        <div className="border-b pb-6" style={{ borderColor: "var(--shop-border)" }}>
+          {product.subtitle && (
+            <p className="text-sm leading-none" style={{ color: "var(--shop-ink-muted)" }}>
+              {product.subtitle}
+            </p>
           )}
-
-          {/* Main image */}
-          <div className="aspect-square w-full overflow-hidden rounded-lg" style={{ background: "var(--shop-bg)" }}>
-            {activeImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={activeImage}
-                alt={product.title}
-                className="h-full w-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div
-                className="h-full w-full flex items-center justify-center text-sm"
-                style={{ color: "var(--shop-ink-muted)" }}
-              >
-                ไม่มีรูปภาพ
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Info ─────────────────────────────────────────── */}
-        <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
           <h1
-            className="text-2xl sm:text-3xl font-bold tracking-tight"
+            className="lg:text-2xl text-xl font-semibold leading-7 mt-2"
             style={{ color: "var(--shop-ink)" }}
           >
             {product.title}
           </h1>
+          <p
+            className="lg:text-3xl text-2xl font-bold mt-3"
+            style={{ color: "var(--shop-ink)" }}
+          >
+            {formatTHB(displayPrice)}
+          </p>
+        </div>
 
-          {/* Price */}
-          <div className="mt-3">
-            <h2 className="sr-only">ราคาสินค้า</h2>
-            <p
-              className="text-3xl tracking-tight"
-              style={{ color: "var(--shop-ink)" }}
-            >
-              {formatTHB(displayPrice)}
-            </p>
-          </div>
+        {/* Variant pickers — disclosure style (header shows selection) */}
+        {Object.entries(attributeGroups).map(([attrName, values]) => (
+          <VariantDisclosure
+            key={attrName}
+            attrName={attrName}
+            values={values}
+            selected={selectedAttrs[attrName]}
+            onSelect={(val) =>
+              setSelectedAttrs((prev) => ({
+                ...prev,
+                [attrName]: prev[attrName] === val ? "" : val,
+              }))
+            }
+          />
+        ))}
 
-          {/* Variant pickers */}
-          {Object.keys(attributeGroups).length > 0 && (
-            <form className="mt-8">
-              {Object.entries(attributeGroups).map(([attrName, values]) => (
-                <fieldset key={attrName} className="mt-6 first:mt-0">
-                  <legend
-                    className="text-sm font-medium"
-                    style={{ color: "var(--shop-ink)" }}
-                  >
-                    {attrName}
-                    {selectedAttrs[attrName] && (
-                      <span
-                        className="ml-2 font-normal"
-                        style={{ color: "var(--shop-ink-muted)" }}
-                      >
-                        : {selectedAttrs[attrName]}
-                      </span>
-                    )}
-                  </legend>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {values.map((val) => {
-                      const picked = selectedAttrs[attrName] === val;
-                      return (
-                        <button
-                          key={val}
-                          type="button"
-                          onClick={() =>
-                            setSelectedAttrs((prev) => ({
-                              ...prev,
-                              [attrName]: prev[attrName] === val ? "" : val,
-                            }))
-                          }
-                          className="flex items-center justify-center rounded-md border px-3.5 py-2 text-sm font-medium uppercase transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-                          style={
-                            picked
-                              ? {
-                                  backgroundColor: "var(--shop-primary)",
-                                  borderColor: "var(--shop-primary)",
-                                  color: "white",
-                                }
-                              : {
-                                  background: "var(--shop-card)",
-                                  borderColor: "var(--shop-border)",
-                                  color: "var(--shop-ink)",
-                                }
-                          }
-                        >
-                          {val}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </fieldset>
-              ))}
-            </form>
-          )}
-
-          {/* Quantity + stock */}
-          <div className="mt-8 flex items-center gap-4">
-            <span
-              className="text-sm font-medium"
-              style={{ color: "var(--shop-ink)" }}
-            >
-              จำนวน
-            </span>
+        {/* Quantity + stock */}
+        <div
+          className="py-4 border-b flex items-center justify-between"
+          style={{ borderColor: "var(--shop-border)" }}
+        >
+          <p
+            className="text-base leading-4"
+            style={{ color: "var(--shop-ink)" }}
+          >
+            จำนวน
+          </p>
+          <div className="flex items-center gap-3">
             <div
               className="inline-flex items-center rounded-md border"
               style={{ borderColor: "var(--shop-border)" }}
@@ -280,7 +193,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 type="button"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 aria-label="ลด"
-                className="px-3 py-2 text-lg disabled:opacity-50"
+                className="px-3 py-1.5 text-lg disabled:opacity-50"
                 style={{ color: "var(--shop-ink)" }}
               >
                 −
@@ -292,7 +205,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 onChange={(e) =>
                   setQty(Math.max(1, parseInt(e.target.value, 10) || 1))
                 }
-                className="w-12 bg-transparent py-2 text-center text-sm focus:outline-none"
+                className="w-12 bg-transparent py-1.5 text-center text-sm focus:outline-none"
                 style={{
                   color: "var(--shop-ink)",
                   borderLeft: "1px solid var(--shop-border)",
@@ -303,7 +216,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 type="button"
                 onClick={() => setQty((q) => q + 1)}
                 aria-label="เพิ่ม"
-                className="px-3 py-2 text-lg"
+                className="px-3 py-1.5 text-lg"
                 style={{ color: "var(--shop-ink)" }}
               >
                 +
@@ -314,118 +227,282 @@ export function ProductDetail({ product }: { product: Product }) {
                 className="text-xs"
                 style={{ color: "var(--shop-ink-muted)" }}
               >
-                {stock > 0 ? `เหลือ ${stock} ชิ้น` : "สินค้าหมด"}
+                {stock > 0 ? `เหลือ ${stock} ชิ้น` : "หมด"}
               </span>
             )}
           </div>
+        </div>
 
-          {/* Primary CTA — single, full-width */}
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={!canAdd}
-            className="mt-10 flex w-full items-center justify-center rounded-md border-transparent py-3 px-8 text-base font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            style={{
-              backgroundColor: canAdd
-                ? "var(--shop-primary)"
-                : "var(--shop-ink-muted)",
-            }}
-          >
-            {requiresVariant && !allAttrsPicked
-              ? `กรุณาเลือก${Object.keys(attributeGroups).join(" / ")}`
-              : stock === 0
-                ? "แจ้งเตือนเมื่อสินค้าเข้า"
-                : "เพิ่มลงตะกร้า"}
-          </button>
+        {/* Primary CTA — single, full-width, solid */}
+        <button
+          type="button"
+          onClick={handleAdd}
+          disabled={!canAdd}
+          className="mt-6 text-base flex items-center justify-center leading-none w-full py-4 transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          style={{
+            backgroundColor: canAdd
+              ? "var(--shop-primary)"
+              : "var(--shop-ink-muted)",
+            color: "white",
+          }}
+        >
+          <ShoppingBag className="mr-3 h-4 w-4" />
+          {requiresVariant && !allAttrsPicked
+            ? `กรุณาเลือก${Object.keys(attributeGroups).join(" / ")}`
+            : stock === 0
+              ? "แจ้งเตือนเมื่อสินค้าเข้า"
+              : "เพิ่มลงตะกร้า"}
+        </button>
 
-          {/* Description */}
-          {product.description && (
-            <div className="mt-10 border-t pt-10" style={{ borderColor: "var(--shop-border)" }}>
-              <h3
-                className="text-sm font-medium"
-                style={{ color: "var(--shop-ink)" }}
-              >
-                รายละเอียดสินค้า
-              </h3>
-              <div
-                className="mt-4 space-y-4 text-sm leading-relaxed"
+        {/* Description + meta */}
+        {product.description && (
+          <div className="mt-7">
+            <p
+              className="text-base leading-relaxed lg:leading-tight"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
+              <span className="whitespace-pre-line">{product.description}</span>
+            </p>
+            {product.productCode && (
+              <p
+                className="text-base leading-4 mt-7"
                 style={{ color: "var(--shop-ink-muted)" }}
               >
-                <p className="whitespace-pre-line">{product.description}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Shipping & returns disclosure */}
-          <div
-            className="mt-6 border-t"
-            style={{ borderColor: "var(--shop-border)" }}
-          >
-            <Disclosure title="การจัดส่งและคืนสินค้า">
-              <p>จัดส่งทั่วไทย 1-3 วันทำการ ผ่าน Kerry / Flash / EMS</p>
-              <p className="mt-2">
-                เปลี่ยน / คืนสินค้าได้ภายใน 7 วัน หากสินค้ามีตำหนิจากโรงงาน
+                Product Code: {product.productCode}
               </p>
-              <p className="mt-2">
-                ดูรายละเอียดเพิ่มเติมที่{" "}
-                <a
-                  href={`/stores/${product.storeSlug}/shipping`}
-                  className="underline"
-                  style={{ color: "var(--shop-primary)" }}
-                >
-                  นโยบายการจัดส่ง
-                </a>{" "}
-                และ{" "}
-                <a
-                  href={`/stores/${product.storeSlug}/returns`}
-                  className="underline"
-                  style={{ color: "var(--shop-primary)" }}
-                >
-                  เงื่อนไขการคืน
-                </a>
-              </p>
-            </Disclosure>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Shipping & returns */}
+        <Disclosure title="การจัดส่งและคืนสินค้า" topBorder>
+          <p>จัดส่งทั่วไทย 1-3 วันทำการ ผ่าน Kerry / Flash / EMS</p>
+          <p className="mt-2">
+            เปลี่ยน / คืนสินค้าได้ภายใน 7 วัน หากสินค้ามีตำหนิจากโรงงาน
+          </p>
+          <p className="mt-2">
+            รายละเอียดเพิ่มเติม:{" "}
+            <a
+              href={`/stores/${product.storeSlug}/shipping`}
+              className="underline"
+              style={{ color: "var(--shop-primary)" }}
+            >
+              นโยบายการจัดส่ง
+            </a>
+            {" • "}
+            <a
+              href={`/stores/${product.storeSlug}/returns`}
+              className="underline"
+              style={{ color: "var(--shop-primary)" }}
+            >
+              เงื่อนไขการคืน
+            </a>
+          </p>
+        </Disclosure>
+
+        {/* Contact us */}
+        <Disclosure title="ติดต่อสอบถาม">
+          <p>
+            หากมีคำถามเกี่ยวกับสินค้า การสั่งซื้อ หรือการจัดส่ง
+            ติดต่อ {product.storeName} ได้ที่{" "}
+            <a
+              href={`/stores/${product.storeSlug}/contact`}
+              className="underline"
+              style={{ color: "var(--shop-primary)" }}
+            >
+              หน้าติดต่อเรา
+            </a>
+          </p>
+        </Disclosure>
       </div>
     </div>
   );
 }
 
 /* ──────────────────────────────────────────────────────────────
- * Disclosure — TUI Plus pattern (chevron rotates on open)
- * Native <details>/<summary> for zero-JS server rendering.
+ * Gallery — TWO stacked images on desktop, hero + 4 thumbs on mobile
+ * Reference: tailwinduikit "Balenciaga" — image stack uses
+ *   xl:w-2/6 lg:w-2/5 w-80 (~40% on desktop, 320px on mobile)
+ * ────────────────────────────────────────────────────────────── */
+function Gallery({ images, title }: { images: string[]; title: string }) {
+  const hero = images[0];
+  const second = images[1];
+  const thumbs = images.slice(0, 4);
+
+  if (!hero) {
+    return (
+      <div className="xl:w-2/6 lg:w-2/5 w-80 md:block hidden">
+        <div
+          className="aspect-square rounded flex items-center justify-center text-sm"
+          style={{
+            background: "var(--shop-bg)",
+            color: "var(--shop-ink-muted)",
+          }}
+        >
+          ไม่มีรูปภาพ
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Desktop: two stacked images */}
+      <div className="xl:w-2/6 lg:w-2/5 w-80 md:block hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={hero}
+          alt={title}
+          className="w-full rounded"
+          referrerPolicy="no-referrer"
+        />
+        {second && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={second}
+            alt={title}
+            className="mt-6 w-full rounded"
+            referrerPolicy="no-referrer"
+          />
+        )}
+      </div>
+
+      {/* Mobile: hero + 4 thumbnail row */}
+      <div className="md:hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={hero}
+          alt={title}
+          className="w-full rounded"
+          referrerPolicy="no-referrer"
+        />
+        {thumbs.length > 1 && (
+          <div className="flex items-center justify-between mt-3 gap-2">
+            {thumbs.map((img, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={img}
+                alt=""
+                className="w-1/4 aspect-square object-cover rounded"
+                loading="lazy"
+                referrerPolicy="no-referrer"
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * Variant disclosure — collapsed row showing current pick + chevron;
+ * expanded view shows the chips so user can pick.
+ * ────────────────────────────────────────────────────────────── */
+function VariantDisclosure({
+  attrName,
+  values,
+  selected,
+  onSelect,
+}: {
+  attrName: string;
+  values: string[];
+  selected: string | undefined;
+  onSelect: (val: string) => void;
+}) {
+  return (
+    <details
+      open={!selected /* auto-open when nothing picked yet */}
+      className="py-4 border-b group"
+      style={{ borderColor: "var(--shop-border)" }}
+    >
+      <summary className="flex items-center justify-between cursor-pointer list-none">
+        <p className="text-base leading-4" style={{ color: "var(--shop-ink)" }}>
+          {attrName}
+        </p>
+        <div className="flex items-center gap-3">
+          {selected ? (
+            <span
+              className="text-sm leading-none"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
+              {selected}
+            </span>
+          ) : (
+            <span
+              className="text-sm leading-none"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
+              เลือก{attrName}
+            </span>
+          )}
+          <ChevronDown
+            className="h-3 w-3 transition-transform group-open:rotate-180"
+            style={{ color: "var(--shop-ink-muted)" }}
+          />
+        </div>
+      </summary>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {values.map((val) => {
+          const picked = selected === val;
+          return (
+            <button
+              key={val}
+              type="button"
+              onClick={() => onSelect(val)}
+              className="rounded-md border px-4 py-2 text-sm font-medium uppercase transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+              style={
+                picked
+                  ? {
+                      backgroundColor: "var(--shop-primary)",
+                      borderColor: "var(--shop-primary)",
+                      color: "white",
+                    }
+                  : {
+                      background: "var(--shop-card)",
+                      borderColor: "var(--shop-border)",
+                      color: "var(--shop-ink)",
+                    }
+              }
+            >
+              {val}
+            </button>
+          );
+        })}
+      </div>
+    </details>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────
+ * Disclosure — chevron rotates on open; native <details>
  * ────────────────────────────────────────────────────────────── */
 function Disclosure({
   title,
+  topBorder,
   children,
 }: {
   title: string;
+  topBorder?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <details className="group py-6">
-      <summary
-        className="flex w-full items-center justify-between cursor-pointer list-none text-sm font-medium"
-        style={{ color: "var(--shop-ink)" }}
-      >
-        <span>{title}</span>
-        <svg
-          className="h-5 w-5 transition-transform group-open:rotate-180"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+    <details
+      className={`${topBorder ? "border-t" : ""} border-b py-4 mt-7 group`}
+      style={{ borderColor: "var(--shop-border)" }}
+    >
+      <summary className="flex justify-between items-center cursor-pointer list-none">
+        <p className="text-base leading-4" style={{ color: "var(--shop-ink)" }}>
+          {title}
+        </p>
+        <ChevronDown
+          className="h-3 w-3 transition-transform group-open:rotate-180"
+          style={{ color: "var(--shop-ink-muted)" }}
+        />
       </summary>
       <div
-        className="mt-4 text-sm leading-relaxed"
+        className="pt-4 text-base leading-relaxed pr-4 mt-4"
         style={{ color: "var(--shop-ink-muted)" }}
       >
         {children}
