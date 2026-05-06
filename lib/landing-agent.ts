@@ -8,6 +8,7 @@ import {
 } from "@/lib/landing-schema";
 import { cjAdapter } from "@/lib/suppliers/cj/adapter";
 import { aliexpressAdapter } from "@/lib/suppliers/aliexpress/adapter";
+import { translateProductTitlesForStore } from "@/lib/translate-titles";
 
 export class AgentNotConfiguredError extends Error {
   constructor() {
@@ -343,6 +344,22 @@ ${productContext}`,
     });
 
     console.log(`[landing-agent] saved v12 multi-page schema! ✅`);
+
+    // Best-effort: translate every product's title to Thai so category /
+    // PDP / search / related grids read in Thai too. The agent already
+    // bakes Thai titles into OfferGrid/ProductHero blocks for the
+    // homepage (see landing-agent-managed.ts sync), but the local
+    // pipeline doesn't write them back to Product.titleTh — without
+    // this call those non-homepage routes fall back to English.
+    // Failures here don't block the user-visible landing flow.
+    try {
+      const tr = await translateProductTitlesForStore(args.storeId);
+      console.log(
+        `[landing-agent] titleTh backfill: translated=${tr.translated} skipped=${tr.skipped} failed=${tr.failed}`,
+      );
+    } catch (err) {
+      console.error(`[landing-agent] titleTh backfill failed:`, err);
+    }
   } catch (err) {
     const msg =
       err instanceof AgentNotConfiguredError

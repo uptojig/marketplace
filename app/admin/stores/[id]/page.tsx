@@ -93,13 +93,21 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
               สร้างเมื่อ {store.createdAt.toLocaleDateString("th-TH")}
             </p>
           </div>
-          <Link
-            href={`/stores/${store.slug}`}
-            target="_blank"
-            className="inline-flex shrink-0 items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-          >
-            ดูร้าน <ExternalLink className="h-3 w-3" />
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href={`/admin/stores/${store.id}/products`}
+              className="inline-flex items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            >
+              เลือกสินค้า ({store._count.products})
+            </Link>
+            <Link
+              href={`/stores/${store.slug}`}
+              target="_blank"
+              className="inline-flex items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            >
+              ดูร้าน <ExternalLink className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </div>
 
