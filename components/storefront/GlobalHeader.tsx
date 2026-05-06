@@ -4,8 +4,26 @@ import { useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, Search, X, Menu } from "lucide-react";
 import { CartDrawer } from "@/components/shop/CartDrawer";
+import { CyberLogo } from "./CyberLogo";
 import type { GlobalHeader as GlobalHeaderSchema } from "@/types/multi-page-schema";
 import type { ThemeVariant } from "@/lib/landing/families";
+
+/**
+ * Heuristic: is this an agent-emitted placeholder rather than a
+ * real brand asset? Used so we know when to fall back to the
+ * programmatic CyberLogo on Family E. Includes the placehold.co
+ * family + the legacy "blank string / undefined" cases.
+ */
+function isPlaceholderLogo(url?: string): boolean {
+  if (!url || !url.trim()) return true;
+  const lower = url.toLowerCase();
+  return (
+    lower.includes("placehold.co") ||
+    lower.includes("placehold.it") ||
+    lower.includes("placeholder.com") ||
+    lower.includes("dummyimage.com")
+  );
+}
 
 interface Props {
   content: GlobalHeaderSchema;
@@ -87,13 +105,23 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
                   className={`${sizeClass} w-auto flex items-center [&>svg]:w-full [&>svg]:h-full`}
                   dangerouslySetInnerHTML={{ __html: logo.svgCode }}
                 />
-              ) : logo?.imageUrl ? (
+              ) : logo?.imageUrl && !isPlaceholderLogo(logo.imageUrl) ? (
+                // Real (non-placeholder) image wins for every theme.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={logo.imageUrl}
                   alt={logo?.altText ?? logo?.brandText ?? "Logo"}
                   className={`${sizeClass} w-auto`}
                   loading="eager"
+                />
+              ) : theme === "E" ? (
+                // Family E without a real logoUrl: render the
+                // programmatic cyberpunk lockup (smartphone + crown +
+                // gradient text). Beats showing a placehold.co square
+                // or an unstyled brand name string.
+                <CyberLogo
+                  storeSlug={storeSlug}
+                  brandText={logo?.brandText}
                 />
               ) : logo?.brandText ? (
                 <span className="text-lg md:text-xl font-semibold text-stone-900">
