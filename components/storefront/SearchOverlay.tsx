@@ -9,8 +9,7 @@
  *   - Close: Escape key, backdrop click, or X button
  *   - Type: 300ms debounce, hits /api/stores/[slug]/search
  *   - Results: 10 items max with image + title + category + price
- *   - "Enter" or "ดูทั้งหมด" link → /stores/[slug]/category?cat=[query-derived]
- *     (since we don't have a search results page, use category page for now)
+ *   - "Enter" or "ดูทั้งหมด" link → /stores/[slug]/search?q=[query]
  *   - Recent searches stored in localStorage per store
  *   - Empty state: ค้นหายอดนิยม (top categories) when no query yet
  *
@@ -20,6 +19,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Search, X, Clock } from "lucide-react";
 import { formatTHB } from "@/lib/utils";
 
@@ -41,6 +41,7 @@ const RECENT_KEY = (slug: string) => `shop-recent-search-${slug}`;
 const MAX_RECENT = 5;
 
 export function SearchOverlay({ storeSlug, open, onClose }: Props) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [totalMatches, setTotalMatches] = useState(0);
@@ -156,8 +157,18 @@ export function SearchOverlay({ storeSlug, open, onClose }: Props) {
             "0 0 0 1px var(--shop-border), 0 25px 50px -12px rgba(0,0,0,0.25)",
         }}
       >
-        {/* Search input row */}
-        <div
+        {/* Search input row — wrapped in form so Enter navigates to /search */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const q = query.trim();
+            if (!q) return;
+            commitToRecent(q);
+            router.push(
+              `/stores/${storeSlug}/search?q=${encodeURIComponent(q)}`,
+            );
+            onClose();
+          }}
           className="flex items-center gap-3 px-4 sm:px-5 py-4 border-b"
           style={{ borderColor: "var(--shop-border)" }}
         >
@@ -192,7 +203,7 @@ export function SearchOverlay({ storeSlug, open, onClose }: Props) {
           >
             <X className="h-5 w-5" />
           </button>
-        </div>
+        </form>
 
         {/* Results body */}
         <div className="flex-1 overflow-y-auto">
@@ -286,7 +297,7 @@ export function SearchOverlay({ storeSlug, open, onClose }: Props) {
                   style={{ borderColor: "var(--shop-border)" }}
                 >
                   <Link
-                    href={`/stores/${storeSlug}/category?q=${encodeURIComponent(query)}`}
+                    href={`/stores/${storeSlug}/search?q=${encodeURIComponent(query)}`}
                     onClick={() => {
                       commitToRecent(query);
                       onClose();
@@ -311,7 +322,15 @@ export function SearchOverlay({ storeSlug, open, onClose }: Props) {
           }}
         >
           <span>
-            กด <kbd className="px-1.5 py-0.5 rounded bg-[var(--shop-bg)] font-mono text-[10px]">Esc</kbd> เพื่อปิด
+            กด{" "}
+            <kbd className="px-1.5 py-0.5 rounded bg-[var(--shop-bg)] font-mono text-[10px]">
+              Enter
+            </kbd>{" "}
+            เพื่อดูทั้งหมด ·{" "}
+            <kbd className="px-1.5 py-0.5 rounded bg-[var(--shop-bg)] font-mono text-[10px]">
+              Esc
+            </kbd>{" "}
+            เพื่อปิด
           </span>
         </div>
       </div>
