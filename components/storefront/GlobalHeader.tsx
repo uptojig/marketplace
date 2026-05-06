@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ShoppingCart, Search, X, Menu } from "lucide-react";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { CyberLogo } from "./CyberLogo";
+import { SearchOverlay } from "./SearchOverlay";
 import type { GlobalHeader as GlobalHeaderSchema } from "@/types/multi-page-schema";
 import type { ThemeVariant } from "@/lib/landing/families";
 
@@ -34,6 +35,7 @@ interface Props {
 export function GlobalHeader({ content, theme, storeSlug }: Props) {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Defensive: Haiku may omit fields
   const logo = content?.logo ?? {} as GlobalHeaderSchema["logo"];
@@ -148,13 +150,14 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
             {/* Right actions */}
             <div className="flex items-center gap-3">
               {content?.showSearch && (
-                <Link
-                  href={`/stores/${storeSlug}?q=`}
-                  className="p-2 text-stone-600 hover:text-stone-900"
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  className="p-2 text-stone-600 hover:text-stone-900 transition-colors"
                   aria-label="ค้นหา"
                 >
                   <Search className="h-5 w-5" />
-                </Link>
+                </button>
               )}
 
               {content?.showCart !== false && (
@@ -195,6 +198,15 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
           )}
         </div>
       </header>
+
+      {/* Search overlay — full-screen on mobile, modal on desktop.
+          Renders OUTSIDE the sticky header (z-60) so backdrop covers
+          the whole viewport including the header itself. */}
+      <SearchOverlay
+        storeSlug={storeSlug}
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+      />
     </>
   );
 }
