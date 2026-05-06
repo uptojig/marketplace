@@ -29,10 +29,16 @@ export default async function VendorDashboard() {
             <span className="font-mono">ANYPAY_MODE={process.env.ANYPAY_MODE ?? "mock"}</span>
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/dashboard/store/products"
+            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
+          >
+            สินค้าของร้าน
+          </Link>
           <Link
             href="/dashboard/catalog"
-            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
+            className="rounded-md border px-4 py-2 text-sm hover:bg-accent"
           >
             Browse catalog
           </Link>
