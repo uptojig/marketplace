@@ -103,8 +103,16 @@ export default async function ShopLayout({
 
   // 3. ถ้าเป็น AI Multi-page ให้ครอบด้วย GlobalHeader และ GlobalFooter สำหรับทุกหน้าในร้าน!
   if (isAiMultiPage) {
-    const header = safeHeader(blocksData.globalHeader, store.slug, store.name);
-    const footer = safeFooter(blocksData.globalFooter, store.name);
+    // Pass store.logoUrl as override — agent emits a placehold.co
+    // URL by default; once the operator uploads a real logo via
+    // /admin/stores/<id>, that takes precedence on every page.
+    const header = safeHeader(
+      blocksData.globalHeader,
+      store.slug,
+      store.name,
+      store.logoUrl,
+    );
+    const footer = safeFooter(blocksData.globalFooter, store.name, store.logoUrl);
     const family = resolveFamily(blocksData.designFamily || store.landingThemeVariant);
     const primary = family?.themeColor ?? store.primaryColor ?? "#008BF8";
     const theme = (blocksData.designFamily || "A") as any;

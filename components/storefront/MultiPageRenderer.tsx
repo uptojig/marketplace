@@ -18,11 +18,31 @@ interface MultiPageRendererProps {
   storeName?: string;
 }
 
-/** Safe defaults so components never crash on undefined fields */
-export function safeHeader(raw: unknown, storeSlug: string, storeName?: string): GlobalHeaderSchema {
+/** Safe defaults so components never crash on undefined fields.
+ *
+ * Logo precedence (highest → lowest):
+ *   1. `storeLogoUrl` — operator-uploaded via /admin/stores/<id>
+ *      (Store.logoUrl). Always wins when present, because the agent's
+ *      generated placeholder is filler the operator paid no attention to.
+ *   2. Agent-emitted `globalHeader.logo.imageUrl` from the v12 schema
+ *      — usually a `placehold.co` URL with the brand name, OK as a
+ *      fallback for stores that haven't uploaded yet.
+ *   3. Empty string — GlobalHeader renders the brand text only.
+ */
+export function safeHeader(
+  raw: unknown,
+  storeSlug: string,
+  storeName?: string,
+  storeLogoUrl?: string | null,
+): GlobalHeaderSchema {
   if (!raw || typeof raw !== "object") {
     return {
-      logo: { imageUrl: "", altText: storeName || storeSlug, linkTo: "/", brandText: storeName },
+      logo: {
+        imageUrl: storeLogoUrl ?? "",
+        altText: storeName || storeSlug,
+        linkTo: "/",
+        brandText: storeName,
+      },
       nav: [],
       showCart: true,
       sticky: true,
@@ -43,7 +63,9 @@ export function safeHeader(raw: unknown, storeSlug: string, storeName?: string):
     : [];
   return {
     logo: {
-      imageUrl: String(logo.imageUrl ?? logo.image_url ?? logo.src ?? ""),
+      imageUrl:
+        storeLogoUrl ??
+        String(logo.imageUrl ?? logo.image_url ?? logo.src ?? ""),
       altText: String(logo.altText ?? logo.alt ?? storeName ?? storeSlug),
       linkTo: String(logo.linkTo ?? logo.href ?? "/"),
       brandText: logo.brandText ? String(logo.brandText) : storeName ? storeName : undefined,
@@ -57,9 +79,16 @@ export function safeHeader(raw: unknown, storeSlug: string, storeName?: string):
   };
 }
 
-export function safeFooter(raw: unknown, storeName?: string): GlobalFooterSchema {
+export function safeFooter(
+  raw: unknown,
+  storeName?: string,
+  storeLogoUrl?: string | null,
+): GlobalFooterSchema {
   const defaultFooter: GlobalFooterSchema = {
-    brand: { name: storeName ?? "Store" },
+    brand: {
+      name: storeName ?? "Store",
+      ...(storeLogoUrl ? { logoUrl: storeLogoUrl } : {}),
+    },
     copyright: `© ${new Date().getFullYear()} ${storeName || "Store"}. All rights reserved.`,
     columns: [],
     socialLinks: []
@@ -94,12 +123,30 @@ export function safeFooter(raw: unknown, storeName?: string): GlobalFooterSchema
         };
       })
     : [];
-  return { 
-    ...f, 
-    brand: f.brand ? (f.brand as any) : { name: storeName ?? "Store" },
+  // Brand merge: prefer operator-uploaded logoUrl when present (same
+  // precedence rule as safeHeader). Agent's placeholder loses to a
+  // real upload.
+  const brandRaw = (f.brand && typeof f.brand === "object"
+    ? (f.brand as Record<string, unknown>)
+    : {}) as Record<string, unknown>;
+  const brand = {
+    name: brandRaw.name ? String(brandRaw.name) : (storeName ?? "Store"),
+    ...(brandRaw.tagline ? { tagline: String(brandRaw.tagline) } : {}),
+    logoUrl:
+      storeLogoUrl ??
+      (brandRaw.logoUrl
+        ? String(brandRaw.logoUrl)
+        : brandRaw.logo_url
+          ? String(brandRaw.logo_url)
+          : undefined),
+  };
+
+  return {
+    ...f,
+    brand,
     copyright: f.copyright ? String(f.copyright) : defaultFooter.copyright,
-    columns, 
-    socialLinks 
+    columns,
+    socialLinks
   } as GlobalFooterSchema;
 }
 
