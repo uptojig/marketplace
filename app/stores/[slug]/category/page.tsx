@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import { RecentlyViewedRail } from "@/components/storefront/RecentlyViewed";
+import { WishlistButton } from "@/components/storefront/Wishlist";
 
 export const dynamic = "force-dynamic";
 
@@ -387,6 +388,20 @@ function ProductCard({
 
   return (
     <div className="group relative">
+      {/* Wishlist heart — top-right of image, above the card link's
+          absolute-inset overlay so the button is clickable. */}
+      <div className="absolute top-2 right-2 z-10">
+        <WishlistButton
+          storeSlug={storeSlug}
+          product={{
+            id: product.id,
+            title,
+            priceTHB: price,
+            imageUrl: imageUrl ?? null,
+          }}
+        />
+      </div>
+
       <div
         className="aspect-square w-full overflow-hidden rounded-md lg:aspect-auto lg:h-80"
         style={{

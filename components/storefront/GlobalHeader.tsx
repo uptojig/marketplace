@@ -6,6 +6,7 @@ import { ShoppingCart, Search, X, Menu } from "lucide-react";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { CyberLogo } from "./CyberLogo";
 import { SearchOverlay } from "./SearchOverlay";
+import { WishlistNavLink } from "./Wishlist";
 import type { GlobalHeader as GlobalHeaderSchema } from "@/types/multi-page-schema";
 import type { ThemeVariant } from "@/lib/landing/families";
 
@@ -159,6 +160,8 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
                   <Search className="h-5 w-5" />
                 </button>
               )}
+
+              <WishlistNavLink storeSlug={storeSlug} />
 
               {content?.showCart !== false && (
                 <CartDrawer />
