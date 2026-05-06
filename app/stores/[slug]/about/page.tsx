@@ -34,6 +34,8 @@ export default async function AboutPage({
           schema={store.landingBlocks}
           pageSlug="about"
           storeSlug={store.slug}
+          storeName={store.name}
+          storeBannerUrl={store.bannerUrl}
         />
       );
     }

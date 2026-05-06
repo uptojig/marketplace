@@ -98,6 +98,9 @@ export default async function StorePage({
         pageSlug=""
         storeSlug={baseStore.slug}
         storeName={baseStore.name}
+        // Operator-uploaded banner overrides the agent's placehold.co
+        // hero image across every page in the schema.
+        storeBannerUrl={baseStore.bannerUrl}
       />
     );
   }

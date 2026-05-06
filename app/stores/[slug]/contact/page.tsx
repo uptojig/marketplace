@@ -41,6 +41,7 @@ export default async function StoreContactPage({
       websiteUrl: true,
       lineId: true,
       landingBlocks: true,
+      bannerUrl: true,
       slug: true,
     },
   });
@@ -61,6 +62,8 @@ export default async function StoreContactPage({
           schema={store.landingBlocks}
           pageSlug="contact"
           storeSlug={store.slug}
+          storeName={store.name}
+          storeBannerUrl={store.bannerUrl}
         />
       );
     }

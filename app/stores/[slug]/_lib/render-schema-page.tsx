@@ -49,6 +49,10 @@ export async function renderSchemaPage({
           schema={store.landingBlocks}
           pageSlug={pageSlug}
           storeSlug={store.slug}
+          storeName={store.name}
+          // Apply the operator-uploaded banner so faq/shipping/etc.
+          // hero panels swap their placeholder image too.
+          storeBannerUrl={store.bannerUrl}
         />
       );
     }

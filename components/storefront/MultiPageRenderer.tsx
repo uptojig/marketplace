@@ -8,6 +8,7 @@ import type { ThemeVariant } from "@/lib/landing/families";
 import { isValidThemeVariant } from "@/lib/landing/families";
 import { findPageBySlug } from "@/lib/multi-page-migration";
 import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
+import { applyStoreImagesToSchema } from "@/lib/storefront/apply-store-images";
 import { GlobalHeader } from "./GlobalHeader";
 import { GlobalFooter } from "./GlobalFooter";
 
@@ -16,6 +17,10 @@ interface MultiPageRendererProps {
   pageSlug?: string;
   storeSlug: string;
   storeName?: string;
+  /** Operator-uploaded banner (Store.bannerUrl). When present,
+   *  replaces any placeholder image URLs the agent emitted in
+   *  HeroBanner blocks across every page in the schema. */
+  storeBannerUrl?: string | null;
 }
 
 /** Safe defaults so components never crash on undefined fields.
@@ -150,10 +155,18 @@ export function safeFooter(
   } as GlobalFooterSchema;
 }
 
-export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeName }: MultiPageRendererProps) {
-  const raw = schema.designFamily ?? "A";
+export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeName, storeBannerUrl }: MultiPageRendererProps) {
+  // Swap any placehold.co banner URLs the agent emitted with the
+  // operator's uploaded banner before we look up the page. Pure
+  // function; falls through unchanged when the operator hasn't
+  // uploaded anything yet.
+  const effectiveSchema = storeBannerUrl
+    ? applyStoreImagesToSchema(schema, storeBannerUrl)
+    : schema;
+
+  const raw = effectiveSchema.designFamily ?? "A";
   const theme: ThemeVariant = isValidThemeVariant(raw) ? raw : "A";
-  const page = findPageBySlug(schema, pageSlug);
+  const page = findPageBySlug(effectiveSchema, pageSlug);
 
   const header = safeHeader(schema.globalHeader, storeSlug, storeName);
   const footer = safeFooter(schema.globalFooter, storeName);
