@@ -34,7 +34,8 @@
     --shop-ink-muted: #6b7280;
     --shop-border: #e5e7eb;
     --shop-radius: 0.75rem;
-    --shop-font: var(--font-google-sans), var(--font-noto-thai), system-ui, sans-serif;
+    --shop-font: var(--font-prompt), var(--font-google-sans), var(--font-noto-thai), system-ui, sans-serif;
+    --shop-font-display: var(--font-ibm-thai), var(--font-prompt), var(--font-google-sans), system-ui, sans-serif;
   }
 
   * {

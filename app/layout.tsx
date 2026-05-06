@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { DM_Sans, Noto_Sans_Thai } from "next/font/google";
+import { DM_Sans, Noto_Sans_Thai, Prompt, IBM_Plex_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AddToCartModal } from "@/components/shop/AddToCartModal";
 
 // "Google Sans" itself isn't on Google Fonts; DM Sans is the closest open alternative
 // (designed by Colophon Foundry / Google ATF, similar geometric feel).
-// Combined with Noto Sans Thai for Thai script support.
 const googleSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
@@ -14,6 +13,28 @@ const googleSans = DM_Sans({
   display: "swap",
 });
 
+// Primary Thai face — Prompt by Cadson Demak. Geometric, modern, pairs
+// cleanly with DM Sans and reads well at body and display sizes.
+// Used as the default Thai font across storefront pages.
+const prompt = Prompt({
+  subsets: ["thai", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-prompt",
+  display: "swap",
+});
+
+// Secondary / display Thai face — IBM Plex Sans Thai. Slightly more
+// editorial feel for hero headings; available as a CSS variable so
+// individual blocks can opt in via `font-family: var(--font-ibm-thai)`.
+const ibmPlexThai = IBM_Plex_Sans_Thai({
+  subsets: ["thai", "latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-ibm-thai",
+  display: "swap",
+});
+
+// Kept as a safe fallback for any block that still references --font-noto-thai
+// (older landing schemas, agent-generated HTML). Prompt is preferred for new code.
 const notoSansThai = Noto_Sans_Thai({
   subsets: ["thai"],
   weight: ["400", "500", "600", "700"],
@@ -29,7 +50,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={`${googleSans.variable} ${notoSansThai.variable}`}>
+    <html
+      lang="th"
+      className={`${googleSans.variable} ${prompt.variable} ${ibmPlexThai.variable} ${notoSansThai.variable}`}
+    >
       <body className="font-sans">
         <Providers>
           {children}
