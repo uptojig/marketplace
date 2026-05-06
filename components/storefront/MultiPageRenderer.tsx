@@ -159,10 +159,16 @@ export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeName,
   // Swap any placehold.co banner URLs the agent emitted with the
   // operator's uploaded banner before we look up the page. Pure
   // function; falls through unchanged when the operator hasn't
-  // uploaded anything yet.
-  const effectiveSchema = storeBannerUrl
-    ? applyStoreImagesToSchema(schema, storeBannerUrl)
-    : schema;
+  // uploaded anything yet. Cast through Record<string, unknown> at
+  // the boundary because MultiPageShopSchema is a strict named type
+  // that doesn't carry an index signature; the transform's body
+  // narrows back to its own LikeTypes before touching properties.
+  const effectiveSchema = (storeBannerUrl
+    ? (applyStoreImagesToSchema(
+        schema as unknown as Record<string, unknown>,
+        storeBannerUrl,
+      ) as unknown as MultiPageShopSchema)
+    : schema);
 
   const raw = effectiveSchema.designFamily ?? "A";
   const theme: ThemeVariant = isValidThemeVariant(raw) ? raw : "A";

@@ -65,9 +65,10 @@ interface PageLike {
 // MultiPageShopSchema) and we trust the runtime shape. We don't
 // constrain via `extends` because Prisma-generated Json types and
 // the in-house schema type don't share a common interface index
-// signature, and forcing one would ripple into both.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function applyStoreImagesToSchema<T extends Record<string, any>>(
+// signature, and forcing one would ripple into both. `unknown` is
+// safe at the property level; we narrow back to the local LikeTypes
+// before each access.
+export function applyStoreImagesToSchema<T extends Record<string, unknown>>(
   schema: T,
   storeBannerUrl: string | null | undefined,
 ): T {
