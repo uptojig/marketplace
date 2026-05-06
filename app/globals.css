@@ -28,6 +28,9 @@
        These derived tokens give every store page a consistent look
        without hardcoding hex values in components. */
     --shop-primary: #008BF8;
+    --shop-accent: #008BF8; /* second-accent slot — Family E uses cyan,
+                               others mirror primary so gradient utility
+                               classes still work without breaking. */
     --shop-bg: #f5f6f8;
     --shop-card: #ffffff;
     --shop-ink: #1a1a2e;
@@ -189,4 +192,177 @@
     }
   }
 }
+
+/* ── Cyberpunk theme (Family E only) ───────────────────────────
+   Activated when `app/stores/[slug]/layout.tsx` adds the
+   `theme-cyber` class to the .shop-page wrapper. These rules
+   override the default tokens and add neon glow / grid bg / gradient
+   utilities so blocks rendered inside this scope automatically pick
+   up the cyberpunk look without each block hardcoding it. */
+
+.theme-cyber {
+  /* Override token slots so even .shop-card / .shop-input / etc. get
+     the dark treatment for free. The hex values mirror Family E's
+     entry in lib/landing/families.ts so SSR + client agree. */
+  --shop-bg: #020617; /* slate-950 */
+  --shop-card: #0f172a; /* slate-900 */
+  --shop-ink: #e2e8f0; /* slate-200 */
+  --shop-ink-muted: #94a3b8; /* slate-400 */
+  --shop-border: rgba(76, 29, 149, 0.4); /* purple-900 / 40% */
+  /* Glow shadows used by .cyber-glow-* utilities — exposed as vars
+     so component code can reference them via Tailwind's [var(...)]
+     arbitrary-value syntax without re-declaring rgba constants. */
+  --cyber-glow-primary: 0 0 20px rgba(124, 58, 237, 0.5);
+  --cyber-glow-accent: 0 0 18px rgba(6, 182, 212, 0.45);
+}
+
+/* The whole storefront page renders dark when this class is present —
+   even bg-white tailwind classes inside blocks need to fall back to
+   the slate card so headings stay visible. We don't blanket-override
+   bg-white because too many blocks use it for SVG/img wrappers; we
+   instead intervene at the page-level surfaces operators see most. */
+.theme-cyber section,
+.theme-cyber [class*="rounded-"][class*="bg-white"] {
+  /* Only neutralize blank-white wrappers, not branded panels which
+     usually carry their own bg-* alongside the radius. */
+  background-color: transparent;
+}
+
+/* Brand gradient text — used in headings, prices, hero copy. */
+.theme-cyber .cyber-gradient-text,
+.cyber-gradient-text {
+  background-image: linear-gradient(
+    90deg,
+    var(--shop-primary, #7c3aed),
+    var(--shop-accent, #06b6d4)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Neon glow halos for primary/accent CTAs and badges. */
+.cyber-glow-primary {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+}
+.cyber-glow-primary:hover {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.8);
+}
+.cyber-glow-accent {
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.45);
+}
+.cyber-glow-accent:hover {
+  box-shadow: 0 0 28px rgba(6, 182, 212, 0.7);
+}
+
+/* Subtle purple grid backdrop for hero sections. The mask fades the
+   grid out toward the edges so it doesn't fight with content. */
+.cyber-grid-bg {
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 60% 50% at 50% 50%,
+    #000 70%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 60% 50% at 50% 50%,
+    #000 70%,
+    transparent 100%
+  );
+}
+
+/* Card surface — drop into any block container that should match
+   the slate-900 panel look from the reference design. */
+.theme-cyber .cyber-card,
+.cyber-card {
+  background-color: var(--shop-card);
+  border: 1px solid rgba(76, 29, 149, 0.5);
+  border-radius: var(--shop-radius);
+}
+.theme-cyber .cyber-card:hover {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.18);
+}
+
+/* Stats / hero numbers — vertical gradient (cyan → purple). Reads
+   bigger and more "hero" than the horizontal text gradient. */
+.cyber-gradient-numbers {
+  background-image: linear-gradient(
+    180deg,
+    var(--shop-accent, #06b6d4),
+    var(--shop-primary, #7c3aed)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Existing-block overrides ───────────────────────────────────
+   GlobalHeader/Footer + components/blocks/* use Tailwind utility
+   classes directly (bg-white, text-stone-900, etc.) instead of
+   --shop-* vars. We retro-fit those classes inside the theme-cyber
+   scope so the operator gets the dark cyberpunk look without
+   per-block code changes (Phase 2 will replace these per block as
+   we touch each component for real).
+
+   Specificity strategy: chain `.theme-cyber` parent + the Tailwind
+   class so we beat Tailwind's own definition without `!important`. */
+
+/* Header chrome — defaults bg-white/95 with stone text */
+.theme-cyber .bg-white,
+.theme-cyber .bg-white\/95 {
+  background-color: rgb(15 23 42 / 0.92) !important; /* slate-900 / 92 */
+  backdrop-filter: blur(8px);
+}
+.theme-cyber .border-stone-200,
+.theme-cyber .border-stone-300,
+.theme-cyber .border-zinc-200,
+.theme-cyber .border-gray-200,
+.theme-cyber .border-gray-300 {
+  border-color: rgba(76, 29, 149, 0.4) !important; /* purple-900/40 */
+}
+.theme-cyber .text-stone-900,
+.theme-cyber .text-zinc-900,
+.theme-cyber .text-gray-900 {
+  color: var(--shop-ink) !important;
+}
+.theme-cyber .text-stone-700,
+.theme-cyber .text-stone-600,
+.theme-cyber .text-zinc-600,
+.theme-cyber .text-gray-700,
+.theme-cyber .text-gray-600 {
+  color: var(--shop-ink-muted) !important;
+}
+.theme-cyber .text-stone-500,
+.theme-cyber .text-zinc-500,
+.theme-cyber .text-gray-500 {
+  color: rgb(148 163 184) !important; /* slate-400 */
+}
+.theme-cyber .bg-stone-50,
+.theme-cyber .bg-zinc-50,
+.theme-cyber .bg-gray-50,
+.theme-cyber .bg-stone-100,
+.theme-cyber .bg-zinc-100,
+.theme-cyber .bg-gray-100 {
+  background-color: rgb(2 6 23) !important; /* slate-950 */
+}
+
+/* Hover/focus on muted nav links → cyan glow */
+.theme-cyber a:hover,
+.theme-cyber button:hover {
+  --tw-ring-color: var(--shop-accent);
+}
+
+/* Body/footer fallback — keep main background dark even when blocks
+   try to apply a brand-color section background (those should still
+   render their own color; this only patches the "no background"
+   case where Tailwind defaults to white). */
+.theme-cyber {
+  background-color: var(--shop-bg);
+  color: var(--shop-ink);
+}
+
 

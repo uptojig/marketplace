@@ -46,11 +46,15 @@ export const DESIGN_FAMILIES = [
   {
     code: "E",
     label: "E · Cyberpunk Gaming Neon",
-    description: "gaming gear / esports / electronics · purple + green neon",
-    themeColor: "#a855f7",
-    bgHex: "#1c1917", // stone-900
-    textHex: "#4ade80", // green-400
-    cardHex: "#292524", // stone-800
+    description: "gaming gear / esports / electronics · purple + cyan neon",
+    // Purple-600 primary + cyan-500 secondary glow over slate-950 base.
+    // Layout reads `accentHex` and exposes it as --shop-accent so blocks
+    // can reach for the cyan side of the gradient (CTAs, badges, hover).
+    themeColor: "#7c3aed", // purple-600
+    accentHex: "#06b6d4", // cyan-500
+    bgHex: "#020617", // slate-950
+    textHex: "#e2e8f0", // slate-200
+    cardHex: "#0f172a", // slate-900
     fontClass: "font-sans font-extrabold tracking-wide",
   },
   {

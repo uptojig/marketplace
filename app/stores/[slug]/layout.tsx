@@ -119,14 +119,26 @@ export default async function ShopLayout({
     const bgHex = family?.bgHex ?? (theme === "cute" || theme === "I" ? "#fdf2f8" : "#faf7f2");
     const textHex = family?.textHex ?? "#1a1a2e";
     const cardHex = family?.cardHex ?? "#ffffff";
-    
+    // Family E exposes a second accent (cyan) for the cyberpunk
+    // purple→cyan gradients. Other families fall back to mixing the
+    // primary, so existing themes look unchanged.
+    const accentHex =
+      (family as { accentHex?: string } | undefined)?.accentHex ?? primary;
+
     const fontClass = family?.fontClass ?? "font-sans";
-    
+
+    // theme-* class flags expose family-specific styling (grids,
+    // glows, gradients) to the storefront CSS layer without touching
+    // every block component. Currently only Family E has bespoke
+    // styling — everyone else inherits the default look.
+    const themeClass = theme === "E" ? "theme-cyber" : "";
+
     return (
-      <div 
-        className={`shop-page min-h-screen flex flex-col ${fontClass}`} 
+      <div
+        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClass}`.trim()}
         style={{
           ["--shop-primary" as string]: primary,
+          ["--shop-accent" as string]: accentHex,
           ["--shop-bg" as string]: bgHex,
           ["--shop-ink" as string]: textHex,
           ["--shop-ink-muted" as string]: "color-mix(in srgb, var(--shop-ink) 60%, transparent)",
