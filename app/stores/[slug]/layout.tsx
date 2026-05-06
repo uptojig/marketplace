@@ -37,20 +37,50 @@ export default async function ShopLayout({
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
 
-  // Approval gate (must run BEFORE the HTML/v12 short-circuit so
-  // non-approved stores can't bypass via that path either).
-  // PENDING / REJECTED / SUSPENDED → 404 for the public; ADMINs
-  // can still preview via the same URL for review purposes.
+  // Approval gate. Must run BEFORE the HTML/v12 short-circuit so
+  // non-approved stores can't bypass via that path either.
+  //
+  // Visibility matrix:
+  //   APPROVED  → everyone
+  //   PENDING / REJECTED / SUSPENDED:
+  //     - ADMIN          → full preview
+  //     - store owner    → full preview (so they can QA before approval)
+  //     - everyone else  → friendly "รอตรวจสอบ" page (NOT bare 404 — old
+  //                        behaviour was a debugging dead-end where
+  //                        owners thought the store was broken)
   if (store.approvalStatus !== "APPROVED") {
     const session = await getServerSession(authOptions);
     const viewer = session?.user?.email
       ? await prisma.user.findUnique({
           where: { email: session.user.email },
-          select: { role: true },
+          select: { id: true, role: true },
         })
       : null;
-    if (viewer?.role !== "ADMIN") {
-      notFound();
+    const isAdmin = viewer?.role === "ADMIN";
+    const isOwner = !!viewer && viewer.id === store.ownerId;
+    if (!isAdmin && !isOwner) {
+      const labelByStatus: Record<string, string> = {
+        PENDING: "ร้านนี้กำลังรอตรวจสอบโดยทีมงาน",
+        REJECTED: "ร้านนี้ยังไม่ผ่านการตรวจสอบ",
+        SUSPENDED: "ร้านนี้ถูกระงับชั่วคราว",
+      };
+      return (
+        <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-stone-50 px-6 text-center">
+          <div className="rounded-full bg-amber-100 p-4 text-3xl">⏳</div>
+          <h1 className="text-2xl font-bold text-stone-900">{store.name}</h1>
+          <p className="max-w-md text-sm text-stone-600">
+            {labelByStatus[store.approvalStatus] ?? "ร้านนี้ยังไม่เปิดให้ดูสาธารณะ"}
+            <br />
+            กรุณากลับมาใหม่อีกครั้งหลังจากร้านได้รับการอนุมัติ
+          </p>
+          <Link
+            href="/"
+            className="rounded-md border bg-white px-4 py-2 text-sm hover:bg-stone-50"
+          >
+            ← กลับหน้าหลัก
+          </Link>
+        </div>
+      );
     }
   }
 
