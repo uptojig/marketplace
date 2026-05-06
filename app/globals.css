@@ -493,4 +493,62 @@
   color: transparent !important;
 }
 
+/* Reviews — slate cards with quote watermark + gradient avatars */
+.theme-cyber .cyber-review-card {
+  background-color: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(76, 29, 149, 0.3);
+}
+.theme-cyber .cyber-review-card:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+/* CTA band — gradient bg with neon-shadow CTAs on cyber */
+.theme-cyber .cyber-cta-band {
+  background-image: linear-gradient(
+    90deg,
+    rgba(76, 29, 149, 0.4),
+    var(--shop-card)
+  );
+  border: 1px solid rgba(124, 58, 237, 0.3);
+}
+.theme-cyber .cyber-cta-primary {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+  border-bottom: 4px solid rgba(76, 29, 149, 0.8);
+}
+.theme-cyber .cyber-cta-primary:hover {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.8);
+  filter: brightness(1.1);
+}
+.theme-cyber .cyber-cta-secondary {
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+}
+.theme-cyber .cyber-cta-secondary:hover {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+  background-color: rgba(6, 182, 212, 0.08);
+}
+
+/* FAQ — slate cards with cyan chevron, no bottom border between items */
+.theme-cyber .cyber-faq-icon {
+  color: var(--shop-primary);
+}
+.theme-cyber .cyber-faq-item {
+  background-color: var(--shop-card);
+  border: 1px solid rgba(76, 29, 149, 0.3);
+  transition: border-color 0.2s;
+}
+.theme-cyber .cyber-faq-item:hover,
+.theme-cyber .cyber-faq-item[data-state="open"] {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+.theme-cyber .cyber-faq-trigger {
+  color: var(--shop-ink);
+}
+.theme-cyber .cyber-faq-trigger:hover {
+  color: var(--shop-accent);
+}
+.theme-cyber .cyber-faq-trigger[data-state="open"] {
+  color: var(--shop-accent);
+  border-bottom: 1px solid rgba(76, 29, 149, 0.3);
+}
+
 
