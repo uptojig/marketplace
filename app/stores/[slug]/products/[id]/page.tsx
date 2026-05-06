@@ -6,6 +6,10 @@ import { cleanDescription } from "@/lib/format/cleanDescription";
 import { GlobalHeader } from "@/components/storefront/GlobalHeader";
 import { GlobalFooter } from "@/components/storefront/GlobalFooter";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
+import {
+  RecentlyViewedRail,
+  RecentlyViewedTracker,
+} from "@/components/storefront/RecentlyViewed";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { resolveFamily, type ThemeVariant } from "@/lib/landing/families";
 
@@ -96,6 +100,21 @@ export default async function ShopProductPage({
             imageUrl: v.imageUrl ?? undefined,
           })),
         }}
+      />
+
+      <RecentlyViewedTracker
+        storeSlug={params.slug}
+        product={{
+          id: product.id,
+          title: product.titleTh ?? product.title,
+          priceTHB: Number(product.priceTHB),
+          imageUrl: product.imageUrl ?? null,
+        }}
+      />
+
+      <RecentlyViewedRail
+        storeSlug={params.slug}
+        excludeIds={[product.id]}
       />
 
       {related.length > 0 && (

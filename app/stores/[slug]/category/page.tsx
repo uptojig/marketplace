@@ -17,6 +17,7 @@ import { ChevronDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
+import { RecentlyViewedRail } from "@/components/storefront/RecentlyViewed";
 
 export const dynamic = "force-dynamic";
 
@@ -215,6 +216,11 @@ export default async function CategoryIndexPage({
               )}
             </div>
           </div>
+
+          {/* Recently-viewed rail at the very bottom of the catalog
+              page. Renders only if the visitor has opened a PDP before
+              on this store (localStorage gated). */}
+          <RecentlyViewedRail storeSlug={store.slug} />
         </section>
       </main>
     </div>
