@@ -221,6 +221,283 @@ function readIds(): { agentId: string; environmentId: string } {
   return { agentId, environmentId };
 }
 
+/**
+ * Apply a captured schema (from agent.custom_tool_use input) to the
+ * store's DB row. Extracted so the same logic runs from both the
+ * live session loop in runLandingAgentManaged AND the
+ * recoverLandingFromSession path (post-Vercel-timeout recovery).
+ *
+ * In compliance mode we MERGE into the existing schema — preserving
+ * globalHeader/globalFooter/metadata + already-generated marketing
+ * pages, and only swapping in the new compliance pages by slug.
+ *
+ * Returns the count of product titleTh translations synced from the
+ * schema's OfferGrid/ProductHero blocks back into Product rows.
+ */
+async function applyCapturedSchema(args: {
+  storeId: string;
+  capturedSchema: Record<string, unknown>;
+  capturedTitle: string | null;
+  capturedDesignFamily: string | null;
+  capturedThemeColor: string | null;
+  briefForFallbackTitle: string;
+  mode: "marketing" | "compliance";
+  /** Existing schema for compliance-mode merge. Pass null for marketing. */
+  existingSchema: Record<string, unknown> | null;
+}): Promise<{ syncedTitles: number }> {
+  const {
+    storeId,
+    capturedSchema,
+    capturedTitle,
+    capturedDesignFamily,
+    capturedThemeColor,
+    briefForFallbackTitle,
+    mode,
+    existingSchema,
+  } = args;
+
+  const derivedTitle =
+    capturedTitle ??
+    (briefForFallbackTitle.length > 50
+      ? `${briefForFallbackTitle.substring(0, 50)}...`
+      : briefForFallbackTitle);
+
+  let schemaToSave: Record<string, unknown> = capturedSchema;
+
+  if (mode === "compliance") {
+    const existingPages =
+      ((existingSchema?.pages as unknown[]) ?? []) as Array<
+        Record<string, unknown>
+      >;
+    const newPages = ((capturedSchema.pages as unknown[]) ?? []) as Array<
+      Record<string, unknown>
+    >;
+    const newSlugs = new Set(newPages.map((p) => p.slug as string));
+    const merged = [
+      ...existingPages.filter((p) => !newSlugs.has(p.slug as string)),
+      ...newPages,
+    ];
+    schemaToSave = {
+      ...existingSchema,
+      ...capturedSchema,
+      pages: merged,
+      globalHeader: existingSchema?.globalHeader ?? capturedSchema.globalHeader,
+      globalFooter: existingSchema?.globalFooter ?? capturedSchema.globalFooter,
+      metadata: existingSchema?.metadata ?? capturedSchema.metadata,
+    };
+    console.log(
+      `[managed-agent] compliance merge: kept ${
+        existingPages.length - newPages.length
+      } existing + ${newPages.length} new pages = ${merged.length} total`,
+    );
+  }
+
+  await prisma.store.update({
+    where: { id: storeId },
+    data: {
+      landingBlocks: schemaToSave as never,
+      ...(mode === "marketing"
+        ? {
+            landingTitle: derivedTitle,
+            landingThemeVariant: capturedDesignFamily ?? "A",
+            ...(capturedThemeColor
+              ? { primaryColor: capturedThemeColor }
+              : {}),
+          }
+        : {}),
+      landingGeneratedAt: new Date(),
+      landingStatus: "ready",
+      landingError: null,
+    },
+  });
+
+  const syncedTitles = await syncProductTranslationsFromSchema(
+    storeId,
+    capturedSchema,
+  );
+
+  console.log(
+    `[managed-agent] applied ${mode} schema: title="${derivedTitle}" family=${capturedDesignFamily} color=${capturedThemeColor} synced=${syncedTitles} ✅`,
+  );
+  return { syncedTitles };
+}
+
+/** Pull title/family/color metadata out of an agent-emitted schema. */
+function extractSchemaMetadata(schema: Record<string, unknown>): {
+  title: string | null;
+  designFamily: string | null;
+  themeColor: string | null;
+} {
+  const meta = (schema.metadata ?? {}) as Record<string, unknown>;
+  return {
+    title: (schema.title as string) ?? (meta.title as string) ?? null,
+    designFamily:
+      (schema.designFamily as string) ??
+      (schema.design_family as string) ??
+      (meta.designFamily as string) ??
+      null,
+    themeColor:
+      (schema.themeColor as string) ??
+      (schema.theme_color as string) ??
+      (meta.themeColor as string) ??
+      (meta.theme_color as string) ??
+      null,
+  };
+}
+
+/**
+ * Post-timeout recovery — fetch a previously-started session's events
+ * and apply whatever schema the agent emitted to the store.
+ *
+ * Why this exists:
+ *   The agent's full schema generation can take 5-8 minutes, but
+ *   Vercel kills functions at 60s (Hobby) or 300s (Pro). When that
+ *   happens runLandingAgentManaged dies before saving — yet the
+ *   Anthropic-side session keeps running and DOES emit the schema.
+ *   Operators paste the session_id from Anthropic Console here, and
+ *   this function retrieves the schema from that session and saves
+ *   it as if generation had completed normally.
+ *
+ * Returns whether a usable schema was found, plus diagnostic info
+ * the admin UI can show.
+ */
+export async function recoverLandingFromSession(args: {
+  storeId: string;
+  sessionId: string;
+  /** Defaults to "marketing" — same as runLandingAgentManaged's default. */
+  mode?: "marketing" | "compliance";
+}): Promise<
+  | {
+      ok: true;
+      mode: "marketing" | "compliance";
+      designFamily: string | null;
+      pageCount: number;
+      syncedTitles: number;
+      acked: boolean;
+    }
+  | { ok: false; error: string }
+> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return { ok: false, error: "ANTHROPIC_API_KEY missing" };
+  const client = new Anthropic({ apiKey });
+
+  const store = await prisma.store.findUnique({
+    where: { id: args.storeId },
+    select: { id: true, slug: true, landingBrief: true, landingBlocks: true },
+  });
+  if (!store) return { ok: false, error: "store_not_found" };
+
+  const mode = args.mode ?? "marketing";
+
+  // Page through events. The schema lives inside an agent.custom_tool_use
+  // event of name=generate_page_schema (or generate_shop_html for the
+  // legacy HTML agent). We scan from oldest → newest and stop at the
+  // first match — duplicate tool calls within one session are rare but
+  // we want the FIRST one since the others would be retries.
+  let toolEventId: string | null = null;
+  let capturedSchema: Record<string, unknown> | null = null;
+
+  try {
+    // SDK exposes events.list as paginated; iterate until we find the
+    // tool_use or run out. Cap at 200 events as a safety bound.
+    const eventsPage = await client.beta.sessions.events.list(
+      args.sessionId,
+      { betas: MANAGED_BETAS },
+    );
+    const events = (eventsPage as { data?: unknown[] }).data ?? [];
+
+    for (const e of events) {
+      const ev = e as {
+        id?: string;
+        type?: string;
+        name?: string;
+        tool_name?: string;
+        input?: Record<string, unknown>;
+      };
+      if (ev.type !== "agent.custom_tool_use") continue;
+      const toolName = ev.tool_name ?? ev.name ?? "";
+      if (
+        toolName === "generate_page_schema" ||
+        toolName === "generate_shop_html"
+      ) {
+        toolEventId = ev.id ?? null;
+        capturedSchema = ev.input ?? null;
+        break;
+      }
+    }
+  } catch (err) {
+    return {
+      ok: false,
+      error:
+        err instanceof Error
+          ? `fetch_events_failed: ${err.message.slice(0, 200)}`
+          : "fetch_events_failed",
+    };
+  }
+
+  if (!capturedSchema) {
+    return { ok: false, error: "no_schema_in_session" };
+  }
+
+  const meta = extractSchemaMetadata(capturedSchema);
+
+  const { syncedTitles } = await applyCapturedSchema({
+    storeId: args.storeId,
+    capturedSchema,
+    capturedTitle: meta.title,
+    capturedDesignFamily: meta.designFamily,
+    capturedThemeColor: meta.themeColor,
+    briefForFallbackTitle: store.landingBrief ?? "",
+    mode,
+    existingSchema:
+      mode === "compliance"
+        ? ((store.landingBlocks ?? null) as Record<string, unknown> | null)
+        : null,
+  });
+
+  // Best-effort ack so the Anthropic session terminates cleanly. If
+  // already terminated this errors — we ignore it since the schema is
+  // safely on our side.
+  let acked = false;
+  if (toolEventId) {
+    try {
+      await client.beta.sessions.events.send(args.sessionId, {
+        events: [
+          {
+            type: "user.custom_tool_result",
+            custom_tool_use_id: toolEventId,
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ ok: true, recovered: true }),
+              },
+            ],
+            is_error: false,
+          },
+        ],
+        betas: MANAGED_BETAS,
+      });
+      acked = true;
+    } catch {
+      // Session likely already terminated. The schema is saved either
+      // way — ack failure isn't worth surfacing.
+    }
+  }
+
+  const pageCount = Array.isArray(capturedSchema.pages)
+    ? (capturedSchema.pages as unknown[]).length
+    : 0;
+
+  return {
+    ok: true,
+    mode,
+    designFamily: meta.designFamily,
+    pageCount,
+    syncedTitles,
+    acked,
+  };
+}
+
 export async function runLandingAgentManaged(args: {
   storeId: string;
   brief: string;
