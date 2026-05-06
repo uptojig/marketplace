@@ -844,6 +844,14 @@
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
+/* Family D Customizer — engraving + material picker.
+ * Component renders with `hidden` on every PDP; this rule reveals it
+ * only inside theme-D so the customizer never bleeds into other
+ * families.  Specificity (0,2,0) beats Tailwind's `.hidden` (0,1,0). */
+.theme-D [data-family-d-customizer] {
+  display: block;
+}
+
 /* Family E — already wired via .theme-cyber */
 
 /* Family F — Sport Editorial Action

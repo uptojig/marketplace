@@ -31,6 +31,7 @@ import { useCart } from "@/lib/store/cart";
 import { useCartConfirmation } from "@/lib/store/cartConfirm";
 import { formatTHB } from "@/lib/utils";
 import { WishlistButton } from "@/components/storefront/Wishlist";
+import { FamilyDCustomizer } from "@/components/storefront/FamilyDCustomizer";
 import {
   ChevronDown,
   ShoppingBag,
@@ -273,6 +274,10 @@ export function ProductDetail({ product }: { product: Product }) {
             )}
           </div>
         </div>
+
+        {/* Family D customizer — engraving + material picker.
+            CSS-gated to .theme-D so other families never render it. */}
+        <FamilyDCustomizer productId={product.id} />
 
         {/* Primary CTA — single, full-width, solid */}
         <button
