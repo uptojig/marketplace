@@ -164,7 +164,7 @@ export default async function CategoryIndexPage({
               {filtered.length === 0 ? (
                 <EmptyState />
               ) : (
-                <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+                <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
                   {filtered.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -314,8 +314,18 @@ function SortDropdown({
 }
 
 /* ──────────────────────────────────────────────────────────────
- * Product card — Tailwind UI Plus pattern
- *   square image + name + price — no card chrome
+ * Product card — Tailwind UI Plus exact markup
+ *   <div class="group relative">
+ *     <img class="aspect-square ... rounded-md group-hover:opacity-75 lg:aspect-auto lg:h-80">
+ *     <div class="mt-4 flex justify-between">
+ *       <div>
+ *         <h3><a><span class="absolute inset-0" /> Title</a></h3>
+ *         <p class="text-gray-500">subtitle</p>
+ *       </div>
+ *       <p class="text-gray-900">price</p>
+ *     </div>
+ *   </div>
+ * Theme-aware via var(--shop-*) so each design family still drives accent.
  * ────────────────────────────────────────────────────────────── */
 function ProductCard({
   product,
@@ -328,14 +338,12 @@ function ProductCard({
   const title = product.titleTh || product.title;
   const price = Number(product.priceTHB);
   const imageUrl = product.imageUrl;
+  const subtitle = product.categoryName ?? null;
 
   return (
-    <Link
-      href={`/stores/${storeSlug}/products/${product.id}`}
-      className="group block"
-    >
+    <div className="group relative">
       <div
-        className="aspect-square w-full overflow-hidden rounded-lg"
+        className="aspect-square w-full overflow-hidden rounded-md lg:aspect-auto lg:h-80"
         style={{
           background:
             "color-mix(in srgb, var(--shop-card) 88%, transparent)",
@@ -348,7 +356,7 @@ function ProductCard({
             alt={title}
             loading="lazy"
             referrerPolicy="no-referrer"
-            className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover object-center group-hover:opacity-75"
           />
         ) : (
           <div
@@ -359,19 +367,38 @@ function ProductCard({
           </div>
         )}
       </div>
-      <h3
-        className="mt-4 text-sm leading-snug line-clamp-2 group-hover:underline"
-        style={{ color: "var(--shop-ink)" }}
-      >
-        {title}
-      </h3>
-      <p
-        className="mt-1 text-base font-medium"
-        style={{ color: "var(--shop-ink)" }}
-      >
-        {formatTHB(price)}
-      </p>
-    </Link>
+      <div className="mt-4 flex justify-between gap-2">
+        <div className="min-w-0">
+          <h3
+            className="text-sm line-clamp-2"
+            style={{ color: "var(--shop-ink-muted)" }}
+          >
+            <Link
+              href={`/stores/${storeSlug}/products/${product.id}`}
+              className="hover:underline"
+              style={{ color: "var(--shop-ink)" }}
+            >
+              <span aria-hidden="true" className="absolute inset-0" />
+              {title}
+            </Link>
+          </h3>
+          {subtitle && (
+            <p
+              className="mt-1 text-sm truncate"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
+              {subtitle}
+            </p>
+          )}
+        </div>
+        <p
+          className="text-sm font-medium whitespace-nowrap shrink-0"
+          style={{ color: "var(--shop-ink)" }}
+        >
+          {formatTHB(price)}
+        </p>
+      </div>
+    </div>
   );
 }
 
