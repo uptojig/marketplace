@@ -30,6 +30,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { useCartConfirmation } from "@/lib/store/cartConfirm";
 import { formatTHB } from "@/lib/utils";
+import { WishlistButton } from "@/components/storefront/Wishlist";
 import {
   ChevronDown,
   ShoppingBag,
@@ -156,7 +157,23 @@ export function ProductDetail({ product }: { product: Product }) {
   return (
     <div className="md:flex items-start justify-center py-8 2xl:px-20 md:px-6 px-0">
       {/* ── Gallery (desktop: stacked, mobile: hero + thumb row) ── */}
-      <Gallery images={allImages} title={product.title} />
+      <div className="relative">
+        <Gallery images={allImages} title={product.title} />
+        {/* Heart toggle — top-right of gallery, above the image. lg size
+            so it's tap-friendly on mobile + reads as a primary action. */}
+        <div className="absolute top-3 right-3 z-10">
+          <WishlistButton
+            storeSlug={product.storeSlug}
+            product={{
+              id: product.id,
+              title: product.title,
+              priceTHB: displayPrice,
+              imageUrl: product.imageUrl ?? null,
+            }}
+            size="lg"
+          />
+        </div>
+      </div>
 
       {/* ── Info column ────────────────────────────────────────── */}
       <div className="xl:w-2/5 md:w-1/2 lg:ml-8 md:ml-6 md:mt-0 mt-6 px-4 md:px-0">
