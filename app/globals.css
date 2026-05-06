@@ -365,4 +365,132 @@
   color: var(--shop-ink);
 }
 
+/* ── Cyber-only helper bits ──────────────────────────────────────
+   Components ship neutral defaults for light themes and reach for
+   these classes alongside; the .theme-cyber prefix only "lights
+   them up" when the operator is on Family E. Non-cyber stores get
+   nothing extra (no glow, no gradient, default cart icon, etc.) so
+   their look is preserved. */
+
+/* Heading text — gradient when on cyber, plain on others. The base
+   .cyber-gradient-text class applies the gradient unconditionally;
+   this `-on-cyber` variant adds the "only inside theme-cyber" flag
+   so the OfferGrid / Stats / Hero titles stay readable on light
+   themes (a gradient on white is fine but the brief never asked
+   for it on Families A/B/G/H). */
+.theme-cyber .cyber-gradient-text-on-cyber {
+  background-image: linear-gradient(
+    90deg,
+    var(--shop-primary, #7c3aed),
+    var(--shop-accent, #06b6d4)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Cart icon bubble on product cards. Plain bordered circle on light
+   themes; lights up cyan on cyber theme + glows on hover. */
+.cyber-cart-bubble {
+  background-color: color-mix(
+    in srgb,
+    var(--shop-primary, #7c3aed) 12%,
+    transparent
+  );
+  color: var(--shop-primary, #7c3aed);
+  border: 1px solid
+    color-mix(in srgb, var(--shop-primary, #7c3aed) 30%, transparent);
+}
+.theme-cyber .group:hover .cyber-cart-bubble,
+.theme-cyber .group:focus-within .cyber-cart-bubble {
+  background-color: var(--shop-primary, #7c3aed);
+  color: white;
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.6);
+  border-color: var(--shop-primary, #7c3aed);
+}
+
+/* Cards — promote the .cyber-card visual to "always on" inside
+   the cyber theme. Outside cyber theme the class is inert and the
+   card uses --shop-card / --shop-border like before. */
+.theme-cyber .cyber-card {
+  background-color: var(--shop-card);
+  border: 1px solid rgba(76, 29, 149, 0.5);
+  border-radius: var(--shop-radius);
+  transition: all 300ms;
+}
+.theme-cyber .cyber-card:hover {
+  border-color: rgba(6, 182, 212, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.18);
+}
+
+/* Hide certain decorative overlays everywhere except cyber so we
+   don't add washed-out gradients on light-theme product cards. */
+.cyber-only {
+  display: none;
+}
+.theme-cyber .cyber-only {
+  display: block;
+}
+
+/* HeroBanner — replace the default grey grid pattern with a purple
+   one and apply gradient + glow on headline + CTA. The hero block
+   already paints its own grid via inline `bg-[linear-gradient(...)]`
+   tailwind classes; we layer ours on top with a higher specificity
+   selector so it wins. */
+.theme-cyber [class*="bg-[linear-gradient(to_right,#4f4f4f"] {
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.12) 1px, transparent 1px) !important;
+  background-size: 40px 40px !important;
+}
+.theme-cyber section h1,
+.theme-cyber [class*="min-h-[80vh]"] h1 {
+  /* Apply gradient text to hero h1 wholesale on cyber theme. */
+  background-image: linear-gradient(
+    90deg,
+    var(--shop-primary, #7c3aed) 0%,
+    var(--shop-accent, #06b6d4) 50%,
+    #ec4899 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.4));
+}
+.theme-cyber [class*="min-h-[80vh]"] button,
+.theme-cyber [class*="min-h-[80vh]"] a[role="button"] {
+  /* Hero CTA gets a neon halo. */
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+  transition: box-shadow 0.2s;
+}
+.theme-cyber [class*="min-h-[80vh]"] button:hover {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.8);
+}
+
+/* Stats band — bordered slate strip with gradient numbers on cyber.
+   Light themes get unchanged inline-card look. */
+.theme-cyber .cyber-stats-band {
+  background-color: var(--shop-card);
+  border-top: 1px solid rgba(76, 29, 149, 0.3);
+  border-bottom: 1px solid rgba(76, 29, 149, 0.3);
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+.theme-cyber .cyber-stats-item {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+.theme-cyber .cyber-stats-value {
+  background-image: linear-gradient(
+    180deg,
+    var(--shop-accent, #06b6d4),
+    var(--shop-primary, #7c3aed)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 // Agent v3 emits camelCase (product_id, titleTh, imageUrl, priceTHB),
@@ -56,16 +57,24 @@ export function OfferGridBlock({ title, subtitle, products, storeSlug, themeColo
   }
 
   return (
-    <section className="px-6 py-12 max-w-5xl mx-auto">
-      {title && <h3 className="text-xl font-bold text-center mb-2">{title}</h3>}
+    <section className="px-6 py-12 max-w-7xl mx-auto">
+      {title && (
+        <h3 className="text-3xl md:text-4xl font-black text-center mb-2 cyber-gradient-text-on-cyber">
+          {title}
+        </h3>
+      )}
       {subtitle && (
-        <p className="text-sm text-stone-500 text-center mb-6">{subtitle}</p>
+        <p className="text-sm text-center mb-10 opacity-70">{subtitle}</p>
       )}
       <div className={wrapperClass}>
 
         {products.map((product, i) => {
           const productId = pickId(product);
-          let itemClass = "group rounded-xl overflow-hidden border transition flex flex-col";
+          // Card chrome — `cyber-card` is no-op outside .theme-cyber
+          // (CSS in globals.css scopes its hover/border to that ancestor)
+          // so light-theme stores still get the prior look.
+          let itemClass =
+            "group cyber-card rounded-xl overflow-hidden border transition-all flex flex-col";
 
           if (layoutStyle === "carousel") {
             itemClass += " w-[240px] md:w-[280px] shrink-0 snap-center";
@@ -106,36 +115,75 @@ function ProductCardContent({ product, themeColor, isBentoHero }: { product: Pro
   const imageUrl = pickImage(product);
   return (
     <>
-      <div className={`bg-zinc-800 relative overflow-hidden ${isBentoHero ? 'aspect-[4/3] md:aspect-auto md:flex-1' : 'aspect-square'}`}>
+      <div
+        className={`relative overflow-hidden ${isBentoHero ? 'aspect-[4/3] md:aspect-auto md:flex-1' : 'aspect-square'}`}
+        style={{ backgroundColor: 'color-mix(in srgb, var(--shop-card) 70%, black)' }}
+      >
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
             alt={name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-stone-100 text-stone-400 text-xs">
+          <div className="w-full h-full flex items-center justify-center text-xs opacity-60">
             ไม่มีรูปภาพ
           </div>
         )}
 
+        {/* Bottom gradient overlay — visible only on cyber theme.
+            Helps badge/text pop off photo-heavy cards. */}
+        <div
+          className="cyber-only absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(to top, var(--shop-card) 0%, transparent 50%)',
+            opacity: 0.6,
+          }}
+        />
+
         {product.badge && (
-          <Badge className="absolute top-2 left-2 text-[10px]" variant="destructive">
-            {product.badge}
-          </Badge>
+          <span className="cyber-product-badge absolute top-3 left-3 z-10 text-[10px] font-bold px-3 py-1 rounded-full">
+            {/* Default Badge for non-cyber themes */}
+            <Badge className="text-[10px]" variant="destructive">
+              {product.badge}
+            </Badge>
+          </span>
         )}
       </div>
 
-      <div className={`p-3 space-y-1.5 ${isBentoHero ? 'md:p-6' : ''}`}>
-        <h4 className={`font-medium line-clamp-2 ${isBentoHero ? 'text-lg md:text-2xl' : 'text-sm'}`}>{name}</h4>
-        <div className="flex items-baseline gap-2">
+      <div className={`p-4 flex flex-col flex-grow space-y-3 ${isBentoHero ? 'md:p-6' : ''}`}>
+        <h4
+          className={`font-medium line-clamp-2 transition-colors group-hover:text-[var(--shop-accent)] ${
+            isBentoHero ? 'text-lg md:text-2xl' : 'text-sm'
+          }`}
+        >
+          {name}
+        </h4>
+        <div className="mt-auto pt-2 flex items-end justify-between">
           {price !== undefined && (
-            <span className={`font-bold ${isBentoHero ? 'text-lg' : 'text-sm'}`} style={{ color: themeColor || "var(--primary, #a855f7)" }}>
+            <span
+              className={`font-black cyber-gradient-text ${isBentoHero ? 'text-2xl' : 'text-xl'}`}
+              style={{
+                // Non-cyber fallback: solid theme color (cyber theme's
+                // gradient class wins via CSS).
+                color: themeColor || 'var(--shop-primary, #a855f7)',
+              }}
+            >
               ฿{price.toLocaleString("th-TH")}
             </span>
           )}
+          {/* Visual cart icon — pure decoration since card is wrapped
+              in a Link that already navigates to PDP. Lights up on
+              hover with neon glow inside cyber theme. */}
+          <span
+            aria-hidden="true"
+            className="cyber-cart-bubble w-10 h-10 rounded-full flex items-center justify-center transition-all"
+          >
+            <ShoppingCart className="w-4 h-4" />
+          </span>
         </div>
       </div>
     </>
