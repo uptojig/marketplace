@@ -19,10 +19,15 @@
  * 50-target so operators have a clear north star.
  */
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Plus, Search, Trash2, Eye } from "lucide-react";
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 interface LocalProduct {
   id: string;
@@ -77,6 +82,35 @@ export function ProductPicker({ storeId, storeSlug, initialProducts }: Props) {
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState(0);
   const [browseMode, setBrowseMode] = useState(false);
+  // Selected CJ first-level category id ("" = all categories). When set,
+  // both search and browse modes filter on it server-side.
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+
+  // Fetch CJ categories once on mount. Cached at the API + edge layer
+  // so re-mounts of this picker are nearly free. Errors are swallowed
+  // intentionally — operator can still browse without category filter.
+  useEffect(() => {
+    let cancelled = false;
+    setCategoriesLoading(true);
+    fetch("/api/products/categories")
+      .then((r) => r.json())
+      .then((data: { categories?: Category[] }) => {
+        if (!cancelled && Array.isArray(data?.categories)) {
+          setCategories(data.categories);
+        }
+      })
+      .catch(() => {
+        // Best-effort: dropdown just stays empty + dimmed.
+      })
+      .finally(() => {
+        if (!cancelled) setCategoriesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   // Per-result transient state ("importing" / "imported" / error msg).
   // Keyed by externalProductId since search doesn't give us a row id.
   const [importState, setImportState] = useState<
@@ -106,12 +140,22 @@ export function ProductPicker({ storeId, storeSlug, initialProducts }: Props) {
     setSelected(new Set());
   }
 
-  async function fetchPage(opts: { q: string; page: number; browse: boolean }) {
+  async function fetchPage(opts: {
+    q: string;
+    page: number;
+    browse: boolean;
+    category?: string;
+  }) {
     setSearching(true);
     setSearchError(null);
     try {
       const params = new URLSearchParams();
       if (opts.q) params.set("q", opts.q);
+      // category override > current state > none. We pass through opts
+      // when the caller wants a specific value (e.g. dropdown change
+      // before state has settled), and fall back to state otherwise.
+      const cat = opts.category ?? categoryId;
+      if (cat) params.set("category", cat);
       params.set("page", String(opts.page));
       params.set("limit", String(pageSize));
       const res = await fetch(`/api/products/search?${params.toString()}`);
@@ -159,6 +203,19 @@ export function ProductPicker({ storeId, storeSlug, initialProducts }: Props) {
   async function browseAll() {
     setQuery("");
     await fetchPage({ q: "", page: 1, browse: true });
+  }
+
+  async function selectCategory(newCategoryId: string) {
+    // Update state + fetch with the new category. We pass it through
+    // via opts.category since setCategoryId is async; otherwise the
+    // first fetch after change would still see the old value.
+    setCategoryId(newCategoryId);
+    await fetchPage({
+      q: browseMode ? "" : query.trim(),
+      page: 1,
+      browse: browseMode || !query.trim(),
+      category: newCategoryId,
+    });
   }
 
   async function nextPage() {
@@ -412,6 +469,38 @@ export function ProductPicker({ storeId, storeSlug, initialProducts }: Props) {
                 {browseMode ? "ดูสินค้าทั้งหมด" : `ผลค้นหา "${query}"`} ·
                 หน้า {page} · ทั้งหมด {total.toLocaleString("th-TH")} ตัว
               </span>
+            )}
+          </div>
+
+          {/* Category filter — separate row so the search box stays
+              uncluttered. Changing the dropdown re-fetches page 1
+              with the new category id. */}
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-muted-foreground">หมวดหมู่:</span>
+            <select
+              value={categoryId}
+              onChange={(e) => selectCategory(e.target.value)}
+              disabled={searching || categoriesLoading}
+              className="rounded-md border bg-white px-2 py-1 text-xs disabled:opacity-50"
+            >
+              <option value="">ทั้งหมด</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            {categoryId && (
+              <button
+                type="button"
+                onClick={() => selectCategory("")}
+                className="rounded-md border bg-white px-2 py-1 text-[11px] text-muted-foreground hover:bg-gray-50"
+              >
+                ✕ ล้างหมวด
+              </button>
+            )}
+            {categoriesLoading && (
+              <span className="text-muted-foreground">โหลดหมวดหมู่...</span>
             )}
           </div>
 
