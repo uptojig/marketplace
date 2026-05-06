@@ -127,11 +127,14 @@ export default async function ShopLayout({
 
     const fontClass = family?.fontClass ?? "font-sans";
 
-    // theme-* class flags expose family-specific styling (grids,
-    // glows, gradients) to the storefront CSS layer without touching
-    // every block component. Currently only Family E has bespoke
-    // styling — everyone else inherits the default look.
-    const themeClass = theme === "E" ? "theme-cyber" : "";
+    // theme-* class flags expose family-specific styling (typography,
+    // button shape, glows, gradients) to the storefront CSS layer
+    // without touching every block component. We always emit a
+    // `theme-{LETTER}` class for the design family A-I; Family E
+    // additionally gets `theme-cyber` as a back-compat alias since
+    // older CSS targets that name. Per-family rules live in
+    // app/globals.css under "Family-aware design system".
+    const themeClass = `theme-${theme}${theme === "E" ? " theme-cyber" : ""}`;
 
     return (
       <div

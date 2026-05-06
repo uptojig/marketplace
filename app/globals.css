@@ -1,27 +1,29 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --primary: 222 47% 11%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: 0 0% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 47% 11%;
-    --radius: 0.5rem;
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --radius: 0.625rem;
 
     /* ── Shop brand tokens ──
        --shop-primary is set by store layout (resolveFamily → themeColor).
@@ -39,13 +41,68 @@
     --shop-radius: 0.75rem;
     --shop-font: var(--font-prompt), var(--font-google-sans), var(--font-noto-thai), system-ui, sans-serif;
     --shop-font-display: var(--font-ibm-thai), var(--font-prompt), var(--font-google-sans), system-ui, sans-serif;
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
   }
 
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: var(--font-sans);
+  }
+  .dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+  html {
+    @apply font-sans;
   }
 }
 
@@ -623,5 +680,184 @@
   border-color: var(--shop-accent) !important;
   box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
 }
+/* ==========================================================================
+ * Family-aware design system — per-family A-I tweaks
+ *
+ * Each family gets its own .theme-{LETTER} class on .shop-page (root of
+ * /stores/[slug] layout). Rules below adjust typography, button shape,
+ * border radius, and accent treatments to match each family's
+ * personality WITHOUT touching component-level code.
+ *
+ * Reference families (full spec in promptpage's landing-builder agent):
+ *   A — Editorial Minimal Warm    | premium ฿2-15k home/lifestyle
+ *   B — Editorial Soft Feminine   | K-fashion, jewelry, beauty
+ *   C — Luxury Heritage Gold      | handmade jewelry, watches ฿5k+
+ *   D — Industrial Masculine      | men's accessories, leather
+ *   E — Cyberpunk Gaming Neon     | gaming, electronics (.theme-cyber)
+ *   F — Sport Editorial Action    | athletic gear, fitness
+ *   G — Botanical Lifestyle       | plants, organic, wellness
+ *   H — Cozy Niche Skeumorphism   | books, stationery, hobby
+ *   I — Playful Mass Commerce     | viral, pet, kids
+ * ========================================================================== */
 
+/* Family A — Editorial Minimal Warm
+ * Refined sans, tight tracking, square-ish radius, no decoration */
+.theme-A {
+  --shop-radius: 0.5rem;
+}
+.theme-A h1, .theme-A h2, .theme-A h3 {
+  letter-spacing: -0.025em;
+  font-weight: 800;
+}
+.theme-A button[class*="rounded-"]:not([class*="rounded-full"]) {
+  border-radius: var(--shop-radius);
+}
 
+/* Family B — Editorial Soft Feminine
+ * Serif headlines, pill CTAs, rose tints carry through tokens already */
+.theme-B {
+  --shop-radius: 9999px; /* pill */
+}
+.theme-B h1, .theme-B h2 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.theme-B button[class*="rounded-md"],
+.theme-B button[class*="rounded-lg"],
+.theme-B a[class*="rounded-md"],
+.theme-B a[class*="rounded-lg"] {
+  border-radius: var(--shop-radius) !important;
+}
+
+/* Family C — Luxury Heritage Gold
+ * Sharp corners, italic serif, tracking-widest uppercase microcopy */
+.theme-C {
+  --shop-radius: 0;
+}
+.theme-C h1, .theme-C h2 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.theme-C button[class*="rounded-"],
+.theme-C a[class*="rounded-"] {
+  border-radius: 0 !important;
+}
+.theme-C button[class*="font-medium"],
+.theme-C button[class*="font-semibold"],
+.theme-C button[class*="font-bold"] {
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+/* Family D — Industrial Masculine
+ * ALL CAPS aggressively, square corners, monospace data, no warmth */
+.theme-D {
+  --shop-radius: 0;
+}
+.theme-D h1, .theme-D h2, .theme-D h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 900;
+}
+.theme-D button[class*="font-medium"],
+.theme-D button[class*="font-semibold"],
+.theme-D button[class*="font-bold"],
+.theme-D a[class*="font-medium"],
+.theme-D a[class*="font-bold"] {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.theme-D button[class*="rounded-"],
+.theme-D a[class*="rounded-"]:not([class*="rounded-full"]) {
+  border-radius: 0 !important;
+}
+.theme-D code,
+.theme-D [class*="font-mono"] {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Family E — already wired via .theme-cyber */
+
+/* Family F — Sport Editorial Action
+ * Italic + tight tracking on headlines, skew on action buttons */
+.theme-F h1, .theme-F h2 {
+  font-style: italic;
+  letter-spacing: -0.03em;
+  font-weight: 900;
+}
+.theme-F button[class*="font-bold"],
+.theme-F button[class*="font-semibold"] {
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+/* Speed-line accent on hero/banner backgrounds */
+.theme-F section[class*="bg-"]:first-child {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 12px,
+    color-mix(in srgb, var(--shop-primary) 4%, transparent) 12px,
+    color-mix(in srgb, var(--shop-primary) 4%, transparent) 14px
+  );
+}
+
+/* Family G — Botanical Lifestyle Premium
+ * Very rounded (soft + organic), large display typography */
+.theme-G {
+  --shop-radius: 1.5rem;
+}
+.theme-G h1, .theme-G h2 {
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+.theme-G button[class*="rounded-md"],
+.theme-G button[class*="rounded-lg"],
+.theme-G a[class*="rounded-md"],
+.theme-G a[class*="rounded-lg"] {
+  border-radius: var(--shop-radius) !important;
+}
+.theme-G [class*="rounded-xl"] {
+  border-radius: 1.75rem;
+}
+
+/* Family H — Cozy Niche Skeumorphism
+ * Serif display, warm radius, subtle paper-grain feel via blend */
+.theme-H {
+  --shop-radius: 0.625rem;
+}
+.theme-H h1, .theme-H h2, .theme-H h3 {
+  font-family: ui-serif, "Lora", Georgia, Cambria, "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.theme-H .shop-card,
+.theme-H [class*="rounded-xl"][class*="border"] {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+}
+
+/* Family I — Playful Mass Commerce
+ * Rounded-full everywhere, heavier black weights, scale-up CTAs */
+.theme-I {
+  --shop-radius: 9999px;
+}
+.theme-I h1, .theme-I h2 {
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+.theme-I button[class*="rounded-md"],
+.theme-I button[class*="rounded-lg"],
+.theme-I button[class*="rounded-xl"],
+.theme-I a[class*="rounded-md"],
+.theme-I a[class*="rounded-lg"] {
+  border-radius: var(--shop-radius) !important;
+}
+.theme-I button[class*="bg-"][class*="primary"]:hover,
+.theme-I a[class*="bg-"][class*="primary"]:hover {
+  transform: scale(1.03);
+  transition: transform 0.15s ease;
+}
