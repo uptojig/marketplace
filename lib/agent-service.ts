@@ -1,23 +1,19 @@
 /**
- * Standalone store-builder agent — calls Claude Messages API directly.
+ * Marketplace shop builder via Anthropic Managed Agents.
  *
- * Instead of proxying through PromptPage or using Anthropic Managed
- * Agents, this module embeds the full system prompt and tool definitions,
- * then streams Claude's response with tool-use handling.
+ * Sessions show up under console.anthropic.com → Managed Agents → Sessions
+ * with the agent name "Marketplace Shop Builder v12" so traces are
+ * inspectable. The agent itself (system prompt + custom tool definition) is
+ * created once via scripts/setup-managed-agent.mjs; this file only opens a
+ * session per request and handles the generate_page_schema tool call.
  *
- * Flow:
- *   1. Enrich brief with CJ products (lib/agent/enrich-brief.ts)
- *   2. Send to Claude with system prompt + generate_page_schema tool
- *   3. Stream events back as NDJSON for the client UI
- *   4. When agent calls generate_page_schema → validate → yield _schema
+ * Required env:
+ *   ANTHROPIC_API_KEY — Anthropic key in the workspace that owns the agent
+ *   MANAGED_AGENT_ID  — agent_... id from setup-managed-agent.mjs
+ *   MANAGED_ENV_ID    — env_... id from setup-managed-agent.mjs
  */
 
 import Anthropic from "@anthropic-ai/sdk";
-import {
-  AGENT_MODEL,
-  SYSTEM_PROMPT,
-  GENERATE_PAGE_SCHEMA_TOOL,
-} from "@/lib/agent/config";
 import {
   enrichBriefWithProducts,
   NoProductsError,
@@ -82,8 +78,8 @@ export interface RunAgentInput {
 }
 
 export class AgentNotConfiguredError extends Error {
-  constructor() {
-    super("ANTHROPIC_API_KEY is not set");
+  constructor(message = "ANTHROPIC_API_KEY / MANAGED_AGENT_ID / MANAGED_ENV_ID is not set") {
+    super(message);
     this.name = "AgentNotConfiguredError";
   }
 }
@@ -93,21 +89,10 @@ export class AgentUpstreamError extends Error {
     public status: number,
     public bodyText: string,
   ) {
-    super(`Claude API returned ${status}`);
+    super(`Anthropic API returned ${status}`);
     this.name = "AgentUpstreamError";
   }
 }
-
-type DesignFamilyType =
-  | "A"
-  | "B"
-  | "C"
-  | "D"
-  | "E"
-  | "F"
-  | "G"
-  | "H"
-  | "I";
 
 type Block = {
   blockType: string;
@@ -118,7 +103,7 @@ type Block = {
 type MultiPageSchema = {
   schemaVersion: "12";
   metadata: Record<string, unknown>;
-  designFamily: DesignFamilyType;
+  designFamily: DesignFamily;
   globalHeader: Record<string, unknown>;
   globalFooter: Record<string, unknown>;
   pages: Array<{
@@ -127,18 +112,6 @@ type MultiPageSchema = {
     metadata?: Record<string, unknown>;
     blocks: Block[];
   }>;
-  reasoning: string;
-};
-
-/** v11 single-page schema (legacy) */
-type SinglePageSchema = {
-  title: string;
-  slug?: string;
-  description?: string;
-  designFamily?: DesignFamilyType;
-  themeVariant?: "minimal" | "cute";
-  metadata?: Record<string, unknown>;
-  blocks: Block[];
   reasoning: string;
 };
 
@@ -154,12 +127,11 @@ function validateSchema(
   if (typeof input !== "object" || input === null) {
     return { ok: false, error: "schema_must_be_object" };
   }
-  // eslint-disable-next-line
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const s = input as any;
 
   const validFamilies = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
 
-  // Strip stray quotes from designFamily/schemaVersion
   if (typeof s.designFamily === "string") {
     s.designFamily = s.designFamily.replace(/^["']+|["']+$/g, "").trim();
   }
@@ -167,7 +139,6 @@ function validateSchema(
     s.schemaVersion = s.schemaVersion.replace(/^["']+|["']+$/g, "").trim();
   }
 
-  // Detect v12 multi-page schema
   const looksV12 =
     Array.isArray(s.pages) &&
     (s.schemaVersion === "12" ||
@@ -177,11 +148,7 @@ function validateSchema(
 
   if (looksV12) {
     s.schemaVersion = "12";
-    if (
-      !validFamilies.includes(s.designFamily)
-    ) {
-      s.designFamily = "A";
-    }
+    if (!validFamilies.includes(s.designFamily)) s.designFamily = "A";
     if (!Array.isArray(s.pages) || s.pages.length < 1) {
       return { ok: false, error: "v12_requires_at_least_1_page" };
     }
@@ -201,32 +168,25 @@ function validateSchema(
       }
     }
 
-    // For v12: create a GeneratedPageSchema that's compatible with the UI.
-    // Use the homepage blocks as the "blocks" field for backward compat.
-    const homepage = s.pages.find(
-      (p: { isHomepage?: boolean }) => p.isHomepage,
-    ) ?? s.pages[0];
+    const homepage =
+      s.pages.find((p: { isHomepage?: boolean }) => p.isHomepage) ?? s.pages[0];
     const schema: GeneratedPageSchema = {
       title:
-        (s.metadata as Record<string, unknown>)?.title as string ??
-        "Shop",
+        ((s.metadata as Record<string, unknown>)?.title as string) ?? "Shop",
       designFamily: s.designFamily,
       metadata: s.metadata,
       blocks: homepage.blocks,
       reasoning: s.reasoning ?? "",
-      // Attach the full v12 data for the renderer
       ...(s as object),
     };
     return { ok: true, schema, version: "v12" };
   }
 
-  // v11 single-page
   if (typeof s.title !== "string" || !s.title.trim()) {
     return { ok: false, error: "title_required" };
   }
   const hasFamily = validFamilies.includes(s.designFamily);
-  const hasTheme =
-    s.themeVariant === "minimal" || s.themeVariant === "cute";
+  const hasTheme = s.themeVariant === "minimal" || s.themeVariant === "cute";
   if (!hasFamily && !hasTheme) {
     return { ok: false, error: "designFamily_or_themeVariant_required" };
   }
@@ -237,21 +197,25 @@ function validateSchema(
 }
 
 /**
- * Run the store-builder agent. Yields NDJSON events for the client UI.
+ * Run the store-builder agent via Managed Agents.
  *
- * Steps:
  *   1. Enrich brief with CJ products
- *   2. Call Claude Messages API with streaming
- *   3. Handle generate_page_schema tool call
- *   4. Yield events for progress display
+ *   2. Open a session referencing the pre-created agent + environment
+ *   3. Stream events (open BEFORE sending the kickoff event — Pattern 7)
+ *   4. When `agent.custom_tool_use` arrives for generate_page_schema:
+ *        - validate; on failure send is_error so the agent can self-correct
+ *        - on success yield _schema and break
+ *   5. Break on terminated, or idle with stop_reason !== requires_action
  */
 export async function* runAgent(
   input: RunAgentInput,
 ): AsyncGenerator<AgentEvent> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new AgentNotConfiguredError();
+  const agentId = process.env.MANAGED_AGENT_ID;
+  const envId = process.env.MANAGED_ENV_ID;
+  if (!apiKey || !agentId || !envId) throw new AgentNotConfiguredError();
 
-  // Step 1: Enrich brief with real products
+  // Step 1: enrich brief with real products
   let userMessage: string;
   try {
     const { enrichedBrief } = await enrichBriefWithProducts(input.prompt);
@@ -269,94 +233,134 @@ export async function* runAgent(
     throw err;
   }
 
-  yield { type: "_session", id: `local-${Date.now()}` };
-  yield { type: "agent.message_text", text: "กำลังค้นหาสินค้า... ✓" };
-
-  // Step 2: Call Claude Messages API with streaming
   const client = new Anthropic({ apiKey });
 
-  type MessageParam = { role: "user" | "assistant"; content: string | Anthropic.ContentBlockParam[] };
-  const messages: MessageParam[] = [
-    { role: "user", content: userMessage },
-  ];
-
-  // Allow up to 3 turns (initial + 2 retries if schema validation fails)
-  for (let turn = 0; turn < 3; turn++) {
-    if (input.signal?.aborted) break;
-
-    yield {
-      type: "agent.message_text",
-      text: turn === 0 ? "agent กำลังออกแบบร้าน..." : "agent กำลังแก้ไข schema...",
-    };
-
-    const stream = client.messages.stream({
-      model: AGENT_MODEL,
-      max_tokens: 16000,
-      system: SYSTEM_PROMPT,
-      tools: [GENERATE_PAGE_SCHEMA_TOOL],
-      tool_choice: turn === 0 ? { type: "tool", name: GENERATE_PAGE_SCHEMA_TOOL.name } : { type: "auto" },
-      messages,
+  // Step 2: create session
+  let session;
+  try {
+    session = await client.beta.sessions.create({
+      agent: agentId,
+      environment_id: envId,
+      title: input.title ? `Build: ${input.title.slice(0, 80)}` : undefined,
     });
-    const response = await stream.finalMessage();
+  } catch (e) {
+    if (e instanceof Anthropic.APIError) {
+      throw new AgentUpstreamError(e.status ?? 0, e.message);
+    }
+    throw e;
+  }
 
-    // Process response content blocks
-    let hasToolUse = false;
+  yield { type: "_session", id: session.id };
 
-    for (const block of response.content) {
-      if (block.type === "text" && block.text) {
-        yield { type: "agent.message_text", text: block.text };
-      }
+  // Step 3: open the stream BEFORE sending the kickoff (skill Pattern 7)
+  const stream = await client.beta.sessions.events.stream(session.id);
 
-      if (block.type === "tool_use" && block.name === GENERATE_PAGE_SCHEMA_TOOL.name) {
-        hasToolUse = true;
-        yield {
-          type: "agent.custom_tool_use",
-          tool_name: "generate_page_schema",
-          name: "generate_page_schema",
+  await client.beta.sessions.events.send(session.id, {
+    events: [
+      {
+        type: "user.message",
+        content: [{ type: "text", text: userMessage }],
+      },
+    ],
+  });
+
+  let capturedSchema: GeneratedPageSchema | null = null;
+
+  try {
+    for await (const event of stream) {
+      if (input.signal?.aborted) break;
+
+      // Forward agent text + status events to the UI verbatim
+      yield event as AgentEvent;
+
+      // Custom tool: agent emits the schema → validate → ack
+      if (event.type === "agent.custom_tool_use") {
+        const e = event as {
+          id: string;
+          tool_name?: string;
+          name?: string;
+          input?: unknown;
         };
-
-        const result = validateSchema(block.input);
-        if (result.ok) {
-          yield { type: "_schema", schema: result.schema };
-          yield { type: "_done", terminal_via_tool: true };
-          return;
+        const toolName = e.tool_name ?? e.name ?? "";
+        if (toolName !== "generate_page_schema") {
+          // Unknown tool — tell the agent so it can recover
+          await client.beta.sessions.events.send(session.id, {
+            events: [
+              {
+                type: "user.custom_tool_result",
+                custom_tool_use_id: e.id,
+                content: [
+                  {
+                    type: "text",
+                    text: JSON.stringify({
+                      ok: false,
+                      error: `unknown_tool: ${toolName}`,
+                    }),
+                  },
+                ],
+                is_error: true,
+              },
+            ],
+          });
+          continue;
         }
 
-        // Schema validation failed — tell agent to fix and retry
-        yield {
-          type: "agent.message_text",
-          text: `schema validation failed: ${result.error} — retrying...`,
-        };
-
-        messages.push({
-          role: "assistant",
-          content: response.content as Anthropic.ContentBlockParam[],
-        });
-        messages.push({
-          role: "user",
-          content: [
+        const result = validateSchema(e.input);
+        await client.beta.sessions.events.send(session.id, {
+          events: [
             {
-              type: "tool_result",
-              tool_use_id: block.id,
-              content: JSON.stringify({
-                ok: false,
-                error: result.error,
-                hint: "Fix the issue and call generate_page_schema again.",
-              }),
-              is_error: true,
+              type: "user.custom_tool_result",
+              custom_tool_use_id: e.id,
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    result.ok
+                      ? { ok: true, version: result.version }
+                      : {
+                          ok: false,
+                          error: result.error,
+                          hint: "Fix the issue and call generate_page_schema again.",
+                        },
+                  ),
+                },
+              ],
+              is_error: !result.ok,
             },
-          ] as unknown as Anthropic.ContentBlockParam[],
+          ],
         });
+
+        if (result.ok) {
+          capturedSchema = result.schema;
+          yield { type: "_schema", schema: result.schema };
+          // generate_page_schema is terminal — agent will idle once it sees
+          // the success ack; we can break early to save turns.
+          break;
+        }
+        continue;
+      }
+
+      // Skill Pattern 5: don't break on idle alone — only on terminated, or
+      // idle with a terminal stop_reason (anything except requires_action).
+      if (event.type === "session.status_terminated") break;
+      if (event.type === "session.status_idle") {
+        const stop = (event as { stop_reason?: { type?: string } }).stop_reason;
+        if (stop?.type !== "requires_action") break;
       }
     }
-
-    // If no tool use, the agent responded with text only (e.g., "ไม่มีสินค้า")
-    if (!hasToolUse) {
-      yield { type: "_done" };
-      return;
+  } catch (err) {
+    if (err instanceof Anthropic.APIError) {
+      yield {
+        type: "_error",
+        message: `anthropic_${err.status ?? 0}: ${err.message}`,
+      };
+    } else {
+      yield {
+        type: "_error",
+        message: err instanceof Error ? err.message : "stream_failed",
+      };
     }
   }
 
-  yield { type: "_error", message: "agent_did_not_emit_valid_schema_after_retries" };
-  yield { type: "_done" };
+  yield { type: "_done", terminal_via_tool: !!capturedSchema };
 }
