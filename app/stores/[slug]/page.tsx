@@ -15,6 +15,15 @@ import { HtmlRenderer, isHtmlSchema } from "@/components/storefront/HtmlRenderer
 import { isValidThemeVariant } from "@/lib/landing/families";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
+import {
+  MiniMopsTemplate,
+  type MiniMopsProduct,
+  type MiniMopsStore,
+} from "@/components/storefront/templates/MiniMopsTemplate";
+import {
+  isReactTemplateSchema,
+  type ReactTemplateSchema,
+} from "@/components/storefront/templates/registry";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +50,95 @@ function formatThaiDate(d: Date) {
   return `${day}/${month}/${year}`;
 }
 
+type StoreWithRelations = Awaited<
+  ReturnType<typeof prisma.store.findUnique<{ where: { slug: string } }>>
+>;
+
+async function renderReactTemplate(
+  store: NonNullable<StoreWithRelations>,
+  schema: ReactTemplateSchema,
+) {
+  // Pull approved + active products for this store
+  const dbProducts = await prisma.product.findMany({
+    where: { storeId: store.id, active: true },
+    orderBy: { createdAt: "desc" },
+    take: 60,
+  });
+
+  // Sold counts → reviews proxy
+  const soldGroups = await prisma.orderItem.groupBy({
+    by: ["productId"],
+    where: {
+      storeId: store.id,
+      order: { status: { in: SOLD_STATUSES } },
+    },
+    _sum: { qty: true },
+  });
+  const soldMap = new Map(
+    soldGroups.map((g) => [g.productId, g._sum.qty ?? 0]),
+  );
+
+  const products: MiniMopsProduct[] = dbProducts.map((p) => ({
+    id: p.id,
+    title: p.titleTh ?? p.title,
+    priceTHB: Number(p.priceTHB),
+    compareAtPriceTHB: p.compareAtPriceTHB ? Number(p.compareAtPriceTHB) : null,
+    imageUrl: p.imageUrl,
+    category: p.categoryName,
+    rating: 5.0, // we don't track ratings yet — surface a default
+    reviews: soldMap.get(p.id) ?? 0,
+  }));
+
+  const featured = schema.featuredProductId
+    ? products.find((p) => p.id === schema.featuredProductId) ?? null
+    : null;
+
+  // Auto-derive nav categories from product data if admin didn't supply any
+  const autoCategories = Array.from(
+    new Set(products.map((p) => p.category).filter((c): c is string => !!c)),
+  )
+    .slice(0, 4)
+    .map((c) => ({ label: c, category: c }));
+
+  const navCategories =
+    schema.navCategories && schema.navCategories.length > 0
+      ? schema.navCategories
+      : autoCategories;
+
+  const templateStore: MiniMopsStore = {
+    slug: store.slug,
+    name: store.name,
+    tagline: store.tagline,
+    description: store.description,
+    bannerUrl: store.bannerUrl,
+    primaryColor: store.primaryColor ?? "#10b981",
+  };
+
+  // Currently we only have one template id; future ids switch on schema.template
+  if (schema.template === "mini-mops-v1") {
+    return (
+      <MiniMopsTemplate
+        store={templateStore}
+        products={products}
+        featuredProduct={featured}
+        navCategories={navCategories}
+        gridHeading={schema.gridHeading}
+        gridSubheading={schema.gridSubheading}
+      />
+    );
+  }
+
+  // Unknown template id — fall back gracefully
+  return (
+    <div className="max-w-2xl mx-auto p-8 text-center">
+      <h1 className="text-2xl font-bold mb-4">ไม่รู้จัก template</h1>
+      <p className="text-gray-600">
+        Template id <code>{schema.template}</code> ไม่ได้อยู่ใน registry
+      </p>
+    </div>
+  );
+}
+
 export default async function StorePage({
   params,
   searchParams,
@@ -63,6 +161,11 @@ export default async function StorePage({
         storeSlug={baseStore.slug}
       />
     );
+  }
+
+  // ── React template (curated designs, e.g. Mini Mops) ────────
+  if (baseStore.landingBlocks && isReactTemplateSchema(baseStore.landingBlocks)) {
+    return renderReactTemplate(baseStore, baseStore.landingBlocks);
   }
 
   // ── block_registry_v1 (AI block system) ─────────────────────

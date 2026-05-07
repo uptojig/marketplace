@@ -21,6 +21,7 @@ import { formatStoreAddressLines } from "@/lib/format/storeAddress";
 import { resolveFamily } from "@/lib/landing/families";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
+import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
 import { GlobalHeader } from "@/components/storefront/GlobalHeader";
 import { GlobalFooter } from "@/components/storefront/GlobalFooter";
 import { safeHeader, safeFooter } from "@/components/storefront/MultiPageRenderer";
@@ -98,6 +99,11 @@ export default async function ShopLayout({
 
   // 2. ถ้าเป็น HTML เดิม ให้ Return {children} แบบเพียวๆ ทันที (HtmlRenderer จัดการ header/footer ให้แล้ว)
   if (blocksData && isHtmlSchema(blocksData)) {
+    return <>{children}</>;
+  }
+
+  // 2b. React templates ก็มี nav/footer ในตัวเอง → render แบบไม่ wrap chrome
+  if (blocksData && isReactTemplateSchema(blocksData)) {
     return <>{children}</>;
   }
 
