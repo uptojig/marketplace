@@ -1,8 +1,26 @@
+/* Tailwind v4 — single import replaces v3's @tailwind base/components/utilities. */
+@import "tailwindcss";
+
+/* Existing shadcn + tw-animate-css imports — both already use
+   v4-compatible syntax (@theme inline / @custom-variant). */
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+/* daisyUI 5 plugin — `themes: all` enables all 35 built-in themes
+   so the storefront can switch via <input class="theme-controller"
+   value="..."> on any page. Cost: ~30KB extra CSS shipped to the
+   client; can be narrowed to a subset later via
+   `themes: light --default, dark --prefersdark, fantasy, ...`. */
+@plugin "daisyui" {
+  themes: all;
+}
+
+/* Tell Tailwind v4 to keep reading the legacy tailwind.config.ts
+   so we don't have to immediately port theme.extend (font-family,
+   shadcn HSL color tokens, container, animations) into the new
+   CSS-first @theme block. The config file stays the source of
+   truth until we migrate it explicitly. */
+@config "../tailwind.config.ts";
 
 @layer base {
   :root {

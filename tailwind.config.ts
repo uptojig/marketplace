@@ -1,7 +1,10 @@
 import type { Config } from "tailwindcss";
 
+// v4 tightened darkMode tuple arity to ["class", "<selector>"];
+// the simple string "class" form still works and matches the v3
+// behavior of toggling on a `.dark` ancestor.
 const config: Config = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
