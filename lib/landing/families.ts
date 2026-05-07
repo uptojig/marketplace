@@ -7,11 +7,18 @@ export const DESIGN_FAMILIES = [
     code: "A",
     label: "A · Editorial Minimal Warm",
     description: "premium furniture / lifestyle / candles · stone + amber",
-    themeColor: "#b8956a",
-    bgHex: "#fafaf9", // stone-50
-    textHex: "#1c1917", // stone-900
+    // Tan/amber accent — kept slightly cooler than the old #b8956a
+    // so it doesn't muddy the cream background. Pairs well with
+    // deep stone-800 for typography contrast.
+    themeColor: "#a07a4f",
+    accentHex: "#1c1917", // stone-900 — used for the dark CTA panel
+    bgHex: "#f9f8f6", // soft cream, slightly warmer than stone-50
+    textHex: "#292524", // stone-800
     cardHex: "#ffffff",
-    fontClass: "font-sans font-medium tracking-tight",
+    // Body sans-serif by default; .theme-A in globals.css promotes
+    // headings to font-serif (Playfair Display via Tailwind) for the
+    // editorial feel without forcing the body to also flip serif.
+    fontClass: "font-sans tracking-tight",
   },
   {
     code: "B",

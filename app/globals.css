@@ -1010,3 +1010,179 @@
   transform: scale(1.03);
   transition: transform 0.15s ease;
 }
+
+/* ── Family A — Editorial Minimal Warm ────────────────────────
+   Activated when layout.tsx adds the `theme-A` class. Goal: warm
+   beige backdrop, serif headings, calm "premium magazine" feel.
+   NO glow, NO gradient text, NO neon.
+
+   Overrides are scoped under `.theme-A` so other families pick up
+   zero visual changes; per-block components stay generic. */
+
+.theme-A {
+  /* Tighter token re-binding so cards lift cleanly off the cream
+     bg even when blocks use their default --shop-* tokens. */
+  --shop-bg: #f9f8f6;
+  --shop-card: #ffffff;
+  --shop-ink: #292524;        /* stone-800 */
+  --shop-ink-muted: #78716c;  /* stone-500 */
+  --shop-border: #e7e5e4;     /* stone-200 */
+}
+
+/* Serif headings for the "editorial" feel. We don't promote ALL
+   text to serif — body copy stays sans-serif (Prompt) for legibility,
+   matching how a print magazine pairs serif display + sans body. */
+.theme-A h1,
+.theme-A h2,
+.theme-A h3,
+.theme-A h4,
+.theme-A .cyber-stats-value /* stats numbers — re-skinned, not gradient */,
+.theme-A [class*="font-bold"][class*="text-3xl"],
+.theme-A [class*="font-bold"][class*="text-4xl"],
+.theme-A [class*="font-bold"][class*="text-5xl"] {
+  font-family: var(--shop-font-display, "Playfair Display"), Georgia,
+    "Noto Serif Thai", serif !important;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Stat numbers should be quiet + serif, not gradient text. */
+.theme-A .cyber-gradient-numbers,
+.theme-A .cyber-stats-value {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--shop-ink) !important;
+  filter: none !important;
+}
+
+/* Product card aspect — 4/5 portrait gives the catalog a more
+   curated feel than a square grid. Targets the OfferGrid card's
+   image wrapper which currently uses aspect-square. */
+.theme-A [class*="aspect-square"] {
+  aspect-ratio: 4 / 5 !important;
+}
+
+/* Strip cyberpunk-only flourishes that .cyber-* helpers might
+   bring along when the block was authored against Family E. */
+.theme-A .cyber-gradient-text,
+.theme-A .cyber-gradient-text-on-cyber {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: inherit !important;
+}
+.theme-A .cyber-glow-primary,
+.theme-A .cyber-glow-accent,
+.theme-A .cyber-cta-primary,
+.theme-A .cyber-cta-secondary,
+.theme-A .cyber-cart-bubble {
+  box-shadow: none !important;
+  border-bottom-width: 0 !important;
+}
+.theme-A .cyber-card {
+  background: var(--shop-card);
+  border: 1px solid var(--shop-border);
+  box-shadow: none !important;
+}
+.theme-A .cyber-card:hover {
+  border-color: var(--shop-ink-muted);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transform: none !important;
+}
+
+/* Hero chrome — drop the 80vh tall hero down to a more editorial
+   60vh and remove the cyber grid pattern overlay. */
+.theme-A [class*="min-h-[80vh]"] {
+  min-height: 60vh !important;
+}
+.theme-A [class*="min-h-[80vh]"] [class*="bg-[linear-gradient(to_right,#4f4f4f"] {
+  display: none !important;
+}
+.theme-A [class*="min-h-[80vh]"] h1 {
+  font-family: var(--shop-font-display, "Playfair Display"), Georgia,
+    "Noto Serif Thai", serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em;
+  filter: none !important;
+}
+
+/* Hero CTAs — flat rectangles, no rounded pills, no neon. */
+.theme-A [class*="min-h-[80vh]"] button {
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.875rem !important;
+}
+
+/* Stats band — keep the divider lines but in stone, not purple. */
+.theme-A .cyber-stats-band {
+  background-color: transparent !important;
+  border-top: 1px solid var(--shop-border) !important;
+  border-bottom: 1px solid var(--shop-border) !important;
+}
+
+/* Reviews — promote the quote watermark to a serif glyph (the
+   component already has a quote span; we just upsize/recolor). */
+.theme-A .cyber-review-card {
+  background-color: var(--shop-card) !important;
+  border: 1px solid var(--shop-border) !important;
+}
+
+/* CTA panel — dark stone-900 bg with cream serif heading and a
+   solid white button. The reference design's "Join Our Inner
+   Circle" block. */
+.theme-A .cyber-cta-band {
+  background: #1c1917 !important; /* stone-900 */
+  background-image: none !important;
+  border: none !important;
+  color: #fafaf9 !important;
+  border-radius: 0 !important;
+}
+.theme-A .cyber-cta-band h3,
+.theme-A .cyber-cta-band [class*="cyber-gradient"] {
+  color: #fafaf9 !important;
+  background: none !important;
+  -webkit-text-fill-color: #fafaf9 !important;
+}
+.theme-A .cyber-cta-band p {
+  color: #d6d3d1 !important; /* stone-300 */
+}
+.theme-A .cyber-cta-band a[class*="cyber-cta-primary"] {
+  background-color: #fafaf9 !important;
+  color: #1c1917 !important;
+  border-radius: 2px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.theme-A .cyber-cta-band a[class*="cyber-cta-secondary"] {
+  border-color: #d6d3d1 !important;
+  color: #fafaf9 !important;
+  border-radius: 2px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Header chrome — remove the cyber slate override; Family A wants
+   bg-white/95 with stone borders (which is the GlobalHeader default
+   we DON'T need to fight). */
+
+/* Footer — match reference: dark stone-950 with cream serif column
+   headers + minimal cream link hover. */
+.theme-A footer[class*="bg-stone-900"] {
+  background-color: #1c1917 !important;
+  color: #a8a29e !important; /* stone-400 */
+}
+.theme-A footer h2,
+.theme-A footer h3,
+.theme-A footer h4 {
+  font-family: var(--shop-font-display, "Playfair Display"), Georgia,
+    "Noto Serif Thai", serif !important;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: #fafaf9 !important;
+  text-transform: none !important;
+}
+.theme-A footer a:hover {
+  color: #fafaf9 !important;
+}
