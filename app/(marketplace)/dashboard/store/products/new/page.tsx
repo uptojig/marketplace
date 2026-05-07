@@ -17,7 +17,7 @@ export default async function NewProductPage() {
     where: { email: session.user.email },
     include: { store: true },
   });
-  if (!user?.store) redirect("/onboarding");
+  if (!user?.store) redirect("/");
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">

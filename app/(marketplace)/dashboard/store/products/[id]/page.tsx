@@ -25,7 +25,7 @@ export default async function EditProductPage({
     where: { email: session.user.email },
     include: { store: true },
   });
-  if (!user?.store) redirect("/onboarding");
+  if (!user?.store) redirect("/");
 
   const product = await prisma.product.findUnique({
     where: { id: params.id },

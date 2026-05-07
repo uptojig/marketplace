@@ -28,7 +28,6 @@ const PASSTHROUGH_PREFIXES = [
   "/uploads",
   "/stores/",
   "/products/",
-  "/onboarding",
   "/dashboard",
   "/admin",
   // /cart and /checkout/* used to live at marketplace level —
