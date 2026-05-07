@@ -59,6 +59,13 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
     },
   });
   if (!store) notFound();
+  // Active-only product count for the Generate Landing gate. _count
+  // above includes inactive (soft-removed) products, which we don't
+  // want to count toward the threshold — those won't render on the
+  // storefront anyway.
+  const activeProductCount = await prisma.product.count({
+    where: { storeId: store.id, active: true },
+  });
   // Count blocks: v12 schema has pages[].blocks[], v11 is flat array
   const lb = store.landingBlocks as Record<string, unknown> | unknown[] | null;
   const landingBlockCount = Array.isArray(lb)
@@ -127,6 +134,7 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
         landingThemeVariant={store.landingThemeVariant}
         landingGeneratedAt={store.landingGeneratedAt?.toISOString() ?? null}
         blockCount={landingBlockCount}
+        activeProductCount={activeProductCount}
       />
 
       {landingBlockCount > 0 && !(lb && typeof lb === "object" && (lb as Record<string, unknown>).type === "block_registry_v1") && (

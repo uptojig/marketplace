@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -10,6 +11,7 @@ import {
   Wand2,
   AlertCircle,
 } from "lucide-react";
+import { MIN_PRODUCTS_FOR_LANDING } from "@/lib/landing/min-products";
 // DESIGN_FAMILIES picker removed from the form on operator request —
 // the agent now picks the family automatically from brief content
 // (per v3 design-family decision tree). The store row still records
@@ -24,6 +26,10 @@ interface Props {
   landingThemeVariant: string | null;
   landingGeneratedAt: string | null;
   blockCount: number;
+  /** Number of active (active=true) products in the store. Drives
+   *  the marketing-mode Generate gate — the agent's OfferGrids look
+   *  empty/repetitive below MIN_PRODUCTS_FOR_LANDING. */
+  activeProductCount: number;
 }
 
 type StatusSnapshot = {
@@ -287,6 +293,34 @@ export function LandingForm(props: Props) {
           placeholder='เช่น: "เว็บขายเก้าอี้ทำงาน เน้นคนปวดหลัง โทนมินิมอล" หรือ "ขายรองเท้า เด็ก 50 ชิ้น สวยๆตามใจเป็ด"'
           className="w-full rounded-md border px-3 py-2 text-sm disabled:bg-stone-50"
         />
+        {/* Marketing-mode product-count gate. Mirrors the server-side
+            check in /api/admin/stores/[id]/generate-landing — kept on
+            client too so the operator sees the message before they
+            click and gets a direct link to the picker. Compliance
+            mode (button further down) doesn't reference products and
+            isn't gated. */}
+        {props.activeProductCount < MIN_PRODUCTS_FOR_LANDING && (
+          <div className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-900">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            <div className="flex-1">
+              <p className="font-semibold">
+                ต้องมีสินค้าอย่างน้อย {MIN_PRODUCTS_FOR_LANDING} ตัวก่อน Generate
+              </p>
+              <p className="mt-0.5 text-xs">
+                ตอนนี้ร้านมี <strong>{props.activeProductCount}</strong> ตัว
+                — agent จะเอาสินค้าจริงไปใส่ OfferGrid + CategoryBanner
+                ถ้าน้อยเกินไปจะดูเป็น skeleton หรือซ้ำกัน
+              </p>
+              <Link
+                href={`/admin/stores/${props.storeId}/products/new`}
+                className="mt-2 inline-flex items-center gap-1 rounded-md border border-amber-400 bg-white px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100"
+              >
+                + เพิ่มสินค้า
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-xs text-stone-600">
             🎨 Design family — เป็ดเลือกให้อัตโนมัติจาก brief
@@ -306,8 +340,17 @@ export function LandingForm(props: Props) {
           <button
             type="button"
             onClick={() => handleGenerate("marketing")}
-            disabled={isGenerating || !brief.trim()}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-amber-500 px-5 py-2 text-sm font-bold text-white shadow-md hover:bg-amber-600 disabled:opacity-50"
+            disabled={
+              isGenerating ||
+              !brief.trim() ||
+              props.activeProductCount < MIN_PRODUCTS_FOR_LANDING
+            }
+            title={
+              props.activeProductCount < MIN_PRODUCTS_FOR_LANDING
+                ? `ต้องมีสินค้า ≥ ${MIN_PRODUCTS_FOR_LANDING} (ตอนนี้ ${props.activeProductCount})`
+                : undefined
+            }
+            className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-amber-500 px-5 py-2 text-sm font-bold text-white shadow-md hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isGenerating ? (
               <>
