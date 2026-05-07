@@ -56,12 +56,81 @@
   --noise: 0;
 }
 
-/* Tell Tailwind v4 to keep reading the legacy tailwind.config.ts
-   so we don't have to immediately port theme.extend (font-family,
-   shadcn HSL color tokens, container, animations) into the new
-   CSS-first @theme block. The config file stays the source of
-   truth until we migrate it explicitly. */
-@config "../tailwind.config.ts";
+/* tailwindcss-animate replaced by tw-animate-css (already imported
+   above); the v4 plugin form is just `@plugin` — kept here in case
+   any block components still reference its `animate-*` utilities. */
+@plugin "tailwindcss-animate";
+
+/* darkMode strategy — was `darkMode: "class"` in the old JS config.
+   v4 expects this as a CSS custom-variant. The selector matches
+   anything inside an ancestor with the `dark` class so existing
+   shadcn dark-variant utilities ("dark:bg-card", etc.) keep working. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind v4 CSS-first theme config. Replaces tailwind.config.ts —
+   tokens here become first-class utility classes (e.g. --color-border
+   → bg-border / text-border / border-border). Wrapping in `inline`
+   keeps the values as-is rather than pre-resolving the var() chain;
+   that matters for the shadcn HSL bridge below where the actual
+   color comes from runtime CSS vars (--background, --primary, etc.)
+   defined in :root / .dark blocks further down this file. */
+@theme inline {
+  /* Container — v3 config had `center: true, padding: 1rem`,
+     `screens: { "2xl": "1280px" }`. Implemented manually below
+     in @layer components since v4 doesn't expose all container
+     knobs through @theme. */
+
+  /* Body font stack — Prompt (Thai) → DM Sans (Latin) → Noto Thai
+     fallback. Matches the loaded next/font variables in
+     app/layout.tsx. */
+  --font-sans: var(--font-prompt), var(--font-google-sans),
+    var(--font-noto-thai), system-ui, sans-serif;
+
+  /* shadcn HSL color bridge. Each token reads its hue/sat/light
+     from a CSS var defined in :root/.dark — that's what lets the
+     shadcn theme tokens (foreground, primary, muted, ring, etc.)
+     swap between light + dark via the `class="dark"` toggle. */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  /* Radius scale — driven by the runtime --radius var so theme
+     swaps (e.g. shadcn presets) ripple through every rounded-* class. */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* Container — replicates the old v3 theme.container config
+   (center + 1rem padding + 1280px cap at 2xl). */
+@layer components {
+  .container {
+    margin-inline: auto;
+    padding-inline: 1rem;
+    width: 100%;
+  }
+  @media (min-width: 1536px) {
+    .container {
+      max-width: 1280px;
+    }
+  }
+}
 
 @layer base {
   :root {
