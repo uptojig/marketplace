@@ -271,7 +271,7 @@ export async function* runAgent(
       if (input.signal?.aborted) break;
 
       // Forward agent text + status events to the UI verbatim
-      yield event as AgentEvent;
+      yield event as unknown as AgentEvent;
 
       // Custom tool: agent emits the schema → validate → ack
       if (event.type === "agent.custom_tool_use") {
