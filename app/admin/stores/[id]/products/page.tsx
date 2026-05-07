@@ -20,7 +20,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { ProductPicker } from "./picker";
 
@@ -63,12 +63,21 @@ export default async function StoreProductsAdminPage({
         >
           <ChevronLeft className="h-4 w-4" /> {store.name}
         </Link>
-        <div className="mt-2">
-          <h1 className="text-2xl font-bold">เลือกสินค้าให้ร้าน</h1>
-          <p className="text-sm text-muted-foreground">
-            ค้นหาจาก CJ Dropshipping แล้วเพิ่มเข้าร้าน หรือเลือกสินค้าที่จะเอาออก —
-            ตั้งเป้า ~50 ตัวที่เข้ากับแบรนด์
-          </p>
+        <div className="mt-2 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">เลือกสินค้าให้ร้าน</h1>
+            <p className="text-sm text-muted-foreground">
+              ค้นหาจาก CJ Dropshipping แล้วเพิ่มเข้าร้าน หรือเลือกสินค้าที่จะเอาออก —
+              ตั้งเป้า ~50 ตัวที่เข้ากับแบรนด์
+            </p>
+          </div>
+          <Link
+            href={`/admin/stores/${store.id}/products/new`}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-stone-800"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            เพิ่มสินค้า (3 วิธี)
+          </Link>
         </div>
       </div>
 

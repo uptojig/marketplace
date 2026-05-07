@@ -15,6 +15,9 @@ import { formatTHB } from "@/lib/utils";
 
 interface Props {
   onSaved?: (savedCount: number) => void;
+  /** Same admin-only override as CatalogPicker — see that file for
+   *  the precedence rules. */
+  storeIdOverride?: string;
 }
 
 interface Preview {
@@ -34,7 +37,7 @@ interface Row extends Preview {
   selected: boolean;
 }
 
-export function UrlPasteImport({ onSaved }: Props = {}) {
+export function UrlPasteImport({ onSaved, storeIdOverride }: Props = {}) {
   const [text, setText] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
@@ -117,7 +120,11 @@ export function UrlPasteImport({ onSaved }: Props = {}) {
       const res = await fetch("/api/products/import", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action: "save", items }),
+        body: JSON.stringify({
+          action: "save",
+          ...(storeIdOverride ? { storeId: storeIdOverride } : {}),
+          items,
+        }),
       });
       const data = (await res.json()) as { saved?: number; error?: string };
       if (!res.ok || data.saved === undefined) {

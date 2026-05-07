@@ -20,6 +20,12 @@ import { formatTHB } from "@/lib/utils";
 
 interface Props {
   onSaved?: (savedCount: number) => void;
+  /** Admin-only override. When set, items are saved into THIS store
+   *  via /api/products/import's storeId field instead of being routed
+   *  to the caller's own session store. Server-side validates that
+   *  the override is honoured only for ADMIN role; non-admin pages
+   *  should leave this undefined. */
+  storeIdOverride?: string;
 }
 
 interface CatalogItem {
@@ -50,7 +56,7 @@ interface CategoriesResponse {
 const SUPPLIERS = ["CJ", "ALIEXPRESS"] as const;
 type SupplierName = (typeof SUPPLIERS)[number];
 
-export function CatalogPicker({ onSaved }: Props = {}) {
+export function CatalogPicker({ onSaved, storeIdOverride }: Props = {}) {
   const [supplier, setSupplier] = useState<SupplierName>("CJ");
 
   // Filter form state (what the user is editing)
@@ -187,6 +193,7 @@ export function CatalogPicker({ onSaved }: Props = {}) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           action: "save",
+          ...(storeIdOverride ? { storeId: storeIdOverride } : {}),
           items: items.map((it) => ({
             url: `${supplier}:${it.externalProductId}`,
             externalProductId: it.externalProductId,

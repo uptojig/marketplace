@@ -26,15 +26,36 @@ import { ProductForm } from "./product-form";
 
 type Tab = "catalog" | "urls" | "manual";
 
-const TABS: { id: Tab; label: string; icon: typeof Package }[] = [
+const ALL_TABS: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "catalog", label: "เลือกจากซัพพลายเออร์", icon: Package },
   { id: "urls", label: "วาง URL", icon: LinkIcon },
   { id: "manual", label: "กรอกเอง", icon: Pencil },
 ];
 
-export function AddProductTabs() {
+interface Props {
+  /** Admin override — when set, items save into THIS store via the
+   *  /api/products/import storeId field (admin-validated server-side).
+   *  Also used to redirect back to the admin product list instead of
+   *  the owner dashboard list when the operator finishes adding. */
+  storeIdOverride?: string;
+  /** When true, hides the "กรอกเอง" tab. The manual ProductForm
+   *  posts to /api/store/products which currently doesn't accept a
+   *  storeIdOverride and uses NextAuth session → user.store, so
+   *  admins acting on a non-owned store can't use it. */
+  hideManualTab?: boolean;
+  /** Where to redirect after a successful save. Defaults to the
+   *  owner dashboard list. */
+  redirectTo?: string;
+}
+
+export function AddProductTabs({
+  storeIdOverride,
+  hideManualTab,
+  redirectTo,
+}: Props = {}) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("catalog");
+  const tabs = hideManualTab ? ALL_TABS.filter((t) => t.id !== "manual") : ALL_TABS;
+  const [tab, setTab] = useState<Tab>(tabs[0].id);
   const [toast, setToast] = useState<string | null>(null);
 
   function handleSaved(count: number) {
@@ -42,14 +63,14 @@ export function AddProductTabs() {
     // Brief pause so the toast is readable before the route changes.
     // The list page will re-fetch on its own server render.
     setTimeout(() => {
-      router.push("/dashboard/store/products");
+      router.push(redirectTo ?? "/dashboard/store/products");
     }, 1200);
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-1 rounded-lg bg-muted p-1">
-        {TABS.map((t) => {
+        {tabs.map((t) => {
           const Icon = t.icon;
           const active = tab === t.id;
           return (
@@ -82,9 +103,13 @@ export function AddProductTabs() {
           the catalog query. The downside is losing tab-local state on
           switch — operators who want to draft a manual entry while
           browsing the catalog should finish one before switching. */}
-      {tab === "catalog" && <CatalogPicker onSaved={handleSaved} />}
-      {tab === "urls" && <UrlPasteImport onSaved={handleSaved} />}
-      {tab === "manual" && <ProductForm mode="create" />}
+      {tab === "catalog" && (
+        <CatalogPicker onSaved={handleSaved} storeIdOverride={storeIdOverride} />
+      )}
+      {tab === "urls" && (
+        <UrlPasteImport onSaved={handleSaved} storeIdOverride={storeIdOverride} />
+      )}
+      {tab === "manual" && !hideManualTab && <ProductForm mode="create" />}
     </div>
   );
 }

@@ -31,6 +31,12 @@ const saveSchema = z.object({
     )
     .min(1)
     .max(50),
+  // Optional admin-only override. Lets an ADMIN user import into any
+  // store from /admin/stores/[id]/products/new without that store
+  // belonging to them. The handler only honours this when the caller
+  // is verified ADMIN — non-admin callers passing storeId fall back
+  // to their own session store, same as before.
+  storeId: z.string().min(1).optional(),
 });
 
 const requestSchema = z.union([previewSchema, saveSchema]);
@@ -85,12 +91,39 @@ export async function POST(req: Request) {
     return NextResponse.json({ items: results });
   }
 
-  // SAVE: prefer the cookie-session user (onboarding flow), then NextAuth, then first store fallback.
+  // SAVE: resolve target store. Order:
+  //   1. Admin override — body.storeId honoured ONLY if the caller is
+  //      a verified ADMIN role. This lets /admin/stores/[id]/products
+  //      add into stores that aren't owned by the admin's own user.
+  //   2. Cookie session user (legacy /onboarding callers — flow itself
+  //      is gone but the cookie helper still serves admin scripts).
+  //   3. NextAuth session → user.store.
+  //   4. First store in DB (single-store dev fallback).
   let storeId: string | null = null;
-  const cookieUserId = getCurrentUserId();
-  if (cookieUserId) {
-    const store = await prisma.store.findUnique({ where: { ownerId: cookieUserId } });
-    storeId = store?.id ?? null;
+
+  if (parsed.data.storeId) {
+    const session = await getServerSession(authOptions).catch(() => null);
+    if (session?.user?.email) {
+      const me = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { role: true },
+      });
+      if (me?.role === "ADMIN") {
+        const target = await prisma.store.findUnique({
+          where: { id: parsed.data.storeId },
+          select: { id: true },
+        });
+        if (target) storeId = target.id;
+      }
+    }
+  }
+
+  if (!storeId) {
+    const cookieUserId = getCurrentUserId();
+    if (cookieUserId) {
+      const store = await prisma.store.findUnique({ where: { ownerId: cookieUserId } });
+      storeId = store?.id ?? null;
+    }
   }
   if (!storeId) {
     const session = await getServerSession(authOptions).catch(() => null);
