@@ -1,14 +1,37 @@
 "use client";
 
+/**
+ * Countdown — sale-ending timer ("ลด 50% เหลืออีก 2:14:33").
+ *
+ * Uses daisyUI 5's native .countdown component for the digit
+ * animation (CSS-only sliding numbers based on --value). Each
+ * unit gets its own tile with a label below, wrapped in a card
+ * that recolors via primary tokens. CTA is .btn.btn-primary.
+ *
+ * The setInterval still drives the math; we just write the
+ * numbers into --value CSS vars on the inline <span>s, which
+ * daisyUI animates.
+ */
+
 import { useEffect, useState } from "react";
 
-export function CountdownBlock({ headline, target_at, ctaText, ctaLink }: {
+export function CountdownBlock({
+  headline,
+  target_at,
+  ctaText,
+  ctaLink,
+}: {
   headline?: string;
   target_at?: string;
   ctaText?: string;
   ctaLink?: string;
 }) {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    mins: 0,
+    secs: 0,
+  });
 
   useEffect(() => {
     if (!target_at) return;
@@ -27,31 +50,41 @@ export function CountdownBlock({ headline, target_at, ctaText, ctaLink }: {
     return () => clearInterval(id);
   }, [target_at]);
 
+  const units = [
+    { val: timeLeft.days, label: "วัน" },
+    { val: timeLeft.hours, label: "ชั่วโมง" },
+    { val: timeLeft.mins, label: "นาที" },
+    { val: timeLeft.secs, label: "วินาที" },
+  ];
+
   return (
-    <div className="text-center px-6 py-12 bg-card border-y border-border/30">
-      {headline && <h3 className="text-lg font-bold mb-4">{headline}</h3>}
-      <div className="flex justify-center gap-4">
-        {[
-          { val: timeLeft.days, label: "วัน" },
-          { val: timeLeft.hours, label: "ชั่วโมง" },
-          { val: timeLeft.mins, label: "นาที" },
-          { val: timeLeft.secs, label: "วินาที" },
-        ].map((t, i) => (
+    <section className="text-center px-6 py-12 bg-base-100 border-y border-base-300">
+      {headline && (
+        <h3 className="text-lg md:text-2xl font-bold mb-4">{headline}</h3>
+      )}
+      <div className="flex justify-center gap-4 flex-wrap">
+        {units.map((t, i) => (
           <div key={i} className="text-center">
-            <div className="text-3xl font-bold tabular-nums w-16 h-16 flex items-center justify-center rounded-xl bg-zinc-800"
-              style={{ color: "var(--primary, #a855f7)" }}>
-              {String(t.val).padStart(2, "0")}
+            <div className="text-3xl md:text-4xl font-bold tabular-nums w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-xl bg-primary text-primary-content">
+              {/* daisyUI .countdown handles the slide animation; the
+                  --value CSS var is what it watches. */}
+              <span className="countdown">
+                <span style={{ "--value": t.val } as React.CSSProperties}>
+                  {String(t.val).padStart(2, "0")}
+                </span>
+              </span>
             </div>
-            <div className="text-[10px] text-muted-foreground mt-1">{t.label}</div>
+            <div className="text-[10px] md:text-xs text-base-content/70 mt-1">
+              {t.label}
+            </div>
           </div>
         ))}
       </div>
       {ctaText && (
-        <a href={ctaLink || "#"} className="inline-block mt-6 px-6 py-2.5 rounded-lg font-semibold text-white text-sm"
-          style={{ backgroundColor: "var(--primary, #a855f7)" }}>
+        <a href={ctaLink || "#"} className="btn btn-primary mt-6">
           {ctaText}
         </a>
       )}
-    </div>
+    </section>
   );
 }
