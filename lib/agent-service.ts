@@ -127,8 +127,18 @@ function validateSchema(
   if (typeof input !== "object" || input === null) {
     return { ok: false, error: "schema_must_be_object" };
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const s = input as any;
+  const s = input as Record<string, unknown> & {
+    designFamily?: string;
+    schemaVersion?: string | number;
+    pages?: unknown;
+    globalHeader?: unknown;
+    globalFooter?: unknown;
+    metadata?: unknown;
+    title?: string;
+    themeVariant?: string;
+    blocks?: unknown;
+    reasoning?: string;
+  };
 
   const validFamilies = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
 
@@ -148,7 +158,9 @@ function validateSchema(
 
   if (looksV12) {
     s.schemaVersion = "12";
-    if (!validFamilies.includes(s.designFamily)) s.designFamily = "A";
+    if (typeof s.designFamily !== "string" || !validFamilies.includes(s.designFamily)) {
+      s.designFamily = "A";
+    }
     if (!Array.isArray(s.pages) || s.pages.length < 1) {
       return { ok: false, error: "v12_requires_at_least_1_page" };
     }
@@ -168,13 +180,13 @@ function validateSchema(
       }
     }
 
-    const homepage =
-      s.pages.find((p: { isHomepage?: boolean }) => p.isHomepage) ?? s.pages[0];
+    const pages = s.pages as Array<{ isHomepage?: boolean; blocks: Block[] }>;
+    const homepage = pages.find((p) => p.isHomepage) ?? pages[0];
     const schema: GeneratedPageSchema = {
       title:
         ((s.metadata as Record<string, unknown>)?.title as string) ?? "Shop",
-      designFamily: s.designFamily,
-      metadata: s.metadata,
+      designFamily: s.designFamily as DesignFamily,
+      metadata: s.metadata as PageMetadata,
       blocks: homepage.blocks,
       reasoning: s.reasoning ?? "",
       ...(s as object),
@@ -185,7 +197,7 @@ function validateSchema(
   if (typeof s.title !== "string" || !s.title.trim()) {
     return { ok: false, error: "title_required" };
   }
-  const hasFamily = validFamilies.includes(s.designFamily);
+  const hasFamily = typeof s.designFamily === "string" && validFamilies.includes(s.designFamily);
   const hasTheme = s.themeVariant === "minimal" || s.themeVariant === "cute";
   if (!hasFamily && !hasTheme) {
     return { ok: false, error: "designFamily_or_themeVariant_required" };
