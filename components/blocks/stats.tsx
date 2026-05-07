@@ -1,12 +1,17 @@
-"use client";
-
 /**
  * Stats — trust numbers (customers, reviews, delivery time, etc.).
  *
- * Light themes (default): card grid with theme-color values.
- * Cyber theme: full-width slate band, gradient numbers, larger type.
- *   The `cyber-stats-band` selector below is keyed off `.theme-cyber`
- *   in globals.css so non-cyber stores see no change.
+ * Rebuilt on daisyUI 5 primitives:
+ *   - `.stats` container (vertical on mobile, horizontal at md+)
+ *   - `.stat` cell with `.stat-value` (the big number) + `.stat-desc`
+ *     (the small label)
+ *   - `.bg-base-100` + `.border-base-300` so the band recolors
+ *     correctly across all 35 themes via daisyUI tokens.
+ *
+ * Per-family tweaks (.theme-A serif numbers, .theme-cyber gradient
+ * numbers) still apply through the .cyber-stats-* class hooks
+ * preserved below — operators on those families keep their look,
+ * everyone else rides the daisyUI default.
  */
 export function StatsBlock({ items }: {
   items?: Array<{ label?: string; value?: string; icon?: string }>;
@@ -14,29 +19,22 @@ export function StatsBlock({ items }: {
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="cyber-stats-band w-full">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 px-6 py-10 md:py-16 max-w-7xl mx-auto">
+    <section className="cyber-stats-band w-full px-6 py-12 md:py-16">
+      <div className="stats stats-vertical md:stats-horizontal mx-auto w-full max-w-7xl bg-base-100 border border-base-300 shadow-sm">
         {items.map((item, i) => (
           <div
             key={i}
-            className="cyber-stats-item text-center p-4 rounded-xl border"
-            style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}
+            className="cyber-stats-item stat place-items-center text-center"
           >
-            <div
-              className="cyber-stats-value text-3xl md:text-5xl font-black cyber-gradient-numbers"
-              style={{ color: "var(--shop-primary)" }}
-            >
+            <div className="cyber-stats-value stat-value text-3xl md:text-5xl text-primary">
               {item.value || "—"}
             </div>
-            <div
-              className="cyber-stats-label text-xs md:text-sm mt-2 uppercase tracking-wider"
-              style={{ color: 'var(--shop-ink-muted)' }}
-            >
+            <div className="cyber-stats-label stat-desc mt-1 uppercase tracking-wider text-base-content/70">
               {item.label || ""}
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

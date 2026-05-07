@@ -1,13 +1,30 @@
 "use client";
 
+/**
+ * OfferGrid — grid / carousel / bento of product cards.
+ *
+ * Rebuilt on daisyUI 5 `card` primitives:
+ *   - .card .bg-base-100 .shadow-sm  → the card chrome
+ *   - .card-body                      → padding for title + price
+ *   - .badge.badge-primary            → "ขายดี" / "พรีเมียม" tag
+ *   - .btn.btn-circle                 → the cart-icon bubble in the
+ *                                       lower-right of the card body
+ *
+ * Theme tokens (bg-base-100, text-primary, badge-primary) flow
+ * automatically across all 35 daisyUI themes — no per-block
+ * recoloring needed. Family-specific overrides (.cyber-card hover,
+ * .theme-A aspect-4/5) still apply through the className hooks
+ * preserved on the wrapping <Link>.
+ *
+ * Multi-shape product input handled by pickId/pickName/pickPrice/
+ * pickImage helpers (kept verbatim from the v3 incarnation) — the
+ * agent v3 emits camelCase + product_id, older v12 schemas use
+ * id/name/price; both render identically.
+ */
+
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
-// Agent v3 emits camelCase (product_id, titleTh, imageUrl, priceTHB),
-// older v12 schemas use (id, name, price, imageUrl). Accept both shapes
-// so the renderer doesn't blank the title/price when the agent's
-// schema flows through.
 interface Product {
   id?: string;
   product_id?: string;
@@ -26,7 +43,6 @@ interface Product {
 interface OfferGridProps {
   title?: string;
   products?: Product[];
-  // Agent v3 sends `subtitle` for the section description.
   subtitle?: string;
   storeSlug?: string;
   themeColor?: string;
@@ -46,12 +62,19 @@ function pickImage(p: Product): string | undefined {
   return p.imageUrl ?? p.image_url;
 }
 
-export function OfferGridBlock({ title, subtitle, products, storeSlug, themeColor, layoutStyle = "grid" }: OfferGridProps) {
+export function OfferGridBlock({
+  title,
+  subtitle,
+  products,
+  storeSlug,
+  layoutStyle = "grid",
+}: OfferGridProps) {
   if (!products || products.length === 0) return null;
 
-  let wrapperClass = "grid grid-cols-2 md:grid-cols-3 gap-4";
+  let wrapperClass = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
   if (layoutStyle === "carousel") {
-    wrapperClass = "flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 w-full hide-scrollbar";
+    wrapperClass =
+      "flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 w-full hide-scrollbar";
   } else if (layoutStyle === "bento") {
     wrapperClass = "grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3 auto-rows-fr";
   }
@@ -64,123 +87,125 @@ export function OfferGridBlock({ title, subtitle, products, storeSlug, themeColo
         </h3>
       )}
       {subtitle && (
-        <p className="text-sm text-center mb-10 opacity-70">{subtitle}</p>
+        <p className="text-sm text-center mb-10 text-base-content/70">
+          {subtitle}
+        </p>
       )}
       <div className={wrapperClass}>
-
         {products.map((product, i) => {
           const productId = pickId(product);
-          // Card chrome — `cyber-card` is no-op outside .theme-cyber
-          // (CSS in globals.css scopes its hover/border to that ancestor)
-          // so light-theme stores still get the prior look.
-          let itemClass =
-            "group cyber-card rounded-xl overflow-hidden border transition-all flex flex-col";
+          const isBentoHero = layoutStyle === "bento" && i === 0;
 
+          let itemClass =
+            "cyber-card card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-all";
           if (layoutStyle === "carousel") {
             itemClass += " w-[240px] md:w-[280px] shrink-0 snap-center";
-          } else if (layoutStyle === "bento" && i === 0) {
+          } else if (isBentoHero) {
             itemClass += " md:col-span-2 md:row-span-2";
           } else {
             itemClass += " w-full";
           }
 
+          const inner = (
+            <CardContent product={product} isBentoHero={isBentoHero} />
+          );
+
           return productId && storeSlug ? (
             <Link
               key={productId || i}
               href={`/stores/${storeSlug}/products/${productId}`}
-              className={itemClass}
-              style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}
+              className={`${itemClass} group`}
             >
-              <ProductCardContent product={product} themeColor={themeColor} isBentoHero={layoutStyle === "bento" && i === 0} />
+              {inner}
             </Link>
           ) : (
-            <div
-              key={i}
-              className={itemClass}
-              style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}
-            >
-              <ProductCardContent product={product} themeColor={themeColor} isBentoHero={layoutStyle === "bento" && i === 0} />
+            <div key={i} className={itemClass}>
+              {inner}
             </div>
-          )
+          );
         })}
-
       </div>
     </section>
   );
 }
 
-function ProductCardContent({ product, themeColor, isBentoHero }: { product: Product, themeColor?: string, isBentoHero?: boolean }) {
+function CardContent({
+  product,
+  isBentoHero,
+}: {
+  product: Product;
+  isBentoHero?: boolean;
+}) {
   const name = pickName(product);
   const price = pickPrice(product);
   const imageUrl = pickImage(product);
+
   return (
     <>
-      <div
-        className={`relative overflow-hidden ${isBentoHero ? 'aspect-[4/3] md:aspect-auto md:flex-1' : 'aspect-square'}`}
-        style={{ backgroundColor: 'color-mix(in srgb, var(--shop-card) 70%, black)' }}
+      <figure
+        className={`relative overflow-hidden bg-base-200 ${
+          isBentoHero
+            ? "aspect-[4/3] md:aspect-auto md:flex-1"
+            : "aspect-square"
+        }`}
       >
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
             alt={name}
-            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
+            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-xs opacity-60">
+          <div className="w-full h-full flex items-center justify-center text-xs text-base-content/50">
             ไม่มีรูปภาพ
           </div>
         )}
 
-        {/* Bottom gradient overlay — visible only on cyber theme.
-            Helps badge/text pop off photo-heavy cards. */}
+        {/* Cyber-only bottom gradient — hidden on light themes via
+            the global .cyber-only rule. */}
         <div
           className="cyber-only absolute inset-0 pointer-events-none"
           style={{
             backgroundImage:
-              'linear-gradient(to top, var(--shop-card) 0%, transparent 50%)',
+              "linear-gradient(to top, var(--shop-card) 0%, transparent 50%)",
             opacity: 0.6,
           }}
         />
 
         {product.badge && (
-          <span className="cyber-product-badge absolute top-3 left-3 z-10 text-[10px] font-bold px-3 py-1 rounded-full">
-            {/* Default Badge for non-cyber themes */}
-            <Badge className="text-[10px]" variant="destructive">
-              {product.badge}
-            </Badge>
-          </span>
+          <div className="absolute top-3 left-3 badge badge-primary badge-sm font-medium">
+            {product.badge}
+          </div>
         )}
-      </div>
+      </figure>
 
-      <div className={`p-4 flex flex-col flex-grow space-y-3 ${isBentoHero ? 'md:p-6' : ''}`}>
+      <div
+        className={`card-body p-4 flex flex-col flex-grow gap-3 ${
+          isBentoHero ? "md:p-6" : ""
+        }`}
+      >
         <h4
-          className={`font-medium line-clamp-2 transition-colors group-hover:text-[var(--shop-accent)] ${
-            isBentoHero ? 'text-lg md:text-2xl' : 'text-sm'
+          className={`card-title font-medium line-clamp-2 transition-colors group-hover:text-primary ${
+            isBentoHero ? "text-lg md:text-2xl" : "text-sm"
           }`}
         >
           {name}
         </h4>
-        <div className="mt-auto pt-2 flex items-end justify-between">
+        <div className="card-actions justify-between items-end mt-auto pt-2">
           {price !== undefined && (
             <span
-              className={`font-black cyber-gradient-text ${isBentoHero ? 'text-2xl' : 'text-xl'}`}
-              style={{
-                // Non-cyber fallback: solid theme color (cyber theme's
-                // gradient class wins via CSS).
-                color: themeColor || 'var(--shop-primary, #a855f7)',
-              }}
+              className={`font-black cyber-gradient-text text-primary ${
+                isBentoHero ? "text-2xl" : "text-xl"
+              }`}
             >
               ฿{price.toLocaleString("th-TH")}
             </span>
           )}
-          {/* Visual cart icon — pure decoration since card is wrapped
-              in a Link that already navigates to PDP. Lights up on
-              hover with neon glow inside cyber theme. */}
           <span
             aria-hidden="true"
-            className="cyber-cart-bubble w-10 h-10 rounded-full flex items-center justify-center transition-all"
+            className="cyber-cart-bubble btn btn-circle btn-sm btn-ghost"
           >
             <ShoppingCart className="w-4 h-4" />
           </span>
