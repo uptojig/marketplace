@@ -195,17 +195,33 @@ export default async function StorePage({
 
   // ── v12 multi-page schema (legacy) ─────────────────────────
   if (baseStore.landingBlocks && typeof baseStore.landingBlocks === "object" && isV12Schema(baseStore.landingBlocks)) {
-    // Pull the active externalProductId set so the renderer can drop
-    // OfferGrid items / ProductHero blocks that point at products the
-    // operator soft-deleted via the picker. Cheap query — one column,
-    // indexed by storeId.
+    // Single query gives us BOTH the activeProductIds Set (filter
+    // input) AND the fallbackProducts list (substitution material
+    // when an OfferGrid empties because the schema references rows
+    // that no longer exist). Take=12 caps the substitution to
+    // typical OfferGrid size; we don't need the whole catalog here.
     const activeRows = await prisma.product.findMany({
       where: { storeId: baseStore.id, active: true },
-      select: { externalProductId: true },
+      orderBy: { createdAt: "desc" },
+      take: 12,
+      select: {
+        externalProductId: true,
+        title: true,
+        titleTh: true,
+        priceTHB: true,
+        imageUrl: true,
+      },
     });
     const activeProductIds = new Set(
       activeRows.map((r) => r.externalProductId).filter((s): s is string => !!s),
     );
+    const fallbackProducts = activeRows.map((r) => ({
+      externalProductId: r.externalProductId,
+      title: r.title,
+      titleTh: r.titleTh,
+      priceTHB: Number(r.priceTHB),
+      imageUrl: r.imageUrl,
+    }));
     return (
       <MultiPageRenderer
         schema={baseStore.landingBlocks}
@@ -216,6 +232,7 @@ export default async function StorePage({
         // hero image across every page in the schema.
         storeBannerUrl={baseStore.bannerUrl}
         activeProductIds={activeProductIds}
+        fallbackProducts={fallbackProducts}
       />
     );
   }

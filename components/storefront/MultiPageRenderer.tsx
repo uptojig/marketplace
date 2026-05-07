@@ -8,7 +8,10 @@ import { findPageBySlug } from "@/lib/multi-page-migration";
 import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
 import { applyStoreImagesToSchema } from "@/lib/storefront/apply-store-images";
 import { rewriteStoreLinksInSchema } from "@/lib/storefront/rewrite-store-links";
-import { filterInactiveProductsFromSchema } from "@/lib/storefront/filter-inactive-products";
+import {
+  filterInactiveProductsFromSchema,
+  type FallbackProduct,
+} from "@/lib/storefront/filter-inactive-products";
 
 interface MultiPageRendererProps {
   schema: MultiPageShopSchema;
@@ -23,6 +26,12 @@ interface MultiPageRendererProps {
    *  isn't in this set get filtered out so deleted/inactive products
    *  don't render dead cards. Pass null to skip filtering. */
   activeProductIds?: Set<string> | null;
+  /** Pair with `activeProductIds`. When an OfferGrid would empty out
+   *  (every product in the schema has been deleted or replaced), we
+   *  substitute its products[] with these — the store's CURRENT
+   *  active catalog. Keeps the home page useful when the schema is
+   *  stale relative to the catalog. */
+  fallbackProducts?: FallbackProduct[];
 }
 
 /** Safe defaults so components never crash on undefined fields.
@@ -157,7 +166,7 @@ export function safeFooter(
   } as GlobalFooterSchema;
 }
 
-export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeBannerUrl, activeProductIds }: MultiPageRendererProps) {
+export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeBannerUrl, activeProductIds, fallbackProducts }: MultiPageRendererProps) {
   // Schema-level transform pipeline. Each step is pure + idempotent.
   // Order matters: rewrite links FIRST so subsequent passes see
   // correct paths (image overrides don't care, but downstream
@@ -181,9 +190,17 @@ export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeBanne
 
   // 3. Drop OfferGrid items + ProductHero blocks that point at products
   //    the operator deleted or deactivated, so the storefront never
-  //    shows a dead card linking to a 404 PDP.
+  //    shows a dead card linking to a 404 PDP. When fallbackProducts
+  //    is also provided, an OfferGrid that would otherwise empty out
+  //    gets its products[] swapped for the current store catalog so
+  //    the section keeps rendering useful content even if the schema
+  //    is stale.
   if (activeProductIds) {
-    working = filterInactiveProductsFromSchema(working, activeProductIds);
+    working = filterInactiveProductsFromSchema(
+      working,
+      activeProductIds,
+      fallbackProducts,
+    );
   }
 
   const effectiveSchema = working as unknown as MultiPageShopSchema;

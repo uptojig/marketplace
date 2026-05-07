@@ -45,9 +45,33 @@ function pickItemId(item: unknown): string | null {
   return typeof v === "string" ? v : null;
 }
 
+/** Optional fallback: when the schema's OfferGrid would empty out
+ *  (e.g. the agent generated against a product set the operator has
+ *  since fully replaced), substitute the block's products[] with the
+ *  store's CURRENT active catalog so home / about / etc. don't render
+ *  with empty section bodies. Same idea for ProductHero. */
+export interface FallbackProduct {
+  externalProductId: string;
+  title: string;
+  titleTh?: string | null;
+  priceTHB: number;
+  imageUrl?: string | null;
+}
+
+function toItem(p: FallbackProduct): Record<string, unknown> {
+  return {
+    product_id: p.externalProductId,
+    title: p.titleTh ?? p.title,
+    titleTh: p.titleTh ?? p.title,
+    priceTHB: p.priceTHB,
+    imageUrl: p.imageUrl ?? undefined,
+  };
+}
+
 export function filterInactiveProductsFromSchema<T extends Record<string, unknown>>(
   schema: T,
   activeProductIds: Set<string>,
+  fallbackProducts?: FallbackProduct[],
 ): T {
   if (!schema || typeof schema !== "object") return schema;
   const pages = schema.pages as PageLike[] | undefined;
@@ -93,10 +117,31 @@ export function filterInactiveProductsFromSchema<T extends Record<string, unknow
           continue;
         }
         if (filtered.length === 0) {
-          // Whole grid is dead — drop the block. Page section header
-          // would otherwise render with no products under it which
-          // looks like a broken site.
-          pageTouched = true;
+          // Whole grid is dead. Two outcomes depending on whether the
+          // caller passed a fallback:
+          //   - With fallback: substitute current products so the page
+          //     keeps showing inventory. Cap at original list length
+          //     so a 4-up grid stays 4-up (or up to 6 if the original
+          //     was longer than what we have).
+          //   - Without fallback: drop the block — better than a
+          //     section header with nothing under it.
+          if (fallbackProducts && fallbackProducts.length > 0) {
+            pageTouched = true;
+            const cap = Math.min(
+              Math.max(list.length, 4),
+              fallbackProducts.length,
+              12,
+            );
+            const replacement = fallbackProducts.slice(0, cap).map(toItem);
+            const newContent = {
+              ...content,
+              ...(content.products !== undefined ? { products: replacement } : { products: replacement }),
+              ...(content.items !== undefined ? { items: replacement } : {}),
+            };
+            newBlocks.push({ ...block, content: newContent });
+          } else {
+            pageTouched = true;
+          }
           continue;
         }
         pageTouched = true;
@@ -109,12 +154,21 @@ export function filterInactiveProductsFromSchema<T extends Record<string, unknow
         continue;
       }
 
-      // ── ProductHero: drop block if its single product is inactive ──
+      // ── ProductHero: substitute or drop based on fallback ──
       if (PRODUCT_HERO_TYPES.has(blockType)) {
         const content = (block.content ?? {}) as Record<string, unknown>;
         const id = pickItemId(content);
         if (id !== null && !activeProductIds.has(id)) {
-          pageTouched = true;
+          if (fallbackProducts && fallbackProducts.length > 0) {
+            pageTouched = true;
+            const sub = fallbackProducts[0];
+            newBlocks.push({
+              ...block,
+              content: { ...content, ...toItem(sub) },
+            });
+          } else {
+            pageTouched = true;
+          }
           continue;
         }
         newBlocks.push(block);
