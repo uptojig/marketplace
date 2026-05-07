@@ -4,10 +4,19 @@ import { getServerSession } from "next-auth";
 import { ArrowLeft } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ProductForm } from "@/components/dashboard/product-form";
+import { AddProductTabs } from "@/components/dashboard/add-product-tabs";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * /dashboard/store/products/new — unified "add to catalog" page.
+ *
+ * Server component handles auth gating + ownership lookup; the
+ * tabbed UI (catalog browse / URL paste / manual form) is the
+ * <AddProductTabs /> client component below. Kept as a single
+ * entry point so the products-list "เพิ่มสินค้า" CTA always lands
+ * here regardless of which path the operator wants to use.
+ */
 export default async function NewProductPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email)
@@ -20,7 +29,7 @@ export default async function NewProductPage() {
   if (!user?.store) redirect("/");
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <Link
           href="/dashboard/store/products"
@@ -31,11 +40,11 @@ export default async function NewProductPage() {
         </Link>
         <h1 className="mt-2 text-2xl font-semibold">เพิ่มสินค้าใหม่</h1>
         <p className="text-sm text-muted-foreground">
-          กรอกข้อมูลเอง หรือเริ่มจากลิงก์ supplier ก็ได้
+          เลือกจากซัพพลายเออร์ — วาง URL — หรือกรอกเอง
         </p>
       </div>
 
-      <ProductForm mode="create" />
+      <AddProductTabs />
     </div>
   );
 }
