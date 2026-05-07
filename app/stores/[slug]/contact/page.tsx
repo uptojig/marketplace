@@ -43,6 +43,8 @@ export default async function StoreContactPage({
       landingBlocks: true,
       bannerUrl: true,
       slug: true,
+      // Needed by the filterInactiveProductsFromSchema query below.
+      id: true,
     },
   });
   if (!store) notFound();
@@ -57,6 +59,15 @@ export default async function StoreContactPage({
       (p: { slug: string }) => p.slug === "contact"
     );
     if (hasContactPage) {
+      const activeRows = await prisma.product.findMany({
+        where: { storeId: store.id, active: true },
+        select: { externalProductId: true },
+      });
+      const activeProductIds = new Set(
+        activeRows
+          .map((r) => r.externalProductId)
+          .filter((s): s is string => !!s),
+      );
       return (
         <MultiPageRenderer
           schema={store.landingBlocks}
@@ -64,6 +75,7 @@ export default async function StoreContactPage({
           storeSlug={store.slug}
           storeName={store.name}
           storeBannerUrl={store.bannerUrl}
+          activeProductIds={activeProductIds}
         />
       );
     }

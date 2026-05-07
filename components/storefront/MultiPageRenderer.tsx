@@ -7,6 +7,8 @@ import type { MultiPageShopSchema, GlobalHeader as GlobalHeaderSchema, GlobalFoo
 import { findPageBySlug } from "@/lib/multi-page-migration";
 import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
 import { applyStoreImagesToSchema } from "@/lib/storefront/apply-store-images";
+import { rewriteStoreLinksInSchema } from "@/lib/storefront/rewrite-store-links";
+import { filterInactiveProductsFromSchema } from "@/lib/storefront/filter-inactive-products";
 
 interface MultiPageRendererProps {
   schema: MultiPageShopSchema;
@@ -17,6 +19,10 @@ interface MultiPageRendererProps {
    *  replaces any placeholder image URLs the agent emitted in
    *  HeroBanner blocks across every page in the schema. */
   storeBannerUrl?: string | null;
+  /** When provided, OfferGrid / ProductHero items whose product_id
+   *  isn't in this set get filtered out so deleted/inactive products
+   *  don't render dead cards. Pass null to skip filtering. */
+  activeProductIds?: Set<string> | null;
 }
 
 /** Safe defaults so components never crash on undefined fields.
@@ -151,20 +157,36 @@ export function safeFooter(
   } as GlobalFooterSchema;
 }
 
-export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeBannerUrl }: MultiPageRendererProps) {
-  // Swap any placehold.co banner URLs the agent emitted with the
-  // operator's uploaded banner before we look up the page. Pure
-  // function; falls through unchanged when the operator hasn't
-  // uploaded anything yet. Cast through Record<string, unknown> at
-  // the boundary because MultiPageShopSchema is a strict named type
-  // that doesn't carry an index signature; the transform's body
-  // narrows back to its own LikeTypes before touching properties.
-  const effectiveSchema = (storeBannerUrl
-    ? (applyStoreImagesToSchema(
-        schema as unknown as Record<string, unknown>,
-        storeBannerUrl,
-      ) as unknown as MultiPageShopSchema)
-    : schema);
+export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeBannerUrl, activeProductIds }: MultiPageRendererProps) {
+  // Schema-level transform pipeline. Each step is pure + idempotent.
+  // Order matters: rewrite links FIRST so subsequent passes see
+  // correct paths (image overrides don't care, but downstream
+  // tools/inspectors might). All three transforms cast through
+  // Record<string, unknown> at the boundary because
+  // MultiPageShopSchema is a named type without an index signature;
+  // each transform's body narrows back to its own LikeTypes before
+  // touching properties.
+  let working = schema as unknown as Record<string, unknown>;
+
+  // 1. Rewrite agent-emitted relative URLs ("/contact" → "/stores/<slug>/contact")
+  //    so block-rendered <a> tags inside CTA / Banner / CategoryBanner
+  //    don't 404. GlobalHeader / Footer have their own resolveHref so
+  //    this only affects in-page block content.
+  working = rewriteStoreLinksInSchema(working, storeSlug);
+
+  // 2. Swap placehold.co banner URLs with the operator's uploaded image.
+  if (storeBannerUrl) {
+    working = applyStoreImagesToSchema(working, storeBannerUrl);
+  }
+
+  // 3. Drop OfferGrid items + ProductHero blocks that point at products
+  //    the operator deleted or deactivated, so the storefront never
+  //    shows a dead card linking to a 404 PDP.
+  if (activeProductIds) {
+    working = filterInactiveProductsFromSchema(working, activeProductIds);
+  }
+
+  const effectiveSchema = working as unknown as MultiPageShopSchema;
 
   const page = findPageBySlug(effectiveSchema, pageSlug);
 

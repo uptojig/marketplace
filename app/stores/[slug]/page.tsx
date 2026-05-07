@@ -195,6 +195,17 @@ export default async function StorePage({
 
   // ── v12 multi-page schema (legacy) ─────────────────────────
   if (baseStore.landingBlocks && typeof baseStore.landingBlocks === "object" && isV12Schema(baseStore.landingBlocks)) {
+    // Pull the active externalProductId set so the renderer can drop
+    // OfferGrid items / ProductHero blocks that point at products the
+    // operator soft-deleted via the picker. Cheap query — one column,
+    // indexed by storeId.
+    const activeRows = await prisma.product.findMany({
+      where: { storeId: baseStore.id, active: true },
+      select: { externalProductId: true },
+    });
+    const activeProductIds = new Set(
+      activeRows.map((r) => r.externalProductId).filter((s): s is string => !!s),
+    );
     return (
       <MultiPageRenderer
         schema={baseStore.landingBlocks}
@@ -204,6 +215,7 @@ export default async function StorePage({
         // Operator-uploaded banner overrides the agent's placehold.co
         // hero image across every page in the schema.
         storeBannerUrl={baseStore.bannerUrl}
+        activeProductIds={activeProductIds}
       />
     );
   }

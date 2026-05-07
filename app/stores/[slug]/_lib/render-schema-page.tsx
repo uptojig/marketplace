@@ -44,6 +44,19 @@ export async function renderSchemaPage({
       (p: { slug: string }) => p.slug === pageSlug,
     );
     if (hasPage) {
+      // Same active-product filter as the homepage so deleted
+      // product cards don't render on faq / shipping / returns
+      // / privacy / terms (those pages mostly don't carry
+      // OfferGrids, but cheap insurance).
+      const activeRows = await prisma.product.findMany({
+        where: { storeId: store.id, active: true },
+        select: { externalProductId: true },
+      });
+      const activeProductIds = new Set(
+        activeRows
+          .map((r) => r.externalProductId)
+          .filter((s): s is string => !!s),
+      );
       return (
         <MultiPageRenderer
           schema={store.landingBlocks}
@@ -53,6 +66,7 @@ export async function renderSchemaPage({
           // Apply the operator-uploaded banner so faq/shipping/etc.
           // hero panels swap their placeholder image too.
           storeBannerUrl={store.bannerUrl}
+          activeProductIds={activeProductIds}
         />
       );
     }
