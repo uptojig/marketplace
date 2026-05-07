@@ -3,6 +3,7 @@ import { DM_Sans, Noto_Sans_Thai, Prompt, IBM_Plex_Sans_Thai, Inter } from "next
 import "./globals.css";
 import { Providers } from "./providers";
 import { AddToCartModal } from "@/components/shop/AddToCartModal";
+import { ThemeController } from "@/components/theme-controller";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -62,6 +63,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           {children}
           <AddToCartModal />
+          {/* Floating bottom-right palette dropdown — switches the
+              35 daisyUI themes via data-theme on <html>. Persists
+              the choice in localStorage so refreshes keep it. */}
+          <ThemeController />
         </Providers>
       </body>
     </html>
