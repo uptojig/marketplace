@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { waitUntil } from "@vercel/functions";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { translateProductTitlesForStore } from "@/lib/translate-titles";
 
 /**
  * Store-owner-scoped product CRUD. Pairs with /api/store/products/[id]
@@ -147,6 +149,16 @@ export async function POST(req: Request) {
 
     return product;
   });
+
+  // Backfill titleTh for any null rows in the store (idempotent —
+  // skips products that already have titleTh, including the one
+  // we just created if the operator supplied a Thai title manually).
+  // Fire-and-forget so the form save returns instantly.
+  waitUntil(
+    translateProductTitlesForStore(store.id).catch((err) => {
+      console.error("[store/products] titleTh backfill failed:", err);
+    }),
+  );
 
   return NextResponse.json({ id: created.id }, { status: 201 });
 }

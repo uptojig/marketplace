@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { waitUntil } from "@vercel/functions";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { detectSupplierFromUrl, getSupplier } from "@/lib/suppliers/registry";
+import { translateProductTitlesForStore } from "@/lib/translate-titles";
 import type { Supplier } from "@prisma/client";
 
 const previewSchema = z.object({
@@ -131,6 +133,19 @@ export async function POST(req: Request) {
         },
         select: { id: true, title: true },
       });
+    }),
+  );
+
+  // Fire-and-forget Thai title backfill. Imported products land with
+  // English `title` only (suppliers don't ship localized copy that we
+  // trust as marketing-quality). `translateProductTitlesForStore` skips
+  // rows that already have titleTh, so re-importing the same product
+  // doesn't burn extra Claude calls. waitUntil keeps the Vercel
+  // function alive past the response so the translate batches finish
+  // even though the operator's HTTP response already returned.
+  waitUntil(
+    translateProductTitlesForStore(storeId).catch((err) => {
+      console.error("[products/import] titleTh backfill failed:", err);
     }),
   );
 

@@ -6,6 +6,7 @@ import { Plus, Pencil, ExternalLink } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
+import { TranslateTitlesButton } from "@/components/dashboard/translate-titles-button";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,13 @@ export default async function StoreProductsPage() {
     },
   });
 
+  // Drives the "แปลชื่อ TH" button label so the operator sees how
+  // many rows still fall back to English on category/PDP/search.
+  // Skips inactive products — those won't render publicly anyway.
+  const untranslatedCount = await prisma.product.count({
+    where: { storeId: user.store.id, active: true, titleTh: null },
+  });
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -40,7 +48,8 @@ export default async function StoreProductsPage() {
             จัดการสินค้าทั้งหมด — เพิ่ม / แก้ไข / ตั้งราคา / variants
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 flex-wrap items-start gap-2">
+          <TranslateTitlesButton untranslatedCount={untranslatedCount} />
           <a
             href={`/stores/${user.store.slug}`}
             target="_blank"
