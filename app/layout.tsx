@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import { DM_Sans, Noto_Sans_Thai, Prompt, IBM_Plex_Sans_Thai } from "next/font/google";
+import { DM_Sans, Noto_Sans_Thai, Prompt, IBM_Plex_Sans_Thai, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AddToCartModal } from "@/components/shop/AddToCartModal";
+import { cn } from "@/lib/utils";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+
 
 // "Google Sans" itself isn't on Google Fonts; DM Sans is the closest open alternative
 // (designed by Colophon Foundry / Google ATF, similar geometric feel).
@@ -52,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="th"
-      className={`${googleSans.variable} ${prompt.variable} ${ibmPlexThai.variable} ${notoSansThai.variable}`}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>

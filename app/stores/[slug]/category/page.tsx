@@ -378,7 +378,6 @@ function ProductCard({
   product,
   storeSlug,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   product: any;
   storeSlug: string;
 }) {

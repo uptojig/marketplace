@@ -4,13 +4,9 @@
  */
 
 import type { MultiPageShopSchema, GlobalHeader as GlobalHeaderSchema, GlobalFooter as GlobalFooterSchema } from "@/types/multi-page-schema";
-import type { ThemeVariant } from "@/lib/landing/families";
-import { isValidThemeVariant } from "@/lib/landing/families";
 import { findPageBySlug } from "@/lib/multi-page-migration";
 import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
 import { applyStoreImagesToSchema } from "@/lib/storefront/apply-store-images";
-import { GlobalHeader } from "./GlobalHeader";
-import { GlobalFooter } from "./GlobalFooter";
 
 interface MultiPageRendererProps {
   schema: MultiPageShopSchema;
@@ -155,7 +151,7 @@ export function safeFooter(
   } as GlobalFooterSchema;
 }
 
-export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeName, storeBannerUrl }: MultiPageRendererProps) {
+export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeBannerUrl }: MultiPageRendererProps) {
   // Swap any placehold.co banner URLs the agent emitted with the
   // operator's uploaded banner before we look up the page. Pure
   // function; falls through unchanged when the operator hasn't
@@ -170,12 +166,7 @@ export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeName,
       ) as unknown as MultiPageShopSchema)
     : schema);
 
-  const raw = effectiveSchema.designFamily ?? "A";
-  const theme: ThemeVariant = isValidThemeVariant(raw) ? raw : "A";
   const page = findPageBySlug(effectiveSchema, pageSlug);
-
-  const header = safeHeader(schema.globalHeader, storeSlug, storeName);
-  const footer = safeFooter(schema.globalFooter, storeName);
 
   if (!page) {
     return (
@@ -195,8 +186,6 @@ export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeName,
     type: b.blockType ?? b.type ?? "",
     props: b.content ?? {},
   }));
-
-  const primaryColor = typeof schema.designFamily === 'string' ? undefined : undefined; // we rely on the layout's --shop-primary variable!
 
   return (
     <main className="flex-1">
