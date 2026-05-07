@@ -18,10 +18,9 @@ export default async function StoreProductsPage() {
     where: { email: session.user.email },
     include: { store: true },
   });
-  // No self-service store creation anymore — /onboarding was removed.
-  // A signed-in user without a store has nothing to manage here, so
-  // bump them back to the homepage. Admin can provision stores via
-  // /admin/stores/new and assign ownership.
+  // Signed-in user without a store has nothing to manage here.
+  // Admins provision stores via /admin/stores/new and assign
+  // ownership; bump anyone else back to the homepage.
   if (!user?.store) redirect("/");
 
   const products = await prisma.product.findMany({

@@ -22,10 +22,6 @@ export default function MarketplaceLayout({
             <Link href="/" className="hover:underline">
               ค้นพบร้านค้า
             </Link>
-            {/* "เปิดร้าน" link removed — public self-service /onboarding
-                was deprecated; admins now provision stores via
-                /admin/stores/new (2-step wizard). Vendors who already
-                have a store land on /dashboard from the link below. */}
             <Link href="/dashboard" className="hover:underline">
               จัดการร้าน
             </Link>

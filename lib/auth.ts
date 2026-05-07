@@ -15,7 +15,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       // Safe with Google: emails are verified by Google itself.
-      // Lets users created via cookie-onboarding upgrade to Google sign-in.
+      // Lets pre-existing User rows (e.g. seeded admin accounts) link
+      // to a Google sign-in on first login without erroring.
       allowDangerousEmailAccountLinking: true,
     }),
   );

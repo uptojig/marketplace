@@ -4,7 +4,6 @@ import { waitUntil } from "@vercel/functions";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 import { detectSupplierFromUrl, getSupplier } from "@/lib/suppliers/registry";
 import { translateProductTitlesForStore } from "@/lib/translate-titles";
 import type { Supplier } from "@prisma/client";
@@ -93,47 +92,38 @@ export async function POST(req: Request) {
 
   // SAVE: resolve target store. Order:
   //   1. Admin override — body.storeId honoured ONLY if the caller is
-  //      a verified ADMIN role. This lets /admin/stores/[id]/products
-  //      add into stores that aren't owned by the admin's own user.
-  //   2. Cookie session user (legacy /onboarding callers — flow itself
-  //      is gone but the cookie helper still serves admin scripts).
-  //   3. NextAuth session → user.store.
-  //   4. First store in DB (single-store dev fallback).
+  //      a verified ADMIN role. Lets /admin/stores/[id]/products add
+  //      into stores that aren't owned by the admin's own user.
+  //   2. NextAuth session → user.store (the owner-flow path).
+  //   3. First store in DB (single-store dev fallback).
+  //
+  // The cookie-session path that used to sit between (1) and (2) was
+  // an /onboarding leftover; that flow is gone (commit 59c7c90) and
+  // the cookie was never set anywhere else, so it always resolved
+  // null and just slowed every save by one extra Prisma roundtrip.
   let storeId: string | null = null;
+  const session = await getServerSession(authOptions).catch(() => null);
 
-  if (parsed.data.storeId) {
-    const session = await getServerSession(authOptions).catch(() => null);
-    if (session?.user?.email) {
-      const me = await prisma.user.findUnique({
-        where: { email: session.user.email },
-        select: { role: true },
+  if (parsed.data.storeId && session?.user?.email) {
+    const me = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { role: true },
+    });
+    if (me?.role === "ADMIN") {
+      const target = await prisma.store.findUnique({
+        where: { id: parsed.data.storeId },
+        select: { id: true },
       });
-      if (me?.role === "ADMIN") {
-        const target = await prisma.store.findUnique({
-          where: { id: parsed.data.storeId },
-          select: { id: true },
-        });
-        if (target) storeId = target.id;
-      }
+      if (target) storeId = target.id;
     }
   }
 
-  if (!storeId) {
-    const cookieUserId = getCurrentUserId();
-    if (cookieUserId) {
-      const store = await prisma.store.findUnique({ where: { ownerId: cookieUserId } });
-      storeId = store?.id ?? null;
-    }
-  }
-  if (!storeId) {
-    const session = await getServerSession(authOptions).catch(() => null);
-    if (session?.user?.email) {
-      const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
-        include: { store: true },
-      });
-      storeId = user?.store?.id ?? null;
-    }
+  if (!storeId && session?.user?.email) {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { store: true },
+    });
+    storeId = user?.store?.id ?? null;
   }
   if (!storeId) {
     const fallback = await prisma.store.findFirst();
