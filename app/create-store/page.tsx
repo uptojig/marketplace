@@ -2,45 +2,16 @@
 
 import { useState } from "react";
 import { Loader2, Send } from "lucide-react";
-import { BlockRenderer } from "@/components/BlockRenderer";
-import { Button } from "@/components/ui/button";
-import type { AgentEvent, GeneratedPageSchema } from "@/lib/agent-service";
+import { generateStorefront } from "./actions";
+import { COMPONENT_REGISTRY } from "@/components/BlockRegistry";
+import type { PageData, BlockType } from "@/lib/landing-schema";
 
-interface ProgressLine {
-  label: string;
-  detail?: string;
-}
-
-function eventToProgress(event: AgentEvent): ProgressLine | null {
-  switch (event.type) {
-    case "_session":
-      return { label: "เริ่ม session", detail: (event as { id: string }).id };
-    case "_schema":
-      return { label: "ได้ schema สำเร็จ ✓" };
-    case "_done":
-      return { label: "เสร็จสิ้น" };
-    case "_error":
-      return {
-        label: "เกิดข้อผิดพลาด",
-        detail: (event as { message?: string }).message,
-      };
-    case "agent.message_text":
-      return { label: "agent กำลังคิด..." };
-    case "agent.custom_tool_use":
-      return {
-        label: `เรียก tool: ${(event as { tool_name?: string; name?: string }).tool_name ?? (event as { name?: string }).name ?? "?"}`,
-      };
-    default:
-      return null;
-  }
-}
 
 export default function CreateStorePage() {
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
   const [running, setRunning] = useState(false);
-  const [progress, setProgress] = useState<ProgressLine[]>([]);
-  const [schema, setSchema] = useState<GeneratedPageSchema | null>(null);
+  const [schema, setSchema] = useState<PageData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -48,56 +19,14 @@ export default function CreateStorePage() {
     if (!prompt.trim() || running) return;
 
     setRunning(true);
-    setProgress([]);
     setSchema(null);
     setError(null);
 
     try {
-      const res = await fetch("/api/agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: prompt.trim(),
-          ...(title.trim() ? { title: title.trim() } : {}),
-        }),
-      });
-
-      if (!res.ok || !res.body) {
-        const text = await res.text().catch(() => "");
-        setError(text || `HTTP ${res.status}`);
-        return;
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const lines = buf.split("\n");
-        buf = lines.pop() ?? "";
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-          let evt: AgentEvent;
-          try {
-            evt = JSON.parse(trimmed) as AgentEvent;
-          } catch {
-            continue;
-          }
-          if (evt.type === "_schema") {
-            setSchema((evt as { schema: GeneratedPageSchema }).schema);
-          } else if (evt.type === "_error") {
-            setError((evt as { message?: string }).message ?? "stream error");
-          }
-          const p = eventToProgress(evt);
-          if (p) setProgress((prev) => [...prev, p]);
-        }
-      }
+      const data = await generateStorefront(prompt.trim());
+      setSchema(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "request failed");
+      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการสร้างหน้าร้าน");
     } finally {
       setRunning(false);
     }
@@ -139,32 +68,18 @@ export default function CreateStorePage() {
             disabled={running}
           />
         </div>
-        <Button type="submit" disabled={running || !prompt.trim()}>
+        <button type="submit" disabled={running || !prompt.trim()} className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2">
           {running ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> กำลังสร้าง...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> กำลังสร้าง (อาจใช้เวลา 20-30 วินาที)...
             </>
           ) : (
             <>
-              <Send className="mr-2 h-4 w-4" /> สร้าง
+              <Send className="mr-2 h-4 w-4" /> สร้างหน้าร้าน
             </>
           )}
-        </Button>
+        </button>
       </form>
-
-      {progress.length > 0 && (
-        <div className="rounded-lg border bg-white p-4 text-xs">
-          <p className="mb-2 font-semibold">ความคืบหน้า</p>
-          <ul className="space-y-1 text-gray-700">
-            {progress.map((p, i) => (
-              <li key={i} className="font-mono">
-                <span className="text-gray-500">{i + 1}.</span> {p.label}
-                {p.detail && <span className="text-gray-400"> — {p.detail}</span>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {error && (
         <div className="rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-700">
@@ -178,19 +93,17 @@ export default function CreateStorePage() {
             <div>
               <h2 className="text-lg font-semibold">Preview</h2>
               <p className="text-xs text-muted-foreground">
-                {schema.title} • family: <code>{schema.designFamily ?? schema.themeVariant ?? "?"}</code> • {schema.blocks.length} blocks
+                {schema.title} • family: <code>{schema.designFamily ?? "?"}</code> • {schema.blocks.length} blocks
               </p>
             </div>
           </div>
-          <div className="rounded-lg border bg-white p-4">
-            <BlockRenderer schema={schema} />
+          <div className="rounded-lg border bg-zinc-50 overflow-hidden shadow-sm" style={schema.themeColor ? { "--primary": schema.themeColor } as React.CSSProperties : {}}>
+            {schema.blocks.map((block, index) => {
+              const Component = COMPONENT_REGISTRY[block.type as BlockType];
+              if (!Component) return null;
+              return <Component key={index} {...block.props} />;
+            })}
           </div>
-          {schema.reasoning && (
-            <details className="rounded-md border bg-gray-50 p-3 text-xs">
-              <summary className="cursor-pointer font-medium">เหตุผลของ agent</summary>
-              <p className="mt-2 whitespace-pre-line text-gray-700">{schema.reasoning}</p>
-            </details>
-          )}
         </section>
       )}
     </div>

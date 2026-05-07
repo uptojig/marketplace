@@ -3,6 +3,15 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductDetail } from "@/components/shop/ProductDetail";
 import { cleanDescription } from "@/lib/format/cleanDescription";
+import { GlobalHeader } from "@/components/storefront/GlobalHeader";
+import { GlobalFooter } from "@/components/storefront/GlobalFooter";
+import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
+import {
+  RecentlyViewedRail,
+  RecentlyViewedTracker,
+} from "@/components/storefront/RecentlyViewed";
+import { isV12Schema } from "@/lib/multi-page-migration";
+import { resolveFamily, type ThemeVariant } from "@/lib/landing/families";
 
 export const dynamic = "force-dynamic";
 
@@ -34,23 +43,54 @@ export default async function ShopProductPage({
     orderBy: { createdAt: "desc" },
   });
 
+  const store = product.store;
+  const blocksData = store.landingBlocks as any;
+  const isAiMultiPage =
+    blocksData &&
+    typeof blocksData === "object" &&
+    (isV12Schema(blocksData) ||
+      (blocksData.globalHeader && Array.isArray(blocksData.pages)) ||
+      blocksData.type === "block_registry_v1");
+  const themeVal = (store.landingThemeVariant as ThemeVariant) || "A";
+
+  const family = resolveFamily(blocksData?.designFamily || store.landingThemeVariant);
+  const primaryColor = isAiMultiPage ? (family?.themeColor ?? store.primaryColor ?? "#008BF8") : (store.primaryColor ?? "#2563eb");
+
   return (
-    <div className="container mx-auto max-w-[1200px] space-y-6 px-4 py-6">
-      <Link href={`/stores/${params.slug}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline">
-        ← กลับ
-      </Link>
+    <div className="flex min-h-screen flex-col">
+
+      <main className="flex-1">
+        <div className="container mx-auto max-w-[1200px] space-y-6 px-4 py-6">
+          <Breadcrumbs
+            items={[
+              { label: "หน้าแรก", href: `/stores/${params.slug}` },
+              ...(product.categoryName
+                ? [{ label: product.categoryName, href: `/stores/${params.slug}/category?cat=${encodeURIComponent(product.categoryName)}` }]
+                : [{ label: "สินค้าทั้งหมด", href: `/stores/${params.slug}/category` }]),
+              { label: product.titleTh ?? product.title },
+            ]}
+          />
+          {/* Mobile back link (Breadcrumbs hidden on mobile to save space) */}
+          <Link href={`/stores/${params.slug}`} className="sm:hidden inline-flex items-center gap-1 text-sm hover:underline" style={{ color: 'var(--shop-ink-muted)' }}>
+            ← กลับ
+          </Link>
 
       <ProductDetail
         product={{
           id: product.id,
           title: product.titleTh ?? product.title,
+          // Subtitle = category collection (matches reference's
+          // "Balenciaga Fall Collection" position above the title)
+          subtitle: product.categoryName ?? product.store.name,
           description: cleanDescription(product.descriptionTh ?? product.description),
           priceTHB: Number(product.priceTHB),
           imageUrl: product.imageUrl ?? undefined,
           images,
           storeName: product.store.name,
           storeSlug: product.store.slug,
-          storePrimaryColor: product.store.primaryColor ?? "#2563eb",
+          storePrimaryColor: primaryColor,
+          // Supplier SKU exposed in the meta strip
+          productCode: product.externalProductId,
           variants: product.variants.map((v) => ({
             id: v.id,
             externalVariantId: v.externalVariantId,
@@ -62,9 +102,24 @@ export default async function ShopProductPage({
         }}
       />
 
+      <RecentlyViewedTracker
+        storeSlug={params.slug}
+        product={{
+          id: product.id,
+          title: product.titleTh ?? product.title,
+          priceTHB: Number(product.priceTHB),
+          imageUrl: product.imageUrl ?? null,
+        }}
+      />
+
+      <RecentlyViewedRail
+        storeSlug={params.slug}
+        excludeIds={[product.id]}
+      />
+
       {related.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">สินค้าที่เกี่ยวข้อง</h2>
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--shop-ink)' }}>สินค้าที่เกี่ยวข้อง</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
             {related.map((r) => (
               <Link
@@ -73,7 +128,7 @@ export default async function ShopProductPage({
                 className="group overflow-hidden rounded-lg border"
                 style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}
               >
-                <div className="aspect-square overflow-hidden bg-muted">
+                <div className="aspect-square overflow-hidden" style={{ backgroundColor: 'var(--shop-bg)' }}>
                   {r.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -83,15 +138,17 @@ export default async function ShopProductPage({
                     />
                   )}
                 </div>
-                <div className="p-2">
-                  <div className="line-clamp-2 text-xs">{r.titleTh ?? r.title}</div>
-                  <div className="text-xs font-semibold">฿ {Number(r.priceTHB).toLocaleString("th-TH")}</div>
+                <div className="p-3">
+                  <div className="line-clamp-2 text-sm font-medium" style={{ color: 'var(--shop-ink, #1c1917)' }}>{r.titleTh ?? r.title}</div>
+                  <div className="text-sm font-semibold mt-1" style={{ color: "var(--shop-primary)" }}>฿ {Number(r.priceTHB).toLocaleString("th-TH")}</div>
                 </div>
               </Link>
             ))}
           </div>
         </section>
       )}
+        </div>
+      </main>
     </div>
   );
 }

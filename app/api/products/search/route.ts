@@ -43,17 +43,21 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") ?? "").trim();
-  const rawLimit = parseInt(searchParams.get("limit") ?? "10", 10);
+  // Pagination + page size. CJ caps pageSize at 50; expose pagination to
+  // the admin product picker so operators can browse the full catalog
+  // (not just the first 20 hits) toward the 50-product target.
+  const rawLimit = parseInt(searchParams.get("limit") ?? "20", 10);
   const limit = Number.isFinite(rawLimit)
-    ? Math.min(20, Math.max(1, rawLimit))
-    : 10;
+    ? Math.min(50, Math.max(1, rawLimit))
+    : 20;
+  const rawPage = parseInt(searchParams.get("page") ?? "1", 10);
+  const page = Number.isFinite(rawPage) ? Math.max(1, rawPage) : 1;
+  const category = searchParams.get("category")?.trim() || undefined;
 
-  if (!q) {
-    return NextResponse.json(
-      { error: "missing_q", detail: "Pass ?q=<keyword>" },
-      { status: 400 },
-    );
-  }
+  // q is now optional. Empty q + no category → CJ returns the global
+  // popular catalog (default newest/popular order), which is what the
+  // admin picker uses for "browse mode" before the operator types
+  // anything specific.
 
   // Margin policy — env-tunable so ops can change pricing without a deploy.
   // Default 1.5 (50% retail markup over CJ cost-in-THB).
@@ -65,13 +69,14 @@ export async function GET(req: Request) {
   const returnDays = parseInt(process.env.RETURN_DAYS ?? "7", 10);
 
   try {
-    const page = await cjAdapter.listCatalog({
-      search: q,
+    const result = await cjAdapter.listCatalog({
+      search: q || undefined,
+      category,
       pageSize: limit,
-      page: 1,
+      page,
     });
 
-    const products = page.items.slice(0, limit).map((p) => {
+    const products = result.items.map((p) => {
       // listCatalog yields cost-only THB (USD * fx). Add retail markup on top.
       const priceTHB = Math.ceil(p.priceTHB * margin);
       // CJ list response stashed in `raw` — pull through fields the
@@ -105,7 +110,18 @@ export async function GET(req: Request) {
       };
     });
 
-    return NextResponse.json({ products }, { status: 200 });
+    return NextResponse.json(
+      {
+        products,
+        // Pagination metadata so clients (admin picker) can render
+        // "ก่อนหน้า / ถัดไป" without re-deriving from `total` themselves.
+        page: result.page,
+        pageSize: result.pageSize,
+        total: result.total,
+        hasMore: result.hasMore,
+      },
+      { status: 200 },
+    );
   } catch (err) {
     console.error("Mothership CJ search failed:", err);
     return NextResponse.json(

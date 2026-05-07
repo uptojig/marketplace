@@ -76,9 +76,16 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   if (!store) {
     return NextResponse.json({ error: "Store not found" }, { status: 404 });
   }
-  const blockCount = Array.isArray(store.landingBlocks)
-    ? (store.landingBlocks as unknown[]).length
-    : 0;
+  const lb = store.landingBlocks as any;
+  const blockCount = Array.isArray(lb)
+    ? lb.length
+    : lb && typeof lb === "object" && lb.type === "block_registry_v1"
+      ? Array.isArray(lb.blocks)
+        ? lb.blocks.length
+        : 0
+      : lb && typeof lb === "object" && Array.isArray(lb.pages)
+        ? lb.pages.reduce((sum: number, p: any) => sum + (Array.isArray(p.blocks) ? p.blocks.length : 0), 0)
+        : 0;
   return NextResponse.json({
     id: store.id,
     slug: store.slug,

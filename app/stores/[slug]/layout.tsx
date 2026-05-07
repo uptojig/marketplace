@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   Search,
@@ -19,6 +21,10 @@ import { formatStoreAddressLines } from "@/lib/format/storeAddress";
 import { resolveFamily } from "@/lib/landing/families";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
+import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
+import { GlobalHeader } from "@/components/storefront/GlobalHeader";
+import { GlobalFooter } from "@/components/storefront/GlobalFooter";
+import { safeHeader, safeFooter } from "@/components/storefront/MultiPageRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -32,10 +38,130 @@ export default async function ShopLayout({
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
 
-  // HTML or v12 stores render their own header/footer.
-  // Skip the marketplace layout chrome to avoid double nav/footer.
-  if (store.landingBlocks && (isHtmlSchema(store.landingBlocks) || (typeof store.landingBlocks === "object" && isV12Schema(store.landingBlocks)))) {
+  // Approval gate. Must run BEFORE the HTML/v12 short-circuit so
+  // non-approved stores can't bypass via that path either.
+  //
+  // Visibility matrix:
+  //   APPROVED  → everyone
+  //   PENDING / REJECTED / SUSPENDED:
+  //     - ADMIN          → full preview
+  //     - store owner    → full preview (so they can QA before approval)
+  //     - everyone else  → friendly "รอตรวจสอบ" page (NOT bare 404 — old
+  //                        behaviour was a debugging dead-end where
+  //                        owners thought the store was broken)
+  if (store.approvalStatus !== "APPROVED") {
+    const session = await getServerSession(authOptions);
+    const viewer = session?.user?.email
+      ? await prisma.user.findUnique({
+          where: { email: session.user.email },
+          select: { id: true, role: true },
+        })
+      : null;
+    const isAdmin = viewer?.role === "ADMIN";
+    const isOwner = !!viewer && viewer.id === store.ownerId;
+    if (!isAdmin && !isOwner) {
+      const labelByStatus: Record<string, string> = {
+        PENDING: "ร้านนี้กำลังรอตรวจสอบโดยทีมงาน",
+        REJECTED: "ร้านนี้ยังไม่ผ่านการตรวจสอบ",
+        SUSPENDED: "ร้านนี้ถูกระงับชั่วคราว",
+      };
+      return (
+        <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-stone-50 px-6 text-center">
+          <div className="rounded-full bg-amber-100 p-4 text-3xl">⏳</div>
+          <h1 className="text-2xl font-bold text-stone-900">{store.name}</h1>
+          <p className="max-w-md text-sm text-stone-600">
+            {labelByStatus[store.approvalStatus] ?? "ร้านนี้ยังไม่เปิดให้ดูสาธารณะ"}
+            <br />
+            กรุณากลับมาใหม่อีกครั้งหลังจากร้านได้รับการอนุมัติ
+          </p>
+          <Link
+            href="/"
+            className="rounded-md border bg-white px-4 py-2 text-sm hover:bg-stone-50"
+          >
+            ← กลับหน้าหลัก
+          </Link>
+        </div>
+      );
+    }
+  }
+
+  // 🟢 โค้ดใหม่ที่ปรับปรุงแล้ว
+  const blocksData = store.landingBlocks as any;
+
+  // 1. ตรวจสอบว่าเป็นเว็บที่ใช้ AI Multi-page หรือไม่
+  // (ถ้าระบบ v12Schema เช็คไม่เจอ ให้เช็คสำรองจากโครงสร้าง globalHeader และ pages ที่เราเจนมา)
+  const isAiMultiPage =
+    blocksData &&
+    typeof blocksData === "object" &&
+    (isV12Schema(blocksData) ||
+      (blocksData.globalHeader && Array.isArray(blocksData.pages)) ||
+      blocksData.type === "block_registry_v1");
+
+  // 2. ถ้าเป็น HTML เดิม ให้ Return {children} แบบเพียวๆ ทันที (HtmlRenderer จัดการ header/footer ให้แล้ว)
+  if (blocksData && isHtmlSchema(blocksData)) {
     return <>{children}</>;
+  }
+
+  // 2b. React templates ก็มี nav/footer ในตัวเอง → render แบบไม่ wrap chrome
+  if (blocksData && isReactTemplateSchema(blocksData)) {
+    return <>{children}</>;
+  }
+
+  // 3. ถ้าเป็น AI Multi-page ให้ครอบด้วย GlobalHeader และ GlobalFooter สำหรับทุกหน้าในร้าน!
+  if (isAiMultiPage) {
+    // Pass store.logoUrl as override — agent emits a placehold.co
+    // URL by default; once the operator uploads a real logo via
+    // /admin/stores/<id>, that takes precedence on every page.
+    const header = safeHeader(
+      blocksData.globalHeader,
+      store.slug,
+      store.name,
+      store.logoUrl,
+    );
+    const footer = safeFooter(blocksData.globalFooter, store.name, store.logoUrl);
+    const family = resolveFamily(blocksData.designFamily || store.landingThemeVariant);
+    const primary = family?.themeColor ?? store.primaryColor ?? "#008BF8";
+    const theme = (blocksData.designFamily || "A") as any;
+    const bgHex = family?.bgHex ?? (theme === "cute" || theme === "I" ? "#fdf2f8" : "#faf7f2");
+    const textHex = family?.textHex ?? "#1a1a2e";
+    const cardHex = family?.cardHex ?? "#ffffff";
+    // Family E exposes a second accent (cyan) for the cyberpunk
+    // purple→cyan gradients. Other families fall back to mixing the
+    // primary, so existing themes look unchanged.
+    const accentHex =
+      (family as { accentHex?: string } | undefined)?.accentHex ?? primary;
+
+    const fontClass = family?.fontClass ?? "font-sans";
+
+    // theme-* class flags expose family-specific styling (typography,
+    // button shape, glows, gradients) to the storefront CSS layer
+    // without touching every block component. We always emit a
+    // `theme-{LETTER}` class for the design family A-I; Family E
+    // additionally gets `theme-cyber` as a back-compat alias since
+    // older CSS targets that name. Per-family rules live in
+    // app/globals.css under "Family-aware design system".
+    const themeClass = `theme-${theme}${theme === "E" ? " theme-cyber" : ""}`;
+
+    return (
+      <div
+        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClass}`.trim()}
+        style={{
+          ["--shop-primary" as string]: primary,
+          ["--shop-accent" as string]: accentHex,
+          ["--shop-bg" as string]: bgHex,
+          ["--shop-ink" as string]: textHex,
+          ["--shop-ink-muted" as string]: "color-mix(in srgb, var(--shop-ink) 60%, transparent)",
+          ["--shop-card" as string]: cardHex,
+          ["--shop-border" as string]: "color-mix(in srgb, var(--shop-ink) 15%, transparent)",
+        } as React.CSSProperties}
+      >
+        <GlobalHeader content={header} theme={theme} storeSlug={store.slug} />
+        <main className="flex-1">{children}</main>
+        {footer && <GlobalFooter content={footer} theme={theme} storeSlug={store.slug} />}
+        <CookiesBar />
+        <ShopFloatingButtons primaryColor={primary} />
+      </div>
+    );
   }
 
   // Primary accent precedence:

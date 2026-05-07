@@ -16,7 +16,7 @@ export default async function StoreSettingsPage() {
     include: { store: true },
   });
 
-  if (!user?.store) redirect("/onboarding");
+  if (!user?.store) redirect("/");
 
   const { store } = user;
 

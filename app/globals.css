@@ -1,47 +1,236 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4 — single import replaces v3's @tailwind base/components/utilities. */
+@import "tailwindcss";
+
+/* Existing shadcn + tw-animate-css imports — both already use
+   v4-compatible syntax (@theme inline / @custom-variant). */
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* daisyUI 5 plugin — `themes: all` enables all 35 built-in themes
+   so the storefront can switch via <input class="theme-controller"
+   value="..."> on any page. Cost: ~30KB extra CSS shipped to the
+   client; can be narrowed to a subset later via
+   `themes: light --default, dark --prefersdark, fantasy, ...`. */
+@plugin "daisyui" {
+  themes: all;
+}
+
+/* Custom marketplace-fantasy theme — operator-tweaked variant of
+   the built-in `fantasy` palette (pink primary, cyan secondary,
+   orange accent, slate neutral). Marked `default: true` so it wins
+   over the shipped `light` theme as the marketplace-wide fallback
+   when no explicit data-theme is set. Operators / end-users can
+   still override per page via the theme-controller dropdown. */
+@plugin "daisyui/theme" {
+  name: "marketplace-fantasy";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(93% 0 0);
+  --color-base-300: oklch(86% 0 0);
+  --color-base-content: oklch(27.807% 0.029 256.847);
+  --color-primary: oklch(37.45% 0.189 325.02);
+  --color-primary-content: oklch(87.49% 0.037 325.02);
+  --color-secondary: oklch(53.92% 0.162 241.36);
+  --color-secondary-content: oklch(90.784% 0.032 241.36);
+  --color-accent: oklch(75.98% 0.204 56.72);
+  --color-accent-content: oklch(15.196% 0.04 56.72);
+  --color-neutral: oklch(27.807% 0.029 256.847);
+  --color-neutral-content: oklch(85.561% 0.005 256.847);
+  --color-info: oklch(72.06% 0.191 231.6);
+  --color-info-content: oklch(0% 0 0);
+  --color-success: oklch(64.8% 0.15 160);
+  --color-success-content: oklch(0% 0 0);
+  --color-warning: oklch(84.71% 0.199 83.87);
+  --color-warning-content: oklch(0% 0 0);
+  --color-error: oklch(71.76% 0.221 22.18);
+  --color-error-content: oklch(0% 0 0);
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+/* tailwindcss-animate replaced by tw-animate-css (already imported
+   above); the v4 plugin form is just `@plugin` — kept here in case
+   any block components still reference its `animate-*` utilities. */
+@plugin "tailwindcss-animate";
+
+/* darkMode strategy — was `darkMode: "class"` in the old JS config.
+   v4 expects this as a CSS custom-variant. The selector matches
+   anything inside an ancestor with the `dark` class so existing
+   shadcn dark-variant utilities ("dark:bg-card", etc.) keep working. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind v4 CSS-first theme config. Replaces tailwind.config.ts —
+   tokens here become first-class utility classes (e.g. --color-border
+   → bg-border / text-border / border-border). Wrapping in `inline`
+   keeps the values as-is rather than pre-resolving the var() chain;
+   that matters for the shadcn HSL bridge below where the actual
+   color comes from runtime CSS vars (--background, --primary, etc.)
+   defined in :root / .dark blocks further down this file. */
+@theme inline {
+  /* Container — v3 config had `center: true, padding: 1rem`,
+     `screens: { "2xl": "1280px" }`. Implemented manually below
+     in @layer components since v4 doesn't expose all container
+     knobs through @theme. */
+
+  /* Body font stack — Prompt (Thai) → DM Sans (Latin) → Noto Thai
+     fallback. Matches the loaded next/font variables in
+     app/layout.tsx. */
+  --font-sans: var(--font-prompt), var(--font-google-sans),
+    var(--font-noto-thai), system-ui, sans-serif;
+
+  /* shadcn HSL color bridge. Each token reads its hue/sat/light
+     from a CSS var defined in :root/.dark — that's what lets the
+     shadcn theme tokens (foreground, primary, muted, ring, etc.)
+     swap between light + dark via the `class="dark"` toggle. */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  /* Radius scale — driven by the runtime --radius var so theme
+     swaps (e.g. shadcn presets) ripple through every rounded-* class. */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* Container — replicates the old v3 theme.container config
+   (center + 1rem padding + 1280px cap at 2xl). */
+@layer components {
+  .container {
+    margin-inline: auto;
+    padding-inline: 1rem;
+    width: 100%;
+  }
+  @media (min-width: 1536px) {
+    .container {
+      max-width: 1280px;
+    }
+  }
+}
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --primary: 222 47% 11%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: 0 0% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 47% 11%;
-    --radius: 0.5rem;
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --radius: 0.625rem;
 
     /* ── Shop brand tokens ──
        --shop-primary is set by store layout (resolveFamily → themeColor).
        These derived tokens give every store page a consistent look
        without hardcoding hex values in components. */
     --shop-primary: #008BF8;
+    --shop-accent: #008BF8; /* second-accent slot — Family E uses cyan,
+                               others mirror primary so gradient utility
+                               classes still work without breaking. */
     --shop-bg: #f5f6f8;
     --shop-card: #ffffff;
     --shop-ink: #1a1a2e;
     --shop-ink-muted: #6b7280;
     --shop-border: #e5e7eb;
     --shop-radius: 0.75rem;
-    --shop-font: var(--font-google-sans), var(--font-noto-thai), system-ui, sans-serif;
+    --shop-font: var(--font-prompt), var(--font-google-sans), var(--font-noto-thai), system-ui, sans-serif;
+    --shop-font-display: var(--font-ibm-thai), var(--font-prompt), var(--font-google-sans), system-ui, sans-serif;
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
   }
 
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: var(--font-sans);
+  }
+  .dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+  html {
+    @apply font-sans;
   }
 }
 
@@ -189,3 +378,939 @@
   }
 }
 
+/* ── Cyberpunk theme (Family E only) ───────────────────────────
+   Activated when `app/stores/[slug]/layout.tsx` adds the
+   `theme-cyber` class to the .shop-page wrapper. These rules
+   override the default tokens and add neon glow / grid bg / gradient
+   utilities so blocks rendered inside this scope automatically pick
+   up the cyberpunk look without each block hardcoding it. */
+
+.theme-cyber {
+  /* Override token slots so even .shop-card / .shop-input / etc. get
+     the dark treatment for free. The hex values mirror Family E's
+     entry in lib/landing/families.ts so SSR + client agree. */
+  --shop-bg: #020617; /* slate-950 */
+  --shop-card: #0f172a; /* slate-900 */
+  --shop-ink: #e2e8f0; /* slate-200 */
+  --shop-ink-muted: #94a3b8; /* slate-400 */
+  --shop-border: rgba(76, 29, 149, 0.4); /* purple-900 / 40% */
+  /* Glow shadows used by .cyber-glow-* utilities — exposed as vars
+     so component code can reference them via Tailwind's [var(...)]
+     arbitrary-value syntax without re-declaring rgba constants. */
+  --cyber-glow-primary: 0 0 20px rgba(124, 58, 237, 0.5);
+  --cyber-glow-accent: 0 0 18px rgba(6, 182, 212, 0.45);
+}
+
+/* The whole storefront page renders dark when this class is present —
+   even bg-white tailwind classes inside blocks need to fall back to
+   the slate card so headings stay visible. We don't blanket-override
+   bg-white because too many blocks use it for SVG/img wrappers; we
+   instead intervene at the page-level surfaces operators see most. */
+.theme-cyber section,
+.theme-cyber [class*="rounded-"][class*="bg-white"] {
+  /* Only neutralize blank-white wrappers, not branded panels which
+     usually carry their own bg-* alongside the radius. */
+  background-color: transparent;
+}
+
+/* Brand gradient text — used in headings, prices, hero copy. */
+.theme-cyber .cyber-gradient-text,
+.cyber-gradient-text {
+  background-image: linear-gradient(
+    90deg,
+    var(--shop-primary, #7c3aed),
+    var(--shop-accent, #06b6d4)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Neon glow halos for primary/accent CTAs and badges. */
+.cyber-glow-primary {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+}
+.cyber-glow-primary:hover {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.8);
+}
+.cyber-glow-accent {
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.45);
+}
+.cyber-glow-accent:hover {
+  box-shadow: 0 0 28px rgba(6, 182, 212, 0.7);
+}
+
+/* Subtle purple grid backdrop for hero sections. The mask fades the
+   grid out toward the edges so it doesn't fight with content. */
+.cyber-grid-bg {
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 60% 50% at 50% 50%,
+    #000 70%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 60% 50% at 50% 50%,
+    #000 70%,
+    transparent 100%
+  );
+}
+
+/* Card surface — drop into any block container that should match
+   the slate-900 panel look from the reference design. */
+.theme-cyber .cyber-card,
+.cyber-card {
+  background-color: var(--shop-card);
+  border: 1px solid rgba(76, 29, 149, 0.5);
+  border-radius: var(--shop-radius);
+}
+.theme-cyber .cyber-card:hover {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.18);
+}
+
+/* Stats / hero numbers — vertical gradient (cyan → purple). Reads
+   bigger and more "hero" than the horizontal text gradient. */
+.cyber-gradient-numbers {
+  background-image: linear-gradient(
+    180deg,
+    var(--shop-accent, #06b6d4),
+    var(--shop-primary, #7c3aed)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Existing-block overrides ───────────────────────────────────
+   GlobalHeader/Footer + components/blocks/* use Tailwind utility
+   classes directly (bg-white, text-stone-900, etc.) instead of
+   --shop-* vars. We retro-fit those classes inside the theme-cyber
+   scope so the operator gets the dark cyberpunk look without
+   per-block code changes (Phase 2 will replace these per block as
+   we touch each component for real).
+
+   Specificity strategy: chain `.theme-cyber` parent + the Tailwind
+   class so we beat Tailwind's own definition without `!important`. */
+
+/* Header chrome — defaults bg-white/95 with stone text */
+.theme-cyber .bg-white,
+.theme-cyber .bg-white\/95 {
+  background-color: rgb(15 23 42 / 0.92) !important; /* slate-900 / 92 */
+  backdrop-filter: blur(8px);
+}
+.theme-cyber .border-stone-200,
+.theme-cyber .border-stone-300,
+.theme-cyber .border-zinc-200,
+.theme-cyber .border-gray-200,
+.theme-cyber .border-gray-300 {
+  border-color: rgba(76, 29, 149, 0.4) !important; /* purple-900/40 */
+}
+.theme-cyber .text-stone-900,
+.theme-cyber .text-zinc-900,
+.theme-cyber .text-gray-900 {
+  color: var(--shop-ink) !important;
+}
+.theme-cyber .text-stone-700,
+.theme-cyber .text-stone-600,
+.theme-cyber .text-zinc-600,
+.theme-cyber .text-gray-700,
+.theme-cyber .text-gray-600 {
+  color: var(--shop-ink-muted) !important;
+}
+.theme-cyber .text-stone-500,
+.theme-cyber .text-zinc-500,
+.theme-cyber .text-gray-500 {
+  color: rgb(148 163 184) !important; /* slate-400 */
+}
+.theme-cyber .bg-stone-50,
+.theme-cyber .bg-zinc-50,
+.theme-cyber .bg-gray-50,
+.theme-cyber .bg-stone-100,
+.theme-cyber .bg-zinc-100,
+.theme-cyber .bg-gray-100 {
+  background-color: rgb(2 6 23) !important; /* slate-950 */
+}
+
+/* Hover/focus on muted nav links → cyan glow */
+.theme-cyber a:hover,
+.theme-cyber button:hover {
+  --tw-ring-color: var(--shop-accent);
+}
+
+/* Body/footer fallback — keep main background dark even when blocks
+   try to apply a brand-color section background (those should still
+   render their own color; this only patches the "no background"
+   case where Tailwind defaults to white). */
+.theme-cyber {
+  background-color: var(--shop-bg);
+  color: var(--shop-ink);
+}
+
+/* ── Cyber-only helper bits ──────────────────────────────────────
+   Components ship neutral defaults for light themes and reach for
+   these classes alongside; the .theme-cyber prefix only "lights
+   them up" when the operator is on Family E. Non-cyber stores get
+   nothing extra (no glow, no gradient, default cart icon, etc.) so
+   their look is preserved. */
+
+/* Heading text — gradient when on cyber, plain on others. The base
+   .cyber-gradient-text class applies the gradient unconditionally;
+   this `-on-cyber` variant adds the "only inside theme-cyber" flag
+   so the OfferGrid / Stats / Hero titles stay readable on light
+   themes (a gradient on white is fine but the brief never asked
+   for it on Families A/B/G/H). */
+.theme-cyber .cyber-gradient-text-on-cyber {
+  background-image: linear-gradient(
+    90deg,
+    var(--shop-primary, #7c3aed),
+    var(--shop-accent, #06b6d4)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Cart icon bubble on product cards. Plain bordered circle on light
+   themes; lights up cyan on cyber theme + glows on hover. */
+.cyber-cart-bubble {
+  background-color: color-mix(
+    in srgb,
+    var(--shop-primary, #7c3aed) 12%,
+    transparent
+  );
+  color: var(--shop-primary, #7c3aed);
+  border: 1px solid
+    color-mix(in srgb, var(--shop-primary, #7c3aed) 30%, transparent);
+}
+.theme-cyber .group:hover .cyber-cart-bubble,
+.theme-cyber .group:focus-within .cyber-cart-bubble {
+  background-color: var(--shop-primary, #7c3aed);
+  color: white;
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.6);
+  border-color: var(--shop-primary, #7c3aed);
+}
+
+/* Cards — promote the .cyber-card visual to "always on" inside
+   the cyber theme. Outside cyber theme the class is inert and the
+   card uses --shop-card / --shop-border like before. */
+.theme-cyber .cyber-card {
+  background-color: var(--shop-card);
+  border: 1px solid rgba(76, 29, 149, 0.5);
+  border-radius: var(--shop-radius);
+  transition: all 300ms;
+}
+.theme-cyber .cyber-card:hover {
+  border-color: rgba(6, 182, 212, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.18);
+}
+
+/* Hide certain decorative overlays everywhere except cyber so we
+   don't add washed-out gradients on light-theme product cards. */
+.cyber-only {
+  display: none;
+}
+.theme-cyber .cyber-only {
+  display: block;
+}
+
+/* HeroBanner — replace the default grey grid pattern with a purple
+   one and apply gradient + glow on headline + CTA. The hero block
+   already paints its own grid via inline `bg-[linear-gradient(...)]`
+   tailwind classes; we layer ours on top with a higher specificity
+   selector so it wins. */
+.theme-cyber [class*="bg-[linear-gradient(to_right,#4f4f4f"] {
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.12) 1px, transparent 1px) !important;
+  background-size: 40px 40px !important;
+}
+.theme-cyber section h1,
+.theme-cyber [class*="min-h-[80vh]"] h1 {
+  /* Apply gradient text to hero h1 wholesale on cyber theme. */
+  background-image: linear-gradient(
+    90deg,
+    var(--shop-primary, #7c3aed) 0%,
+    var(--shop-accent, #06b6d4) 50%,
+    #ec4899 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.4));
+}
+.theme-cyber [class*="min-h-[80vh]"] button,
+.theme-cyber [class*="min-h-[80vh]"] a[role="button"] {
+  /* Hero CTA gets a neon halo. */
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+  transition: box-shadow 0.2s;
+}
+.theme-cyber [class*="min-h-[80vh]"] button:hover {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.8);
+}
+
+/* Stats band — bordered slate strip with gradient numbers on cyber.
+   Light themes get unchanged inline-card look. */
+.theme-cyber .cyber-stats-band {
+  background-color: var(--shop-card);
+  border-top: 1px solid rgba(76, 29, 149, 0.3);
+  border-bottom: 1px solid rgba(76, 29, 149, 0.3);
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+.theme-cyber .cyber-stats-item {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+.theme-cyber .cyber-stats-value {
+  background-image: linear-gradient(
+    180deg,
+    var(--shop-accent, #06b6d4),
+    var(--shop-primary, #7c3aed)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* Reviews — slate cards with quote watermark + gradient avatars */
+.theme-cyber .cyber-review-card {
+  background-color: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(76, 29, 149, 0.3);
+}
+.theme-cyber .cyber-review-card:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+/* CTA band — gradient bg with neon-shadow CTAs on cyber */
+.theme-cyber .cyber-cta-band {
+  background-image: linear-gradient(
+    90deg,
+    rgba(76, 29, 149, 0.4),
+    var(--shop-card)
+  );
+  border: 1px solid rgba(124, 58, 237, 0.3);
+}
+.theme-cyber .cyber-cta-primary {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+  border-bottom: 4px solid rgba(76, 29, 149, 0.8);
+}
+.theme-cyber .cyber-cta-primary:hover {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.8);
+  filter: brightness(1.1);
+}
+.theme-cyber .cyber-cta-secondary {
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+}
+.theme-cyber .cyber-cta-secondary:hover {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+  background-color: rgba(6, 182, 212, 0.08);
+}
+
+/* FAQ — slate cards with cyan chevron, no bottom border between items */
+.theme-cyber .cyber-faq-icon {
+  color: var(--shop-primary);
+}
+.theme-cyber .cyber-faq-item {
+  background-color: var(--shop-card);
+  border: 1px solid rgba(76, 29, 149, 0.3);
+  transition: border-color 0.2s;
+}
+.theme-cyber .cyber-faq-item:hover,
+.theme-cyber .cyber-faq-item[data-state="open"] {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+.theme-cyber .cyber-faq-trigger {
+  color: var(--shop-ink);
+}
+.theme-cyber .cyber-faq-trigger:hover {
+  color: var(--shop-accent);
+}
+.theme-cyber .cyber-faq-trigger[data-state="open"] {
+  color: var(--shop-accent);
+  border-bottom: 1px solid rgba(76, 29, 149, 0.3);
+}
+
+/* ── Header chrome (cyber) ──────────────────────────────────────
+   GlobalHeader ships with bg-white/95 + stone borders. Phase 1
+   already converts the bg via the Tailwind overrides; here we
+   tighten the look further: slate-950/80 bg, purple border, and
+   neon hover/active states on nav links + icon actions. */
+.theme-cyber header.sticky,
+.theme-cyber header[class*="bg-white"] {
+  background-color: rgba(2, 6, 23, 0.85) !important; /* slate-950 / 85 */
+  border-bottom-color: rgba(76, 29, 149, 0.3) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Nav link defaults stay neutral; hover/active glow cyan */
+.theme-cyber header nav a {
+  color: var(--shop-ink) !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.theme-cyber header nav a:hover,
+.theme-cyber header nav a[aria-current="page"] {
+  color: var(--shop-accent) !important;
+  text-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
+}
+
+/* Icon actions (search, cart, menu toggle) — match nav glow */
+.theme-cyber header button,
+.theme-cyber header a[aria-label] {
+  color: var(--shop-ink) !important;
+}
+.theme-cyber header button:hover,
+.theme-cyber header a[aria-label]:hover {
+  color: var(--shop-accent) !important;
+}
+
+/* Cart count badge — flip to pink for that "alert" pop */
+.theme-cyber header [class*="bg-stone-900"][class*="rounded-full"],
+.theme-cyber header [class*="bg-emerald-500"][class*="rounded-full"] {
+  background-color: #ec4899 !important; /* pink-500 */
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.8);
+}
+
+/* ── Footer (cyber) ─────────────────────────────────────────────
+   Default footer is bg-stone-900 / text-stone-300 already, which
+   gets close to cyber but feels "warm dark" rather than slate.
+   Repaint to slate-950 with cyan link hovers + purple border. */
+.theme-cyber footer[class*="bg-stone-900"] {
+  background-color: rgb(2, 6, 23) !important; /* slate-950 */
+  color: rgb(148, 163, 184) !important; /* slate-400 */
+  border-top: 1px solid rgba(76, 29, 149, 0.3);
+}
+.theme-cyber footer h2,
+.theme-cyber footer h3,
+.theme-cyber footer h4,
+.theme-cyber footer .text-white {
+  color: rgb(241, 245, 249) !important; /* slate-100 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.theme-cyber footer a {
+  transition: color 0.2s;
+}
+.theme-cyber footer a:hover {
+  color: var(--shop-accent) !important;
+}
+/* Social-icon circles in footer pick up neon hover */
+.theme-cyber footer a[class*="rounded-full"]:hover {
+  border-color: var(--shop-accent) !important;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+}
+/* ==========================================================================
+ * Family-aware design system — per-family A-I tweaks
+ *
+ * Each family gets its own .theme-{LETTER} class on .shop-page (root of
+ * /stores/[slug] layout). Rules below adjust typography, button shape,
+ * border radius, and accent treatments to match each family's
+ * personality WITHOUT touching component-level code.
+ *
+ * Reference families (full spec in promptpage's landing-builder agent):
+ *   A — Editorial Minimal Warm    | premium ฿2-15k home/lifestyle
+ *   B — Editorial Soft Feminine   | K-fashion, jewelry, beauty
+ *   C — Luxury Heritage Gold      | handmade jewelry, watches ฿5k+
+ *   D — Industrial Masculine      | men's accessories, leather
+ *   E — Cyberpunk Gaming Neon     | gaming, electronics (.theme-cyber)
+ *   F — Sport Editorial Action    | athletic gear, fitness
+ *   G — Botanical Lifestyle       | plants, organic, wellness
+ *   H — Cozy Niche Skeumorphism   | books, stationery, hobby
+ *   I — Playful Mass Commerce     | viral, pet, kids
+ * ========================================================================== */
+
+/* Family A — Editorial Minimal Warm
+ * Refined sans, tight tracking, square-ish radius, no decoration */
+.theme-A {
+  --shop-radius: 0.5rem;
+}
+.theme-A h1, .theme-A h2, .theme-A h3 {
+  letter-spacing: -0.025em;
+  font-weight: 800;
+}
+.theme-A button[class*="rounded-"]:not([class*="rounded-full"]) {
+  border-radius: var(--shop-radius);
+}
+
+/* Family B — Editorial Soft Feminine
+ * Serif headlines, pill CTAs, rose tints carry through tokens already */
+.theme-B {
+  --shop-radius: 9999px; /* pill */
+}
+.theme-B h1, .theme-B h2 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.theme-B button[class*="rounded-md"],
+.theme-B button[class*="rounded-lg"],
+.theme-B a[class*="rounded-md"],
+.theme-B a[class*="rounded-lg"] {
+  border-radius: var(--shop-radius) !important;
+}
+
+/* Family C — Luxury Heritage Gold
+ * Sharp corners, italic serif, tracking-widest uppercase microcopy.
+ * Adds gold underline accent on links and first-letter drop-cap on
+ * description blocks for the editorial-luxury feel. */
+.theme-C {
+  --shop-radius: 0;
+}
+.theme-C h1, .theme-C h2 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.theme-C button[class*="rounded-"],
+.theme-C a[class*="rounded-"] {
+  border-radius: 0 !important;
+}
+.theme-C button[class*="font-medium"],
+.theme-C button[class*="font-semibold"],
+.theme-C button[class*="font-bold"] {
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+/* Animated gold underline grow on text links — luxury subtle */
+.theme-C a:not([class*="bg-"]):not([class*="rounded-full"]) {
+  position: relative;
+  text-decoration: none;
+  background-image: linear-gradient(
+    var(--shop-primary),
+    var(--shop-primary)
+  );
+  background-size: 0% 1px;
+  background-position: 0% 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.4s ease;
+}
+.theme-C a:not([class*="bg-"]):not([class*="rounded-full"]):hover {
+  background-size: 100% 1px;
+}
+
+/* First-letter drop-cap on long description paragraphs.
+ * Targets the prose paragraphs inside disclosures + product description
+ * sections — only paragraphs WITH at least a few words, not micro-copy. */
+.theme-C details > div > p:first-child::first-letter,
+.theme-C .prose > p:first-child::first-letter {
+  font-family: ui-serif, Georgia, serif;
+  font-size: 3rem;
+  line-height: 0.9;
+  font-weight: 700;
+  color: var(--shop-primary);
+  float: left;
+  padding: 0.25rem 0.5rem 0 0;
+}
+
+/* Card lift on hover — minimal, luxury restraint (no scale, just lift) */
+.theme-C .group {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.5s ease;
+}
+.theme-C .group:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.25);
+}
+
+/* Story Quick-View trigger — only visible inside Family C.
+ * The component renders the button with `hidden` (display:none) on
+ * every card; this rule flips it on for theme-C and reveals it on
+ * card hover so it never competes with the tile-still aesthetic. */
+.theme-C [data-story-quick-view-trigger] {
+  display: inline-flex;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.theme-C .group:hover [data-story-quick-view-trigger],
+.theme-C [data-story-quick-view-trigger]:focus-visible {
+  opacity: 1;
+}
+/* On touch devices we can't hover — keep the trigger always visible
+ * so mobile users can tap it. (matches TUI Plus behavior) */
+@media (hover: none) {
+  .theme-C [data-story-quick-view-trigger] {
+    opacity: 1;
+  }
+}
+
+/* Family D — Industrial Masculine
+ * ALL CAPS aggressively, square corners, monospace data, no warmth */
+.theme-D {
+  --shop-radius: 0;
+}
+.theme-D h1, .theme-D h2, .theme-D h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 900;
+}
+.theme-D button[class*="font-medium"],
+.theme-D button[class*="font-semibold"],
+.theme-D button[class*="font-bold"],
+.theme-D a[class*="font-medium"],
+.theme-D a[class*="font-bold"] {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.theme-D button[class*="rounded-"],
+.theme-D a[class*="rounded-"]:not([class*="rounded-full"]) {
+  border-radius: 0 !important;
+}
+.theme-D code,
+.theme-D [class*="font-mono"] {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Family D Customizer — engraving + material picker.
+ * Component renders with `hidden` on every PDP; this rule reveals it
+ * only inside theme-D so the customizer never bleeds into other
+ * families.  Specificity (0,2,0) beats Tailwind's `.hidden` (0,1,0). */
+.theme-D [data-family-d-customizer] {
+  display: block;
+}
+
+/* Family E — already wired via .theme-cyber */
+
+/* Family F — Sport Editorial Action
+ * Italic + tight tracking on headlines, skew on action buttons */
+.theme-F h1, .theme-F h2 {
+  font-style: italic;
+  letter-spacing: -0.03em;
+  font-weight: 900;
+}
+.theme-F button[class*="font-bold"],
+.theme-F button[class*="font-semibold"] {
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+/* Speed-line accent on hero/banner backgrounds */
+.theme-F section[class*="bg-"]:first-child {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 12px,
+    color-mix(in srgb, var(--shop-primary) 4%, transparent) 12px,
+    color-mix(in srgb, var(--shop-primary) 4%, transparent) 14px
+  );
+}
+
+/* Family G — Botanical Lifestyle Premium
+ * Very rounded (soft + organic), large display typography,
+ * 3D tilt cards on hover, floating gradient orb backdrop. */
+.theme-G {
+  --shop-radius: 1.5rem;
+  position: relative;
+  overflow-x: hidden;
+}
+.theme-G h1, .theme-G h2 {
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+.theme-G button[class*="rounded-md"],
+.theme-G button[class*="rounded-lg"],
+.theme-G a[class*="rounded-md"],
+.theme-G a[class*="rounded-lg"] {
+  border-radius: var(--shop-radius) !important;
+}
+.theme-G [class*="rounded-xl"] {
+  border-radius: 1.75rem;
+}
+
+/* Pure-CSS 3D tilt on product cards. Targets the `.group` wrapper
+ * pattern that OfferGridBlock and the category page both use —
+ * lift + slight perspective rotation on hover. Pure CSS so no
+ * client wrapper is needed; mouse-tracking version (per the spec)
+ * can be added as an opt-in component later if needed. */
+.theme-G .group {
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.theme-G .group:hover {
+  transform: perspective(1000px) translateZ(8px) rotateX(2deg) rotateY(-3deg);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.18);
+}
+
+/* Atmospheric floating gradient orbs — fixed position so they
+ * parallax naturally as the user scrolls. shop-primary tint at low
+ * opacity + heavy blur for the "alive, fresh, conscious-premium"
+ * mood the spec calls for. */
+.theme-G::before,
+.theme-G::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(100px);
+  opacity: 0.18;
+  border-radius: 50%;
+}
+.theme-G::before {
+  top: 10%;
+  right: -15vw;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(
+    circle,
+    var(--shop-primary) 0%,
+    transparent 70%
+  );
+}
+.theme-G::after {
+  bottom: 10%;
+  left: -15vw;
+  width: 40vw;
+  height: 40vw;
+  background: radial-gradient(
+    circle,
+    var(--shop-accent, var(--shop-primary)) 0%,
+    transparent 70%
+  );
+}
+.theme-G > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Family H — Cozy Niche Skeumorphism
+ * Serif display, warm radius, subtle paper-grain feel,
+ * book-cover-style hover on product cards (rotate-on-spine). */
+.theme-H {
+  --shop-radius: 0.625rem;
+}
+.theme-H h1, .theme-H h2, .theme-H h3 {
+  font-family: ui-serif, "Lora", Georgia, Cambria, "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.theme-H .shop-card,
+.theme-H [class*="rounded-xl"][class*="border"] {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+}
+
+/* Book-cover hover — subtle rotate-from-left-spine on product cards.
+ * Spec calls for 3D physical object simulation; this is the lightweight
+ * pure-CSS version that works on any product image without needing
+ * specific book artwork. */
+.theme-H .group {
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  transform-origin: left center;
+}
+.theme-H .group:hover {
+  transform: rotateY(-8deg) translateZ(6px);
+  box-shadow: -12px 14px 28px rgba(74, 59, 50, 0.18);
+}
+
+/* Family I — Playful Mass Commerce
+ * Rounded-full everywhere, heavier black weights, scale-up CTAs */
+.theme-I {
+  --shop-radius: 9999px;
+}
+.theme-I h1, .theme-I h2 {
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+.theme-I button[class*="rounded-md"],
+.theme-I button[class*="rounded-lg"],
+.theme-I button[class*="rounded-xl"],
+.theme-I a[class*="rounded-md"],
+.theme-I a[class*="rounded-lg"] {
+  border-radius: var(--shop-radius) !important;
+}
+.theme-I button[class*="bg-"][class*="primary"]:hover,
+.theme-I a[class*="bg-"][class*="primary"]:hover {
+  transform: scale(1.03);
+  transition: transform 0.15s ease;
+}
+
+/* ── Family A — Editorial Minimal Warm ────────────────────────
+   Activated when layout.tsx adds the `theme-A` class. Goal: warm
+   beige backdrop, serif headings, calm "premium magazine" feel.
+   NO glow, NO gradient text, NO neon.
+
+   Overrides are scoped under `.theme-A` so other families pick up
+   zero visual changes; per-block components stay generic. */
+
+.theme-A {
+  /* Tighter token re-binding so cards lift cleanly off the cream
+     bg even when blocks use their default --shop-* tokens. */
+  --shop-bg: #f9f8f6;
+  --shop-card: #ffffff;
+  --shop-ink: #292524;        /* stone-800 */
+  --shop-ink-muted: #78716c;  /* stone-500 */
+  --shop-border: #e7e5e4;     /* stone-200 */
+}
+
+/* Serif headings for the "editorial" feel. We don't promote ALL
+   text to serif — body copy stays sans-serif (Prompt) for legibility,
+   matching how a print magazine pairs serif display + sans body. */
+.theme-A h1,
+.theme-A h2,
+.theme-A h3,
+.theme-A h4,
+.theme-A .cyber-stats-value /* stats numbers — re-skinned, not gradient */,
+.theme-A [class*="font-bold"][class*="text-3xl"],
+.theme-A [class*="font-bold"][class*="text-4xl"],
+.theme-A [class*="font-bold"][class*="text-5xl"] {
+  font-family: var(--shop-font-display, "Playfair Display"), Georgia,
+    "Noto Serif Thai", serif !important;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Stat numbers should be quiet + serif, not gradient text. */
+.theme-A .cyber-gradient-numbers,
+.theme-A .cyber-stats-value {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--shop-ink) !important;
+  filter: none !important;
+}
+
+/* Product card aspect — 4/5 portrait gives the catalog a more
+   curated feel than a square grid. Targets the OfferGrid card's
+   image wrapper which currently uses aspect-square. */
+.theme-A [class*="aspect-square"] {
+  aspect-ratio: 4 / 5 !important;
+}
+
+/* Strip cyberpunk-only flourishes that .cyber-* helpers might
+   bring along when the block was authored against Family E. */
+.theme-A .cyber-gradient-text,
+.theme-A .cyber-gradient-text-on-cyber {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: inherit !important;
+}
+.theme-A .cyber-glow-primary,
+.theme-A .cyber-glow-accent,
+.theme-A .cyber-cta-primary,
+.theme-A .cyber-cta-secondary,
+.theme-A .cyber-cart-bubble {
+  box-shadow: none !important;
+  border-bottom-width: 0 !important;
+}
+.theme-A .cyber-card {
+  background: var(--shop-card);
+  border: 1px solid var(--shop-border);
+  box-shadow: none !important;
+}
+.theme-A .cyber-card:hover {
+  border-color: var(--shop-ink-muted);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transform: none !important;
+}
+
+/* Hero chrome — drop the 80vh tall hero down to a more editorial
+   60vh and remove the cyber grid pattern overlay. */
+.theme-A [class*="min-h-[80vh]"] {
+  min-height: 60vh !important;
+}
+.theme-A [class*="min-h-[80vh]"] [class*="bg-[linear-gradient(to_right,#4f4f4f"] {
+  display: none !important;
+}
+.theme-A [class*="min-h-[80vh]"] h1 {
+  font-family: var(--shop-font-display, "Playfair Display"), Georgia,
+    "Noto Serif Thai", serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em;
+  filter: none !important;
+}
+
+/* Hero CTAs — flat rectangles, no rounded pills, no neon. */
+.theme-A [class*="min-h-[80vh]"] button {
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.875rem !important;
+}
+
+/* Stats band — keep the divider lines but in stone, not purple. */
+.theme-A .cyber-stats-band {
+  background-color: transparent !important;
+  border-top: 1px solid var(--shop-border) !important;
+  border-bottom: 1px solid var(--shop-border) !important;
+}
+
+/* Reviews — promote the quote watermark to a serif glyph (the
+   component already has a quote span; we just upsize/recolor). */
+.theme-A .cyber-review-card {
+  background-color: var(--shop-card) !important;
+  border: 1px solid var(--shop-border) !important;
+}
+
+/* CTA panel — dark stone-900 bg with cream serif heading and a
+   solid white button. The reference design's "Join Our Inner
+   Circle" block. */
+.theme-A .cyber-cta-band {
+  background: #1c1917 !important; /* stone-900 */
+  background-image: none !important;
+  border: none !important;
+  color: #fafaf9 !important;
+  border-radius: 0 !important;
+}
+.theme-A .cyber-cta-band h3,
+.theme-A .cyber-cta-band [class*="cyber-gradient"] {
+  color: #fafaf9 !important;
+  background: none !important;
+  -webkit-text-fill-color: #fafaf9 !important;
+}
+.theme-A .cyber-cta-band p {
+  color: #d6d3d1 !important; /* stone-300 */
+}
+.theme-A .cyber-cta-band a[class*="cyber-cta-primary"] {
+  background-color: #fafaf9 !important;
+  color: #1c1917 !important;
+  border-radius: 2px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.theme-A .cyber-cta-band a[class*="cyber-cta-secondary"] {
+  border-color: #d6d3d1 !important;
+  color: #fafaf9 !important;
+  border-radius: 2px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Header chrome — remove the cyber slate override; Family A wants
+   bg-white/95 with stone borders (which is the GlobalHeader default
+   we DON'T need to fight). */
+
+/* Footer — match reference: dark stone-950 with cream serif column
+   headers + minimal cream link hover. */
+.theme-A footer[class*="bg-stone-900"] {
+  background-color: #1c1917 !important;
+  color: #a8a29e !important; /* stone-400 */
+}
+.theme-A footer h2,
+.theme-A footer h3,
+.theme-A footer h4 {
+  font-family: var(--shop-font-display, "Playfair Display"), Georgia,
+    "Noto Serif Thai", serif !important;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: #fafaf9 !important;
+  text-transform: none !important;
+}
+.theme-A footer a:hover {
+  color: #fafaf9 !important;
+}

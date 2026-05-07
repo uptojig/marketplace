@@ -1,28 +1,14 @@
-/**
- * Landing-page agent invocation for Basketplace.
- *
- * Uses the standalone Claude Messages API with the same system prompt
- * and tool definitions as the /create-store flow, but pipes a different
- * prompt that pre-supplies the store's already-curated products.
- *
- * Architecture:
- *   POST /api/admin/stores/<id>/generate-landing
- *     ↓ (set status="generating", returns 202)
- *   void runLandingAgent(storeId, brief, themeHint)
- *     ↓ async, fire-and-forget
- *   - Read store + active products from DB
- *   - Compose enriched user prompt with product list
- *   - Call Claude Messages API with system prompt + generate_page_schema tool
- *   - Validate schema → Save blocks + status="ready" (or "failed" on error)
- */
-
-import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
+import { generateObject } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
 import {
-  AGENT_MODEL,
-  SYSTEM_PROMPT,
-  GENERATE_PAGE_SCHEMA_TOOL,
-} from "@/lib/agent/config";
+  layoutSchema,
+  blockSchemas,
+  type BlockType,
+} from "@/lib/landing-schema";
+import { cjAdapter } from "@/lib/suppliers/cj/adapter";
+import { aliexpressAdapter } from "@/lib/suppliers/aliexpress/adapter";
+import { translateProductTitlesForStore } from "@/lib/translate-titles";
 
 export class AgentNotConfiguredError extends Error {
   constructor() {
@@ -31,303 +17,93 @@ export class AgentNotConfiguredError extends Error {
   }
 }
 
-type Block = {
-  blockType: string;
-  content: Record<string, unknown>;
-  tailwindClasses?: string;
-};
-
-type DesignFamily = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I";
-
-/** v12 multi-page schema from agent */
-type GeneratedMultiPageSchema = {
-  schemaVersion: "12";
-  metadata: Record<string, unknown>;
-  designFamily: DesignFamily;
-  globalHeader: Record<string, unknown>;
-  globalFooter: Record<string, unknown>;
-  pages: Array<{
-    slug: string;
-    isHomepage?: boolean;
-    metadata?: Record<string, unknown>;
-    blocks: Block[];
-  }>;
-  reasoning: string;
-};
-
-/** v11 single-page schema (legacy compat) */
-type GeneratedSinglePageSchema = {
+// ===== Unified Product type =====
+type Product = {
+  id: string;
   title: string;
-  slug?: string;
-  description?: string;
-  designFamily?: DesignFamily;
-  themeVariant?: "minimal" | "cute";
-  metadata?: Record<string, unknown>;
-  blocks: Block[];
-  reasoning: string;
+  priceTHB: number;
+  imageUrl?: string;
+  source: string;
+  categoryName?: string;
 };
 
-type GeneratedPageSchema = GeneratedMultiPageSchema | GeneratedSinglePageSchema;
-
-function getClient(): Anthropic {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new AgentNotConfiguredError();
-  return new Anthropic({ apiKey });
-}
-
-/** HTML shop schema from the new generate_shop_html tool */
-type HtmlShopSchema = {
-  type: "html";
-  designFamily?: string;
-  headerHtml: string;
-  footerHtml: string;
-  pages: Array<{ slug: string; isHomepage?: boolean; html: string }>;
-  reasoning?: string;
-};
-
-function validateHtmlSchema(input: unknown):
-  | { ok: true; schema: HtmlShopSchema }
-  | { ok: false; error: string } {
-  if (typeof input !== "object" || input === null) {
-    return { ok: false, error: "input_must_be_object" };
-  }
-  // eslint-disable-next-line
-  const s = input as any;
-
-  if (typeof s.headerHtml !== "string" || s.headerHtml.length < 10) {
-    return { ok: false, error: "headerHtml_required" };
-  }
-  if (typeof s.footerHtml !== "string" || s.footerHtml.length < 10) {
-    return { ok: false, error: "footerHtml_required" };
-  }
-  if (!Array.isArray(s.pages) || s.pages.length < 1) {
-    return { ok: false, error: "pages_required" };
-  }
-  for (let i = 0; i < s.pages.length; i++) {
-    const p = s.pages[i];
-    if (!p || typeof p.slug !== "string") {
-      return { ok: false, error: `page_${i}_missing_slug` };
-    }
-    if (typeof p.html !== "string" || p.html.length < 10) {
-      return { ok: false, error: `page_${i}_missing_html` };
-    }
-  }
-  return {
-    ok: true,
-    schema: {
-      type: "html",
-      designFamily: typeof s.designFamily === "string" ? s.designFamily : "A",
-      headerHtml: s.headerHtml,
-      footerHtml: s.footerHtml,
-      pages: s.pages,
-      reasoning: typeof s.reasoning === "string" ? s.reasoning : undefined,
-    },
-  };
-}
-
-function composePrompt(args: {
-  storeName: string;
-  brief: string;
-  themeHint?:
-    | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I"
-    | "minimal" | "cute";
-  contactEmail?: string;
-  products: Array<{
-    externalProductId: string;
-    title: string;
-    titleTh: string | null;
-    priceTHB: number;
-    imageUrl: string | null;
-    categoryName: string | null;
-  }>;
-}): string {
-  const lines = [
-    `Brief from operator: ${args.brief}`,
-    ``,
-    `Store name: ${args.storeName}`,
-    args.contactEmail ? `Contact email: ${args.contactEmail}` : "",
-    args.themeHint ? `Theme hint: prefer "${args.themeHint}".` : "",
-    ``,
-    `Products already curated for this store (${args.products.length} items). Use THESE — do NOT generate fake products. Build the page around the most visually striking items.`,
-    ``,
-  ].filter(Boolean);
-
-  args.products.forEach((p, i) => {
-    lines.push(
-      `${i + 1}. id="${p.externalProductId}" — ${p.title}` +
-        (p.titleTh ? ` (TH: ${p.titleTh})` : "") +
-        ` — ฿${p.priceTHB}` +
-        (p.categoryName ? ` — ${p.categoryName}` : "") +
-        (p.imageUrl ? ` — image: ${p.imageUrl}` : ""),
-    );
-  });
-
-  lines.push(
-    ``,
-    `Use these REAL products in the HTML — show their ACTUAL imageUrl, translate titles to Thai, show ฿ prices.`,
-    `Each product card must link to: /products/{externalProductId}`,
-    `Show product images with: <img src="{imageUrl}" alt="{Thai title}" class="..."/>`,
-    `Contact email: ${args.contactEmail ?? "contact@readypay.co"}`,
-  );
-
-  return lines.join("\n");
-}
-
-/**
- * Call Claude Messages API directly with system prompt + tool.
- * Retries up to 3 times if schema validation fails.
- */
-async function runAgentSession(prompt: string): Promise<HtmlShopSchema> {
-  const client = getClient();
-  const toolName = GENERATE_PAGE_SCHEMA_TOOL.name; // "generate_shop_html"
-
-  type MessageParam = { role: "user" | "assistant"; content: string | Anthropic.ContentBlockParam[] };
-  const messages: MessageParam[] = [
-    { role: "user", content: prompt },
-  ];
-
-  for (let turn = 0; turn < 3; turn++) {
-    console.log(`[landing-agent] turn=${turn} sending to Claude (model=${AGENT_MODEL})...`);
-    const stream = client.messages.stream({
-      model: AGENT_MODEL,
-      max_tokens: 16000,
-      system: SYSTEM_PROMPT,
-      tools: [GENERATE_PAGE_SCHEMA_TOOL],
-      tool_choice: turn === 0 ? { type: "tool", name: toolName } : { type: "auto" },
-      messages,
-    });
-    const response = await stream.finalMessage();
-    console.log(`[landing-agent] turn=${turn} stop_reason=${response.stop_reason}`);
-
-    for (const block of response.content) {
-      if (block.type === "tool_use" && block.name === toolName) {
-        const input = block.input as Record<string, unknown>;
-        const pageCount = Array.isArray(input.pages) ? input.pages.length : 0;
-        console.log(`[landing-agent] got HTML: pages=${pageCount}`);
-        const result = validateHtmlSchema(block.input);
-        if (result.ok) {
-          console.log(`[landing-agent] HTML schema valid ✅`);
-          return result.schema;
-        }
-        console.log(`[landing-agent] invalid: ${result.error}`);
-
-        messages.push({
-          role: "assistant",
-          content: response.content as Anthropic.ContentBlockParam[],
-        });
-        messages.push({
-          role: "user",
-          content: [
-            {
-              type: "tool_result",
-              tool_use_id: block.id,
-              content: JSON.stringify({ ok: false, error: result.error }),
-              is_error: true,
-            },
-          ] as unknown as Anthropic.ContentBlockParam[],
-        });
-        break;
-      }
-    }
-
-    const hasToolUse = response.content.some((b) => b.type === "tool_use");
-    if (!hasToolUse) break;
-  }
-
-  throw new Error("agent_did_not_emit_schema");
-}
-
-/* ------------------------------------------------------------------ */
-/*  Thai brief → English CJ search keyword                           */
-/* ------------------------------------------------------------------ */
-
-const TH_EN_KEYWORDS: [string, string][] = [
-  ["เคสมือถือ", "phone case"],
-  ["เคสโทรศัพท์", "phone case"],
-  ["เคส", "case cover"],
-  ["เสื้อผ้า", "clothing"],
-  ["เสื้อ", "shirt top"],
-  ["กางเกง", "pants"],
-  ["กระโปรง", "skirt"],
-  ["ชุดเดรส", "dress"],
-  ["รองเท้า", "shoes"],
-  ["กระเป๋า", "bag"],
-  ["แฟชั่น", "fashion"],
-  ["เกาหลี", "korean fashion"],
-  ["แว่นตา", "glasses sunglasses"],
-  ["นาฬิกา", "watch"],
-  ["เครื่องประดับ", "jewelry accessories"],
-  ["สร้อย", "necklace"],
-  ["แหวน", "ring"],
-  ["ต่างหู", "earring"],
-  ["GPS", "GPS tracker"],
-  ["สัตว์เลี้ยง", "pet"],
-  ["แมว", "cat"],
-  ["สุนัข", "dog"],
-  ["หูฟัง", "earphone headphone"],
-  ["ลำโพง", "speaker bluetooth"],
-  ["ที่ชาร์จ", "charger"],
-  ["สายชาร์จ", "charging cable"],
-  ["แบตเตอรี่", "power bank battery"],
-  ["มือถือ", "phone mobile"],
-  ["โทรศัพท์", "phone"],
-  ["คอมพิวเตอร์", "computer"],
-  ["คีย์บอร์ด", "keyboard"],
-  ["เมาส์", "mouse"],
-  ["บ้าน", "home decor"],
-  ["ของแต่งบ้าน", "home decoration"],
-  ["โคมไฟ", "lamp light"],
-  ["หมอน", "pillow"],
-  ["ผ้าม่าน", "curtain"],
-  ["ครัว", "kitchen"],
-  ["เครื่องสำอาง", "cosmetics makeup"],
-  ["สกินแคร์", "skincare"],
-  ["ครีม", "cream"],
-  ["ลิปสติก", "lipstick"],
-  ["แปรงแต่งหน้า", "makeup brush"],
-  ["กีฬา", "sports"],
-  ["ออกกำลังกาย", "fitness gym"],
-  ["โยคะ", "yoga"],
-  ["ตกปลา", "fishing"],
-  ["แคมป์", "camping"],
-  ["ของเล่น", "toys"],
-  ["เด็ก", "kids baby"],
-  ["รถยนต์", "car accessories"],
-  ["มอเตอร์ไซค์", "motorcycle"],
-  ["ติดตาม", "tracker GPS"],
+const LAYOUT_ARCHETYPES = [
+  "เน้นเล่าเรื่อง (Storytelling): ปัญหา → ฟีเจอร์ → ขายของ",
+  "เน้นขายด่วน (Urgency): สินค้า+โปรโมชัน → รีวิว → CTA",
+  "เน้นพรีเมียม (Minimalist): บล็อกน้อย ภาพใหญ่ ข้อความดุดัน",
+  "เน้นข้อมูลครบ (Catalog): สินค้าเยอะ ฟีเจอร์ครบ",
 ];
 
-function thaiToEnglishSearch(brief: string): string {
+const SELLING_ANGLES = [
+  "สายสุขภาพ/แก้ปัญหา: ขยี้ปัญหาเรื้อรังที่ลูกค้าเจอ เน้นว่าสินค้านี้ช่วยแก้ปัญหา หรือเซฟสุขภาพให้ดีขึ้นอย่างไร",
+  "สายแฟชั่นไลฟ์สไตล์: เน้นดีไซน์สวย ภาพลักษณ์ดูดี ใช้แล้วเท่ปัง แมตช์ได้กับทุกลุค ไม่เน้นศัพท์เทคนิค",
+  "สายคุ้มค่า (Budget): เน้นความถูกและคุ้ม! ของดีไม่จำเป็นต้องแพง อวดรีวิวว่าทนทาน ใช้ได้นาน คุ้มทุกบาท",
+  "สายฮาร์ดคอร์ (Performance/Pro): ดุดันขั้นสุด เน้นสเปค ประสิทธิภาพ วัสดุพรีเมียม สำหรับคนที่ต้องการสิ่งที่ดีที่สุด"
+];
+
+const TH_EN_KEYWORDS: [string, string][] = [
+  // Apparel & accessories
+  ["เคสมือถือ", "phone case"], ["เสื้อผ้า", "clothing"], ["รองเท้า", "shoes"],
+  ["ถุงเท้า", "socks"], ["ถุงน่อง", "stockings tights"],
+  ["หมวก", "hat cap"], ["เข็มขัด", "belt"], ["ผ้าพันคอ", "scarf"],
+  ["ชุดชั้นใน", "underwear lingerie"], ["ชุดนอน", "pajamas sleepwear"],
+  ["กระเป๋า", "bag"], ["แฟชั่น", "fashion"], ["เกาหลี", "korean fashion"],
+  ["แว่นตา", "glasses sunglasses"], ["เครื่องประดับ", "jewelry accessories"],
+  // Tech / lifestyle
+  ["สัตว์เลี้ยง", "pet"], ["หูฟัง", "earphone headphone"], ["ลำโพง", "speaker bluetooth"],
+  ["แบตเตอรี่", "power bank battery"], ["คอมพิวเตอร์", "computer"], ["บ้าน", "home decor"],
+  ["ครัว", "kitchen"], ["เครื่องสำอาง", "cosmetics makeup"], ["สกินแคร์", "skincare"],
+  ["กีฬา", "sports"], ["ออกกำลังกาย", "fitness gym"], ["แคมป์", "camping"],
+  ["ของเล่น", "toys"], ["เด็ก", "kids baby"], ["รถยนต์", "car accessories"],
+];
+
+function extractSearchKeyword(brief: string): string {
   const hits: string[] = [];
   for (const [th, en] of TH_EN_KEYWORDS) {
     if (brief.includes(th)) hits.push(en);
   }
   const english = brief.match(/[a-zA-Z]{2,}/g);
   if (english) hits.push(...english);
-  if (hits.length === 0) return "fashion accessories";
+  if (hits.length === 0) return "trending products";
   const unique = [...new Set(hits)].slice(0, 3);
   return unique.join(" ");
 }
 
-/**
- * Public entry point — fire-and-forget from the API route.
- */
+function deriveDesignFamily(prompt: string): string {
+  if (/สปอร์ต|วิ่ง|กีฬา|เร็ว|แรง|พลัง/.test(prompt)) return "F";
+  if (/พรีเมียม|หรู|แพง|ทอง|เงินแท้|luxury/.test(prompt)) return "C";
+  if (/เกาหลี|ผู้หญิง|สวย|น่ารัก|หวาน/.test(prompt)) return "B";
+  if (/เกมมิ่ง|ไซเบอร์|neon|gaming/.test(prompt)) return "E";
+  if (/ออร์แกนิค|ธรรมชาติ|สมุนไพร/.test(prompt)) return "G";
+  if (/ผู้ชาย|ดิบ|อินดัส|หนัง/.test(prompt)) return "D";
+  if (/flash|sale|ลด|โปร/.test(prompt)) return "I";
+  return "A";
+}
+
+function formatProduct(p: Product, i: number): string {
+  return [
+    `${i}. [ID: ${p.id}] "${p.title}"`,
+    `   ราคา: ฿${p.priceTHB.toLocaleString()}`,
+    p.imageUrl ? `   รูป: ${p.imageUrl}` : null,
+  ].filter(Boolean).join("\n");
+}
+
 export async function runLandingAgent(args: {
   storeId: string;
   brief: string;
-  themeHint?:
-    | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I"
-    | "minimal" | "cute";
+  themeHint?: string;
 }): Promise<void> {
   const store = await prisma.store.findUnique({
     where: { id: args.storeId },
     select: {
       id: true,
       name: true,
+      slug: true,
       contactEmail: true,
       products: {
         where: { active: true },
         select: {
+          id: true,
           externalProductId: true,
           title: true,
           titleTh: true,
@@ -340,6 +116,7 @@ export async function runLandingAgent(args: {
       },
     },
   });
+
   if (!store) {
     await prisma.store.update({
       where: { id: args.storeId },
@@ -348,49 +125,97 @@ export async function runLandingAgent(args: {
     return;
   }
 
-  type ProductForPrompt = {
-    externalProductId: string;
-    title: string;
-    titleTh: string | null;
-    priceTHB: number;
-    imageUrl: string | null;
-    categoryName: string | null;
-  };
-
-  let products: ProductForPrompt[] = store.products.map((p) => ({
-    externalProductId: p.externalProductId,
-    title: p.title,
-    titleTh: p.titleTh,
+  let products: Product[] = store.products.map((p) => ({
+    id: p.id,
+    title: p.titleTh ?? p.title,
     priceTHB: Number(p.priceTHB),
-    imageUrl: p.imageUrl,
-    categoryName: p.categoryName,
+    imageUrl: p.imageUrl ?? undefined,
+    source: "StoreDB",
+    categoryName: p.categoryName ?? undefined,
   }));
+
   console.log(`[landing-agent] store="${store.name}" db_products=${products.length} brief="${args.brief.slice(0, 50)}"`);
 
+  // Fallback to searching CJ/AliExpress if store has no products
   if (products.length === 0) {
-    console.log(`[landing-agent] 0 products in DB → searching CJ...`);
-    try {
-      const { cjAdapter } = await import("@/lib/suppliers/cj/adapter");
-      const searchQuery = thaiToEnglishSearch(args.brief);
-      console.log(`[landing-agent] CJ search: "${searchQuery}"`);
-      const result = await cjAdapter.listCatalog({
-        search: searchQuery,
-        pageSize: 6,
-      });
-      products = result.items.map((p) => ({
-        externalProductId: p.externalProductId,
-        title: p.title,
-        titleTh: null,
-        priceTHB: p.priceTHB,
-        imageUrl: p.imageUrl ?? null,
-        categoryName: null,
-      }));
-      console.log(`[landing-agent] CJ returned ${products.length} products`);
-    } catch (err) {
-      console.error(`[landing-agent] CJ search failed:`, err);
+    console.log(`[landing-agent] 0 products in DB → searching CJ/AE...`);
+    const searchKeyword = extractSearchKeyword(args.brief);
+    
+    const fetchers: Promise<void>[] = [];
+    if (process.env.CJ_API_KEY) {
+      fetchers.push(
+        cjAdapter.listCatalog({ search: searchKeyword, pageSize: 6 })
+          .then(async (r) => {
+            console.log(`[landing-agent] CJ search "${searchKeyword}" returned ${r.items.length} items`);
+            for (const p of r.items) {
+              const newProd = await prisma.product.create({
+                data: {
+                  storeId: store.id,
+                  externalProductId: p.externalProductId,
+                  title: p.title,
+                  titleTh: p.title,
+                  description: "Imported by Agent",
+                  descriptionTh: "นำเข้าโดย AI",
+                  priceTHB: p.priceTHB,
+                  imageUrl: p.imageUrl,
+                  galleryUrls: [],
+                  supplier: "CJ",
+                  active: true,
+                }
+              });
+              products.push({
+                id: newProd.id,
+                title: p.title,
+                priceTHB: p.priceTHB,
+                imageUrl: p.imageUrl ?? undefined,
+                source: "CJ",
+                categoryName: (p.raw as any)?.categoryName,
+              });
+            }
+          })
+          .catch((err) => console.error("[CJ] ❌ Error:", err)),
+      );
     }
+
+    if (process.env.ALIEXPRESS_APP_KEY) {
+      fetchers.push(
+        aliexpressAdapter.listCatalog({ search: searchKeyword, pageSize: 6 })
+          .then(async (r) => {
+            console.log(`[landing-agent] AE search "${searchKeyword}" returned ${r.items.length} items`);
+            for (const p of r.items) {
+              const newProd = await prisma.product.create({
+                data: {
+                  storeId: store.id,
+                  externalProductId: p.externalProductId,
+                  title: p.title,
+                  titleTh: p.title,
+                  description: "Imported by Agent",
+                  descriptionTh: "นำเข้าโดย AI",
+                  priceTHB: p.priceTHB,
+                  imageUrl: p.imageUrl,
+                  galleryUrls: [],
+                  supplier: "ALIEXPRESS",
+                  active: true,
+                }
+              });
+              products.push({
+                id: newProd.id,
+                title: p.title,
+                priceTHB: p.priceTHB,
+                imageUrl: p.imageUrl ?? undefined,
+                source: "AliExpress",
+              });
+            }
+          })
+          .catch((err) => console.error("[AE] ❌ Error:", err)),
+      );
+    }
+
+    await Promise.allSettled(fetchers);
   }
 
+  console.log(`[landing-agent] After CJ/AE fetch: products.length=${products.length}`);
+  
   if (products.length === 0) {
     await prisma.store.update({
       where: { id: args.storeId },
@@ -399,32 +224,142 @@ export async function runLandingAgent(args: {
     return;
   }
 
-  const prompt = composePrompt({
-    storeName: store.name,
-    brief: args.brief,
-    themeHint: args.themeHint,
-    contactEmail: store.contactEmail ?? undefined,
-    products,
-  });
-
   try {
-    const schema = await runAgentSession(prompt);
+    const archetype = LAYOUT_ARCHETYPES[Math.floor(Math.random() * LAYOUT_ARCHETYPES.length)];
+    const randomAngle = SELLING_ANGLES[Math.floor(Math.random() * SELLING_ANGLES.length)];
 
-    // Save HTML schema to DB
-    const { reasoning, ...schemaData } = schema;
-    const homePage = schema.pages.find((p) => p.isHomepage) ?? schema.pages[0];
+    let productContext = "";
+    if (products.length > 0) {
+      const list = products.map((p, i) => formatProduct(p, i + 1)).join("\n\n");
+      productContext = `\n\nข้อมูลสินค้าในระบบ (${products.length} ชิ้น) — **ต้องใช้ ID จาก List นี้ไปกรอกใน OfferGrid เท่านั้น!**\n${list}`;
+    }
+
+    console.log(`[landing-agent] Manager: Orchestrating Architecture...`);
+    
+    // 🌟 Worker 1 (Manager/Architect): วางโครง + Chrome (Header/Footer)
+    const { object: architecture } = await generateObject({
+      model: anthropic("claude-sonnet-4-6"),
+      schema: layoutSchema,
+      temperature: 0.8,
+      prompt: `คุณคือ Manager Architect (ผู้จัดการโปรเจกต์ทำเว็บ) 
+หน้าที่ของคุณคือวางโครงสร้างเว็บ (Multi-page schema) สำหรับร้านค้า: "${store.name}" 
+สินค้าหรือบรีฟ: "${args.brief}"
+
+1. เลือก themeColor และ designFamily ที่เหมาะสมที่สุด
+2. ออกแบบโลโก้ร้านเป็น SVG (ใส่ใน globalHeader.logo.svgCode) โดยให้เป็นภาพ Vector ที่ดูทันสมัย เรียบง่าย และเข้ากับบรีฟสินค้า
+3. จัดการ globalHeader (ใส่โลโก้และเมนูนำทาง)
+   **สำคัญมาก**: ในเมนูนำทาง (nav) ให้บังคับใส่ลิงก์เหล่านี้เพื่อให้ดูเป็นร้านค้าเต็มรูปแบบ (Multi-page):
+   - "หน้าแรก" (href: "/")
+   - "สินค้าทั้งหมด" (href: "/category")
+   - "เกี่ยวกับเรา" (href: "/about")
+   - "ติดต่อเรา" (href: "/contact")
+3. จัดการ globalFooter (ข้อมูลติดต่อร้าน)
+4. เลือกว่าจะใช้ blocks อะไรบ้าง สำหรับหน้าแรก (blocks), หน้าเกี่ยวกับเรา (aboutBlocks), และหน้าติดต่อเรา (contactBlocks)
+
+กลยุทธ์โครงสร้างหน้า: "${archetype}"
+ข้อห้าม: ห้ามใช้ "HeroBanner" คู่กับ "ProductHero" ในหน้าเดียวกัน!`,
+    });
+
+    console.log(`[landing-agent] Workers: Copywriting and Merchandising...`);
+    
+    // Helper to run workers for a list of blocks
+    const populateBlocks = async (blockTypes: string[], pageContext: string) => {
+      const populated = await Promise.all(
+        blockTypes.map(async (blockType) => {
+          const blockSchema = blockSchemas[blockType as BlockType];
+          if (!blockSchema) return null;
+
+          const { object: blockData } = await generateObject({
+            model: anthropic("claude-sonnet-4-6"),
+            schema: blockSchema,
+            temperature: 0.85,
+            prompt: `คุณคือนักเขียน Copywriter และ Merchandiser
+กรุณาเขียนเนื้อหาภาษาไทยสำหรับบล็อก "${blockType}" สำหรับหน้า "${pageContext}" ให้สอดคล้องกับบรีฟ: "${args.brief}"
+
+มุมมองการขาย: "${randomAngle}"
+
+🚨 กฎเหล็ก:
+- ถ้าเป็น OfferGrid หรือ ProductHero คุณต้องใช้สินค้าและ ID ตามที่ให้ไว้ด้านล่างนี้เท่านั้น! ห้ามแต่ง ID เองเด็ดขาด!
+- ถ้าบล็อกไหนมีฟิลด์ svgCode ให้เขียน SVG Code แบบ vector ลายเส้นที่เข้ากับธีม (ห้ามใส่ markdown block \`\`\`svg)
+- เขียนให้น่าสนใจ ไม่ใช้คำซ้ำซาก
+${productContext}`,
+          });
+
+          return { type: blockType as BlockType, props: blockData as Record<string, unknown> };
+        })
+      );
+      return populated.filter((b): b is { type: BlockType; props: Record<string, unknown> } => b !== null);
+    };
+
+    // 🌟 Worker 2 & 3 (Copywriter / Merchandiser): ลงรายละเอียดแต่ละ Block สำหรับแต่ละหน้า
+    const homeBlocks = await populateBlocks(architecture.blocks, "หน้าแรก (Home)");
+    const aboutBlocks = await populateBlocks(architecture.aboutBlocks || ["HeroBanner", "Features"], "เกี่ยวกับเรา (About Us)");
+    const contactBlocks = await populateBlocks(architecture.contactBlocks || ["FAQ", "CTA"], "ติดต่อเรา (Contact)");
+
+    const derivedTitle = args.brief.length > 50 ? `${args.brief.substring(0, 50)}...` : args.brief;
+
+    // 🌟 Merge: รวมร่างเป็น V12 Multi-Page Schema
+    const schemaData = {
+      schemaVersion: "12",
+      type: "block_registry_v1",
+      title: derivedTitle,
+      designFamily: architecture.designFamily,
+      themeColor: architecture.themeColor,
+      globalHeader: architecture.globalHeader,
+      globalFooter: architecture.globalFooter,
+      pages: [
+        {
+          slug: "home",
+          isHomepage: true,
+          blocks: homeBlocks
+        },
+        {
+          slug: "about",
+          isHomepage: false,
+          blocks: aboutBlocks
+        },
+        {
+          slug: "contact",
+          isHomepage: false,
+          blocks: contactBlocks
+        }
+      ],
+      // (Backward compatibility)
+      blocks: homeBlocks, 
+      _meta: { archetype, randomAngle }
+    };
+
     await prisma.store.update({
       where: { id: args.storeId },
       data: {
         landingBlocks: schemaData as never,
-        landingTitle: store.name,
-        landingThemeVariant: schema.designFamily ?? "A",
+        landingTitle: derivedTitle,
+        landingThemeVariant: architecture.designFamily,
         landingGeneratedAt: new Date(),
         landingStatus: "ready",
         landingError: null,
+        // Update store color to match AI choice!
+        primaryColor: architecture.themeColor,
       },
     });
-    console.log(`[landing-agent] saved HTML schema: ${schema.pages.length} pages ✅`);
+
+    console.log(`[landing-agent] saved v12 multi-page schema! ✅`);
+
+    // Best-effort: translate every product's title to Thai so category /
+    // PDP / search / related grids read in Thai too. The agent already
+    // bakes Thai titles into OfferGrid/ProductHero blocks for the
+    // homepage (see landing-agent-managed.ts sync), but the local
+    // pipeline doesn't write them back to Product.titleTh — without
+    // this call those non-homepage routes fall back to English.
+    // Failures here don't block the user-visible landing flow.
+    try {
+      const tr = await translateProductTitlesForStore(args.storeId);
+      console.log(
+        `[landing-agent] titleTh backfill: translated=${tr.translated} skipped=${tr.skipped} failed=${tr.failed}`,
+      );
+    } catch (err) {
+      console.error(`[landing-agent] titleTh backfill failed:`, err);
+    }
   } catch (err) {
     const msg =
       err instanceof AgentNotConfiguredError

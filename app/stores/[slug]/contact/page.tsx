@@ -7,6 +7,8 @@ import {
   StoreSocialIcons,
   StoreContactRows,
 } from "@/components/shop/StoreSocialIcons";
+import { isV12Schema } from "@/lib/multi-page-migration";
+import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -38,9 +40,46 @@ export default async function StoreContactPage({
       instagramUrl: true,
       websiteUrl: true,
       lineId: true,
+      landingBlocks: true,
+      bannerUrl: true,
+      slug: true,
+      // Needed by the filterInactiveProductsFromSchema query below.
+      id: true,
     },
   });
   if (!store) notFound();
+
+  // Only render if store has v12 multi-page schema with a "contact" page
+  if (
+    store.landingBlocks &&
+    typeof store.landingBlocks === "object" &&
+    isV12Schema(store.landingBlocks)
+  ) {
+    const hasContactPage = store.landingBlocks.pages.some(
+      (p: { slug: string }) => p.slug === "contact"
+    );
+    if (hasContactPage) {
+      const activeRows = await prisma.product.findMany({
+        where: { storeId: store.id, active: true },
+        select: { externalProductId: true },
+      });
+      const activeProductIds = new Set(
+        activeRows
+          .map((r) => r.externalProductId)
+          .filter((s): s is string => !!s),
+      );
+      return (
+        <MultiPageRenderer
+          schema={store.landingBlocks}
+          pageSlug="contact"
+          storeSlug={store.slug}
+          storeName={store.name}
+          storeBannerUrl={store.bannerUrl}
+          activeProductIds={activeProductIds}
+        />
+      );
+    }
+  }
 
   const addressLines = formatStoreAddressLines(store);
   const hasAnySocials =

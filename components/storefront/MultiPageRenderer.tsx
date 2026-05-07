@@ -4,24 +4,61 @@
  */
 
 import type { MultiPageShopSchema, GlobalHeader as GlobalHeaderSchema, GlobalFooter as GlobalFooterSchema } from "@/types/multi-page-schema";
-import type { ThemeVariant } from "@/lib/landing/families";
-import { isValidThemeVariant } from "@/lib/landing/families";
 import { findPageBySlug } from "@/lib/multi-page-migration";
-import { LandingPage, type Block } from "@/components/storefront/BlockRenderer";
-import { GlobalHeader } from "./GlobalHeader";
-import { GlobalFooter } from "./GlobalFooter";
+import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
+import { applyStoreImagesToSchema } from "@/lib/storefront/apply-store-images";
+import { rewriteStoreLinksInSchema } from "@/lib/storefront/rewrite-store-links";
+import {
+  filterInactiveProductsFromSchema,
+  type FallbackProduct,
+} from "@/lib/storefront/filter-inactive-products";
 
 interface MultiPageRendererProps {
   schema: MultiPageShopSchema;
   pageSlug?: string;
   storeSlug: string;
+  storeName?: string;
+  /** Operator-uploaded banner (Store.bannerUrl). When present,
+   *  replaces any placeholder image URLs the agent emitted in
+   *  HeroBanner blocks across every page in the schema. */
+  storeBannerUrl?: string | null;
+  /** When provided, OfferGrid / ProductHero items whose product_id
+   *  isn't in this set get filtered out so deleted/inactive products
+   *  don't render dead cards. Pass null to skip filtering. */
+  activeProductIds?: Set<string> | null;
+  /** Pair with `activeProductIds`. When an OfferGrid would empty out
+   *  (every product in the schema has been deleted or replaced), we
+   *  substitute its products[] with these — the store's CURRENT
+   *  active catalog. Keeps the home page useful when the schema is
+   *  stale relative to the catalog. */
+  fallbackProducts?: FallbackProduct[];
 }
 
-/** Safe defaults so components never crash on undefined fields */
-function safeHeader(raw: unknown, storeSlug: string): GlobalHeaderSchema {
+/** Safe defaults so components never crash on undefined fields.
+ *
+ * Logo precedence (highest → lowest):
+ *   1. `storeLogoUrl` — operator-uploaded via /admin/stores/<id>
+ *      (Store.logoUrl). Always wins when present, because the agent's
+ *      generated placeholder is filler the operator paid no attention to.
+ *   2. Agent-emitted `globalHeader.logo.imageUrl` from the v12 schema
+ *      — usually a `placehold.co` URL with the brand name, OK as a
+ *      fallback for stores that haven't uploaded yet.
+ *   3. Empty string — GlobalHeader renders the brand text only.
+ */
+export function safeHeader(
+  raw: unknown,
+  storeSlug: string,
+  storeName?: string,
+  storeLogoUrl?: string | null,
+): GlobalHeaderSchema {
   if (!raw || typeof raw !== "object") {
     return {
-      logo: { imageUrl: "", altText: storeSlug, linkTo: "/" },
+      logo: {
+        imageUrl: storeLogoUrl ?? "",
+        altText: storeName || storeSlug,
+        linkTo: "/",
+        brandText: storeName,
+      },
       nav: [],
       showCart: true,
       sticky: true,
@@ -42,11 +79,14 @@ function safeHeader(raw: unknown, storeSlug: string): GlobalHeaderSchema {
     : [];
   return {
     logo: {
-      imageUrl: String(logo.imageUrl ?? logo.image_url ?? logo.src ?? ""),
-      altText: String(logo.altText ?? logo.alt ?? storeSlug),
+      imageUrl:
+        storeLogoUrl ??
+        String(logo.imageUrl ?? logo.image_url ?? logo.src ?? ""),
+      altText: String(logo.altText ?? logo.alt ?? storeName ?? storeSlug),
       linkTo: String(logo.linkTo ?? logo.href ?? "/"),
-      brandText: logo.brandText ? String(logo.brandText) : undefined,
+      brandText: logo.brandText ? String(logo.brandText) : storeName ? storeName : undefined,
       size: (logo.size as "sm" | "md" | "lg") ?? "md",
+      svgCode: logo.svgCode ? String(logo.svgCode) : undefined,
     },
     nav,
     showCart: h.showCart !== false,
@@ -55,8 +95,22 @@ function safeHeader(raw: unknown, storeSlug: string): GlobalHeaderSchema {
   };
 }
 
-function safeFooter(raw: unknown): GlobalFooterSchema | null {
-  if (!raw || typeof raw !== "object") return null;
+export function safeFooter(
+  raw: unknown,
+  storeName?: string,
+  storeLogoUrl?: string | null,
+): GlobalFooterSchema {
+  const defaultFooter: GlobalFooterSchema = {
+    brand: {
+      name: storeName ?? "Store",
+      ...(storeLogoUrl ? { logoUrl: storeLogoUrl } : {}),
+    },
+    copyright: `© ${new Date().getFullYear()} ${storeName || "Store"}. All rights reserved.`,
+    columns: [],
+    socialLinks: []
+  };
+
+  if (!raw || typeof raw !== "object") return defaultFooter;
   const f = raw as Record<string, unknown>;
   const columns = Array.isArray(f.columns)
     ? f.columns.map((col: unknown) => {
@@ -85,48 +139,102 @@ function safeFooter(raw: unknown): GlobalFooterSchema | null {
         };
       })
     : [];
-  return { ...f, columns, socialLinks } as GlobalFooterSchema;
+  // Brand merge: prefer operator-uploaded logoUrl when present (same
+  // precedence rule as safeHeader). Agent's placeholder loses to a
+  // real upload.
+  const brandRaw = (f.brand && typeof f.brand === "object"
+    ? (f.brand as Record<string, unknown>)
+    : {}) as Record<string, unknown>;
+  const brand = {
+    name: brandRaw.name ? String(brandRaw.name) : (storeName ?? "Store"),
+    ...(brandRaw.tagline ? { tagline: String(brandRaw.tagline) } : {}),
+    logoUrl:
+      storeLogoUrl ??
+      (brandRaw.logoUrl
+        ? String(brandRaw.logoUrl)
+        : brandRaw.logo_url
+          ? String(brandRaw.logo_url)
+          : undefined),
+  };
+
+  return {
+    ...f,
+    brand,
+    copyright: f.copyright ? String(f.copyright) : defaultFooter.copyright,
+    columns,
+    socialLinks
+  } as GlobalFooterSchema;
 }
 
-export function MultiPageRenderer({ schema, pageSlug = "", storeSlug }: MultiPageRendererProps) {
-  const raw = schema.designFamily ?? "A";
-  const theme: ThemeVariant = isValidThemeVariant(raw) ? raw : "A";
-  const page = findPageBySlug(schema, pageSlug);
+export function MultiPageRenderer({ schema, pageSlug = "", storeSlug, storeBannerUrl, activeProductIds, fallbackProducts }: MultiPageRendererProps) {
+  // Schema-level transform pipeline. Each step is pure + idempotent.
+  // Order matters: rewrite links FIRST so subsequent passes see
+  // correct paths (image overrides don't care, but downstream
+  // tools/inspectors might). All three transforms cast through
+  // Record<string, unknown> at the boundary because
+  // MultiPageShopSchema is a named type without an index signature;
+  // each transform's body narrows back to its own LikeTypes before
+  // touching properties.
+  let working = schema as unknown as Record<string, unknown>;
 
-  const header = safeHeader(schema.globalHeader, storeSlug);
-  const footer = safeFooter(schema.globalFooter);
+  // 1. Rewrite agent-emitted relative URLs ("/contact" → "/stores/<slug>/contact")
+  //    so block-rendered <a> tags inside CTA / Banner / CategoryBanner
+  //    don't 404. GlobalHeader / Footer have their own resolveHref so
+  //    this only affects in-page block content.
+  working = rewriteStoreLinksInSchema(working, storeSlug);
 
-  if (!page) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <GlobalHeader content={header} theme={theme} storeSlug={storeSlug} />
-        <main className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center max-w-lg">
-            <h1 className="text-6xl font-bold text-stone-900 mb-4">404</h1>
-            <p className="text-xl text-stone-500 mb-8">ไม่พบหน้านี้</p>
-            <a href={`/stores/${storeSlug}`} className="inline-block px-6 py-3 bg-stone-900 text-white rounded hover:bg-stone-800 transition">
-              กลับหน้าแรก
-            </a>
-          </div>
-        </main>
-        {footer && <GlobalFooter content={footer} theme={theme} storeSlug={storeSlug} />}
-      </div>
+  // 2. Swap placehold.co banner URLs with the operator's uploaded image.
+  if (storeBannerUrl) {
+    working = applyStoreImagesToSchema(working, storeBannerUrl);
+  }
+
+  // 3. Drop OfferGrid items + ProductHero blocks that point at products
+  //    the operator deleted or deactivated, so the storefront never
+  //    shows a dead card linking to a 404 PDP. When fallbackProducts
+  //    is also provided, an OfferGrid that would otherwise empty out
+  //    gets its products[] swapped for the current store catalog so
+  //    the section keeps rendering useful content even if the schema
+  //    is stale.
+  if (activeProductIds) {
+    working = filterInactiveProductsFromSchema(
+      working,
+      activeProductIds,
+      fallbackProducts,
     );
   }
 
-  const blocks: Block[] = (page.blocks ?? []).map((b) => ({
-    ...b,
-    blockType: b.blockType ?? b.type ?? "",
-    content: b.content ?? {},
+  const effectiveSchema = working as unknown as MultiPageShopSchema;
+
+  const page = findPageBySlug(effectiveSchema, pageSlug);
+
+  if (!page) {
+    return (
+      <main className="flex-1 flex items-center justify-center px-4">
+        <div className="text-center max-w-lg">
+          <h1 className="text-6xl font-bold text-stone-900 mb-4">404</h1>
+          <p className="text-xl text-stone-500 mb-8">ไม่พบหน้านี้</p>
+          <a href={`/stores/${storeSlug}`} className="inline-block px-6 py-3 bg-stone-900 text-white rounded hover:bg-stone-800 transition">
+            กลับหน้าแรก
+          </a>
+        </div>
+      </main>
+    );
+  }
+
+  const blocks = (page.blocks ?? []).map((b) => ({
+    type: b.blockType ?? b.type ?? "",
+    props: b.content ?? {},
   }));
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <GlobalHeader content={header} theme={theme} storeSlug={storeSlug} />
-      <main className="flex-1">
-        <LandingPage blocks={blocks} theme={theme} storeSlug={storeSlug} />
-      </main>
-      {footer && <GlobalFooter content={footer} theme={theme} storeSlug={storeSlug} />}
-    </div>
+    <main className="flex-1">
+      {blocks.map((block, i) => (
+        <DynamicBlockRenderer
+          key={i}
+          block={block as any}
+          storeSlug={storeSlug}
+        />
+      ))}
+    </main>
   );
 }

@@ -33,7 +33,14 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
   กางเกง: ["pants", "trousers"],
   กระโปรง: ["skirt"],
   ชุดเดรส: ["dress"],
+  ชุดนอน: ["pajamas", "sleepwear"],
+  ชุดชั้นใน: ["underwear", "lingerie"],
   รองเท้า: ["shoes", "sneakers"],
+  ถุงเท้า: ["socks"],
+  ถุงน่อง: ["stockings", "tights"],
+  หมวก: ["hat", "cap"],
+  เข็มขัด: ["belt"],
+  ผ้าพันคอ: ["scarf"],
   กระเป๋า: ["bag", "handbag"],
   แฟชั่น: ["fashion", "clothing"],
   เกาหลี: ["korean fashion"],
@@ -90,6 +97,9 @@ const EN_KEYWORDS: Record<string, string[]> = {
   laptop: ["laptop", "computer"],
   fashion: ["fashion", "clothing"],
   shoes: ["shoes", "sneakers"],
+  socks: ["socks", "cotton socks"],
+  sock: ["socks", "cotton socks"],
+  pajamas: ["pajamas", "sleepwear"],
   bag: ["bag", "handbag"],
   beauty: ["beauty", "skincare"],
   kitchen: ["kitchen", "kitchenware"],
@@ -99,6 +109,7 @@ const EN_KEYWORDS: Record<string, string[]> = {
   jewelry: ["jewelry", "accessories"],
   furniture: ["furniture", "sofa"],
   electronics: ["electronics", "gadget"],
+  muji: ["minimalist", "japanese style"],
 };
 
 /**
@@ -159,6 +170,39 @@ interface EnrichedProduct {
 }
 
 /**
+ * Strip operator-side product placeholders BEFORE enrichment runs.
+ *
+ * Some older marketplace prompt templates and external test callers send
+ * briefs with hard-coded lines like:
+ *   "Products already curated for this store (0 items). Use THESE —
+ *    do NOT call searchMarketplaceProducts again."
+ *
+ * If this text survives into the final brief alongside our newly-injected
+ * "(N items)" block, the agent sees TWO contradictory product statements
+ * and may obey the first (refuse to build the schema). Strip the
+ * placeholder so only OUR injected list remains.
+ *
+ * Also strips standalone references to the legacy `searchMarketplaceProducts`
+ * / `find_products` tools — those tools no longer exist in v3.
+ */
+function stripOperatorProductPlaceholders(brief: string): string {
+  return brief
+    // "Products already curated for this store (0 items). Use THESE — do NOT call ... ."
+    .replace(
+      /Products?\s+already\s+curated\s+for\s+this\s+store\s+\(\s*0\s+items?\s*\)\.[^\n]*?(?:\.|$)/gi,
+      "",
+    )
+    // Standalone "do NOT call searchMarketplaceProducts" / "do not call find_products"
+    .replace(
+      /[Dd]o\s+NOT\s+call\s+(?:searchMarketplaceProducts|find_products)[^\n]*/g,
+      "",
+    )
+    // Collapse 3+ consecutive newlines that may result from the strip
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
  * Enrich a brief with real product data from CJ catalog.
  * Returns the enriched brief text with product list appended.
  * Throws NoProductsError if no products can be found.
@@ -174,7 +218,12 @@ export async function enrichBriefWithProducts(
     );
   }
 
-  const searchTerms = extractSearchTerms(brief);
+  // Strip the marketplace-side "Products already curated (0 items)" template
+  // BEFORE we extract terms or append our own product list. Otherwise the
+  // agent sees two contradictory product statements and the first one wins.
+  const cleanBrief = stripOperatorProductPlaceholders(brief);
+
+  const searchTerms = extractSearchTerms(cleanBrief);
   const allProducts: EnrichedProduct[] = [];
   let queriesSucceeded = 0;
 
@@ -242,7 +291,7 @@ export async function enrichBriefWithProducts(
     .join("\n");
 
   const enrichedBrief =
-    brief +
+    cleanBrief +
     `\n\nProducts already curated for this store (${products.length} items). Use THESE — do NOT generate fake products.\n\n${productList}`;
 
   return { enrichedBrief, products };

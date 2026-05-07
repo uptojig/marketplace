@@ -3,8 +3,29 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, Search, X, Menu } from "lucide-react";
+import { CartDrawer } from "@/components/shop/CartDrawer";
+import { CyberLogo } from "./CyberLogo";
+import { SearchOverlay } from "./SearchOverlay";
+import { WishlistNavLink } from "./Wishlist";
 import type { GlobalHeader as GlobalHeaderSchema } from "@/types/multi-page-schema";
 import type { ThemeVariant } from "@/lib/landing/families";
+
+/**
+ * Heuristic: is this an agent-emitted placeholder rather than a
+ * real brand asset? Used so we know when to fall back to the
+ * programmatic CyberLogo on Family E. Includes the placehold.co
+ * family + the legacy "blank string / undefined" cases.
+ */
+function isPlaceholderLogo(url?: string): boolean {
+  if (!url || !url.trim()) return true;
+  const lower = url.toLowerCase();
+  return (
+    lower.includes("placehold.co") ||
+    lower.includes("placehold.it") ||
+    lower.includes("placeholder.com") ||
+    lower.includes("dummyimage.com")
+  );
+}
 
 interface Props {
   content: GlobalHeaderSchema;
@@ -15,6 +36,7 @@ interface Props {
 export function GlobalHeader({ content, theme, storeSlug }: Props) {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Defensive: Haiku may omit fields
   const logo = content?.logo ?? {} as GlobalHeaderSchema["logo"];
@@ -75,26 +97,40 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo */}
+            {/* Logo — image OR text, not both. Image (svg/img) wins when present. */}
             <Link
               href={resolveHref(logo?.linkTo ?? "/")}
               className="flex items-center gap-3"
-              aria-label={logo?.altText ?? "Logo"}
+              aria-label={logo?.altText ?? logo?.brandText ?? "Logo"}
             >
-              {logo?.imageUrl && (
+              {logo?.svgCode ? (
+                <div
+                  className={`${sizeClass} w-auto flex items-center [&>svg]:w-full [&>svg]:h-full`}
+                  dangerouslySetInnerHTML={{ __html: logo.svgCode }}
+                />
+              ) : logo?.imageUrl && !isPlaceholderLogo(logo.imageUrl) ? (
+                // Real (non-placeholder) image wins for every theme.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={logo?.imageUrl}
-                  alt={logo?.altText ?? "Logo"}
+                  src={logo.imageUrl}
+                  alt={logo?.altText ?? logo?.brandText ?? "Logo"}
                   className={`${sizeClass} w-auto`}
                   loading="eager"
                 />
-              )}
-              {logo?.brandText && (
+              ) : theme === "E" ? (
+                // Family E without a real logoUrl: render the
+                // programmatic cyberpunk lockup (smartphone + crown +
+                // gradient text). Beats showing a placehold.co square
+                // or an unstyled brand name string.
+                <CyberLogo
+                  storeSlug={storeSlug}
+                  brandText={logo?.brandText}
+                />
+              ) : logo?.brandText ? (
                 <span className="text-lg md:text-xl font-semibold text-stone-900">
-                  {logo?.brandText}
+                  {logo.brandText}
                 </span>
-              )}
+              ) : null}
             </Link>
 
             {/* Desktop nav */}
@@ -115,23 +151,20 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
             {/* Right actions */}
             <div className="flex items-center gap-3">
               {content?.showSearch && (
-                <Link
-                  href={`/stores/${storeSlug}?q=`}
-                  className="p-2 text-stone-600 hover:text-stone-900"
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  className="p-2 text-stone-600 hover:text-stone-900 transition-colors"
                   aria-label="ค้นหา"
                 >
                   <Search className="h-5 w-5" />
-                </Link>
+                </button>
               )}
 
+              <WishlistNavLink storeSlug={storeSlug} />
+
               {content?.showCart !== false && (
-                <Link
-                  href={`/stores/${storeSlug}/cart`}
-                  className="p-2 text-stone-600 hover:text-stone-900 relative"
-                  aria-label="ตะกร้าสินค้า"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                </Link>
+                <CartDrawer />
               )}
 
               {/* Mobile menu toggle */}
@@ -168,6 +201,15 @@ export function GlobalHeader({ content, theme, storeSlug }: Props) {
           )}
         </div>
       </header>
+
+      {/* Search overlay — full-screen on mobile, modal on desktop.
+          Renders OUTSIDE the sticky header (z-60) so backdrop covers
+          the whole viewport including the header itself. */}
+      <SearchOverlay
+        storeSlug={storeSlug}
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+      />
     </>
   );
 }

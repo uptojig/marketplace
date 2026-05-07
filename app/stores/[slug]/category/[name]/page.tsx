@@ -66,7 +66,8 @@ export default async function StoreCategoryPage({
     <div className="container mx-auto max-w-[1200px] px-4 py-6">
       <Link
         href={`/stores/${store.slug}`}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
+        className="inline-flex items-center gap-1 text-sm opacity-80 hover:opacity-100"
+        style={{ color: 'var(--shop-ink)' }}
       >
         <ChevronLeft className="h-4 w-4" />
         กลับหน้าร้าน
@@ -74,9 +75,9 @@ export default async function StoreCategoryPage({
 
       <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-gray-500">หมวดหมู่</p>
-          <h1 className="mt-0.5 text-2xl font-bold">{categoryName}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-xs uppercase tracking-wide opacity-60" style={{ color: 'var(--shop-ink)' }}>หมวดหมู่</p>
+          <h1 className="mt-0.5 text-2xl font-bold" style={{ color: 'var(--shop-ink)' }}>{categoryName}</h1>
+          <p className="mt-1 text-sm" style={{ color: 'var(--shop-ink-muted)' }}>
             {totalInCategory.toLocaleString()} สินค้า
           </p>
         </div>
@@ -86,16 +87,17 @@ export default async function StoreCategoryPage({
       <div className="mt-6 grid gap-6 lg:grid-cols-[220px,1fr]">
         {/* Sidebar with all categories */}
         <aside className="lg:block">
-          <div className="lg:sticky lg:top-4 rounded-lg border bg-white p-4">
-            <h2 className="mb-3 text-sm font-semibold">หมวดหมู่ทั้งหมด</h2>
+          <div className="lg:sticky lg:top-4 rounded-lg border p-4" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
+            <h2 className="mb-3 text-sm font-semibold" style={{ color: 'var(--shop-ink)' }}>หมวดหมู่ทั้งหมด</h2>
             <ul className="space-y-1 text-sm">
               <li>
                 <Link
                   href={`/stores/${store.slug}`}
-                  className="flex items-center justify-between rounded px-2 py-1.5 text-gray-700 hover:bg-gray-100"
+                  className="flex items-center justify-between rounded px-2 py-1.5 opacity-80 hover:opacity-100 hover:bg-black/5"
+                  style={{ color: 'var(--shop-ink)' }}
                 >
                   <span>ทั้งหมด</span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs opacity-60">
                     {totalAllProducts}
                   </span>
                 </Link>
@@ -108,13 +110,17 @@ export default async function StoreCategoryPage({
                       href={`/stores/${store.slug}/category/${encodeURIComponent(c)}`}
                       className={`flex items-center justify-between rounded px-2 py-1.5 ${
                         isActive
-                          ? "bg-[var(--shop-primary)] font-medium text-white"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "font-medium"
+                          : "opacity-80 hover:opacity-100 hover:bg-black/5"
                       }`}
+                      style={{ 
+                        color: isActive ? '#fff' : 'var(--shop-ink)',
+                        backgroundColor: isActive ? 'var(--shop-primary)' : 'transparent' 
+                      }}
                     >
                       <span>{c}</span>
                       <span
-                        className={`text-xs ${isActive ? "text-white/80" : "text-gray-400"}`}
+                        className={`text-xs ${isActive ? "text-white/80" : "opacity-60"}`}
                       >
                         {countMap.get(c) ?? 0}
                       </span>
@@ -129,11 +135,12 @@ export default async function StoreCategoryPage({
         {/* Product grid */}
         <div>
           {products.length === 0 ? (
-            <div className="rounded-lg border bg-white p-10 text-center">
-              <p className="text-gray-500">ยังไม่มีสินค้าในหมวดนี้</p>
+            <div className="rounded-lg border p-10 text-center" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
+              <p style={{ color: 'var(--shop-ink-muted)' }}>ยังไม่มีสินค้าในหมวดนี้</p>
               <Link
                 href={`/stores/${store.slug}`}
-                className="mt-3 inline-block text-sm text-blue-600 hover:underline"
+                className="mt-3 inline-block text-sm hover:underline"
+                style={{ color: 'var(--shop-primary)' }}
               >
                 ดูสินค้าทั้งหมด
               </Link>
@@ -143,13 +150,14 @@ export default async function StoreCategoryPage({
               {products.map((p) => (
                 <div
                   key={p.id}
-                  className="group flex flex-col overflow-hidden rounded-lg border bg-white"
+                  className="group flex flex-col overflow-hidden rounded-lg border"
+                  style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}
                 >
                   <Link
                     href={`/stores/${store.slug}/products/${p.id}`}
                     className="block"
                   >
-                    <div className="aspect-square overflow-hidden bg-muted">
+                    <div className="aspect-square overflow-hidden" style={{ backgroundColor: 'var(--shop-bg)' }}>
                       {p.imageUrl && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -164,11 +172,12 @@ export default async function StoreCategoryPage({
                     <Link
                       href={`/stores/${store.slug}/products/${p.id}`}
                       className="line-clamp-2 text-sm hover:underline"
+                      style={{ color: 'var(--shop-ink)' }}
                     >
                       {p.titleTh ?? p.title}
                     </Link>
                     <div className="mt-2 flex items-end justify-between gap-2">
-                      <p className="text-base font-bold">
+                      <p className="text-base font-bold" style={{ color: 'var(--shop-primary)' }}>
                         ฿ {Number(p.priceTHB).toLocaleString("th-TH")}
                       </p>
                       <ShopAddButton

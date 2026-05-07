@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { StoreEditForm } from "./edit-form";
 import { LandingForm } from "./landing-form";
 import { BlockEditor } from "./block-editor";
+import { ApprovalPanel } from "./approval-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -49,22 +50,37 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
       landingTitle: true,
       landingThemeVariant: true,
       landingGeneratedAt: true,
+      // Approval gate
+      approvalStatus: true,
+      approvalNote: true,
+      approvedAt: true,
       owner: { select: { email: true, name: true } },
       _count: { select: { products: true } },
     },
   });
   if (!store) notFound();
+  // Active-only product count for the Generate Landing gate. _count
+  // above includes inactive (soft-removed) products, which we don't
+  // want to count toward the threshold — those won't render on the
+  // storefront anyway.
+  const activeProductCount = await prisma.product.count({
+    where: { storeId: store.id, active: true },
+  });
   // Count blocks: v12 schema has pages[].blocks[], v11 is flat array
   const lb = store.landingBlocks as Record<string, unknown> | unknown[] | null;
   const landingBlockCount = Array.isArray(lb)
     ? lb.length
-    : lb && typeof lb === "object" && Array.isArray((lb as Record<string, unknown>).pages)
-      ? ((lb as Record<string, unknown>).pages as unknown[]).reduce(
-          (sum: number, p: unknown) =>
-            sum + (Array.isArray((p as Record<string, unknown>)?.blocks) ? ((p as Record<string, unknown>).blocks as unknown[]).length : 0),
-          0,
-        )
-      : 0;
+    : lb && typeof lb === "object" && (lb as Record<string, unknown>).type === "block_registry_v1"
+      ? Array.isArray((lb as Record<string, unknown>).blocks)
+        ? ((lb as Record<string, unknown>).blocks as unknown[]).length
+        : 0
+      : lb && typeof lb === "object" && Array.isArray((lb as Record<string, unknown>).pages)
+        ? ((lb as Record<string, unknown>).pages as unknown[]).reduce(
+            (sum: number, p: unknown) =>
+              sum + (Array.isArray((p as Record<string, unknown>)?.blocks) ? ((p as Record<string, unknown>).blocks as unknown[]).length : 0),
+            0,
+          )
+        : 0;
   const hasV12Schema = lb && typeof lb === "object" && !Array.isArray(lb) && Array.isArray((lb as Record<string, unknown>).pages);
 
   return (
@@ -84,15 +100,31 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
               สร้างเมื่อ {store.createdAt.toLocaleDateString("th-TH")}
             </p>
           </div>
-          <Link
-            href={`/stores/${store.slug}`}
-            target="_blank"
-            className="inline-flex shrink-0 items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-          >
-            ดูร้าน <ExternalLink className="h-3 w-3" />
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href={`/admin/stores/${store.id}/products`}
+              className="inline-flex items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            >
+              เลือกสินค้า ({store._count.products})
+            </Link>
+            <Link
+              href={`/stores/${store.slug}`}
+              target="_blank"
+              className="inline-flex items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            >
+              ดูร้าน <ExternalLink className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </div>
+
+      <ApprovalPanel
+        storeId={store.id}
+        storeName={store.slug}
+        initialStatus={store.approvalStatus}
+        initialNote={store.approvalNote}
+        approvedAt={store.approvedAt?.toISOString() ?? null}
+      />
 
       <LandingForm
         storeId={store.id}
@@ -102,18 +134,34 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
         landingThemeVariant={store.landingThemeVariant}
         landingGeneratedAt={store.landingGeneratedAt?.toISOString() ?? null}
         blockCount={landingBlockCount}
+        activeProductCount={activeProductCount}
       />
 
-      {landingBlockCount > 0 && (
+      {landingBlockCount > 0 && !(lb && typeof lb === "object" && (lb as Record<string, unknown>).type === "block_registry_v1") && (
         <BlockEditor
           storeId={store.id}
           storeSlug={store.slug}
           schema={
             hasV12Schema
-              ? (store.landingBlocks as { schemaVersion?: string; designFamily?: string; pages?: unknown[] })
+              ? // BlockEditor's Props has its own `Page[]` shape; cast
+                // through `unknown` since landingBlocks is Json from
+                // Prisma. BlockEditor validates internally.
+                (store.landingBlocks as unknown as Parameters<
+                  typeof BlockEditor
+                >[0]["schema"])
               : {
                   schemaVersion: "12",
-                  pages: [{ slug: "home", isHomepage: true, blocks: store.landingBlocks as unknown[] }],
+                  pages: [
+                    {
+                      slug: "home",
+                      isHomepage: true,
+                      blocks: store.landingBlocks as unknown as Parameters<
+                        typeof BlockEditor
+                      >[0]["schema"]["pages"] extends Array<{ blocks: infer B }>
+                        ? B
+                        : never,
+                    },
+                  ],
                 }
           }
         />

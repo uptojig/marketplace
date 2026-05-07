@@ -13,11 +13,11 @@ export function AddToCartModal() {
   if (!open) return null;
 
   // When the user added a product from a store page, send them to
-  // that store's own cart (/stores/<slug>/cart) so the design family
-  // cascade + storefront chrome stay applied. Falls back to the
-  // marketplace-level /cart only if storeSlug isn't known (e.g. a
-  // future entry-point that adds without context).
-  const cartHref = storeSlug ? `/stores/${storeSlug}/cart` : "/cart";
+  // that store's own cart (/stores/<slug>/cart). The marketplace-level
+  // /cart route was deleted in the cleanup pass — every cart now lives
+  // under /stores/<slug>/. If somehow storeSlug isn't passed (a callsite
+  // bug), we render the modal with no link rather than 404 the user.
+  const cartHref = storeSlug ? `/stores/${storeSlug}/cart` : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -31,14 +31,16 @@ export function AddToCartModal() {
         <h3 className="text-base font-semibold">เพิ่มสินค้าลงตะกร้าแล้ว</h3>
         {productTitle && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{productTitle}</p>}
         <div className="mt-4 flex flex-col gap-2">
-          <Link
-            href={cartHref}
-            onClick={hide}
-            className="rounded-full px-4 py-2.5 text-sm font-semibold text-white"
-            style={{ backgroundColor: "var(--shop-primary, #dc2626)" }}
-          >
-            สั่งซื้อสินค้าในตะกร้า
-          </Link>
+          {cartHref && (
+            <Link
+              href={cartHref}
+              onClick={hide}
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-white"
+              style={{ backgroundColor: "var(--shop-primary, #dc2626)" }}
+            >
+              สั่งซื้อสินค้าในตะกร้า
+            </Link>
+          )}
           <button
             type="button"
             onClick={hide}

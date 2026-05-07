@@ -29,11 +29,23 @@ export default async function AboutPage({
       (p: { slug: string }) => p.slug === "about"
     );
     if (hasAboutPage) {
+      const activeRows = await prisma.product.findMany({
+        where: { storeId: store.id, active: true },
+        select: { externalProductId: true },
+      });
+      const activeProductIds = new Set(
+        activeRows
+          .map((r) => r.externalProductId)
+          .filter((s): s is string => !!s),
+      );
       return (
         <MultiPageRenderer
           schema={store.landingBlocks}
           pageSlug="about"
           storeSlug={store.slug}
+          storeName={store.name}
+          storeBannerUrl={store.bannerUrl}
+          activeProductIds={activeProductIds}
         />
       );
     }
