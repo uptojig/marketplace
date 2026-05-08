@@ -6,6 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@prisma/client";
+import { sendEmail, isEmailConfigured } from "@/lib/email/send";
 
 const providers: NextAuthOptions["providers"] = [];
 
@@ -22,7 +23,43 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   );
 }
 
-if (process.env.EMAIL_SERVER && process.env.EMAIL_FROM) {
+// Magic-link sign-in. Two backends supported:
+//   - Resend (preferred) — set RESEND_API_KEY + RESEND_FROM
+//   - SMTP (fallback)    — set EMAIL_SERVER + EMAIL_FROM
+// EmailProvider's default uses nodemailer over EMAIL_SERVER. When
+// RESEND_API_KEY is set we override sendVerificationRequest so the
+// email goes through the Resend HTTPS API instead — works on Vercel
+// edge/serverless without opening SMTP ports.
+if (isEmailConfigured()) {
+  providers.push(
+    EmailProvider({
+      // EmailProvider still expects these fields for type validation
+      // even when sendVerificationRequest is overridden — pass dummy
+      // strings so it doesn't try to construct a nodemailer transport.
+      server: { host: "resend", port: 0, auth: { user: "", pass: "" } },
+      from: process.env.RESEND_FROM ?? "noreply@example.com",
+      async sendVerificationRequest({ identifier, url }) {
+        const host = new URL(url).host;
+        await sendEmail({
+          to: identifier,
+          subject: `เข้าสู่ระบบ ${host}`,
+          html: `
+            <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#111">
+              <h2 style="margin:0 0 12px">เข้าสู่ระบบ</h2>
+              <p>คลิกปุ่มด้านล่างเพื่อเข้าสู่ระบบ — ลิงก์มีอายุ 24 ชั่วโมง</p>
+              <p style="margin:24px 0">
+                <a href="${url}" style="background:#111;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block">เข้าสู่ระบบ</a>
+              </p>
+              <p style="font-size:12px;color:#666">ถ้าปุ่มกดไม่ได้ ใช้ลิงก์นี้: <br><span style="word-break:break-all">${url}</span></p>
+              <p style="font-size:12px;color:#666;margin-top:24px">หากคุณไม่ได้ขอลิงก์นี้ ละเลยอีเมลนี้ได้</p>
+            </div>
+          `,
+          text: `เข้าสู่ระบบ: ${url}`,
+        });
+      },
+    }),
+  );
+} else if (process.env.EMAIL_SERVER && process.env.EMAIL_FROM) {
   providers.push(
     EmailProvider({
       server: process.env.EMAIL_SERVER,
