@@ -198,12 +198,14 @@ export default async function StorePage({
     // Single query gives us BOTH the activeProductIds Set (filter
     // input) AND the fallbackProducts list (substitution material
     // when an OfferGrid empties because the schema references rows
-    // that no longer exist). Take=12 caps the substitution to
-    // typical OfferGrid size; we don't need the whole catalog here.
+    // that no longer exist). Take=24 (was 12) since we now narrow
+    // the fallback list further down to translated rows only — need
+    // some headroom to still hit ~12 substitutions when half the
+    // catalog hasn't been translated yet.
     const activeRows = await prisma.product.findMany({
       where: { storeId: baseStore.id, active: true },
       orderBy: { createdAt: "desc" },
-      take: 12,
+      take: 24,
       select: {
         externalProductId: true,
         title: true,
@@ -215,13 +217,24 @@ export default async function StorePage({
     const activeProductIds = new Set(
       activeRows.map((r) => r.externalProductId).filter((s): s is string => !!s),
     );
-    const fallbackProducts = activeRows.map((r) => ({
-      externalProductId: r.externalProductId,
-      title: r.title,
-      titleTh: r.titleTh,
-      priceTHB: Number(r.priceTHB),
-      imageUrl: r.imageUrl,
-    }));
+    // Substitution only uses products that already have a Thai
+    // title — otherwise the home page ends up mixing fallback
+    // English cards into an otherwise-Thai grid (the agent's own
+    // products were translated at generation; only the legacy rows
+    // imported before the auto-translate hook landed are null).
+    // Operators can backfill with the "✨ แปลชื่อ TH" button on
+    // /dashboard/store/products which fills `titleTh` and re-makes
+    // those rows eligible here.
+    const fallbackProducts = activeRows
+      .filter((r) => r.titleTh && r.titleTh.trim().length > 0)
+      .slice(0, 12)
+      .map((r) => ({
+        externalProductId: r.externalProductId,
+        title: r.title,
+        titleTh: r.titleTh,
+        priceTHB: Number(r.priceTHB),
+        imageUrl: r.imageUrl,
+      }));
     return (
       <MultiPageRenderer
         schema={baseStore.landingBlocks}
