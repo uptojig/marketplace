@@ -1,8 +1,24 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { waitUntil } from "@vercel/functions";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { translateProductTitlesForStore } from "@/lib/translate-titles";
+
+/**
+ * In-memory rate-limit so the storefront-render auto-translate
+ * trigger doesn't fire on every page view when a busy store has
+ * untranslated products. Map<storeId, lastTriggeredAt-ms>. Process
+ * restart resets — fine, single trigger per cold-start is plenty.
+ *
+ * 5 min cooldown is generous for the operator's UX (visitor #1 at
+ * t=0s triggers; #2 at t=5s sees translation in progress; by
+ * t=30-60s it's done) but tight enough to retry quickly if a Claude
+ * call legitimately failed.
+ */
+const recentBackfillTriggers = new Map<string, number>();
+const BACKFILL_COOLDOWN_MS = 5 * 60 * 1000;
 import {
   Search,
   ShoppingCart,
@@ -37,6 +53,37 @@ export default async function ShopLayout({
 }) {
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
+
+  // ── Auto-translate trigger ──────────────────────────────────
+  // Stores imported BEFORE the auto-translate waitUntil hook
+  // (commit 8eee8ad) have products with titleTh=null which then
+  // render in English on category / search / PDP / fallback grids.
+  // Operators can fix this manually via the dashboard button, but
+  // we also auto-trigger here on the first storefront render to
+  // self-heal: visitor #1 kicks Claude in the background, by the
+  // time visitor #2 lands the rows are translated.
+  //
+  // Cheap COUNT query gates the trigger — costs one DB roundtrip
+  // per render once everything is translated (then count=0 and we
+  // bail). Rate-limited to 1 fire per 5min per process via the
+  // Map above so we don't spam Claude on hot stores.
+  const lastFire = recentBackfillTriggers.get(store.id) ?? 0;
+  if (Date.now() - lastFire > BACKFILL_COOLDOWN_MS) {
+    const untranslated = await prisma.product.count({
+      where: { storeId: store.id, active: true, titleTh: null },
+    });
+    if (untranslated > 0) {
+      recentBackfillTriggers.set(store.id, Date.now());
+      waitUntil(
+        translateProductTitlesForStore(store.id).catch((err) => {
+          console.error(
+            `[storefront-layout] auto-translate failed (${store.slug}):`,
+            err,
+          );
+        }),
+      );
+    }
+  }
 
   // Approval gate. Must run BEFORE the HTML/v12 short-circuit so
   // non-approved stores can't bypass via that path either.
