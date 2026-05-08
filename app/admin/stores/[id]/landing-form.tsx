@@ -559,13 +559,23 @@ function StatusCard({
             สร้างเมื่อ {new Date(generatedAt).toLocaleString("th-TH")}
           </p>
         )}
+        {/* Replace existing landing with the schema from a different
+            Anthropic session (e.g. operator iterated on the design
+            in the Console and wants to ship that variant). The same
+            <RecoverFromSession /> widget that handles the post-
+            timeout recovery path serves double-duty as a "swap to
+            a different design" tool. */}
+        <RecoverFromSession storeId={fallback.storeId} />
       </div>
     );
   }
 
   return (
     <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-600">
-      ยังไม่มี landing page — ร้านนี้ render product grid ปกติ
+      <p>ยังไม่มี landing page — ร้านนี้ render product grid ปกติ</p>
+      {/* Operator may already have a generated session in Anthropic
+          Console they want to use as the initial landing. */}
+      <RecoverFromSession storeId={fallback.storeId} />
     </div>
   );
 }
