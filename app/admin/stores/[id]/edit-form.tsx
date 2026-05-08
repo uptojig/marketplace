@@ -294,12 +294,17 @@ export function StoreEditForm({ store }: { store: StoreData }) {
                 className="w-full rounded-md border px-3 py-2 font-mono text-xs"
               />
               {isImg(form.logoUrl) && (
+                // Horizontal preview — most brand wordmarks are wider
+                // than tall (e.g. ~3:1 aspect), so a square 80×80 well
+                // crops the interesting parts. 240×80 + object-contain
+                // shows the whole asset at the size the storefront
+                // header will actually render it.
                 <Image
                   src={form.logoUrl}
                   alt="Logo preview"
-                  width={80}
+                  width={240}
                   height={80}
-                  className="mt-2 rounded border object-cover"
+                  className="mt-2 rounded border bg-base-200 object-contain p-2"
                   unoptimized
                 />
               )}

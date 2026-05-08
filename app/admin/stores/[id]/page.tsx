@@ -94,8 +94,23 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
         </Link>
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">{store.name}</h1>
-            <p className="text-sm text-muted-foreground">
+            {/* Logo wins when present — operator uploaded brand artwork
+                belongs in the page header instead of the typed-out
+                store name string. Falls back to <h1>{name}</h1> when
+                no logoUrl is set. h-12 + w-auto keeps horizontal
+                wordmark logos at a sensible toolbar size without
+                cropping. */}
+            {store.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={store.logoUrl}
+                alt={store.name}
+                className="h-12 w-auto max-w-[280px] object-contain"
+              />
+            ) : (
+              <h1 className="text-2xl font-bold">{store.name}</h1>
+            )}
+            <p className="mt-1 text-sm text-muted-foreground">
               เจ้าของ: {store.owner.name ?? store.owner.email} • {store._count.products} สินค้า •
               สร้างเมื่อ {store.createdAt.toLocaleDateString("th-TH")}
             </p>
