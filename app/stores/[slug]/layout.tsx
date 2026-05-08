@@ -277,21 +277,31 @@ export default async function ShopLayout({
                 }`}
               >
                 {store.logoUrl ? (
+                  // Horizontal lockup. h-12 + w-auto + max-w lets
+                  // wordmark logos render at their natural aspect
+                  // without the old square crop. The store name
+                  // text is hidden when a logo is present — the
+                  // logo IS the brand identity, repeating the name
+                  // beside it just clutters the toolbar.
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={store.logoUrl}
                     alt={store.name}
-                    className="h-12 w-12 rounded object-cover"
+                    className="h-12 w-auto max-w-[260px] object-contain"
                   />
                 ) : (
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded text-lg font-bold text-white"
-                    style={{ backgroundColor: primary }}
-                  >
-                    {store.name.slice(0, 1).toUpperCase()}
-                  </div>
+                  <>
+                    <div
+                      className="flex h-12 w-12 items-center justify-center rounded text-lg font-bold text-white"
+                      style={{ backgroundColor: primary }}
+                    >
+                      {store.name.slice(0, 1).toUpperCase()}
+                    </div>
+                    <h1 className="text-xl font-semibold leading-tight">
+                      {store.name}
+                    </h1>
+                  </>
                 )}
-                <h1 className="text-xl font-semibold leading-tight">{store.name}</h1>
               </Link>
 
               <div className="flex items-center gap-3">
@@ -437,8 +447,22 @@ export default async function ShopLayout({
           <button aria-label="Menu" className="p-1">
             <Menu className="h-5 w-5" />
           </button>
-          <Link href={`/stores/${store.slug}`} className="flex-1 text-center text-base font-semibold truncate">
-            {store.name}
+          <Link
+            href={`/stores/${store.slug}`}
+            className="flex-1 flex items-center justify-center"
+          >
+            {store.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={store.logoUrl}
+                alt={store.name}
+                className="h-8 w-auto max-w-[180px] object-contain"
+              />
+            ) : (
+              <span className="text-base font-semibold truncate">
+                {store.name}
+              </span>
+            )}
           </Link>
           <Link href={`/stores/${store.slug}/cart`} aria-label="Cart" className="relative p-1">
             <ShoppingCart className="h-5 w-5" />
