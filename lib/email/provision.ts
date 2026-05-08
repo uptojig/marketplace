@@ -9,17 +9,28 @@ function randomSuffix(): string {
 
 /**
  * Verification rule (no OTP):
- *  - The owner's NextAuth login email is already verified by the auth
- *    provider (Google OAuth or email magic link).
- *  - When the platform email's forward target equals that login email, mail
- *    sent to {slug}@platform reaches the verified inbox by transitivity →
- *    we can safely mark the platform email as identity-verified.
- *  - When forwardTo is changed to anything else, we have no proof of
- *    control of the new inbox → unverified.
+ *
+ * The forward target is set inside the admin UI which already gates
+ * on ADMIN role; admins are trusted to type the correct destination
+ * for their own brand inbox (e.g. contact@yourdomain.com). Any
+ * non-empty, syntactically-valid email is accepted as verified —
+ * matching owner.email is no longer a precondition.
+ *
+ * Why we used to require an owner.email match: for the legacy
+ * vendor self-onboarding flow, where the form was filled by random
+ * users we didn't trust. /onboarding has been removed (commit
+ * 59c7c90), so the trust boundary is now the admin form itself.
+ *
+ * If we ever re-introduce a self-service settings page for vendors
+ * who are NOT admins, gate this back to the email-match rule there.
  */
-function isAutoVerified(forwardTo: string, ownerEmail: string | null): boolean {
-  if (!ownerEmail) return false;
-  return forwardTo.trim().toLowerCase() === ownerEmail.trim().toLowerCase();
+function isAutoVerified(forwardTo: string): boolean {
+  const v = forwardTo.trim();
+  if (!v) return false;
+  // Cheap shape check — RFC 5322 is a nightmare and Zod has already
+  // validated upstream. We just want to refuse "" and obviously-broken
+  // values that slipped past.
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
 export async function provisionPlatformEmail(storeId: string): Promise<{
@@ -69,7 +80,7 @@ export async function provisionPlatformEmail(storeId: string): Promise<{
     name: `store-${store.slug}`,
   });
 
-  const verified = isAutoVerified(forwardTo, store.owner.email);
+  const verified = isAutoVerified(forwardTo);
   const now = new Date();
 
   await prisma.$transaction([
@@ -110,7 +121,7 @@ export async function updatePlatformEmailForward(
   });
   if (!store) throw new Error(`Store ${storeId} not found`);
 
-  const verified = isAutoVerified(newForwardTo, store.owner.email);
+  const verified = isAutoVerified(newForwardTo);
   const now = new Date();
 
   if (!store.platformEmail) {

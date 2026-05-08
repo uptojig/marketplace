@@ -491,12 +491,12 @@ export function StoreEditForm({ store }: { store: StoreData }) {
           </div>
         </Section>
 
-        <Section title="อีเมลของระบบ (Identity Verification)">
+        <Section title="อีเมลร้านค้า">
           <p className="text-xs text-muted-foreground">
-            อีเมลกลางบนโดเมน platform — provision อัตโนมัติเมื่อร้านตั้งค่า Custom Domain
-            ครั้งแรก ยืนยันตัวตนอัตโนมัติเมื่อ forward target = อีเมลที่ใช้ login (ไม่ต้อง OTP)
+            อีเมลกลางบนโดเมนของระบบ — สร้างให้อัตโนมัติเมื่อร้านตั้งค่าโดเมนของตัวเองครั้งแรก
+            เมลที่ส่งมาจะถูกส่งต่อไปยังกล่องจดหมายที่ระบุไว้ด้านล่าง
           </p>
-          <Field label="อีเมลของระบบ" hint="ระบบสร้างให้เมื่อร้านตั้งค่า Custom Domain">
+          <Field label="อีเมลกลางของร้าน" hint="ระบบสร้างให้เมื่อตั้งค่าโดเมน">
             <input
               value={store.platformEmail ?? "— ยังไม่มี —"}
               readOnly
@@ -504,14 +504,14 @@ export function StoreEditForm({ store }: { store: StoreData }) {
             />
           </Field>
           <Field
-            label="ส่งต่อไปที่ (Forward target)"
-            hint="ปลายทางที่อีเมลถูก forward ไป — ถ้าใส่อีเมลที่ตรงกับ owner.email (NextAuth verified) จะ verified อัตโนมัติ"
+            label="ส่งต่อไปที่อีเมล"
+            hint="กล่องจดหมายที่จะรับเมลจริง — กรอกอีเมลใดก็ได้ เช่น contact@yourdomain.com (ระบบเชื่อค่าที่แอดมินกรอก ไม่ต้องยืนยันเพิ่ม)"
           >
             <input
               type="email"
               value={form.platformEmailForwardTo}
               onChange={(e) => update("platformEmailForwardTo", e.target.value)}
-              placeholder="owner@gmail.com"
+              placeholder="contact@yourdomain.com"
               className="w-full rounded-md border px-3 py-2 text-sm"
             />
           </Field>
