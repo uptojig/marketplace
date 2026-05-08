@@ -1,33 +1,33 @@
 /**
  * Image upload endpoint for admin / dashboard forms.
  *
- * Operator picks a file in the browser → multipart upload to here
- * → we put it on Vercel Blob and return the public URL → the form
- * writes that URL into store.logoUrl / store.bannerUrl.
+ * Operator picks a file in the browser → multipart upload here → we
+ * PUT it to DigitalOcean Spaces (S3-compatible) → return the public
+ * URL → the form writes that URL into store.logoUrl / store.bannerUrl.
  *
- * Requires `BLOB_READ_WRITE_TOKEN` in the environment (auto-injected
- * by Vercel when you provision a Blob store; copy it to .env.local
- * for local dev). Without the token we 503 with a helpful message
- * so the form can render an inline error rather than uploading
+ * Required env: SPACES_ENDPOINT, SPACES_REGION, SPACES_BUCKET,
+ * SPACES_KEY, SPACES_SECRET. Without them we 503 with a helpful
+ * message so the form renders an inline error rather than uploading
  * silently into the void.
  *
  * Auth: requires ADMIN role OR the caller to be a store owner. The
- * uploaded URL is public regardless of who uploaded it (Blob URLs
- * are unguessable but unauthenticated by design — the URL itself
- * is the capability).
+ * uploaded URL is public regardless of who uploaded it (Spaces ACL
+ * is public-read — the URL itself is the capability).
  *
  * Validation:
  *   - Content-Type: image/* (png, jpg, webp, gif, svg)
  *   - Max size: 5MB (configurable via UPLOAD_MAX_BYTES)
- *   - Filename sanitized to stop path traversal even though Blob
- *     SDK doesn't use the value as a path.
  */
 
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  isSpacesConfigured,
+  uploadBuffer,
+  SpacesNotConfiguredError,
+} from "@/lib/storage/spaces";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,9 +55,6 @@ async function authorize(): Promise<{ ok: true } | { ok: false; status: number; 
     select: { role: true, store: { select: { id: true } } },
   });
   if (!me) return { ok: false, status: 401, error: "ไม่พบ user" };
-  // ADMIN can upload for any store; store owners can upload for theirs.
-  // Both end up on the same blob — auth here is just rate-limit / spam
-  // prevention, not access control on the resulting URL.
   if (me.role !== "ADMIN" && !me.store) {
     return { ok: false, status: 403, error: "ไม่มีสิทธิ์อัพโหลด" };
   }
@@ -65,12 +62,12 @@ async function authorize(): Promise<{ ok: true } | { ok: false; status: number; 
 }
 
 export async function POST(req: Request) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  if (!isSpacesConfigured()) {
     return NextResponse.json(
       {
-        error: "blob_not_configured",
+        error: "spaces_not_configured",
         detail:
-          "BLOB_READ_WRITE_TOKEN is not set. Add a Vercel Blob store via the dashboard, then copy the env var to your project (and to .env.local for local dev).",
+          "SPACES_ENDPOINT / SPACES_BUCKET / SPACES_KEY / SPACES_SECRET are not set. Add them in Vercel project env vars.",
       },
       { status: 503 },
     );
@@ -102,30 +99,34 @@ export async function POST(req: Request) {
     );
   }
 
-  // Folder per content kind (operator passes ?kind=logo|banner|product
-  // so the blob URL is self-describing in admin debugging). Default
-  // "misc" if absent. Sanitize filename to letters/digits/dots/dashes
-  // — Blob doesn't use the path as a filesystem path, but we still
-  // don't want surprise unicode in URLs.
+  // Folder per content kind so the URL is self-describing in admin
+  // debugging (logo/..., banner/..., product/...). Default "misc" if
+  // absent. The Spaces helper randomizes the leaf filename so name
+  // collisions are impossible regardless of caller-supplied input.
   const url = new URL(req.url);
   const kind = (url.searchParams.get("kind") ?? "misc").replace(/[^a-z0-9-]/gi, "");
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
-  const blobPath = `${kind}/${Date.now()}-${safeName}`;
 
   try {
-    const blob = await put(blobPath, file, {
-      access: "public",
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const { publicUrl } = await uploadBuffer({
+      prefix: kind || "misc",
+      filename: file.name,
       contentType: file.type,
-      addRandomSuffix: true,
+      body: buffer,
     });
     return NextResponse.json({
       ok: true,
-      url: blob.url,
-      pathname: blob.pathname,
+      url: publicUrl,
       size: file.size,
     });
   } catch (err) {
-    console.error("[upload] blob put failed:", err);
+    if (err instanceof SpacesNotConfiguredError) {
+      return NextResponse.json(
+        { error: "spaces_not_configured" },
+        { status: 503 },
+      );
+    }
+    console.error("[upload] spaces put failed:", err);
     return NextResponse.json(
       {
         ok: false,

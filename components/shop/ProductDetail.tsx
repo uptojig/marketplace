@@ -1,34 +1,44 @@
 "use client";
 
 /**
- * Product detail (PDP).
+ * Product detail — refit to match the user-supplied reference
+ * (tailwinduikit "Balenciaga Signature Sweatshirt" pattern):
  *
- * Rebuilt on daisyUI 5 primitives so the page recolors across all
- * 35 themes via semantic tokens (bg-primary / text-base-content /
- * border-base-300 / btn-primary) instead of the legacy --shop-*
- * cascade. Layout reference is the tailwinduikit "Balenciaga
- * Signature Sweatshirt" pattern (gallery left, info right, sticky
- * mobile bottom bar).
+ *   ┌─ gallery (md:flex) ──┬─ info (xl:w-2/5) ──────────┐
+ *   │ ▣ stacked image 1     │ Subtitle (collection)       │
+ *   │                       │ Title                       │
+ *   │ ▣ stacked image 2     │ ─────                       │
+ *   │                       │ Colours: Smoke Blue ▾       │
+ *   │ (mobile: 1 hero +     │ ─────                       │
+ *   │  4 thumb row)         │ Size: 38.2 ▾                │
+ *   │                       │ ─────                       │
+ *   │                       │ [● Add to cart] (full-width)│
+ *   │                       │ Description body            │
+ *   │                       │ Product Code:               │
+ *   │                       │ ▾ Shipping and returns      │
+ *   │                       │ ▾ Contact us                │
+ *   └───────────────────────┴─────────────────────────────┘
  *
- * Key daisyUI swaps:
- *   - .btn / .btn-primary       → primary CTA + variant chips
- *   - .join / .join-item        → quantity stepper (-/qty/+)
- *   - .collapse.collapse-arrow  → variant disclosures + shipping/contact panels
- *   - .badge                    → not used here yet but available
- *   - bg-base-100/200/300       → card / page / surface backgrounds
- *   - text-base-content[/70]    → body / muted copy
+ * Color/Size rows are <details> — collapsed by default, showing
+ * the current value + chevron in the summary, expanding to reveal
+ * a chip picker (so variant browsing without burying interaction).
  *
- * The sticky mobile bottom-bar stays custom — no daisyUI primitive
- * matches that shape and we want the IntersectionObserver hookup.
+ * Theme cascade through var(--shop-*) so each store's design family
+ * carries the accent.
  */
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { useCartConfirmation } from "@/lib/store/cartConfirm";
 import { formatTHB } from "@/lib/utils";
 import { WishlistButton } from "@/components/storefront/Wishlist";
 import { FamilyDCustomizer } from "@/components/storefront/FamilyDCustomizer";
-import { ShoppingBag, Truck, RotateCcw, Banknote } from "lucide-react";
+import {
+  ChevronDown,
+  ShoppingBag,
+  Truck,
+  RotateCcw,
+  Banknote,
+} from "lucide-react";
 
 interface Variant {
   id: string;
@@ -64,7 +74,9 @@ export function ProductDetail({ product }: { product: Product }) {
 
   // Sticky mobile bottom bar visibility — show when the in-flow CTA
   // scrolls out of viewport. IntersectionObserver is the cheapest
-  // way to do this; no scroll listeners.
+  // way to do this; no scroll listeners needed. Per the multi-page
+  // builder spec: "DON'T ship without a sticky mobile bottom-bar on
+  // PDP. Lost conversions."
   const ctaRef = useRef<HTMLButtonElement | null>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
   useEffect(() => {
@@ -145,9 +157,11 @@ export function ProductDetail({ product }: { product: Product }) {
 
   return (
     <div className="md:flex items-start justify-center py-8 2xl:px-20 md:px-6 px-0">
-      {/* ── Gallery ── */}
+      {/* ── Gallery (desktop: stacked, mobile: hero + thumb row) ── */}
       <div className="relative">
         <Gallery images={allImages} title={product.title} />
+        {/* Heart toggle — top-right of gallery, above the image. lg size
+            so it's tap-friendly on mobile + reads as a primary action. */}
         <div className="absolute top-3 right-3 z-10">
           <WishlistButton
             storeSlug={product.storeSlug}
@@ -162,24 +176,30 @@ export function ProductDetail({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* ── Info column ── */}
+      {/* ── Info column ────────────────────────────────────────── */}
       <div className="xl:w-2/5 md:w-1/2 lg:ml-8 md:ml-6 md:mt-0 mt-6 px-4 md:px-0">
-        {/* Subtitle + title + price */}
-        <div className="border-b border-base-300 pb-6">
+        {/* Subtitle + title */}
+        <div className="border-b pb-6" style={{ borderColor: "var(--shop-border)" }}>
           {product.subtitle && (
-            <p className="text-sm leading-none text-base-content/70">
+            <p className="text-sm leading-none" style={{ color: "var(--shop-ink-muted)" }}>
               {product.subtitle}
             </p>
           )}
-          <h1 className="lg:text-2xl text-xl font-semibold leading-7 mt-2 text-base-content">
+          <h1
+            className="lg:text-2xl text-xl font-semibold leading-7 mt-2"
+            style={{ color: "var(--shop-ink)" }}
+          >
             {product.title}
           </h1>
-          <p className="lg:text-3xl text-2xl font-bold mt-3 text-base-content">
+          <p
+            className="lg:text-3xl text-2xl font-bold mt-3"
+            style={{ color: "var(--shop-ink)" }}
+          >
             {formatTHB(displayPrice)}
           </p>
         </div>
 
-        {/* Variant pickers — each is a daisyUI .collapse */}
+        {/* Variant pickers — disclosure style (header shows selection) */}
         {Object.entries(attributeGroups).map(([attrName, values]) => (
           <VariantDisclosure
             key={attrName}
@@ -195,16 +215,28 @@ export function ProductDetail({ product }: { product: Product }) {
           />
         ))}
 
-        {/* Quantity + stock — daisyUI .join group for the stepper */}
-        <div className="py-4 border-b border-base-300 flex items-center justify-between">
-          <p className="text-base leading-4 text-base-content">จำนวน</p>
+        {/* Quantity + stock */}
+        <div
+          className="py-4 border-b flex items-center justify-between"
+          style={{ borderColor: "var(--shop-border)" }}
+        >
+          <p
+            className="text-base leading-4"
+            style={{ color: "var(--shop-ink)" }}
+          >
+            จำนวน
+          </p>
           <div className="flex items-center gap-3">
-            <div className="join border border-base-300 rounded-md">
+            <div
+              className="inline-flex items-center rounded-md border"
+              style={{ borderColor: "var(--shop-border)" }}
+            >
               <button
                 type="button"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 aria-label="ลด"
-                className="join-item btn btn-ghost btn-sm text-lg"
+                className="px-3 py-1.5 text-lg disabled:opacity-50"
+                style={{ color: "var(--shop-ink)" }}
               >
                 −
               </button>
@@ -215,19 +247,28 @@ export function ProductDetail({ product }: { product: Product }) {
                 onChange={(e) =>
                   setQty(Math.max(1, parseInt(e.target.value, 10) || 1))
                 }
-                className="join-item input input-sm w-14 text-center bg-transparent border-0 focus:outline-none"
+                className="w-12 bg-transparent py-1.5 text-center text-sm focus:outline-none"
+                style={{
+                  color: "var(--shop-ink)",
+                  borderLeft: "1px solid var(--shop-border)",
+                  borderRight: "1px solid var(--shop-border)",
+                }}
               />
               <button
                 type="button"
                 onClick={() => setQty((q) => q + 1)}
                 aria-label="เพิ่ม"
-                className="join-item btn btn-ghost btn-sm text-lg"
+                className="px-3 py-1.5 text-lg"
+                style={{ color: "var(--shop-ink)" }}
               >
                 +
               </button>
             </div>
             {stock != null && (
-              <span className="text-xs text-base-content/70">
+              <span
+                className="text-xs"
+                style={{ color: "var(--shop-ink-muted)" }}
+              >
                 {stock > 0 ? `เหลือ ${stock} ชิ้น` : "หมด"}
               </span>
             )}
@@ -238,15 +279,21 @@ export function ProductDetail({ product }: { product: Product }) {
             CSS-gated to .theme-D so other families never render it. */}
         <FamilyDCustomizer productId={product.id} />
 
-        {/* Primary CTA */}
+        {/* Primary CTA — single, full-width, solid */}
         <button
           ref={ctaRef}
           type="button"
           onClick={handleAdd}
           disabled={!canAdd}
-          className="btn btn-primary btn-lg w-full mt-6 text-base"
+          className="mt-6 text-base flex items-center justify-center leading-none w-full py-4 transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          style={{
+            backgroundColor: canAdd
+              ? "var(--shop-primary)"
+              : "var(--shop-ink-muted)",
+            color: "white",
+          }}
         >
-          <ShoppingBag className="h-4 w-4" />
+          <ShoppingBag className="mr-3 h-4 w-4" />
           {requiresVariant && !allAttrsPicked
             ? `กรุณาเลือก${Object.keys(attributeGroups).join(" / ")}`
             : stock === 0
@@ -254,7 +301,8 @@ export function ProductDetail({ product }: { product: Product }) {
               : "เพิ่มลงตะกร้า"}
         </button>
 
-        {/* Trust strip */}
+        {/* Trust strip — Thai market staples right below the CTA.
+            Three icons: free shipping over ฿990, 7-day return, COD ok. */}
         <div className="mt-4 grid grid-cols-3 gap-3 text-center">
           {[
             { icon: Truck, label: "ส่งฟรี ฿990+" },
@@ -263,10 +311,23 @@ export function ProductDetail({ product }: { product: Product }) {
           ].map(({ icon: Icon, label }, i) => (
             <div
               key={i}
-              className="flex flex-col items-center gap-1 py-2 rounded-lg bg-base-100 border border-base-300"
+              className="flex flex-col items-center gap-1 py-2 rounded-lg"
+              style={{
+                background:
+                  "color-mix(in srgb, var(--shop-card) 88%, transparent)",
+                border: "1px solid var(--shop-border)",
+              }}
             >
-              <Icon className="h-4 w-4 text-primary" />
-              <span className="text-xs text-base-content/70">{label}</span>
+              <Icon
+                className="h-4 w-4"
+                style={{ color: "var(--shop-primary)" }}
+              />
+              <span
+                className="text-xs"
+                style={{ color: "var(--shop-ink-muted)" }}
+              >
+                {label}
+              </span>
             </div>
           ))}
         </div>
@@ -274,11 +335,17 @@ export function ProductDetail({ product }: { product: Product }) {
         {/* Description + meta */}
         {product.description && (
           <div className="mt-7">
-            <p className="text-base leading-relaxed lg:leading-tight text-base-content/70">
+            <p
+              className="text-base leading-relaxed lg:leading-tight"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
               <span className="whitespace-pre-line">{product.description}</span>
             </p>
             {product.productCode && (
-              <p className="text-base leading-4 mt-7 text-base-content/70">
+              <p
+                className="text-base leading-4 mt-7"
+                style={{ color: "var(--shop-ink-muted)" }}
+              >
                 Product Code: {product.productCode}
               </p>
             )}
@@ -286,7 +353,7 @@ export function ProductDetail({ product }: { product: Product }) {
         )}
 
         {/* Shipping & returns */}
-        <Disclosure title="การจัดส่งและคืนสินค้า">
+        <Disclosure title="การจัดส่งและคืนสินค้า" topBorder>
           <p>จัดส่งทั่วไทย 1-3 วันทำการ ผ่าน Kerry / Flash / EMS</p>
           <p className="mt-2">
             เปลี่ยน / คืนสินค้าได้ภายใน 7 วัน หากสินค้ามีตำหนิจากโรงงาน
@@ -295,27 +362,31 @@ export function ProductDetail({ product }: { product: Product }) {
             รายละเอียดเพิ่มเติม:{" "}
             <a
               href={`/stores/${product.storeSlug}/shipping`}
-              className="link link-primary"
+              className="underline"
+              style={{ color: "var(--shop-primary)" }}
             >
               นโยบายการจัดส่ง
             </a>
             {" • "}
             <a
               href={`/stores/${product.storeSlug}/returns`}
-              className="link link-primary"
+              className="underline"
+              style={{ color: "var(--shop-primary)" }}
             >
               เงื่อนไขการคืน
             </a>
           </p>
         </Disclosure>
 
+        {/* Contact us */}
         <Disclosure title="ติดต่อสอบถาม">
           <p>
-            หากมีคำถามเกี่ยวกับสินค้า การสั่งซื้อ หรือการจัดส่ง ติดต่อ{" "}
-            {product.storeName} ได้ที่{" "}
+            หากมีคำถามเกี่ยวกับสินค้า การสั่งซื้อ หรือการจัดส่ง
+            ติดต่อ {product.storeName} ได้ที่{" "}
             <a
               href={`/stores/${product.storeSlug}/contact`}
-              className="link link-primary"
+              className="underline"
+              style={{ color: "var(--shop-primary)" }}
             >
               หน้าติดต่อเรา
             </a>
@@ -323,20 +394,32 @@ export function ProductDetail({ product }: { product: Product }) {
         </Disclosure>
       </div>
 
-      {/* Sticky mobile bottom bar — appears once the in-flow CTA
-          scrolls out of viewport. */}
+      {/* Sticky mobile bottom bar — appears once the in-flow CTA scrolls
+          out of viewport. Mobile only (hidden on md+). Re-engages without
+          forcing scroll-to-top. Per multi-page spec: "DON'T ship without
+          a sticky mobile bottom-bar on PDP. Lost conversions." */}
       <div
-        className={`md:hidden fixed inset-x-0 bottom-0 z-50 bg-base-100 border-t border-base-300 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-200 ${
+        className={`md:hidden fixed inset-x-0 bottom-0 z-50 border-t shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-transform duration-200 ${
           showStickyBar ? "translate-y-0" : "translate-y-full"
         }`}
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
+        style={{
+          background: "var(--shop-card)",
+          borderColor: "var(--shop-border)",
+          paddingBottom: "env(safe-area-inset-bottom, 0)",
+        }}
       >
         <div className="flex items-center gap-3 px-4 py-3">
           <div className="flex-1 min-w-0">
-            <div className="text-xs truncate text-base-content/70">
+            <div
+              className="text-xs truncate"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
               {product.title}
             </div>
-            <div className="text-base font-bold text-base-content">
+            <div
+              className="text-base font-bold"
+              style={{ color: "var(--shop-ink)" }}
+            >
               {formatTHB(displayPrice)}
             </div>
           </div>
@@ -344,7 +427,12 @@ export function ProductDetail({ product }: { product: Product }) {
             type="button"
             onClick={handleAdd}
             disabled={!canAdd}
-            className="btn btn-primary btn-sm shrink-0"
+            className="inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-bold text-white shrink-0 transition-opacity hover:opacity-90 disabled:opacity-50"
+            style={{
+              backgroundColor: canAdd
+                ? "var(--shop-primary)"
+                : "var(--shop-ink-muted)",
+            }}
           >
             <ShoppingBag className="h-4 w-4" />
             {requiresVariant && !allAttrsPicked ? "เลือกตัวเลือก" : "เพิ่ม"}
@@ -356,7 +444,9 @@ export function ProductDetail({ product }: { product: Product }) {
 }
 
 /* ──────────────────────────────────────────────────────────────
- * Gallery — TWO stacked images on desktop, hero + 4 thumbs mobile
+ * Gallery — TWO stacked images on desktop, hero + 4 thumbs on mobile
+ * Reference: tailwinduikit "Balenciaga" — image stack uses
+ *   xl:w-2/6 lg:w-2/5 w-80 (~40% on desktop, 320px on mobile)
  * ────────────────────────────────────────────────────────────── */
 function Gallery({ images, title }: { images: string[]; title: string }) {
   const hero = images[0];
@@ -366,17 +456,23 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
   if (!hero) {
     return (
       <div className="xl:w-2/6 lg:w-2/5 w-80 md:block hidden">
-        <div className="aspect-square rounded flex items-center justify-center text-sm bg-base-200 text-base-content/70">
+        <div
+          className="aspect-square rounded flex items-center justify-center text-sm"
+          style={{
+            background: "var(--shop-bg)",
+            color: "var(--shop-ink-muted)",
+          }}
+        >
           ไม่มีรูปภาพ
         </div>
       </div>
     );
   }
 
-  // Force aspect-[3/4] + object-cover so every store gets a tall
-  // gallery hero regardless of supplier image dimensions (CJ / AE
-  // default to 1:1 which looks short next to the info column).
-  const imgClass = "w-full rounded aspect-[3/4] object-cover bg-base-200";
+  // CJ/AliExpress catalog photos are natively 1:1 — match that ratio so
+  // images render exactly as the supplier shot them, with no cropping.
+  const imgClass =
+    "w-full rounded aspect-square object-cover bg-[var(--shop-bg)]";
 
   return (
     <>
@@ -400,7 +496,9 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
         )}
       </div>
 
-      {/* Mobile: hero + 4 thumbnail row */}
+      {/* Mobile: hero + 4 thumbnail row.
+          Hero matches desktop 3:4. Thumbs stay 1:1 — they're meant to
+          read as "more views" affordances, not full-size galleries. */}
       <div className="md:hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -417,7 +515,7 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
                 key={i}
                 src={img}
                 alt=""
-                className="w-1/4 aspect-square object-cover rounded bg-base-200"
+                className="w-1/4 aspect-square object-cover rounded bg-[var(--shop-bg)]"
                 loading="lazy"
                 referrerPolicy="no-referrer"
               />
@@ -430,9 +528,8 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
 }
 
 /* ──────────────────────────────────────────────────────────────
- * Variant disclosure — daisyUI .collapse.collapse-arrow on a
- * <details>-style chip picker. Defaults open when no value is
- * selected; collapses on first pick.
+ * Variant disclosure — collapsed row showing current pick + chevron;
+ * expanded view shows the chips so user can pick.
  * ────────────────────────────────────────────────────────────── */
 function VariantDisclosure({
   attrName,
@@ -447,56 +544,99 @@ function VariantDisclosure({
 }) {
   return (
     <details
-      open={!selected}
-      className="collapse collapse-arrow border-b border-base-300 rounded-none"
+      open={!selected /* auto-open when nothing picked yet */}
+      className="py-4 border-b group"
+      style={{ borderColor: "var(--shop-border)" }}
     >
-      <summary className="collapse-title px-0 py-4 min-h-0 flex items-center justify-between cursor-pointer">
-        <span className="text-base text-base-content">{attrName}</span>
-        <span className="text-sm text-base-content/70 mr-6">
-          {selected || `เลือก${attrName}`}
-        </span>
-      </summary>
-      <div className="collapse-content px-0">
-        <div className="flex flex-wrap gap-2 pt-2">
-          {values.map((val) => {
-            const picked = selected === val;
-            return (
-              <button
-                key={val}
-                type="button"
-                onClick={() => onSelect(val)}
-                className={`btn btn-sm uppercase ${
-                  picked ? "btn-primary" : "btn-outline"
-                }`}
-              >
-                {val}
-              </button>
-            );
-          })}
+      <summary className="flex items-center justify-between cursor-pointer list-none">
+        <p className="text-base leading-4" style={{ color: "var(--shop-ink)" }}>
+          {attrName}
+        </p>
+        <div className="flex items-center gap-3">
+          {selected ? (
+            <span
+              className="text-sm leading-none"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
+              {selected}
+            </span>
+          ) : (
+            <span
+              className="text-sm leading-none"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
+              เลือก{attrName}
+            </span>
+          )}
+          <ChevronDown
+            className="h-3 w-3 transition-transform group-open:rotate-180"
+            style={{ color: "var(--shop-ink-muted)" }}
+          />
         </div>
+      </summary>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {values.map((val) => {
+          const picked = selected === val;
+          return (
+            <button
+              key={val}
+              type="button"
+              onClick={() => onSelect(val)}
+              className="rounded-md border px-4 py-2 text-sm font-medium uppercase transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+              style={
+                picked
+                  ? {
+                      backgroundColor: "var(--shop-primary)",
+                      borderColor: "var(--shop-primary)",
+                      color: "white",
+                    }
+                  : {
+                      background: "var(--shop-card)",
+                      borderColor: "var(--shop-border)",
+                      color: "var(--shop-ink)",
+                    }
+              }
+            >
+              {val}
+            </button>
+          );
+        })}
       </div>
     </details>
   );
 }
 
 /* ──────────────────────────────────────────────────────────────
- * Disclosure — daisyUI .collapse.collapse-arrow for shipping /
- * contact panels at the bottom of the info column.
+ * Disclosure — chevron rotates on open; native <details>
  * ────────────────────────────────────────────────────────────── */
 function Disclosure({
   title,
+  topBorder,
   children,
 }: {
   title: string;
+  topBorder?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <details className="collapse collapse-arrow border-t border-base-300 rounded-none mt-7">
-      <summary className="collapse-title px-0 py-4 min-h-0 text-base text-base-content cursor-pointer">
-        {title}
+    <details
+      className={`${topBorder ? "border-t" : ""} border-b py-4 mt-7 group`}
+      style={{ borderColor: "var(--shop-border)" }}
+    >
+      <summary className="flex justify-between items-center cursor-pointer list-none">
+        <p className="text-base leading-4" style={{ color: "var(--shop-ink)" }}>
+          {title}
+        </p>
+        <ChevronDown
+          className="h-3 w-3 transition-transform group-open:rotate-180"
+          style={{ color: "var(--shop-ink-muted)" }}
+        />
       </summary>
-      <div className="collapse-content px-0 text-base leading-relaxed text-base-content/70">
-        <div className="pt-2">{children}</div>
+      <div
+        className="pt-4 text-base leading-relaxed pr-4 mt-4"
+        style={{ color: "var(--shop-ink-muted)" }}
+      >
+        {children}
       </div>
     </details>
   );

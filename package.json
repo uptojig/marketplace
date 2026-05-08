@@ -20,6 +20,8 @@
     "@ai-sdk/anthropic": "^3.0.74",
     "@anthropic-ai/sdk": "^0.92.0",
     "@auth/prisma-adapter": "^2.7.4",
+    "@aws-sdk/client-s3": "^3.1045.0",
+    "@aws-sdk/s3-request-presigner": "^3.1045.0",
     "@base-ui/react": "^1.4.1",
     "@hookform/resolvers": "^3.9.1",
     "@prisma/client": "^5.22.0",
