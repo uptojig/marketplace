@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 
 type StoreData = {
   id: string;
@@ -286,47 +287,28 @@ export function StoreEditForm({ store }: { store: StoreData }) {
       <div hidden={tab !== "design"} className="space-y-5">
         <Section title="แบรนด์ดิ้ง">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Logo URL">
-              <input
+            <Field label="Logo" hint="วาง URL หรือกด อัพโหลด เพื่อเลือกไฟล์">
+              <ImageUploadField
                 value={form.logoUrl}
-                onChange={(e) => update("logoUrl", e.target.value)}
-                placeholder="https://..."
-                className="w-full rounded-md border px-3 py-2 font-mono text-xs"
+                onChange={(v) => update("logoUrl", v)}
+                kind="logo"
+                previewWidth={240}
+                previewHeight={80}
               />
-              {isImg(form.logoUrl) && (
-                // Horizontal preview — most brand wordmarks are wider
-                // than tall (e.g. ~3:1 aspect), so a square 80×80 well
-                // crops the interesting parts. 240×80 + object-contain
-                // shows the whole asset at the size the storefront
-                // header will actually render it.
-                <Image
-                  src={form.logoUrl}
-                  alt="Logo preview"
-                  width={240}
-                  height={80}
-                  className="mt-2 rounded border bg-base-200 object-contain p-2"
-                  unoptimized
-                />
-              )}
             </Field>
 
-            <Field label="Banner URL" hint="รูปแบนเนอร์บนหน้าร้าน (อัตราส่วน ~3:1)">
-              <input
+            <Field
+              label="Banner"
+              hint="รูปแบนเนอร์บนหน้าร้าน (อัตราส่วน ~3:1) — วาง URL หรืออัพโหลด"
+            >
+              <ImageUploadField
                 value={form.bannerUrl}
-                onChange={(e) => update("bannerUrl", e.target.value)}
-                placeholder="https://..."
-                className="w-full rounded-md border px-3 py-2 font-mono text-xs"
+                onChange={(v) => update("bannerUrl", v)}
+                kind="banner"
+                previewWidth={300}
+                previewHeight={100}
+                cover
               />
-              {isImg(form.bannerUrl) && (
-                <Image
-                  src={form.bannerUrl}
-                  alt="Banner preview"
-                  width={300}
-                  height={100}
-                  className="mt-2 rounded border object-cover"
-                  unoptimized
-                />
-              )}
             </Field>
           </div>
 

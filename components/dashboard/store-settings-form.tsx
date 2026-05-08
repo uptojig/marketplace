@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 
 const schema = z.object({
   name: z.string().min(2).max(80),
@@ -68,6 +68,13 @@ interface StoreSettingsFormProps {
   ownerLoginEmail: string | null;
 }
 
+/**
+ * Owner-side wrapper around <ImageUploadField /> that adds a label
+ * + react-hook-form error slot. Aspect maps to the upload field's
+ * preview dimensions (square → 96×96 with object-cover; wide →
+ * 720×180 with object-cover so banners stay full-bleed). The
+ * upload-from-disk path is handled by ImageUploadField itself.
+ */
 function ImageUrlInput({
   label,
   value,
@@ -83,32 +90,19 @@ function ImageUrlInput({
   placeholder: string;
   error?: string;
 }) {
-  const previewClass =
-    aspect === "square"
-      ? "h-24 w-24 rounded-lg object-cover border"
-      : "h-24 w-full rounded-lg object-cover border";
-
+  const isSquare = aspect === "square";
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium">{label}</p>
-      <Input
+      <ImageUploadField
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
+        kind={isSquare ? "logo" : "banner"}
         placeholder={placeholder}
-        className="font-mono text-xs"
+        previewWidth={isSquare ? 96 : 720}
+        previewHeight={isSquare ? 96 : 180}
+        cover={!isSquare}
       />
-      {value && /^https?:\/\//.test(value) && (
-        <div className={aspect === "wide" ? "w-full" : "w-24"}>
-          <Image
-            src={value}
-            alt={label}
-            width={aspect === "square" ? 96 : 800}
-            height={96}
-            className={previewClass}
-            unoptimized
-          />
-        </div>
-      )}
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
