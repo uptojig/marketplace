@@ -425,7 +425,7 @@ function ProductCard({
       </div>
 
       <div
-        className="aspect-square w-full overflow-hidden rounded-md lg:aspect-auto lg:h-80"
+        className="aspect-square w-full overflow-hidden rounded-md"
         style={{
           background:
             "color-mix(in srgb, var(--shop-card) 88%, transparent)",
