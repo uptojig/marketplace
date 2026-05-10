@@ -24,23 +24,23 @@
   "registries": {
     "@ss-components": {
       "url": "https://shadcnstudio.com/r/components/{name}.json",
-      "params": {
-        "email": "${SHADCN_STUDIO_EMAIL}",
-        "license_key": "${SHADCN_STUDIO_LICENSE_KEY}"
+      "headers": {
+        "x-email": "${SHADCN_STUDIO_EMAIL}",
+        "x-license-key": "${SHADCN_STUDIO_LICENSE_KEY}"
       }
     },
     "@ss-blocks": {
       "url": "https://shadcnstudio.com/r/blocks/{name}.json",
-      "params": {
-        "email": "${SHADCN_STUDIO_EMAIL}",
-        "license_key": "${SHADCN_STUDIO_LICENSE_KEY}"
+      "headers": {
+        "x-email": "${SHADCN_STUDIO_EMAIL}",
+        "x-license-key": "${SHADCN_STUDIO_LICENSE_KEY}"
       }
     },
     "@ss-themes": {
       "url": "https://shadcnstudio.com/r/themes/{name}.json",
-      "params": {
-        "email": "${SHADCN_STUDIO_EMAIL}",
-        "license_key": "${SHADCN_STUDIO_LICENSE_KEY}"
+      "headers": {
+        "x-email": "${SHADCN_STUDIO_EMAIL}",
+        "x-license-key": "${SHADCN_STUDIO_LICENSE_KEY}"
       }
     }
   }

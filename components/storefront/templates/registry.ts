@@ -20,6 +20,11 @@ export const REACT_TEMPLATES = {
     description:
       "Modern emerald e-commerce layout with hero, product grid, and footer. Tailored for home & kitchen lifestyle stores.",
   },
+  "caselnw-v1": {
+    label: "Case.lnw · Slate / Orange Tech",
+    description:
+      "Tech-forward e-commerce layout (Shadcn Studio inspired): announcement bar, sticky header, product hero with discount badge, category picker, trust strip, product grid, best-sellers row, dark footer. Tailored for phone-case / accessory stores.",
+  },
 } as const;
 
 export type ReactTemplateId = keyof typeof REACT_TEMPLATES;

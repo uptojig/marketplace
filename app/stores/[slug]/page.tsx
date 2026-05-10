@@ -20,6 +20,7 @@ import {
   type MiniMopsProduct,
   type MiniMopsStore,
 } from "@/components/storefront/templates/MiniMopsTemplate";
+import { CaselNwTemplate } from "@/components/storefront/templates/CaselNwTemplate";
 import {
   isReactTemplateSchema,
   type ReactTemplateSchema,
@@ -114,10 +115,22 @@ async function renderReactTemplate(
     primaryColor: store.primaryColor ?? "#10b981",
   };
 
-  // Currently we only have one template id; future ids switch on schema.template
   if (schema.template === "mini-mops-v1") {
     return (
       <MiniMopsTemplate
+        store={templateStore}
+        products={products}
+        featuredProduct={featured}
+        navCategories={navCategories}
+        gridHeading={schema.gridHeading}
+        gridSubheading={schema.gridSubheading}
+      />
+    );
+  }
+
+  if (schema.template === "caselnw-v1") {
+    return (
+      <CaselNwTemplate
         store={templateStore}
         products={products}
         featuredProduct={featured}
