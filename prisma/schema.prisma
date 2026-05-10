@@ -159,6 +159,7 @@ model Store {
 
   owner                User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   products             Product[]
+  categories           Category[]
   items                OrderItem[]
   identityVerification IdentityVerification?
 
@@ -186,7 +187,14 @@ model Product {
   supplier          Supplier
   externalProductId String
   externalPayload   Json?
+  // Free-form category label, retained as a denormalized cache so
+  // legacy callers + supplier-imported products keep working when
+  // no Category row exists yet. New code should prefer categoryId.
   categoryName      String?
+  // Owner-managed category. Nullable so products imported from CJ /
+  // AliExpress can list under their supplier-provided categoryName
+  // until the operator buckets them into a real Category.
+  categoryId        String?
   hasVariants       Boolean  @default(false)
   active            Boolean  @default(true)
   // Per-product moderation. Defaults to APPROVED so existing flow
@@ -200,12 +208,47 @@ model Product {
   createdAt         DateTime @default(now())
 
   store    Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   items    OrderItem[]
   variants ProductVariant[]
 
   @@index([storeId, active])
   @@index([supplier, externalProductId])
   @@index([moderationStatus])
+  @@index([categoryId])
+}
+
+/// Vendor-defined product grouping with a slug (used in storefront URLs)
+/// and an optional banner image. A product can be in at most one
+/// Category — Phase 1 keeps the model simple; multi-category /
+/// hierarchical trees are out of scope.
+///
+/// Slugs are unique per store (so two different stores can both have
+/// a "shoes" category) — enforced via @@unique([storeId, slug]).
+model Category {
+  id          String   @id @default(cuid())
+  storeId     String
+  // Display name shown in nav + on the category page header
+  name        String
+  // URL slug — appears in /stores/<store>/category/<slug>. Lowercase
+  // alphanumerics + hyphens. Unique within the store.
+  slug        String
+  // Optional one-paragraph blurb under the banner. Plain text.
+  description String?
+  // Hero/banner image rendered at the top of the category page.
+  // Same DigitalOcean Spaces URL convention as Store.bannerUrl.
+  bannerUrl   String?
+  // Manual ordering for nav menus. Lower = earlier. Defaults to 0
+  // and ties broken by createdAt (stable, intuitive).
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  products Product[]
+
+  @@unique([storeId, slug])
+  @@index([storeId, sortOrder])
 }
 
 enum ProductModerationStatus {
