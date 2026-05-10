@@ -17,8 +17,10 @@ import { NextResponse } from "next/server";
 import { cjAdapter } from "@/lib/suppliers/cj/adapter";
 
 export const runtime = "nodejs";
-// Categories don't change per-request; let Vercel's edge cache it.
-export const revalidate = 3600;
+// Skip build-time prerender — CJ creds may not be valid at build, so
+// running the adapter during `next build` produces a noisy 500 in the
+// log. Browser/CDN Cache-Control below still gives a 1-hour TTL.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   if (!process.env.CJ_API_KEY) {
