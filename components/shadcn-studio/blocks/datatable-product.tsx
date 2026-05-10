@@ -62,7 +62,10 @@ import { usePagination } from '@/hooks/use-pagination'
 import { cn } from '@/lib/utils'
 
 declare module '@tanstack/react-table' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // The upstream generic requires both TData and TValue; we don't use
+  // them in the augmentation body, but they must be declared for the
+  // interface signature to merge correctly.
+  // eslint-disable-next-line
   interface ColumnMeta<TData extends RowData, TValue> {
     filterVariant?: 'text' | 'range' | 'select'
   }
