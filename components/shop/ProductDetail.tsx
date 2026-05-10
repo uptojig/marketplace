@@ -455,7 +455,7 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
 
   if (!hero) {
     return (
-      <div className="xl:w-2/6 lg:w-2/5 w-80 md:block hidden">
+      <div className="lg:w-1/2 md:w-2/5 md:max-w-[36rem] w-full md:block hidden">
         <div
           className="aspect-square rounded flex items-center justify-center text-sm"
           style={{
@@ -477,7 +477,7 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
   return (
     <>
       {/* Desktop: two stacked portrait images */}
-      <div className="xl:w-2/6 lg:w-2/5 w-80 md:block hidden">
+      <div className="lg:w-1/2 md:w-2/5 md:max-w-[36rem] w-full md:block hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={hero}
