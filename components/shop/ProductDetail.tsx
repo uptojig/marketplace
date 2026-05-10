@@ -33,6 +33,13 @@ import { formatTHB } from "@/lib/utils";
 import { WishlistButton } from "@/components/storefront/Wishlist";
 import { FamilyDCustomizer } from "@/components/storefront/FamilyDCustomizer";
 import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import { Card } from "@/components/ui/card";
+import {
   ChevronDown,
   ShoppingBag,
   Truck,
@@ -309,9 +316,9 @@ export function ProductDetail({ product }: { product: Product }) {
             { icon: RotateCcw, label: "คืนได้ 7 วัน" },
             { icon: Banknote, label: "เก็บเงินปลายทาง" },
           ].map(({ icon: Icon, label }, i) => (
-            <div
+            <Card
               key={i}
-              className="flex flex-col items-center gap-1 py-2 rounded-lg"
+              className="flex flex-col items-center gap-1 rounded-lg border-0 py-2 shadow-none"
               style={{
                 background:
                   "color-mix(in srgb, var(--shop-card) 88%, transparent)",
@@ -328,7 +335,7 @@ export function ProductDetail({ product }: { product: Product }) {
               >
                 {label}
               </span>
-            </div>
+            </Card>
           ))}
         </div>
 
@@ -352,46 +359,78 @@ export function ProductDetail({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Shipping & returns */}
-        <Disclosure title="การจัดส่งและคืนสินค้า" topBorder>
-          <p>จัดส่งทั่วไทย 1-3 วันทำการ ผ่าน Kerry / Flash / EMS</p>
-          <p className="mt-2">
-            เปลี่ยน / คืนสินค้าได้ภายใน 7 วัน หากสินค้ามีตำหนิจากโรงงาน
-          </p>
-          <p className="mt-2">
-            รายละเอียดเพิ่มเติม:{" "}
-            <a
-              href={`/stores/${product.storeSlug}/shipping`}
-              className="underline"
-              style={{ color: "var(--shop-primary)" }}
+        {/* Shipping & returns + Contact — shadcn Accordion (base-ui)
+            replaces the local Disclosure pair so a11y + animation come
+            from the design system. Theme tokens still drive ink/border
+            via the wrapping --shop-* CSS vars. */}
+        <Accordion
+          multiple
+          className="mt-7 border-t"
+          style={{ borderColor: "var(--shop-border)" }}
+        >
+          <AccordionItem
+            value="shipping"
+            style={{ borderColor: "var(--shop-border)" }}
+          >
+            <AccordionTrigger
+              className="text-base"
+              style={{ color: "var(--shop-ink)" }}
             >
-              นโยบายการจัดส่ง
-            </a>
-            {" • "}
-            <a
-              href={`/stores/${product.storeSlug}/returns`}
-              className="underline"
-              style={{ color: "var(--shop-primary)" }}
+              การจัดส่งและคืนสินค้า
+            </AccordionTrigger>
+            <AccordionContent
+              className="text-base leading-relaxed"
+              style={{ color: "var(--shop-ink-muted)" }}
             >
-              เงื่อนไขการคืน
-            </a>
-          </p>
-        </Disclosure>
-
-        {/* Contact us */}
-        <Disclosure title="ติดต่อสอบถาม">
-          <p>
-            หากมีคำถามเกี่ยวกับสินค้า การสั่งซื้อ หรือการจัดส่ง
-            ติดต่อ {product.storeName} ได้ที่{" "}
-            <a
-              href={`/stores/${product.storeSlug}/contact`}
-              className="underline"
-              style={{ color: "var(--shop-primary)" }}
+              <p>จัดส่งทั่วไทย 1-3 วันทำการ ผ่าน Kerry / Flash / EMS</p>
+              <p>
+                เปลี่ยน / คืนสินค้าได้ภายใน 7 วัน หากสินค้ามีตำหนิจากโรงงาน
+              </p>
+              <p>
+                รายละเอียดเพิ่มเติม:{" "}
+                <a
+                  href={`/stores/${product.storeSlug}/shipping`}
+                  style={{ color: "var(--shop-primary)" }}
+                >
+                  นโยบายการจัดส่ง
+                </a>
+                {" • "}
+                <a
+                  href={`/stores/${product.storeSlug}/returns`}
+                  style={{ color: "var(--shop-primary)" }}
+                >
+                  เงื่อนไขการคืน
+                </a>
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem
+            value="contact"
+            style={{ borderColor: "var(--shop-border)" }}
+          >
+            <AccordionTrigger
+              className="text-base"
+              style={{ color: "var(--shop-ink)" }}
             >
-              หน้าติดต่อเรา
-            </a>
-          </p>
-        </Disclosure>
+              ติดต่อสอบถาม
+            </AccordionTrigger>
+            <AccordionContent
+              className="text-base leading-relaxed"
+              style={{ color: "var(--shop-ink-muted)" }}
+            >
+              <p>
+                หากมีคำถามเกี่ยวกับสินค้า การสั่งซื้อ หรือการจัดส่ง
+                ติดต่อ {product.storeName} ได้ที่{" "}
+                <a
+                  href={`/stores/${product.storeSlug}/contact`}
+                  style={{ color: "var(--shop-primary)" }}
+                >
+                  หน้าติดต่อเรา
+                </a>
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
 
       {/* Sticky mobile bottom bar — appears once the in-flow CTA scrolls
@@ -455,7 +494,7 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
 
   if (!hero) {
     return (
-      <div className="xl:w-2/6 lg:w-2/5 w-80 md:block hidden">
+      <div className="lg:w-1/2 md:w-2/5 md:max-w-[36rem] w-full md:block hidden">
         <div
           className="aspect-square rounded flex items-center justify-center text-sm"
           style={{
@@ -477,7 +516,7 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
   return (
     <>
       {/* Desktop: two stacked portrait images */}
-      <div className="xl:w-2/6 lg:w-2/5 w-80 md:block hidden">
+      <div className="lg:w-1/2 md:w-2/5 md:max-w-[36rem] w-full md:block hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={hero}
@@ -606,38 +645,3 @@ function VariantDisclosure({
   );
 }
 
-/* ──────────────────────────────────────────────────────────────
- * Disclosure — chevron rotates on open; native <details>
- * ────────────────────────────────────────────────────────────── */
-function Disclosure({
-  title,
-  topBorder,
-  children,
-}: {
-  title: string;
-  topBorder?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <details
-      className={`${topBorder ? "border-t" : ""} border-b py-4 mt-7 group`}
-      style={{ borderColor: "var(--shop-border)" }}
-    >
-      <summary className="flex justify-between items-center cursor-pointer list-none">
-        <p className="text-base leading-4" style={{ color: "var(--shop-ink)" }}>
-          {title}
-        </p>
-        <ChevronDown
-          className="h-3 w-3 transition-transform group-open:rotate-180"
-          style={{ color: "var(--shop-ink-muted)" }}
-        />
-      </summary>
-      <div
-        className="pt-4 text-base leading-relaxed pr-4 mt-4"
-        style={{ color: "var(--shop-ink-muted)" }}
-      >
-        {children}
-      </div>
-    </details>
-  );
-}

@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { ShopAddButton } from "@/components/shop/ShopAddButton";
 import { SortSelect } from "@/components/shop/SortSelect";
+import { Card } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -186,8 +187,8 @@ export default async function StoreCategoryPage({
       <div className="mt-6 grid gap-6 lg:grid-cols-[220px,1fr]">
         {/* Sidebar with all categories */}
         <aside className="lg:block">
-          <div
-            className="lg:sticky lg:top-4 rounded-lg border p-4"
+          <Card
+            className="lg:sticky lg:top-4 rounded-lg p-4 shadow-none"
             style={{
               background: "var(--shop-card)",
               borderColor: "var(--shop-border)",
@@ -287,14 +288,14 @@ export default async function StoreCategoryPage({
                 </>
               )}
             </ul>
-          </div>
+          </Card>
         </aside>
 
         {/* Product grid */}
         <div>
           {products.length === 0 ? (
-            <div
-              className="rounded-lg border p-10 text-center"
+            <Card
+              className="rounded-lg p-10 text-center shadow-none"
               style={{
                 background: "var(--shop-card)",
                 borderColor: "var(--shop-border)",
@@ -310,13 +311,13 @@ export default async function StoreCategoryPage({
               >
                 ดูสินค้าทั้งหมด
               </Link>
-            </div>
+            </Card>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {products.map((p) => (
-                <div
+                <Card
                   key={p.id}
-                  className="group flex flex-col overflow-hidden rounded-lg border"
+                  className="group flex flex-col overflow-hidden rounded-lg shadow-none"
                   style={{
                     background: "var(--shop-card)",
                     borderColor: "var(--shop-border)",
@@ -367,7 +368,7 @@ export default async function StoreCategoryPage({
                       />
                     </div>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}

@@ -124,6 +124,7 @@ async function renderReactTemplate(
         navCategories={navCategories}
         gridHeading={schema.gridHeading}
         gridSubheading={schema.gridSubheading}
+        accent={schema.accentHex}
       />
     );
   }
