@@ -7,6 +7,9 @@ import { SortSelect } from "@/components/shop/SortSelect";
 import { Card } from "@/components/ui/card";
 import { StatsBlock } from "@/components/blocks/stats";
 import { TestimonialBlock } from "@/components/blocks/testimonial";
+import ProductList, {
+  type ProductItem,
+} from "@/components/shadcn-studio/blocks/product-list-03/product-list-03";
 
 export const dynamic = "force-dynamic";
 
@@ -137,6 +140,23 @@ export default async function StoreCategoryPage({
         )
       : 0;
 
+  // Adapter for shadcn-studio product-list-03. Seller chip surfaces
+  // the store name + logo so every card carries the same brand row
+  // regardless of whether per-product authors exist.
+  const productListItems: ProductItem[] = products.map((p) => ({
+    productSrc:
+      p.imageUrl ?? "https://placehold.co/640x640/png?text=No+Image",
+    productAlt: p.titleTh ?? p.title,
+    name: p.titleTh ?? p.title,
+    price: Number(p.priceTHB),
+    productLink: `/stores/${store.slug}/products/${p.id}`,
+    sellerName: store.name,
+    avatarSrc: store.logoUrl ?? undefined,
+    avatarFallback: (store.name ?? "S").slice(0, 1).toUpperCase(),
+    avatarAlt: store.name,
+    category: headerName,
+  }));
+
   return (
     <div className="container mx-auto max-w-[1200px] px-4 py-6">
       <Link
@@ -215,196 +235,118 @@ export default async function StoreCategoryPage({
         </div>
       )}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[220px,1fr]">
-        {/* Sidebar with all categories */}
-        <aside className="lg:block">
-          <Card
-            className="lg:sticky lg:top-4 rounded-lg p-4 shadow-none"
-            style={{
-              background: "var(--shop-card)",
-              borderColor: "var(--shop-border)",
-            }}
-          >
-            <h2
-              className="mb-3 text-sm font-semibold"
-              style={{ color: "var(--shop-ink)" }}
+      {/* Horizontal category chip bar — replaces the legacy sidebar.
+          Scrolls horizontally on mobile so all categories stay reachable
+          without consuming vertical space above the polished ProductList. */}
+      <nav className="-mx-4 mt-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <ul className="flex min-w-max gap-2 pb-2 text-sm">
+          <li>
+            <Link
+              href={`/stores/${store.slug}`}
+              className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5 opacity-80 hover:opacity-100"
+              style={{
+                color: "var(--shop-ink)",
+                borderColor: "var(--shop-border)",
+                background: "var(--shop-card)",
+              }}
             >
-              หมวดหมู่ทั้งหมด
-            </h2>
-            <ul className="space-y-1 text-sm">
-              <li>
+              <span>ทั้งหมด</span>
+              <span className="text-xs opacity-60">{totalAllProducts}</span>
+            </Link>
+          </li>
+          {managedCategories.map((c) => {
+            const isActive = managedCategory?.id === c.id;
+            return (
+              <li key={c.id}>
                 <Link
-                  href={`/stores/${store.slug}`}
-                  className="flex items-center justify-between rounded px-2 py-1.5 opacity-80 hover:opacity-100 hover:bg-black/5"
-                  style={{ color: "var(--shop-ink)" }}
+                  href={`/stores/${store.slug}/category/${encodeURIComponent(c.slug)}`}
+                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5"
+                  style={{
+                    color: isActive ? "#fff" : "var(--shop-ink)",
+                    borderColor: isActive
+                      ? "var(--shop-primary)"
+                      : "var(--shop-border)",
+                    background: isActive
+                      ? "var(--shop-primary)"
+                      : "var(--shop-card)",
+                  }}
                 >
-                  <span>ทั้งหมด</span>
-                  <span className="text-xs opacity-60">
-                    {totalAllProducts}
+                  <span>{c.name}</span>
+                  <span
+                    className={`text-xs ${
+                      isActive ? "text-white/80" : "opacity-60"
+                    }`}
+                  >
+                    {c.activeProductCount}
                   </span>
                 </Link>
               </li>
-              {/* Managed categories first — operator-curated order */}
-              {managedCategories.map((c) => {
-                const isActive = managedCategory?.id === c.id;
-                return (
-                  <li key={c.id}>
-                    <Link
-                      href={`/stores/${store.slug}/category/${encodeURIComponent(c.slug)}`}
-                      className={`flex items-center justify-between rounded px-2 py-1.5 ${
-                        isActive
-                          ? "font-medium"
-                          : "opacity-80 hover:opacity-100 hover:bg-black/5"
-                      }`}
-                      style={{
-                        color: isActive ? "#fff" : "var(--shop-ink)",
-                        backgroundColor: isActive
-                          ? "var(--shop-primary)"
-                          : "transparent",
-                      }}
-                    >
-                      <span>{c.name}</span>
-                      <span
-                        className={`text-xs ${
-                          isActive ? "text-white/80" : "opacity-60"
-                        }`}
-                      >
-                        {c.activeProductCount}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-              {/* Legacy categoryName fallback — hidden behind a divider
-                  so they're visually distinct from operator-managed ones.
-                  Operator can adopt them via the Categories dashboard. */}
-              {legacyCategories.length > 0 && (
-                <>
-                  {managedCategories.length > 0 && (
-                    <li
-                      className="my-2 border-t"
-                      style={{ borderColor: "var(--shop-border)" }}
-                    />
-                  )}
-                  {legacyCategories.map((c) => {
-                    const isActive = !managedCategory && c === segment;
-                    return (
-                      <li key={c}>
-                        <Link
-                          href={`/stores/${store.slug}/category/${encodeURIComponent(c)}`}
-                          className={`flex items-center justify-between rounded px-2 py-1.5 ${
-                            isActive
-                              ? "font-medium"
-                              : "opacity-80 hover:opacity-100 hover:bg-black/5"
-                          }`}
-                          style={{
-                            color: isActive ? "#fff" : "var(--shop-ink)",
-                            backgroundColor: isActive
-                              ? "var(--shop-primary)"
-                              : "transparent",
-                          }}
-                        >
-                          <span>{c}</span>
-                          <span
-                            className={`text-xs ${
-                              isActive ? "text-white/80" : "opacity-60"
-                            }`}
-                          >
-                            {legacyCountMap.get(c) ?? 0}
-                          </span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </>
-              )}
-            </ul>
-          </Card>
-        </aside>
-
-        {/* Product grid */}
-        <div>
-          {products.length === 0 ? (
-            <Card
-              className="rounded-lg p-10 text-center shadow-none"
-              style={{
-                background: "var(--shop-card)",
-                borderColor: "var(--shop-border)",
-              }}
-            >
-              <p style={{ color: "var(--shop-ink-muted)" }}>
-                ยังไม่มีสินค้าในหมวดนี้
-              </p>
-              <Link
-                href={`/stores/${store.slug}`}
-                className="mt-3 inline-block text-sm hover:underline"
-                style={{ color: "var(--shop-primary)" }}
-              >
-                ดูสินค้าทั้งหมด
-              </Link>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {products.map((p) => (
-                <Card
-                  key={p.id}
-                  className="group flex flex-col overflow-hidden rounded-lg shadow-none"
+            );
+          })}
+          {legacyCategories.map((c) => {
+            const isActive = !managedCategory && c === segment;
+            return (
+              <li key={c}>
+                <Link
+                  href={`/stores/${store.slug}/category/${encodeURIComponent(c)}`}
+                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5"
                   style={{
-                    background: "var(--shop-card)",
-                    borderColor: "var(--shop-border)",
+                    color: isActive ? "#fff" : "var(--shop-ink)",
+                    borderColor: isActive
+                      ? "var(--shop-primary)"
+                      : "var(--shop-border)",
+                    background: isActive
+                      ? "var(--shop-primary)"
+                      : "var(--shop-card)",
                   }}
                 >
-                  <Link
-                    href={`/stores/${store.slug}/products/${p.id}`}
-                    className="block"
+                  <span>{c}</span>
+                  <span
+                    className={`text-xs ${
+                      isActive ? "text-white/80" : "opacity-60"
+                    }`}
                   >
-                    <div
-                      className="aspect-square overflow-hidden"
-                      style={{ backgroundColor: "var(--shop-bg)" }}
-                    >
-                      {p.imageUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={p.imageUrl}
-                          alt={p.titleTh ?? p.title}
-                          className="h-full w-full object-cover transition group-hover:scale-105"
-                        />
-                      )}
-                    </div>
-                  </Link>
-                  <div className="flex flex-1 flex-col p-3">
-                    <Link
-                      href={`/stores/${store.slug}/products/${p.id}`}
-                      className="line-clamp-2 text-sm hover:underline"
-                      style={{ color: "var(--shop-ink)" }}
-                    >
-                      {p.titleTh ?? p.title}
-                    </Link>
-                    <div className="mt-2 flex items-end justify-between gap-2">
-                      <p
-                        className="text-base font-bold"
-                        style={{ color: "var(--shop-primary)" }}
-                      >
-                        ฿ {Number(p.priceTHB).toLocaleString("th-TH")}
-                      </p>
-                      <ShopAddButton
-                        product={{
-                          id: p.id,
-                          title: p.titleTh ?? p.title,
-                          priceTHB: Number(p.priceTHB),
-                          imageUrl: p.imageUrl ?? undefined,
-                          storeName: store.name,
-                          storeSlug: store.slug,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
+                    {legacyCountMap.get(c) ?? 0}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* shadcn-studio product-list-03 — polished 4-up grid with
+          image, name, price, store-as-seller chip, verified tick.
+          Renders full-width below the chip bar; falls back to a soft
+          empty state when the category has no products. */}
+      {products.length === 0 ? (
+        <Card
+          className="mt-6 rounded-lg p-10 text-center shadow-none"
+          style={{
+            background: "var(--shop-card)",
+            borderColor: "var(--shop-border)",
+          }}
+        >
+          <p style={{ color: "var(--shop-ink-muted)" }}>
+            ยังไม่มีสินค้าในหมวดนี้
+          </p>
+          <Link
+            href={`/stores/${store.slug}`}
+            className="mt-3 inline-block text-sm hover:underline"
+            style={{ color: "var(--shop-primary)" }}
+          >
+            ดูสินค้าทั้งหมด
+          </Link>
+        </Card>
+      ) : (
+        <div className="mt-2 -mx-4 sm:mx-0">
+          <ProductList
+            title={headerName}
+            currency="฿"
+            products={productListItems}
+          />
         </div>
-      </div>
+      )}
 
       {/* shadcn-studio Testimonial — featured customer quotes specific
           to the category's typical shopping motivation. */}
