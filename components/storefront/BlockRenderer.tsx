@@ -36,6 +36,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { ThemeVariant } from "@/lib/landing/families";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export type { ThemeVariant };
 
@@ -468,15 +470,16 @@ function ProductHero({
       <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-2 md:gap-16">
         <div className="order-2 flex flex-col items-start gap-5 md:order-1">
           {badge && (
-            <span
-              className={`inline-block rounded-full px-3 py-1 text-sm font-bold shadow-sm ${
+            <Badge
+              variant={cute ? "default" : "outline"}
+              className={
                 cute
-                  ? "border border-orange-200 bg-orange-100 text-orange-600"
-                  : "text-xs uppercase tracking-widest text-stone-500"
-              }`}
+                  ? "border border-orange-200 bg-orange-100 px-3 py-1 text-sm font-bold text-orange-600 shadow-sm"
+                  : "px-3 py-1 text-xs font-semibold uppercase tracking-widest text-stone-500"
+              }
             >
               {badge}
-            </span>
+            </Badge>
           )}
           <h1
             className={`text-4xl leading-tight md:text-5xl lg:text-6xl ${t.headline}`}
@@ -499,20 +502,26 @@ function ProductHero({
           <FomoChips content={content} />
           <TrustChips content={content} />
           <div className="mt-2 flex flex-wrap gap-3">
-            <Link
-              href={href}
-              className={`inline-flex items-center gap-2 ${t.btnRadius} ${t.bgAccent} px-8 py-4 text-lg font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 ${t.bgAccentHover}`}
+            <Button
+              asChild
+              size="lg"
+              className={`h-auto gap-2 ${t.btnRadius} ${t.bgAccent} px-8 py-4 text-lg font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 ${t.bgAccentHover}`}
             >
-              <ShoppingCart className="h-5 w-5" />
-              {cta}
-            </Link>
-            {s(content.secondary_cta_text) && (
-              <Link
-                href={s(content.secondary_cta_url) ?? href}
-                className={`inline-flex items-center px-4 py-2 font-semibold ${t.accent} hover:underline`}
-              >
-                {s(content.secondary_cta_text)}
+              <Link href={href}>
+                <ShoppingCart className="h-5 w-5" />
+                {cta}
               </Link>
+            </Button>
+            {s(content.secondary_cta_text) && (
+              <Button
+                asChild
+                variant="link"
+                className={`h-auto px-4 py-2 text-base font-semibold ${t.accent}`}
+              >
+                <Link href={s(content.secondary_cta_url) ?? href}>
+                  {s(content.secondary_cta_text)}
+                </Link>
+              </Button>
             )}
           </div>
         </div>
