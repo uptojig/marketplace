@@ -88,6 +88,58 @@ const PRESETS: Record<string, ShopChromePreset> = {
 };
 
 /**
+ * Map AI-multi-page design families (A-I) to chrome presets. Each
+ * family already has a curated palette in `lib/landing/families.ts`;
+ * we read it dynamically (caller passes the resolved family) to avoid
+ * importing from this file into globals.css cycle territory.
+ */
+export interface FamilyTokensInput {
+  themeColor: string;
+  accentHex?: string;
+  bgHex?: string;
+  textHex?: string;
+}
+const FAMILY_GLYPHS: Record<string, string | null> = {
+  A: null, // editorial minimal — store initial
+  B: "❀", // rose flower
+  C: "◆", // gold diamond
+  D: "▣", // industrial square
+  E: "◇", // cyber diamond
+  F: "▶", // sport action
+  G: "🌿", // botanical leaf
+  H: "☕", // cozy coffee
+  I: "✿", // playful flower
+};
+const FAMILY_BUTTON_SHAPE: Record<string, ButtonShape> = {
+  A: "rounded",
+  B: "rounded",
+  C: "square",
+  D: "square",
+  E: "rounded",
+  F: "square",
+  G: "pill",
+  H: "rounded",
+  I: "pill",
+};
+export function presetForFamily(
+  code: string,
+  family: FamilyTokensInput,
+): ShopChromePreset {
+  return {
+    themeClass: `theme-${code}`,
+    tokens: {
+      accent: family.themeColor,
+      ink: family.textHex ?? "#1f2937",
+      bg: family.bgHex ?? "#f8fafc",
+      decorationGlyph: FAMILY_GLYPHS[code] ?? null,
+      announcement: null,
+      buttonShape: FAMILY_BUTTON_SHAPE[code] ?? "rounded",
+      glyphStyle: code === "C" || code === "D" ? "filled" : "tinted",
+    },
+  };
+}
+
+/**
  * Resolve final tokens for a store. `templateId` looks up a preset;
  * any explicit `override` (e.g. accentHex from the schema) wins; the
  * store's own primaryColor is the next fallback for `accent`.

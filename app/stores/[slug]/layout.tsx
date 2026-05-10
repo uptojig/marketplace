@@ -28,12 +28,10 @@ import { isReactTemplateSchema } from "@/components/storefront/templates/registr
 import { ShopHeader } from "@/components/storefront/chrome/ShopHeader";
 import { ShopFooter } from "@/components/storefront/chrome/ShopFooter";
 import {
+  presetForFamily,
   resolveChromeTokens,
   tokensToCssVars,
 } from "@/components/storefront/chrome/tokens";
-import { GlobalHeader } from "@/components/storefront/GlobalHeader";
-import { GlobalFooter } from "@/components/storefront/GlobalFooter";
-import { safeHeader, safeFooter } from "@/components/storefront/MultiPageRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -197,59 +195,82 @@ export default async function ShopLayout({
     );
   }
 
-  // 3. ถ้าเป็น AI Multi-page ให้ครอบด้วย GlobalHeader และ GlobalFooter สำหรับทุกหน้าในร้าน!
+  // 3. AI Multi-page schema → ShopHeader/Footer with the resolved
+  //    design family's preset (Phase 2). Each family A-I maps to its
+  //    own token set (accent + glyph + button shape + theme-X body
+  //    skin). Sub-pages (cart / category / product / wishlist) all
+  //    inherit the same chrome and tokens as the landing.
   if (isAiMultiPage) {
-    // Pass store.logoUrl as override — agent emits a placehold.co
-    // URL by default; once the operator uploads a real logo via
-    // /admin/stores/<id>, that takes precedence on every page.
-    const header = safeHeader(
-      blocksData.globalHeader,
-      store.slug,
-      store.name,
-      store.logoUrl,
-    );
-    const footer = safeFooter(blocksData.globalFooter, store.name, store.logoUrl);
     const family = resolveFamily(blocksData.designFamily || store.landingThemeVariant);
-    const primary = family?.themeColor ?? store.primaryColor ?? "#008BF8";
-    const theme = (blocksData.designFamily || "A") as any;
-    const bgHex = family?.bgHex ?? (theme === "cute" || theme === "I" ? "#fdf2f8" : "#faf7f2");
-    const textHex = family?.textHex ?? "#1a1a2e";
-    const cardHex = family?.cardHex ?? "#ffffff";
-    // Family E exposes a second accent (cyan) for the cyberpunk
-    // purple→cyan gradients. Other families fall back to mixing the
-    // primary, so existing themes look unchanged.
-    const accentHex =
-      (family as { accentHex?: string } | undefined)?.accentHex ?? primary;
-
+    const familyCode = (blocksData.designFamily || "A") as string;
     const fontClass = family?.fontClass ?? "font-sans";
 
-    // theme-* class flags expose family-specific styling (typography,
-    // button shape, glows, gradients) to the storefront CSS layer
-    // without touching every block component. We always emit a
-    // `theme-{LETTER}` class for the design family A-I; Family E
-    // additionally gets `theme-cyber` as a back-compat alias since
-    // older CSS targets that name. Per-family rules live in
-    // app/globals.css under "Family-aware design system".
-    const themeClass = `theme-${theme}${theme === "E" ? " theme-cyber" : ""}`;
+    const categoryRows = await prisma.product.findMany({
+      where: { storeId: store.id, active: true, categoryName: { not: null } },
+      select: { categoryName: true },
+      distinct: ["categoryName"],
+      orderBy: { categoryName: "asc" },
+      take: 12,
+    });
+    const dbCategories = categoryRows
+      .map((r) => r.categoryName)
+      .filter((c): c is string => !!c);
+
+    // Prefer the AI-curated nav as category labels (operator-tuned
+    // ordering); fall back to product-derived list. Filter out items
+    // that look like full-page nav (about / contact) so they don't
+    // pollute the category chip strip.
+    const aiNav = (blocksData.globalHeader?.nav as Array<{
+      text: string;
+      href?: string;
+    }> | undefined) ?? [];
+    const navCategories =
+      aiNav.length > 0
+        ? aiNav
+            .map((n) => n.text)
+            .filter(
+              (t): t is string =>
+                !!t && !/about|contact|home|หน้าแรก|เกี่ยวกับ|ติดต่อ/i.test(t),
+            )
+        : dbCategories;
+
+    const preset = family
+      ? presetForFamily(familyCode, family)
+      : { tokens: undefined, themeClass: undefined };
+    const { tokens, themeClass } = resolveChromeTokens({
+      templateId: undefined,
+      primaryColor: family?.themeColor ?? store.primaryColor,
+      override: preset.tokens,
+    });
+    // Family E retains its theme-cyber back-compat alias.
+    const themeClassFinal = `${themeClass ? `${themeClass} ` : ""}${familyCode === "E" ? "theme-cyber " : ""}theme-${familyCode}`;
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClass}`.trim()}
-        style={{
-          ["--shop-primary" as string]: primary,
-          ["--shop-accent" as string]: accentHex,
-          ["--shop-bg" as string]: bgHex,
-          ["--shop-ink" as string]: textHex,
-          ["--shop-ink-muted" as string]: "color-mix(in srgb, var(--shop-ink) 60%, transparent)",
-          ["--shop-card" as string]: cardHex,
-          ["--shop-border" as string]: "color-mix(in srgb, var(--shop-ink) 15%, transparent)",
-        } as React.CSSProperties}
+        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal}`.trim()}
+        style={tokensToCssVars(tokens)}
       >
-        <GlobalHeader content={header} theme={theme} storeSlug={store.slug} />
+        <ShopHeader
+          storeSlug={store.slug}
+          storeName={store.name}
+          storeLogoUrl={store.logoUrl}
+          categories={navCategories}
+          accent={tokens.accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+          announcement={tokens.announcement}
+          buttonShape={tokens.buttonShape}
+        />
         <main className="flex-1">{children}</main>
-        {footer && <GlobalFooter content={footer} theme={theme} storeSlug={store.slug} />}
+        <ShopFooter
+          store={store}
+          categories={navCategories}
+          accent={tokens.accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+        />
         <CookiesBar />
-        <ShopFloatingButtons primaryColor={primary} />
+        <ShopFloatingButtons primaryColor={tokens.accent} />
       </div>
     );
   }
