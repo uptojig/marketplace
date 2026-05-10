@@ -28,6 +28,8 @@ import { useCart } from "@/lib/store/cart";
 import { formatTHB } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { CountdownBlock } from "@/components/blocks/countdown";
+import { FaqBlock } from "@/components/blocks/faq";
 
 interface StoreLite {
   id: string;
@@ -39,6 +41,12 @@ interface StoreLite {
 
 const FREE_SHIPPING_THRESHOLD = 990;
 const DEFAULT_SHIPPING = 50;
+
+function endOfTodayISO() {
+  const d = new Date();
+  d.setHours(23, 59, 59, 999);
+  return d.toISOString();
+}
 
 export function StoreCartClient({ store }: { store: StoreLite }) {
   const allLines = useCart((s) => s.lines);
@@ -356,6 +364,45 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
               </div>
             </section>
           </div>
+        )}
+
+        {/* shadcn-studio extras — Countdown urgency + Cart FAQ.
+            Only render when the cart has lines so the empty state stays
+            quiet. Countdown target is end-of-day so it resets daily. */}
+        {lines.length > 0 && (
+          <>
+            <CountdownBlock
+              headline="ดีลพิเศษวันนี้ — สั่งภายในเที่ยงคืนเพื่อรับส่วนลด"
+              target_at={endOfTodayISO()}
+              ctaText="ไปเลือกสินค้าเพิ่ม"
+              ctaLink={`/stores/${store.slug}/category`}
+            />
+            <FaqBlock
+              title="คำถามที่พบบ่อยเรื่องการสั่งซื้อ"
+              items={[
+                {
+                  question: "ใช้เวลาส่งกี่วัน?",
+                  answer:
+                    "1-3 วันทำการ ผ่าน Kerry / Flash / EMS หลังจากชำระเงินแล้ว",
+                },
+                {
+                  question: "เก็บเงินปลายทางได้ไหม?",
+                  answer:
+                    "ได้ทุกออเดอร์ (มีค่าธรรมเนียมเก็บปลายทาง 30 บาท)",
+                },
+                {
+                  question: "ผ่อน 0% ได้ไหม?",
+                  answer:
+                    "รับบัตรเครดิตธนาคารชั้นนำ เลือกผ่อน 0% นาน 3 เดือนได้",
+                },
+                {
+                  question: "เปลี่ยน / คืนสินค้าได้ไหม?",
+                  answer:
+                    "เปลี่ยนหรือคืนได้ภายใน 7 วันหากสินค้ามีตำหนิจากโรงงาน",
+                },
+              ]}
+            />
+          </>
         )}
       </main>
     </div>

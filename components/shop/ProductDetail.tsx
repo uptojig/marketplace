@@ -39,6 +39,9 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
+import { FeaturesBlock } from "@/components/blocks/features";
+import { ReviewsBlock } from "@/components/blocks/reviews";
+import { FaqBlock } from "@/components/blocks/faq";
 import {
   ChevronDown,
   ShoppingBag,
@@ -163,7 +166,8 @@ export function ProductDetail({ product }: { product: Product }) {
   }
 
   return (
-    <div className="md:flex items-start justify-center py-8 2xl:px-20 md:px-6 px-0">
+    <>
+      <div className="md:flex items-start justify-center py-8 2xl:px-20 md:px-6 px-0">
       {/* ── Gallery (desktop: stacked, mobile: hero + thumb row) ── */}
       <div className="relative">
         <Gallery images={allImages} title={product.title} />
@@ -432,6 +436,92 @@ export function ProductDetail({ product }: { product: Product }) {
           </AccordionItem>
         </Accordion>
       </div>
+      </div>
+
+      {/* shadcn-studio extra sections — Features, Reviews, FAQ. Hardcoded
+          content per page so every PDP gets a "real" e-commerce shape
+          regardless of whether the operator filled in store-level copy. */}
+      <FeaturesBlock
+        title="จุดเด่นของร้าน"
+        layoutStyle="cards"
+        items={[
+          {
+            title: "ส่งฟรี ฿990+",
+            description: "ทั่วประเทศไทย ผ่าน Kerry / Flash / EMS",
+          },
+          {
+            title: "คืนได้ 7 วัน",
+            description: "หากสินค้ามีตำหนิจากโรงงาน คืนได้เต็มจำนวน",
+          },
+          {
+            title: "เก็บเงินปลายทาง",
+            description: "จ่ายเมื่อรับของ หรือชำระล่วงหน้าก็ได้",
+          },
+        ]}
+      />
+
+      <ReviewsBlock
+        title="รีวิวจากลูกค้า"
+        overallRating={4.8}
+        reviewCount={127}
+        reviews={[
+          {
+            name: "คุณนัท",
+            location: "กรุงเทพฯ",
+            rating: 5,
+            text: "ของดีมาก สั่งครั้งที่ 2 แล้ว ราคาคุ้มค่าจริง ๆ",
+            date: "2 วันที่แล้ว",
+            verified: true,
+          },
+          {
+            name: "คุณเอ",
+            location: "เชียงใหม่",
+            rating: 5,
+            text: "ส่งเร็ว แพ็คดีมาก ของตรงตามรูปไม่มีปัญหา",
+            date: "5 วันที่แล้ว",
+            verified: true,
+          },
+          {
+            name: "คุณบี",
+            location: "ภูเก็ต",
+            rating: 4,
+            text: "คุ้มราคา ใช้งานได้ดี ส่งช้าไปนิดนึงแต่โอเค",
+            date: "1 สัปดาห์ที่แล้ว",
+            verified: true,
+          },
+        ]}
+      />
+
+      <FaqBlock
+        title="คำถามที่พบบ่อย"
+        items={[
+          {
+            question: "ใช้เวลาส่งกี่วัน?",
+            answer:
+              "1-3 วันทำการ ผ่าน Kerry / Flash / EMS หลังจากชำระเงินแล้ว",
+          },
+          {
+            question: "ของแท้ไหม?",
+            answer:
+              "ของแท้ทุกชิ้น มีใบรับประกันจากผู้ผลิต / ตัวแทนนำเข้า",
+          },
+          {
+            question: "เปลี่ยน / คืนได้ไหม?",
+            answer:
+              "เปลี่ยนหรือคืนได้ภายใน 7 วัน หากสินค้ามีตำหนิจากโรงงาน",
+          },
+          {
+            question: "ผ่อน 0% ได้ไหม?",
+            answer:
+              "รับบัตรเครดิตธนาคารชั้นนำ เลือกผ่อน 0% นาน 3 เดือนได้",
+          },
+          {
+            question: "ติดต่อสอบถามได้ที่ไหน?",
+            answer:
+              "ติดต่อร้านได้ผ่าน LINE / Facebook / Instagram ตามที่ระบุไว้ในหน้าติดต่อเรา",
+          },
+        ]}
+      />
 
       {/* Sticky mobile bottom bar — appears once the in-flow CTA scrolls
           out of viewport. Mobile only (hidden on md+). Re-engages without
@@ -478,7 +568,7 @@ export function ProductDetail({ product }: { product: Product }) {
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

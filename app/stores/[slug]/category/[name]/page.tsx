@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { ShopAddButton } from "@/components/shop/ShopAddButton";
 import { SortSelect } from "@/components/shop/SortSelect";
 import { Card } from "@/components/ui/card";
+import { StatsBlock } from "@/components/blocks/stats";
+import { TestimonialBlock } from "@/components/blocks/testimonial";
 
 export const dynamic = "force-dynamic";
 
@@ -125,6 +127,16 @@ export default async function StoreCategoryPage({
     legacyCounts.map((g) => [g.categoryName ?? "", g._count._all]),
   );
 
+  // Stats block inputs — average price across the active category, in
+  // round THB. Rating is placeholder until per-product reviews exist.
+  const avgPrice =
+    products.length > 0
+      ? Math.round(
+          products.reduce((sum, p) => sum + Number(p.priceTHB), 0) /
+            products.length,
+        )
+      : 0;
+
   return (
     <div className="container mx-auto max-w-[1200px] px-4 py-6">
       <Link
@@ -183,6 +195,25 @@ export default async function StoreCategoryPage({
         </div>
         <SortSelect defaultValue={sort} />
       </div>
+
+      {/* shadcn-studio Stats — category-level numbers across the band.
+          Different from PDP (Reviews) + Cart (Countdown) so each page
+          type carries its own visual signature. */}
+      {totalInCategory > 0 && (
+        <div className="mt-4">
+          <StatsBlock
+            items={[
+              { value: totalInCategory.toLocaleString(), label: "สินค้าในหมวดนี้" },
+              {
+                value: avgPrice > 0 ? `฿${avgPrice.toLocaleString()}` : "—",
+                label: "ราคาเฉลี่ย",
+              },
+              { value: "4.8★", label: "เรตติ้งร้าน" },
+              { value: "1-3", label: "วันจัดส่ง" },
+            ]}
+          />
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[220px,1fr]">
         {/* Sidebar with all categories */}
@@ -374,6 +405,33 @@ export default async function StoreCategoryPage({
           )}
         </div>
       </div>
+
+      {/* shadcn-studio Testimonial — featured customer quotes specific
+          to the category's typical shopping motivation. */}
+      <TestimonialBlock
+        title="ลูกค้าพูดถึงร้านนี้"
+        layoutStyle="grid"
+        quotes={[
+          {
+            text: "ของหลากหลาย ราคาดี แพ็คดี ส่งเร็วทันใจ",
+            author: "คุณนัท",
+            location: "กรุงเทพฯ",
+            rating: 5,
+          },
+          {
+            text: "สั่งหลายครั้งแล้ว ของไม่เคยพลาด แอดมินตอบเร็ว",
+            author: "คุณจอย",
+            location: "ขอนแก่น",
+            rating: 5,
+          },
+          {
+            text: "ตรงตามรูป คุ้มราคา ใช้งานได้ดีตามที่คาดหวัง",
+            author: "คุณบี",
+            location: "ภูเก็ต",
+            rating: 4,
+          },
+        ]}
+      />
     </div>
   );
 }
