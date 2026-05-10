@@ -1471,3 +1471,117 @@
 .theme-caselnw nav[aria-label="Breadcrumb"] {
   font-size: 0.8125rem;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Mini-Mops theme — emerald lifestyle skin. Same goal as
+   `theme-caselnw`: every sub-page (cart / category / products /
+   wishlist / search / static) inherits the soft white-card +
+   emerald-accent feel of the landing without per-page edits.
+   Applied via `theme-mini-mops` class on the chrome wrapper.
+   ───────────────────────────────────────────────────────── */
+.theme-mini-mops {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    "Noto Sans Thai", sans-serif;
+}
+
+/* Cards: pillow-soft 16-20px radii. */
+.theme-mini-mops [class*="rounded-md"]:not([class*="rounded-md-"]) {
+  border-radius: 1rem;
+}
+.theme-mini-mops [class*="rounded-lg"]:not([class*="rounded-lg-"]) {
+  border-radius: 1.125rem;
+}
+.theme-mini-mops [class*="rounded-xl"]:not([class*="rounded-xl-"]) {
+  border-radius: 1.5rem;
+}
+
+/* Inputs / selects: pill-shaped to match the landing's CTAs. */
+.theme-mini-mops input,
+.theme-mini-mops select,
+.theme-mini-mops textarea {
+  border-radius: 0.875rem;
+  border-color: color-mix(in srgb, #1f2937 12%, transparent);
+}
+
+/* Section headings — slight tracking for warmth. */
+.theme-mini-mops h1,
+.theme-mini-mops h2 {
+  letter-spacing: -0.01em;
+}
+
+/* Group product cards — emerald hover lift. */
+.theme-mini-mops .group.relative {
+  background: #ffffff;
+  border: 1px solid color-mix(in srgb, #1f2937 8%, transparent);
+  border-radius: 1.5rem;
+  padding: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.theme-mini-mops .group.relative:hover {
+  border-color: var(--shop-primary);
+  box-shadow: 0 16px 32px -18px color-mix(in srgb, var(--shop-primary) 50%, transparent);
+}
+.theme-mini-mops .group.relative > .aspect-square {
+  border-radius: 1.125rem;
+  overflow: hidden;
+}
+
+/* Cart line rows feel like cards. */
+.theme-mini-mops ul.divide-y > li {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.theme-mini-mops ul.border-t.border-b.divide-y {
+  border-top-width: 0;
+  border-bottom-width: 0;
+}
+
+/* Order summary — soft emerald shadow ring. */
+.theme-mini-mops .rounded-2xl[class*="border"] {
+  box-shadow: 0 18px 38px -22px color-mix(in srgb, var(--shop-primary) 35%, transparent);
+}
+
+/* Primary CTAs that opt in to var(--shop-primary): emerald pill. */
+.theme-mini-mops button[style*="background: var(--shop-primary)"],
+.theme-mini-mops a[style*="background: var(--shop-primary)"],
+.theme-mini-mops a[style*="background-color: var(--shop-primary)"] {
+  border-radius: 9999px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: 0 12px 24px -10px color-mix(in srgb, var(--shop-primary) 55%, transparent);
+}
+
+/* Filter sidebar headings + pagination + breadcrumbs. */
+.theme-mini-mops details[open] > summary {
+  font-weight: 600;
+}
+.theme-mini-mops nav[aria-label="Pagination"] [style*="--shop-primary"] {
+  border-color: var(--shop-primary) !important;
+}
+.theme-mini-mops nav[aria-label="Breadcrumb"] {
+  font-size: 0.8125rem;
+}
+
+/* Remap stone/zinc/gray Tailwind classes to the mini-mops gray-800
+   ink palette so legacy text/borders read as the same design. */
+.theme-mini-mops .border-stone-200,
+.theme-mini-mops .border-stone-300,
+.theme-mini-mops .border-zinc-200,
+.theme-mini-mops .border-gray-200,
+.theme-mini-mops .border-gray-300 {
+  border-color: color-mix(in srgb, #1f2937 10%, transparent) !important;
+}
+.theme-mini-mops .text-stone-500,
+.theme-mini-mops .text-stone-600,
+.theme-mini-mops .text-zinc-500,
+.theme-mini-mops .text-zinc-600,
+.theme-mini-mops .text-gray-500,
+.theme-mini-mops .text-gray-600 {
+  color: color-mix(in srgb, #1f2937 60%, transparent) !important;
+}
+.theme-mini-mops .bg-stone-50,
+.theme-mini-mops .bg-zinc-50,
+.theme-mini-mops .bg-gray-50 {
+  background-color: #f9fafb !important;
+}

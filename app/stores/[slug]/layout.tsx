@@ -27,6 +27,8 @@ import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
 import { CaselNwHeader } from "@/components/storefront/templates/caselnw/Header";
 import { CaselNwFooter } from "@/components/storefront/templates/caselnw/Footer";
+import { MiniMopsHeader } from "@/components/storefront/templates/mini-mops/Header";
+import { MiniMopsFooter } from "@/components/storefront/templates/mini-mops/Footer";
 import { ShopHeader } from "@/components/storefront/chrome/ShopHeader";
 import { ShopFooter } from "@/components/storefront/chrome/ShopFooter";
 import {
@@ -194,7 +196,54 @@ export default async function ShopLayout({
         </div>
       );
     }
-    // Other React templates (e.g. mini-mops-v1) self-render their chrome.
+    if (blocksData.template === "mini-mops-v1") {
+      const categoryRows = await prisma.product.findMany({
+        where: { storeId: store.id, active: true, categoryName: { not: null } },
+        select: { categoryName: true },
+        distinct: ["categoryName"],
+        orderBy: { categoryName: "asc" },
+        take: 8,
+      });
+      const navCategories = categoryRows
+        .map((r) => r.categoryName)
+        .filter((c): c is string => !!c)
+        .map((c) => ({ label: c, category: c }));
+      const accent = blocksData.accentHex ?? "#10b981";
+      return (
+        <div
+          className="shop-page theme-mini-mops min-h-screen flex flex-col bg-gray-50 text-gray-800"
+          style={
+            {
+              ["--shop-primary" as string]: accent,
+              ["--shop-accent" as string]: accent,
+              ["--shop-bg" as string]: "#f9fafb",
+              ["--shop-card" as string]: "#ffffff",
+              ["--shop-ink" as string]: "#1f2937",
+              ["--shop-ink-muted" as string]:
+                "color-mix(in srgb, #1f2937 60%, transparent)",
+              ["--shop-border" as string]:
+                "color-mix(in srgb, #1f2937 12%, transparent)",
+            } as React.CSSProperties
+          }
+        >
+          <MiniMopsHeader
+            storeSlug={store.slug}
+            storeName={store.name}
+            navCategories={navCategories}
+            accent={accent}
+          />
+          <main className="flex-1">{children}</main>
+          <MiniMopsFooter
+            storeSlug={store.slug}
+            storeName={store.name}
+            storeDescription={store.description}
+            navCategories={navCategories}
+            accent={accent}
+          />
+        </div>
+      );
+    }
+    // Unknown React template — render bare children as a safe fallback.
     return <>{children}</>;
   }
 
