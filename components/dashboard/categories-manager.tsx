@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -11,6 +11,11 @@ import {
   ExternalLink,
   ImageIcon,
   Loader2,
+  Sparkles,
+  Eye,
+  EyeOff,
+  Wand2,
+  RefreshCw,
 } from "lucide-react";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 
@@ -92,6 +97,22 @@ export function CategoriesManager({
   const [productSearch, setProductSearch] = useState("");
   const [bulkTarget, setBulkTarget] = useState<string>("");
   const [bulkBusy, setBulkBusy] = useState(false);
+
+  // Suggestions panel — lazy-loaded once the operator opens it so a
+  // CJ/AliExpress fetch (slow first-call) doesn't slow page render.
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<{
+    legacy: { name: string; count: number }[];
+    cj: { available: boolean; items: { id: string; name: string }[] };
+    aliexpress: { available: boolean; items: { id: string; name: string }[] };
+  } | null>(null);
+  const [importTab, setImportTab] = useState<"legacy" | "cj" | "aliexpress">(
+    "legacy",
+  );
+  const [importPicked, setImportPicked] = useState<Set<string>>(new Set());
+  const [importRewrite, setImportRewrite] = useState(true);
+  const [importBusy, setImportBusy] = useState(false);
 
   // We never mutate this client-side; router.refresh() re-fetches
   // the server data after each mutation, which re-mounts the page
@@ -197,21 +218,18 @@ export function CategoriesManager({
     router.refresh();
   }
 
-  /* ── Bulk assign ─────────────────────────────────────────────── */
-  async function handleBulkAssign() {
-    if (selectedProductIds.size === 0) return;
-    if (!bulkTarget) {
-      showToast({ type: "err", msg: "เลือกหมวดหมู่ปลายทางก่อน" });
-      return;
-    }
+  /* ── Bulk product actions ────────────────────────────────────── */
+  async function postBulk(
+    body: Record<string, unknown>,
+    successMsg: (count: number) => string,
+  ) {
     setBulkBusy(true);
-    const categoryId = bulkTarget === "__none__" ? null : bulkTarget;
-    const res = await fetch("/api/store/categories/bulk-assign", {
+    const res = await fetch("/api/store/categories/bulk-products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         productIds: Array.from(selectedProductIds),
-        categoryId,
+        ...body,
       }),
     });
     setBulkBusy(false);
@@ -219,20 +237,145 @@ export function CategoriesManager({
       const data = await res.json().catch(() => ({}));
       showToast({
         type: "err",
-        msg: typeof data.error === "string" ? data.error : "ดำเนินการไม่สำเร็จ",
+        msg:
+          typeof data.error === "string"
+            ? data.error
+            : "ดำเนินการไม่สำเร็จ",
       });
       return;
     }
     const data = (await res.json()) as { ok: true; count: number };
-    showToast({
-      type: "ok",
-      msg:
-        categoryId === null
-          ? `ย้ายออกจากหมวดหมู่ ${data.count} รายการ`
-          : `จัดเข้าหมวด ${data.count} รายการ`,
-    });
+    showToast({ type: "ok", msg: successMsg(data.count) });
     setSelectedProductIds(new Set());
     setBulkTarget("");
+    router.refresh();
+  }
+
+  async function handleBulkAssign() {
+    if (selectedProductIds.size === 0) return;
+    if (!bulkTarget) {
+      showToast({ type: "err", msg: "เลือกหมวดหมู่ปลายทางก่อน" });
+      return;
+    }
+    const categoryId = bulkTarget === "__none__" ? null : bulkTarget;
+    await postBulk(
+      { action: "set_category", categoryId },
+      (count) =>
+        categoryId === null
+          ? `ย้ายออกจากหมวดหมู่ ${count} รายการ`
+          : `จัดเข้าหมวด ${count} รายการ`,
+    );
+  }
+
+  async function handleBulkSetActive(active: boolean) {
+    if (selectedProductIds.size === 0) return;
+    await postBulk(
+      { action: "set_active", active },
+      (count) =>
+        active ? `เปิดขาย ${count} รายการ` : `ซ่อน ${count} รายการ`,
+    );
+  }
+
+  async function handleBulkDelete() {
+    if (selectedProductIds.size === 0) return;
+    if (
+      !window.confirm(
+        `ลบสินค้า ${selectedProductIds.size} รายการ? — ลบไม่ได้ถ้ามีออเดอร์อ้างอิงอยู่`,
+      )
+    )
+      return;
+    await postBulk({ action: "delete" }, (count) => `ลบ ${count} รายการ`);
+  }
+
+  /* ── Suggestions: legacy / CJ / AliExpress ───────────────────── */
+  async function loadSuggestions() {
+    setSuggestionsLoading(true);
+    try {
+      const res = await fetch("/api/store/categories/suggestions");
+      if (!res.ok) {
+        showToast({ type: "err", msg: "โหลดรายการแนะนำไม่สำเร็จ" });
+        return;
+      }
+      const data = await res.json();
+      setSuggestions({
+        legacy: data.legacy ?? [],
+        cj: data.cj ?? { available: false, items: [] },
+        aliexpress: data.aliexpress ?? { available: false, items: [] },
+      });
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (suggestionsOpen && !suggestions && !suggestionsLoading) {
+      loadSuggestions();
+    }
+    // We intentionally don't depend on `suggestions` reference —
+    // we want this to fire exactly once per "open" toggle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [suggestionsOpen]);
+
+  function toggleImportPick(name: string) {
+    const next = new Set(importPicked);
+    if (next.has(name)) next.delete(name);
+    else next.add(name);
+    setImportPicked(next);
+  }
+
+  function currentSuggestionItems(): string[] {
+    if (!suggestions) return [];
+    if (importTab === "legacy") return suggestions.legacy.map((l) => l.name);
+    if (importTab === "cj") return suggestions.cj.items.map((c) => c.name);
+    return suggestions.aliexpress.items.map((c) => c.name);
+  }
+
+  async function handleImport() {
+    if (importPicked.size === 0) {
+      showToast({ type: "err", msg: "เลือกหมวดที่จะนำเข้าก่อน" });
+      return;
+    }
+    setImportBusy(true);
+    const res = await fetch("/api/store/categories/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source: importTab,
+        names: Array.from(importPicked),
+        rewrite: importRewrite,
+      }),
+    });
+    setImportBusy(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      showToast({
+        type: "err",
+        msg:
+          typeof data.error === "string"
+            ? data.error
+            : "นำเข้าหมวดหมู่ไม่สำเร็จ",
+      });
+      return;
+    }
+    const data = (await res.json()) as {
+      ok: true;
+      created: { name: string; productCount?: number }[];
+      skipped: { name: string; reason: string }[];
+    };
+    const productsLinked = data.created.reduce(
+      (sum, c) => sum + (c.productCount ?? 0),
+      0,
+    );
+    const summary =
+      `สร้าง ${data.created.length} หมวด` +
+      (productsLinked > 0 ? ` · ผูกสินค้า ${productsLinked} รายการ` : "") +
+      (data.skipped.length > 0
+        ? ` · ข้าม ${data.skipped.length} รายการ (ซ้ำ)`
+        : "");
+    showToast({ type: "ok", msg: summary });
+    setImportPicked(new Set());
+    // Force suggestions refetch + page re-render.
+    setSuggestions(null);
     router.refresh();
   }
 
@@ -424,56 +567,162 @@ export function CategoriesManager({
         )}
       </section>
 
-      {/* ── Bulk assign products ─────────────────────────────────── */}
+      {/* ── Suggestions: import legacy + supplier categories ─────── */}
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-semibold">นำเข้าหมวดหมู่</h2>
+            <p className="text-sm text-muted-foreground">
+              ดึงหมวดเก่าที่ติดมากับสินค้า + หมวดของ CJ / AliExpress —
+              AI ช่วยเรียบเรียงเป็นภาษาไทย + ตั้ง slug ให้เลย
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSuggestionsOpen((v) => !v)}
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border bg-background px-3 text-sm font-medium hover:bg-accent"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {suggestionsOpen ? "ซ่อน" : "เปิด"}แผง import
+          </button>
+        </div>
+
+        {suggestionsOpen && (
+          <div className="space-y-3 rounded-lg border bg-white p-4">
+            {suggestionsLoading || !suggestions ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                กำลังโหลดรายการ...
+              </div>
+            ) : (
+              <>
+                {/* Tabs */}
+                <div className="flex flex-wrap items-center gap-1 border-b">
+                  {(
+                    [
+                      {
+                        key: "legacy" as const,
+                        label: `หมวดเก่า (${suggestions.legacy.length})`,
+                        disabled: false,
+                      },
+                      {
+                        key: "cj" as const,
+                        label: `CJ (${suggestions.cj.items.length})`,
+                        disabled: !suggestions.cj.available,
+                      },
+                      {
+                        key: "aliexpress" as const,
+                        label: `AliExpress (${suggestions.aliexpress.items.length})`,
+                        disabled: !suggestions.aliexpress.available,
+                      },
+                    ]
+                  ).map((t) => (
+                    <button
+                      key={t.key}
+                      type="button"
+                      disabled={t.disabled}
+                      onClick={() => {
+                        setImportTab(t.key);
+                        setImportPicked(new Set());
+                      }}
+                      className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                        importTab === t.key
+                          ? "border-primary text-primary"
+                          : "border-transparent hover:text-primary"
+                      }`}
+                    >
+                      {t.label}
+                      {t.disabled && (
+                        <span className="ml-1 text-xs opacity-60">
+                          (ยังไม่พร้อม)
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                  <div className="ml-auto flex items-center gap-2 pr-2 text-xs text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={loadSuggestions}
+                      className="inline-flex items-center gap-1 hover:underline"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      รีเฟรช
+                    </button>
+                  </div>
+                </div>
+
+                {/* Picker grid */}
+                <ImportPicker
+                  items={
+                    importTab === "legacy"
+                      ? suggestions.legacy.map((l) => ({
+                          name: l.name,
+                          badge: `${l.count} สินค้า`,
+                        }))
+                      : importTab === "cj"
+                        ? suggestions.cj.items.map((c) => ({ name: c.name }))
+                        : suggestions.aliexpress.items.map((c) => ({
+                            name: c.name,
+                          }))
+                  }
+                  picked={importPicked}
+                  onToggle={toggleImportPick}
+                  onSelectAll={() => {
+                    const all = currentSuggestionItems();
+                    const allSelected = all.every((n) => importPicked.has(n));
+                    setImportPicked(allSelected ? new Set() : new Set(all));
+                  }}
+                />
+
+                {/* Action footer */}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={importRewrite}
+                      onChange={(e) => setImportRewrite(e.target.checked)}
+                    />
+                    <Wand2 className="h-3.5 w-3.5" />
+                    ให้ AI ช่วยแปล + เรียบเรียงชื่อใหม่
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      เลือก {importPicked.size}{" "}
+                      / {currentSuggestionItems().length}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleImport}
+                      disabled={importBusy || importPicked.size === 0}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {importBusy ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Plus className="h-3.5 w-3.5" />
+                      )}
+                      นำเข้าที่เลือก
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* ── Bulk product actions ─────────────────────────────────── */}
       <section className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold">จัดสินค้าเข้าหมวดแบบ bulk</h2>
+            <h2 className="text-base font-semibold">
+              จัดการสินค้าแบบ bulk
+            </h2>
             <p className="text-sm text-muted-foreground">
-              เลือกสินค้าหลายรายการแล้วจัดเข้าหมวดเดียวกันในคลิกเดียว
+              เลือกหลายรายการ → เปลี่ยนหมวด / เปิด-ซ่อนการขาย / ลบ
+              ในคลิกเดียว
             </p>
           </div>
-          {selectedProductIds.size > 0 && (
-            <div className="flex items-center gap-2 rounded-md border bg-amber-50 px-3 py-2 text-sm">
-              <span className="font-medium">
-                เลือก {selectedProductIds.size} รายการ
-              </span>
-              <select
-                value={bulkTarget}
-                onChange={(e) => setBulkTarget(e.target.value)}
-                className="h-8 rounded-md border bg-white px-2 text-sm"
-              >
-                <option value="">— เลือกหมวดหมู่ปลายทาง —</option>
-                <option value="__none__">ไม่ระบุหมวด (ย้ายออก)</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={handleBulkAssign}
-                disabled={bulkBusy || !bulkTarget}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-50"
-              >
-                {bulkBusy ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Check className="h-3.5 w-3.5" />
-                )}
-                จัดหมวด
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedProductIds(new Set())}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md border bg-white px-3 text-xs hover:bg-accent"
-              >
-                <X className="h-3.5 w-3.5" />
-                ยกเลิก
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Filters */}
@@ -499,6 +748,90 @@ export function CategoriesManager({
             ))}
           </select>
         </div>
+
+        {/* Sticky bulk action bar — only visible when something is
+            selected. Sits below filters so the operator's eye flows
+            "ค้น → เลือก → จัดการ". */}
+        {selectedProductIds.size > 0 && (
+          <div className="sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-md border bg-amber-50 px-3 py-2 text-sm shadow-sm">
+            <span className="font-medium">
+              เลือก {selectedProductIds.size} รายการ
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const ids = filteredProducts.map((p) => p.id);
+                setSelectedProductIds(new Set(ids));
+              }}
+              className="text-xs text-primary hover:underline"
+            >
+              เลือกทั้งหมด ({filteredProducts.length})
+            </button>
+            <span className="mx-1 h-4 border-l opacity-30" />
+            <select
+              value={bulkTarget}
+              onChange={(e) => setBulkTarget(e.target.value)}
+              className="h-8 rounded-md border bg-white px-2 text-sm"
+            >
+              <option value="">— เปลี่ยนหมวด —</option>
+              <option value="__none__">ไม่ระบุหมวด (ย้ายออก)</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={handleBulkAssign}
+              disabled={bulkBusy || !bulkTarget}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-50"
+            >
+              {bulkBusy ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Check className="h-3.5 w-3.5" />
+              )}
+              จัดหมวด
+            </button>
+            <span className="mx-1 h-4 border-l opacity-30" />
+            <button
+              type="button"
+              onClick={() => handleBulkSetActive(true)}
+              disabled={bulkBusy}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border bg-white px-3 text-xs hover:bg-accent disabled:opacity-50"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              เปิดขาย
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkSetActive(false)}
+              disabled={bulkBusy}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border bg-white px-3 text-xs hover:bg-accent disabled:opacity-50"
+            >
+              <EyeOff className="h-3.5 w-3.5" />
+              ซ่อน
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkDelete}
+              disabled={bulkBusy}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-red-200 bg-white px-3 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              ลบ
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedProductIds(new Set())}
+              className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-md border bg-white px-3 text-xs hover:bg-accent"
+            >
+              <X className="h-3.5 w-3.5" />
+              ยกเลิก
+            </button>
+          </div>
+        )}
 
         {filteredProducts.length === 0 ? (
           <div className="rounded-lg border bg-white px-6 py-10 text-center text-sm text-muted-foreground">
@@ -613,6 +946,70 @@ export function CategoriesManager({
         </code>{" "}
         — เปลี่ยน slug ได้ตลอด แต่อย่าลืมว่าลิงก์เก่าจะต้องเปลี่ยนตาม
       </p>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────
+ * Import picker — checkbox grid for the suggestions panel. Same
+ * shape used for legacy / CJ / AliExpress; the parent supplies the
+ * items + selected set.
+ * ───────────────────────────────────────────────────────────────── */
+function ImportPicker({
+  items,
+  picked,
+  onToggle,
+  onSelectAll,
+}: {
+  items: Array<{ name: string; badge?: string }>;
+  picked: Set<string>;
+  onToggle: (name: string) => void;
+  onSelectAll: () => void;
+}) {
+  if (items.length === 0) {
+    return (
+      <div className="rounded-md border border-dashed bg-gray-50 px-4 py-6 text-center text-sm text-muted-foreground">
+        ไม่มีรายการในแหล่งนี้
+      </div>
+    );
+  }
+  const allSelected = items.every((it) => picked.has(it.name));
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-xs">
+        <button
+          type="button"
+          onClick={onSelectAll}
+          className="rounded-md border bg-white px-2 py-1 hover:bg-accent"
+        >
+          {allSelected ? "ยกเลิกทั้งหมด" : "เลือกทั้งหมด"}
+        </button>
+      </div>
+      <div className="grid max-h-72 grid-cols-1 gap-1.5 overflow-y-auto rounded-md border bg-gray-50 p-2 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((it) => {
+          const checked = picked.has(it.name);
+          return (
+            <label
+              key={it.name}
+              className={`flex cursor-pointer items-center gap-2 rounded-md border bg-white px-2.5 py-1.5 text-sm transition ${
+                checked ? "border-primary ring-1 ring-primary/30" : ""
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => onToggle(it.name)}
+              />
+              <span className="line-clamp-1 flex-1">{it.name}</span>
+              {it.badge && (
+                <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-800">
+                  {it.badge}
+                </span>
+              )}
+            </label>
+          );
+        })}
+      </div>
     </div>
   );
 }
