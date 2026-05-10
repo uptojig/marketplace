@@ -1395,3 +1395,79 @@
 .theme-caselnw .bg-gray-50 {
   background-color: #f8fafc !important;
 }
+
+/* Page container — push max width to 7xl so cart/category breathe. */
+.theme-caselnw main > .container {
+  max-width: 80rem;
+}
+
+/* Category & wishlist product cards — group.relative is the convention.
+   Lift each card onto white with a subtle border + soft hover shadow,
+   matching the landing's product grid. */
+.theme-caselnw .group.relative {
+  background: #ffffff;
+  border: 1px solid color-mix(in srgb, #0f172a 10%, transparent);
+  border-radius: 1.25rem;
+  padding: 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.theme-caselnw .group.relative:hover {
+  border-color: #0f172a;
+  box-shadow: 0 12px 28px -16px color-mix(in srgb, #0f172a 50%, transparent);
+}
+.theme-caselnw .group.relative > .aspect-square {
+  border-radius: 0.875rem;
+  overflow: hidden;
+}
+
+/* Cart line item rows — pad them and round, so each item looks like
+   a card instead of a bare row in a divided list. */
+.theme-caselnw ul.divide-y > li {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.theme-caselnw ul.border-t.border-b.divide-y {
+  border-top-width: 0;
+  border-bottom-width: 0;
+}
+
+/* Order summary card — reinforce the rounded-2xl + soft shadow look. */
+.theme-caselnw .rounded-2xl[class*="border"] {
+  box-shadow: 0 12px 32px -20px color-mix(in srgb, #0f172a 35%, transparent);
+}
+
+/* Primary CTA buttons — caselnw uses slate-900 for "เพิ่มลงตะกร้า"
+   with orange hover. Override the var(--shop-primary) bg buttons that
+   ProductDetail / cart / category use to match this aesthetic. */
+.theme-caselnw button[style*="background: var(--shop-primary)"],
+.theme-caselnw a[style*="background: var(--shop-primary)"],
+.theme-caselnw a[style*="background-color: var(--shop-primary)"] {
+  background: #0f172a !important;
+  border-radius: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+.theme-caselnw button[style*="background: var(--shop-primary)"]:hover,
+.theme-caselnw a[style*="background: var(--shop-primary)"]:hover,
+.theme-caselnw a[style*="background-color: var(--shop-primary)"]:hover {
+  background: var(--shop-primary) !important;
+  opacity: 1 !important;
+}
+
+/* Filter sidebar (category page) — drop the default border + add
+   tighter type for the section titles. */
+.theme-caselnw details[open] > summary {
+  font-weight: 600;
+}
+
+/* Pagination active page — caselnw uses solid orange underline. */
+.theme-caselnw nav[aria-label="Pagination"] [style*="--shop-primary"] {
+  border-color: var(--shop-primary) !important;
+}
+
+/* Breadcrumbs — softer color, smaller chevrons. */
+.theme-caselnw nav[aria-label="Breadcrumb"] {
+  font-size: 0.8125rem;
+}
