@@ -37,6 +37,12 @@ export default async function VendorDashboard() {
             สินค้าของร้าน
           </Link>
           <Link
+            href="/dashboard/store/categories"
+            className="rounded-md border px-4 py-2 text-sm hover:bg-accent"
+          >
+            หมวดหมู่สินค้า
+          </Link>
+          <Link
             href="/dashboard/catalog"
             className="rounded-md border px-4 py-2 text-sm hover:bg-accent"
           >

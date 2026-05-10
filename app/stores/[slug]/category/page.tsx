@@ -59,6 +59,9 @@ export default async function CategoryIndexPage({
         where: { active: true },
         orderBy: sort.orderBy,
       },
+      categories: {
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      },
     },
   });
   if (!store) notFound();
@@ -142,6 +145,57 @@ export default async function CategoryIndexPage({
             />
           </div>
         </div>
+
+        {/* ── Managed-category banner rail ───────────────────────
+            Renders a horizontal strip of operator-curated categories
+            with their banner images (when uploaded). Hidden when the
+            store has no managed Categories yet — the catalog still
+            works off the legacy categoryName sidebar below. */}
+        {store.categories.length > 0 && (
+          <div className="pt-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {store.categories.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/stores/${store.slug}/category/${encodeURIComponent(c.slug)}`}
+                  className="group relative overflow-hidden rounded-lg border transition hover:shadow-md"
+                  style={{ borderColor: "var(--shop-border)" }}
+                >
+                  <div
+                    className="aspect-[4/3] w-full"
+                    style={{ background: "var(--shop-card)" }}
+                  >
+                    {c.bannerUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={c.bannerUrl}
+                        alt={c.name}
+                        className="h-full w-full object-cover transition group-hover:scale-105"
+                      />
+                    ) : (
+                      <div
+                        className="flex h-full w-full items-center justify-center text-xs"
+                        style={{ color: "var(--shop-ink-muted)" }}
+                      >
+                        {c.name}
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    className="absolute inset-x-0 bottom-0 px-3 py-2 text-sm font-medium"
+                    style={{
+                      color: "#fff",
+                      background:
+                        "linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0))",
+                    }}
+                  >
+                    {c.name}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         <section
           aria-labelledby="products-heading"

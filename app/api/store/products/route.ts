@@ -36,6 +36,10 @@ const createSchema = z.object({
   imageUrl: z.string().url().or(z.literal("")).optional(),
   galleryUrls: z.array(z.string().url()).max(6).optional().default([]),
   categoryName: z.string().max(100).optional().or(z.literal("")),
+  // Optional FK to vendor-managed Category. Verified store-scoped at
+  // POST time so a tampered request can't attach to another store's
+  // category. categoryName is kept in sync as the denormalized label.
+  categoryId: z.string().min(1).optional().nullable(),
   active: z.boolean().optional().default(true),
   hasVariants: z.boolean().optional().default(false),
   variants: z.array(variantSchema).max(50).optional().default([]),
@@ -112,6 +116,22 @@ export async function POST(req: Request) {
   const externalProductId = d.externalProductId ?? syntheticId("manual");
   const galleryUrls = (d.galleryUrls ?? []).filter(Boolean);
 
+  // Resolve the optional categoryId → keeps Product.categoryName
+  // in sync with Category.name (denormalized label fallback). 404
+  // if the operator pointed at a category outside their store.
+  let categoryId: string | null = d.categoryId ?? null;
+  let categoryName: string | null = d.categoryName || null;
+  if (categoryId) {
+    const cat = await prisma.category.findUnique({
+      where: { id: categoryId },
+      select: { storeId: true, name: true },
+    });
+    if (!cat || cat.storeId !== store.id) {
+      return NextResponse.json({ error: "ไม่พบหมวดหมู่" }, { status: 404 });
+    }
+    categoryName = cat.name;
+  }
+
   const created = await prisma.$transaction(async (tx) => {
     const product = await tx.product.create({
       data: {
@@ -124,7 +144,8 @@ export async function POST(req: Request) {
         compareAtPriceTHB: d.compareAtPriceTHB ?? null,
         imageUrl: d.imageUrl || null,
         galleryUrls: galleryUrls.length > 0 ? (galleryUrls as Prisma.InputJsonValue) : Prisma.JsonNull,
-        categoryName: d.categoryName || null,
+        categoryName,
+        categoryId,
         active: d.active ?? true,
         hasVariants: d.hasVariants ?? false,
         supplier,

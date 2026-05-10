@@ -49,6 +49,12 @@ export default async function StoreProductsPage() {
         </div>
         <div className="flex shrink-0 flex-wrap items-start gap-2">
           <TranslateTitlesButton untranslatedCount={untranslatedCount} />
+          <Link
+            href="/dashboard/store/categories"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm hover:bg-accent"
+          >
+            จัดหมวดหมู่
+          </Link>
           <a
             href={`/stores/${user.store.slug}`}
             target="_blank"
