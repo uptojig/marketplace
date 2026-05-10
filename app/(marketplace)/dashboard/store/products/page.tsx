@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
-import { Plus, Pencil, ExternalLink } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
@@ -49,15 +49,6 @@ export default async function StoreProductsPage() {
         </div>
         <div className="flex shrink-0 flex-wrap items-start gap-2">
           <TranslateTitlesButton untranslatedCount={untranslatedCount} />
-          <a
-            href={`/stores/${user.store.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm hover:bg-accent"
-          >
-            ดูหน้าร้าน
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
           <Link
             href="/dashboard/store/products/new"
             className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"

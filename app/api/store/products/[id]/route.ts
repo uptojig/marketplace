@@ -31,6 +31,7 @@ const updateSchema = z.object({
   imageUrl: z.string().url().or(z.literal("")).optional(),
   galleryUrls: z.array(z.string().url()).max(6).optional().default([]),
   categoryName: z.string().max(100).optional().or(z.literal("")),
+  categoryId: z.string().min(1).optional().nullable(),
   active: z.boolean().optional().default(true),
   hasVariants: z.boolean().optional().default(false),
   variants: z.array(variantSchema).max(50).optional().default([]),
@@ -109,6 +110,24 @@ export async function PATCH(
   const d = parsed.data;
   const galleryUrls = (d.galleryUrls ?? []).filter(Boolean);
 
+  // Resolve optional categoryId so storefront tiles render the
+  // Category's display name even when the form left categoryName
+  // empty. categoryId === null detaches; undefined preserves what
+  // was there. We treat the field as "present in payload" since
+  // zod parses it to the absent state as undefined.
+  let categoryId: string | null | undefined = d.categoryId;
+  let categoryName: string | null = d.categoryName || null;
+  if (categoryId) {
+    const cat = await prisma.category.findUnique({
+      where: { id: categoryId },
+      select: { storeId: true, name: true },
+    });
+    if (!cat || cat.storeId !== auth.store.id) {
+      return NextResponse.json({ error: "ไม่พบหมวดหมู่" }, { status: 404 });
+    }
+    categoryName = cat.name;
+  }
+
   try {
     await prisma.$transaction(async (tx) => {
       await tx.product.update({
@@ -124,7 +143,8 @@ export async function PATCH(
           galleryUrls: galleryUrls.length > 0
             ? (galleryUrls as Prisma.InputJsonValue)
             : Prisma.JsonNull,
-          categoryName: d.categoryName || null,
+          categoryName,
+          ...(categoryId !== undefined ? { categoryId } : {}),
           active: d.active ?? true,
           hasVariants: d.hasVariants ?? false,
         },
