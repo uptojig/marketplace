@@ -1314,3 +1314,84 @@
 .theme-A footer a:hover {
   color: #fafaf9 !important;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Caselnw theme — applied via `theme-caselnw` class on the
+   shop-page wrapper in app/stores/[slug]/layout.tsx whenever
+   the store's schema is `caselnw-v1`. Goal: every sub-page
+   (cart / category / products / wishlist / search / static
+   pages) inherits the same slate-on-white / rounded-card /
+   orange-CTA skin as the landing without rewriting each page.
+   ───────────────────────────────────────────────────────── */
+.theme-caselnw {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    "Noto Sans Thai", sans-serif;
+}
+
+/* Cards: lift radius from rounded-md/lg to caselnw's rounded-2xl. */
+.theme-caselnw [class*="rounded-md"]:not([class*="rounded-md-"]) {
+  border-radius: 0.875rem;
+}
+.theme-caselnw [class*="rounded-lg"]:not([class*="rounded-lg-"]) {
+  border-radius: 1rem;
+}
+.theme-caselnw [class*="rounded-xl"]:not([class*="rounded-xl-"]) {
+  border-radius: 1.25rem;
+}
+
+/* Inputs / buttons: softer corners, slate borders. */
+.theme-caselnw input,
+.theme-caselnw select,
+.theme-caselnw textarea {
+  border-radius: 0.75rem;
+  border-color: color-mix(in srgb, #0f172a 12%, transparent);
+}
+
+/* Primary buttons that opt in to var(--shop-primary): tighten the
+   look with bolder type + a subtle shadow + the slate→orange hover
+   that matches CaselNwHeader. */
+.theme-caselnw [style*="--shop-primary"][class*="bg-"] {
+  font-weight: 600;
+}
+.theme-caselnw a[style*="background-color: var(--shop-primary)"],
+.theme-caselnw button[style*="background-color: var(--shop-primary)"] {
+  box-shadow: 0 8px 24px -12px color-mix(in srgb, #0f172a 60%, transparent);
+  border-radius: 0.875rem;
+}
+
+/* Section headings: caselnw uses tight tracking + extrabold on h1/h2. */
+.theme-caselnw h1,
+.theme-caselnw h2 {
+  letter-spacing: -0.015em;
+}
+
+/* Default-cards on sub-pages often use bg-white + border-stone-200 +
+   rounded-md. Map those to the caselnw token set so they don't read
+   as a different design language. */
+.theme-caselnw .border-stone-200,
+.theme-caselnw .border-stone-300,
+.theme-caselnw .border-zinc-200,
+.theme-caselnw .border-gray-200,
+.theme-caselnw .border-gray-300 {
+  border-color: color-mix(in srgb, #0f172a 12%, transparent) !important;
+}
+.theme-caselnw .text-stone-500,
+.theme-caselnw .text-stone-600,
+.theme-caselnw .text-zinc-500,
+.theme-caselnw .text-zinc-600,
+.theme-caselnw .text-gray-500,
+.theme-caselnw .text-gray-600 {
+  color: color-mix(in srgb, #0f172a 60%, transparent) !important;
+}
+.theme-caselnw .text-stone-900,
+.theme-caselnw .text-zinc-900,
+.theme-caselnw .text-gray-900 {
+  color: #0f172a !important;
+}
+
+/* Empty / muted backgrounds. */
+.theme-caselnw .bg-stone-50,
+.theme-caselnw .bg-zinc-50,
+.theme-caselnw .bg-gray-50 {
+  background-color: #f8fafc !important;
+}

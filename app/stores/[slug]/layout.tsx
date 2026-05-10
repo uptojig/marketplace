@@ -169,7 +169,7 @@ export default async function ShopLayout({
       const accent = blocksData.accentHex ?? "#f97316";
       return (
         <div
-          className="shop-page min-h-screen flex flex-col bg-white text-slate-900"
+          className="shop-page theme-caselnw min-h-screen flex flex-col bg-white text-slate-900"
           style={
             {
               ["--shop-primary" as string]: accent,
