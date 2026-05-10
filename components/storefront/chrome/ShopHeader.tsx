@@ -14,6 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/lib/store/cart";
+import {
+  buttonRadiusClass,
+  type ButtonShape,
+  type ShopChromeTokens,
+} from "./tokens";
 
 interface Props {
   storeSlug: string;
@@ -22,15 +27,18 @@ interface Props {
   categories?: string[];
   /** Hex accent — drives cart badge, focus ring, primary CTAs. */
   accent?: string;
+  decorationGlyph?: string | null;
+  glyphStyle?: "filled" | "tinted";
+  announcement?: ShopChromeTokens["announcement"];
+  buttonShape?: ButtonShape;
 }
 
 /**
  * Phase-1 unified storefront header.
  *
- * Replaces the long inline default header in app/stores/[slug]/layout.tsx
- * with a shadcn-primitive composition (Button / Input / lucide icons +
- * a CSS-only mobile drawer). Each store opts in via its theme tokens —
- * `accent` swings cart-badge / hover / outline.
+ * Replaces the inline default header AND the per-template caselnw /
+ * mini-mops chromes. Visual variation comes from `tokens` — the
+ * structure (logo + nav + actions + drawer) is the same for everyone.
  */
 export function ShopHeader({
   storeSlug,
@@ -38,6 +46,10 @@ export function ShopHeader({
   storeLogoUrl,
   categories = [],
   accent = "#0f172a",
+  decorationGlyph = null,
+  glyphStyle = "filled",
+  announcement = null,
+  buttonShape = "rounded",
 }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const cartCount = useCart((s) =>
@@ -46,12 +58,36 @@ export function ShopHeader({
 
   const categoryHref = (cat: string) =>
     `/stores/${storeSlug}/category?cat=${encodeURIComponent(cat)}`;
+  const ctaRadius = buttonRadiusClass(buttonShape);
+  const glyph = decorationGlyph ?? storeName.slice(0, 1).toUpperCase();
 
   return (
     <>
+      {announcement && (
+        <div
+          className="text-xs"
+          style={{
+            background: "#0f172a",
+            color: "#e2e8f0",
+          }}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-9 flex items-center justify-between">
+            <span className="hidden sm:block">{announcement.message}</span>
+            <span className="sm:hidden">
+              {announcement.mobileMessage ?? announcement.message}
+            </span>
+            <span
+              className="font-medium tracking-wide"
+              style={{ color: accent }}
+            >
+              {storeName.toUpperCase()}
+            </span>
+          </div>
+        </div>
+      )}
+
       <header className="sticky top-0 z-40 border-b border-[var(--shop-border)] bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/75">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top bar — logo + search + actions */}
           <div className="h-16 flex items-center gap-4">
             <Button
               type="button"
@@ -78,10 +114,20 @@ export function ShopHeader({
               ) : (
                 <>
                   <span
-                    className="inline-flex size-9 items-center justify-center rounded-lg text-sm font-extrabold text-white"
-                    style={{ backgroundColor: accent }}
+                    className="inline-flex size-9 items-center justify-center rounded-lg text-sm font-extrabold"
+                    style={
+                      glyphStyle === "tinted"
+                        ? {
+                            backgroundColor: `color-mix(in srgb, ${accent} 18%, transparent)`,
+                            color: `color-mix(in srgb, ${accent} 80%, black)`,
+                          }
+                        : {
+                            backgroundColor: accent,
+                            color: "#ffffff",
+                          }
+                    }
                   >
-                    {storeName.slice(0, 1).toUpperCase()}
+                    {glyph}
                   </span>
                   <span className="text-base font-extrabold tracking-tight text-[var(--shop-ink)]">
                     {storeName}
@@ -99,7 +145,7 @@ export function ShopHeader({
                 <Input
                   name="q"
                   placeholder="ค้นหาในร้านนี้"
-                  className="pl-9 h-10 rounded-full bg-[var(--shop-bg)] border-[var(--shop-border)]"
+                  className={`pl-9 h-10 ${ctaRadius === "rounded-full" ? "rounded-full" : "rounded-xl"} bg-[var(--shop-bg)] border-[var(--shop-border)]`}
                 />
               </div>
             </form>
@@ -160,7 +206,6 @@ export function ShopHeader({
             </div>
           </div>
 
-          {/* Sub-nav with categories */}
           {categories.length > 0 && (
             <nav className="hidden md:flex items-center gap-6 h-10 -mt-px text-sm overflow-x-auto">
               <Link
@@ -186,12 +231,17 @@ export function ShopHeader({
                   ดูทั้งหมด
                 </Link>
               )}
+              <Link
+                href={`/stores/${storeSlug}/category?sort=price-asc`}
+                className="text-rose-600 hover:text-rose-700 font-medium whitespace-nowrap ml-auto"
+              >
+                ลดราคา
+              </Link>
             </nav>
           )}
         </div>
       </header>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div
           className="md:hidden fixed inset-0 z-50 flex"
@@ -224,7 +274,7 @@ export function ShopHeader({
                 <Input
                   name="q"
                   placeholder="ค้นหา"
-                  className="pl-9 h-10 rounded-full bg-[var(--shop-bg)] border-[var(--shop-border)]"
+                  className={`pl-9 h-10 ${ctaRadius === "rounded-full" ? "rounded-full" : "rounded-xl"} bg-[var(--shop-bg)] border-[var(--shop-border)]`}
                 />
               </div>
             </form>

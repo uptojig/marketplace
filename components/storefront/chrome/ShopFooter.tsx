@@ -34,19 +34,28 @@ interface Props {
   categories?: string[];
   /** Hex accent — used for the brand square + section underlines. */
   accent?: string;
+  decorationGlyph?: string | null;
+  glyphStyle?: "filled" | "tinted";
 }
 
 /**
  * Phase-1 unified storefront footer.
  *
- * Replaces the long inline default footer in app/stores/[slug]/layout.tsx
- * (5-column shipping + payment + contact). Server component — no
- * client hooks needed; all data flows from the store record.
+ * Replaces the inline default footer AND the per-template caselnw /
+ * mini-mops footers. Visual variation comes from `tokens` — the
+ * structure (4 columns + bottom bar) is the same for everyone.
  */
-export function ShopFooter({ store, categories = [], accent = "#0f172a" }: Props) {
+export function ShopFooter({
+  store,
+  categories = [],
+  accent = "#0f172a",
+  decorationGlyph = null,
+  glyphStyle = "filled",
+}: Props) {
   const addressLines = formatStoreAddressLines(store);
   const categoryHref = (cat: string) =>
     `/stores/${store.slug}/category?cat=${encodeURIComponent(cat)}`;
+  const glyph = decorationGlyph ?? store.name.slice(0, 1).toUpperCase();
 
   return (
     <footer className="mt-16 border-t border-[var(--shop-border)] bg-[var(--shop-card)]">
@@ -62,10 +71,17 @@ export function ShopFooter({ store, categories = [], accent = "#0f172a" }: Props
               />
             ) : (
               <span
-                className="inline-flex size-9 items-center justify-center rounded-lg text-sm font-extrabold text-white"
-                style={{ backgroundColor: accent }}
+                className="inline-flex size-9 items-center justify-center rounded-lg text-sm font-extrabold"
+                style={
+                  glyphStyle === "tinted"
+                    ? {
+                        backgroundColor: `color-mix(in srgb, ${accent} 18%, transparent)`,
+                        color: `color-mix(in srgb, ${accent} 80%, black)`,
+                      }
+                    : { backgroundColor: accent, color: "#ffffff" }
+                }
               >
-                {store.name.slice(0, 1).toUpperCase()}
+                {glyph}
               </span>
             )}
             <span className="text-base font-extrabold tracking-tight text-[var(--shop-ink)]">
