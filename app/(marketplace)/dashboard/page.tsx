@@ -1,66 +1,52 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function VendorDashboard() {
-  const [recentPayments, recentItems, productCount] = await Promise.all([
-    prisma.payment.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: { order: true },
-    }),
-    prisma.orderItem.findMany({
-      orderBy: { id: "desc" },
-      take: 10,
-      include: { product: true, store: true, order: true },
-    }),
-    prisma.product.count({ where: { active: true } }),
-  ]);
+  const [recentPayments, recentItems, productCount, paidOrderCount] =
+    await Promise.all([
+      prisma.payment.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        include: { order: true },
+      }),
+      prisma.orderItem.findMany({
+        orderBy: { id: "desc" },
+        take: 10,
+        include: { product: true, store: true, order: true },
+      }),
+      prisma.product.count({ where: { active: true } }),
+      prisma.payment.count({ where: { status: "PAID" } }),
+    ]);
+
+  const paidTotalTHB = recentPayments
+    .filter((p) => p.status === "PAID")
+    .reduce((acc, p) => acc + Number(p.amountTHB), 0);
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Vendor Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Active products: {productCount}. Mode:{" "}
-            <span className="font-mono">ANYPAY_MODE={process.env.ANYPAY_MODE ?? "mock"}</span>
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/dashboard/store/products"
-            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
-          >
-            สินค้าของร้าน
-          </Link>
-          <Link
-            href="/dashboard/store/categories"
-            className="rounded-md border px-4 py-2 text-sm hover:bg-accent"
-          >
-            หมวดหมู่สินค้า
-          </Link>
-          <Link
-            href="/dashboard/catalog"
-            className="rounded-md border px-4 py-2 text-sm hover:bg-accent"
-          >
-            Browse catalog
-          </Link>
-          <Link
-            href="/dashboard/products/import"
-            className="rounded-md border px-4 py-2 text-sm hover:bg-accent"
-          >
-            Paste URLs
-          </Link>
-          <Link
-            href="/dashboard/store/settings"
-            className="rounded-md border px-4 py-2 text-sm hover:bg-accent"
-          >
-            ตั้งค่าร้าน
-          </Link>
-        </div>
+      <div>
+        <h1 className="text-2xl font-semibold">ภาพรวมร้านค้า</h1>
+        <p className="text-sm text-muted-foreground">
+          Mode:{" "}
+          <span className="font-mono">
+            ANYPAY_MODE={process.env.ANYPAY_MODE ?? "mock"}
+          </span>
+        </p>
+      </div>
+
+      {/* Stat cards — shadcn-studio dashboard pattern */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard label="สินค้าที่กำลังขาย" value={productCount.toLocaleString()} />
+        <StatCard
+          label="ออเดอร์ที่ชำระแล้ว"
+          value={paidOrderCount.toLocaleString()}
+        />
+        <StatCard
+          label="ยอดชำระล่าสุด (10 รายการ)"
+          value={formatTHB(paidTotalTHB)}
+        />
       </div>
 
       <section>
@@ -138,6 +124,17 @@ export default async function VendorDashboard() {
           </table>
         </div>
       </section>
+    </div>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border bg-card p-4 shadow-sm">
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p>
     </div>
   );
 }

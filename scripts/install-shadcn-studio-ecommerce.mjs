@@ -20,6 +20,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 const CATEGORIES = [
+  // E-commerce blocks
   "shopping-cart",
   "product-list",
   "product-overview",
@@ -31,6 +32,14 @@ const CATEGORIES = [
   "category-filter",
   "offer-modal",
   "mega-footer",
+  // Dashboard / application blocks (used by /dashboard chrome).
+  // The shadcn-studio "dashboard-and-application" category exposes
+  // each piece as its own slug, so we try each independently.
+  "dashboard-shell",
+  "dashboard-sidebar",
+  "dashboard-header",
+  "dashboard-footer",
+  "dashboard-dropdown",
 ];
 
 const args = process.argv.slice(2);
