@@ -13,13 +13,14 @@
  */
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronDown, ArrowLeft, ArrowRight } from "lucide-react";
+import { ChevronDown, ArrowLeft, ArrowRight, Tag } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import { RecentlyViewedRail } from "@/components/storefront/RecentlyViewed";
 import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
+import ProductCategory04 from "@/components/shadcn-studio/blocks/product-category-04/product-category-04";
 
 export const dynamic = "force-dynamic";
 
@@ -146,55 +147,37 @@ export default async function CategoryIndexPage({
           </div>
         </div>
 
-        {/* ── Managed-category banner rail ───────────────────────
-            Renders a horizontal strip of operator-curated categories
-            with their banner images (when uploaded). Hidden when the
-            store has no managed Categories yet — the catalog still
-            works off the legacy categoryName sidebar below. */}
+        {/* ── Managed-category hero — shadcn-studio product-category-04 ──
+            3-up icon+title+count grid with motion. Banner image (when
+            uploaded) feeds the icon slot; falls back to a Tag glyph
+            for categories without a banner so every card has the same
+            visual weight. */}
         {store.categories.length > 0 && (
-          <div className="pt-6">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {store.categories.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/stores/${store.slug}/category/${encodeURIComponent(c.slug)}`}
-                  className="group relative overflow-hidden rounded-lg border transition hover:shadow-md"
-                  style={{ borderColor: "var(--shop-border)" }}
-                >
-                  <div
-                    className="aspect-[4/3] w-full"
-                    style={{ background: "var(--shop-card)" }}
-                  >
-                    {c.bannerUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={c.bannerUrl}
-                        alt={c.name}
-                        className="h-full w-full object-cover transition group-hover:scale-105"
-                      />
-                    ) : (
-                      <div
-                        className="flex h-full w-full items-center justify-center text-xs"
-                        style={{ color: "var(--shop-ink-muted)" }}
-                      >
-                        {c.name}
-                      </div>
-                    )}
-                  </div>
-                  <div
-                    className="absolute inset-x-0 bottom-0 px-3 py-2 text-sm font-medium"
-                    style={{
-                      color: "#fff",
-                      background:
-                        "linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0))",
-                    }}
-                  >
-                    {c.name}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <ProductCategory04
+            badgeLabel="หมวดหมู่"
+            heading="เลือกหมวดหมู่ที่สนใจ"
+            unitLabel="สินค้า"
+            productCards={store.categories.map((c) => {
+              const productCount = store.products.filter(
+                (p) => p.categoryId === c.id,
+              ).length;
+              return {
+                title: c.name,
+                productNumber: productCount,
+                productLink: `/stores/${store.slug}/category/${encodeURIComponent(c.slug)}`,
+                icon: c.bannerUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={c.bannerUrl}
+                    alt={c.name}
+                    className="size-12 shrink-0 rounded-md object-cover"
+                  />
+                ) : (
+                  <Tag className="size-12 shrink-0 text-primary" />
+                ),
+              };
+            })}
+          />
         )}
 
         <section
