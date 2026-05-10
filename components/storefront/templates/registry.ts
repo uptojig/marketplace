@@ -36,6 +36,13 @@ export interface ReactTemplateSchema {
   navCategories?: { label: string; category: string }[];
   gridHeading?: string;
   gridSubheading?: string;
+  /**
+   * Theme accent (hex). Threaded into header/footer/CTAs so the same
+   * template can render visually-distinct stores — e.g. caselnw-v1 with
+   * accent="#f97316" (orange) and gapzillar-v1 with accent="#06b6d4"
+   * (cyan). Each template defines its own default if omitted.
+   */
+  accentHex?: string;
 }
 
 export function isReactTemplateSchema(
