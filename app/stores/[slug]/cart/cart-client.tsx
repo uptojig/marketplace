@@ -9,7 +9,6 @@
  *   - Summary: subtotal + shipping estimate + total + checkout CTA
  *   - Trust strip at bottom: ส่งฟรี ฿990+ / คืนได้ 7 วัน / COD
  *   - Empty state: friendly bag icon + "ไปช้อป" CTA
- *   - Cross-store warning kept (Thai market multi-tenant edge case)
  *
  * All accents via var(--shop-*) so theme cascade carries.
  */
@@ -49,8 +48,6 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
 
   const lines = allLines.filter((l) => l.storeSlug === store.slug);
   const subtotal = lines.reduce((n, l) => n + l.priceTHB * l.qty, 0);
-  const otherStoreLines = allLines.filter((l) => l.storeSlug !== store.slug);
-  const otherStoreCount = otherStoreLines.length;
   const itemCount = lines.reduce((n, l) => n + l.qty, 0);
 
   // Shipping calc — free above threshold; flat fee otherwise
@@ -93,43 +90,6 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
               : `${itemCount.toLocaleString()} ชิ้น จาก ${store.name}`}
           </p>
         </div>
-
-        {/* Cross-store warning (Thai-market multi-tenant edge case) */}
-        {otherStoreCount > 0 && (
-          <div
-            className="mb-6 rounded-xl border px-4 py-3 text-sm"
-            style={{
-              background: "color-mix(in srgb, var(--shop-primary) 4%, var(--shop-card))",
-              borderColor: "color-mix(in srgb, var(--shop-primary) 30%, transparent)",
-              color: "var(--shop-ink)",
-            }}
-          >
-            <p className="font-medium">
-              คุณมีสินค้าจากร้านอื่นในตะกร้า ({otherStoreCount} รายการ)
-            </p>
-            <p
-              className="mt-1 text-xs"
-              style={{ color: "var(--shop-ink-muted)" }}
-            >
-              แต่ละร้านสั่งซื้อแยกกัน
-            </p>
-            <ul className="mt-2 space-y-0.5 text-xs">
-              {Array.from(
-                new Map(otherStoreLines.map((l) => [l.storeSlug, l])).values(),
-              ).map((l) => (
-                <li key={l.storeSlug}>
-                  <Link
-                    href={`/stores/${l.storeSlug}/cart`}
-                    className="font-medium hover:underline"
-                    style={{ color: "var(--shop-primary)" }}
-                  >
-                    → ดูตะกร้าของ {l.storeName}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         {lines.length === 0 ? (
           <EmptyCart storeSlug={store.slug} />

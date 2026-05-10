@@ -38,6 +38,8 @@ import { resolveFamily } from "@/lib/landing/families";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
+import { CaselNwHeader } from "@/components/storefront/templates/caselnw/Header";
+import { CaselNwFooter } from "@/components/storefront/templates/caselnw/Footer";
 import { GlobalHeader } from "@/components/storefront/GlobalHeader";
 import { GlobalFooter } from "@/components/storefront/GlobalFooter";
 import { safeHeader, safeFooter } from "@/components/storefront/MultiPageRenderer";
@@ -149,8 +151,57 @@ export default async function ShopLayout({
     return <>{children}</>;
   }
 
-  // 2b. React templates ก็มี nav/footer ในตัวเอง → render แบบไม่ wrap chrome
+  // 2b. React templates — chrome is per-template so every sub-page (cart,
+  //     product, category, …) renders with the same look as the landing.
   if (blocksData && isReactTemplateSchema(blocksData)) {
+    if (blocksData.template === "caselnw-v1") {
+      const categoryRows = await prisma.product.findMany({
+        where: { storeId: store.id, active: true, categoryName: { not: null } },
+        select: { categoryName: true },
+        distinct: ["categoryName"],
+        orderBy: { categoryName: "asc" },
+        take: 8,
+      });
+      const navCategories = categoryRows
+        .map((r) => r.categoryName)
+        .filter((c): c is string => !!c)
+        .map((c) => ({ label: c, category: c }));
+      const accent = blocksData.accentHex ?? "#f97316";
+      return (
+        <div
+          className="shop-page theme-caselnw min-h-screen flex flex-col bg-white text-slate-900"
+          style={
+            {
+              ["--shop-primary" as string]: accent,
+              ["--shop-accent" as string]: accent,
+              ["--shop-bg" as string]: "#f8fafc",
+              ["--shop-card" as string]: "#ffffff",
+              ["--shop-ink" as string]: "#0f172a",
+              ["--shop-ink-muted" as string]:
+                "color-mix(in srgb, #0f172a 60%, transparent)",
+              ["--shop-border" as string]:
+                "color-mix(in srgb, #0f172a 12%, transparent)",
+            } as React.CSSProperties
+          }
+        >
+          <CaselNwHeader
+            storeSlug={store.slug}
+            storeName={store.name}
+            navCategories={navCategories}
+            accent={accent}
+          />
+          <main className="flex-1">{children}</main>
+          <CaselNwFooter
+            storeSlug={store.slug}
+            storeName={store.name}
+            storeDescription={store.description}
+            navCategories={navCategories}
+            accent={accent}
+          />
+        </div>
+      );
+    }
+    // Other React templates (e.g. mini-mops-v1) self-render their chrome.
     return <>{children}</>;
   }
 

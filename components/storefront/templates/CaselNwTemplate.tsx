@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import {
   ShoppingBag,
-  Menu,
-  Search,
   Star,
   Heart,
   ChevronRight,
@@ -13,7 +10,6 @@ import {
   ShieldCheck,
   RotateCcw,
   Headphones,
-  X,
 } from "lucide-react";
 import { useCart } from "@/lib/store/cart";
 import { useCartConfirmation } from "@/lib/store/cartConfirm";
@@ -34,6 +30,8 @@ interface Props {
   navCategories?: NavCategory[];
   gridHeading?: string;
   gridSubheading?: string;
+  /** Hex accent — drives discount/CTA highlights. Defaults to caselnw orange. */
+  accent?: string;
 }
 
 const TRUST_STRIP = [
@@ -43,6 +41,12 @@ const TRUST_STRIP = [
   { Icon: Headphones, title: "แชทตอบไว", subtitle: "9.00 – 21.00" },
 ];
 
+/**
+ * Landing-page body for caselnw-v1. The header/footer live in
+ * `components/storefront/templates/caselnw/{Header,Footer}.tsx` and
+ * are rendered by `app/stores/[slug]/layout.tsx` so they wrap every
+ * sub-page (cart, product, category, …) consistently.
+ */
 export function CaselNwTemplate({
   store,
   products,
@@ -50,9 +54,8 @@ export function CaselNwTemplate({
   navCategories = [],
   gridHeading = "เคสยอดนิยม",
   gridSubheading = "คัดสรรดีไซน์ใหม่ทุกสัปดาห์ — รองรับรุ่นยอดฮิต iPhone & Samsung",
+  accent = "#f97316",
 }: Props) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const cartCount = useCart((s) => s.count());
   const addToCart = useCart((s) => s.add);
   const showConfirm = useCartConfirmation((s) => s.show);
 
@@ -75,146 +78,29 @@ export function CaselNwTemplate({
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      {/* Announcement bar */}
-      <div className="bg-slate-900 text-slate-100 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-9 flex items-center justify-between">
-          <span className="hidden sm:block">ส่งฟรีเมื่อช้อปครบ ฿499 · ส่งเร็ว 1-2 วันทำการ</span>
-          <span className="sm:hidden">ส่งฟรีครบ ฿499</span>
-          <span className="font-medium tracking-wide text-orange-300">CASE.LNW</span>
-        </div>
-      </div>
-
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden -ml-1 p-2 text-slate-700"
-              aria-label="Open menu"
-            >
-              <Menu size={22} />
-            </button>
-            <Link
-              href={`/stores/${store.slug}`}
-              className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2"
-            >
-              <span className="inline-flex items-center justify-center size-8 rounded-lg bg-slate-900 text-orange-300">
-                ◉
-              </span>
-              <span>{store.name}</span>
-            </Link>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-700">
-            <Link href={`/stores/${store.slug}`} className="hover:text-slate-900">
-              ใหม่ล่าสุด
-            </Link>
-            {navCategories.slice(0, 4).map((c) => (
-              <Link
-                key={c.category}
-                href={categoryHref(c.category)}
-                className="hover:text-slate-900"
-              >
-                {c.label}
-              </Link>
-            ))}
-            <Link
-              href={`/stores/${store.slug}/products?tab=sale`}
-              className="text-rose-600 hover:text-rose-700"
-            >
-              ลดราคา
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-1.5 text-slate-700">
-            <Link
-              href={`/stores/${store.slug}/search`}
-              className="p-2 hover:text-slate-900 hidden sm:block"
-              aria-label="Search"
-            >
-              <Search size={20} />
-            </Link>
-            <Link
-              href={`/stores/${store.slug}/wishlist`}
-              className="p-2 hover:text-slate-900 hidden sm:block"
-              aria-label="Wishlist"
-            >
-              <Heart size={20} />
-            </Link>
-            <Link
-              href={`/stores/${store.slug}/cart`}
-              className="relative p-2 hover:text-slate-900"
-              aria-label="Cart"
-            >
-              <ShoppingBag size={20} />
-              {cartCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 inline-flex items-center justify-center size-4 text-[10px] font-bold rounded-full bg-orange-500 text-white">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          </div>
-        </div>
-
-        {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-slate-900/60 flex">
-            <div className="bg-white w-72 max-w-[80%] h-full p-6 flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-lg font-bold">{store.name}</span>
-                <button
-                  type="button"
-                  aria-label="Close menu"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 text-slate-500"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              <Link
-                href={`/stores/${store.slug}`}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-base font-medium"
-              >
-                ใหม่ล่าสุด
-              </Link>
-              {navCategories.slice(0, 6).map((c) => (
-                <Link
-                  key={c.category}
-                  href={categoryHref(c.category)}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2 text-base font-medium"
-                >
-                  {c.label}
-                </Link>
-              ))}
-              <Link
-                href={`/stores/${store.slug}/products?tab=sale`}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-base font-semibold text-rose-600"
-              >
-                ลดราคา
-              </Link>
-            </div>
-            <button
-              type="button"
-              aria-label="Close overlay"
-              className="flex-1"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-          </div>
-        )}
-      </header>
-
+    <div className="bg-white text-slate-900">
       {/* Hero — featured product */}
       {featured && (
-        <section className="bg-gradient-to-br from-slate-50 via-white to-orange-50/40 border-b border-slate-100">
+        <section
+          className="border-b border-slate-100"
+          style={{
+            background: `linear-gradient(to bottom right, #f8fafc, #ffffff, color-mix(in srgb, ${accent} 8%, transparent))`,
+          }}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div className="order-2 lg:order-1">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 text-orange-700 px-3 py-1 text-xs font-semibold mb-5">
-                <Star size={12} className="fill-orange-500 text-orange-500" />
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold mb-5"
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${accent} 18%, transparent)`,
+                  color: `color-mix(in srgb, ${accent} 75%, black)`,
+                }}
+              >
+                <Star
+                  size={12}
+                  className="fill-current"
+                  style={{ color: accent }}
+                />
                 ขายดีประจำสัปดาห์
               </span>
               <h1 className="text-3xl md:text-5xl font-extrabold leading-tight tracking-tight mb-4">
@@ -293,7 +179,10 @@ export function CaselNwTemplate({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-2 md:grid-cols-4 gap-4">
           {TRUST_STRIP.map(({ Icon, title, subtitle }) => (
             <div key={title} className="flex items-center gap-3">
-              <span className="inline-flex items-center justify-center size-10 rounded-full bg-slate-900 text-orange-300 shrink-0">
+              <span
+                className="inline-flex items-center justify-center size-10 rounded-full bg-slate-900 shrink-0"
+                style={{ color: accent }}
+              >
                 <Icon size={18} />
               </span>
               <div>
@@ -446,7 +335,20 @@ export function CaselNwTemplate({
                         <button
                           type="button"
                           onClick={() => handleAdd(p)}
-                          className="size-9 rounded-lg bg-slate-900 hover:bg-orange-500 text-white grid place-items-center transition-colors"
+                          className="size-9 rounded-lg bg-slate-900 text-white grid place-items-center transition-colors"
+                          style={
+                            {
+                              ["--hover-bg" as string]: accent,
+                            } as React.CSSProperties
+                          }
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                              accent;
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                              "";
+                          }}
                           aria-label="Add to cart"
                         >
                           <ShoppingBag size={16} />
@@ -472,7 +374,7 @@ export function CaselNwTemplate({
 
       {/* Best sellers */}
       {bestSellers.length > 0 && (
-        <section className="bg-slate-50 border-y border-slate-100">
+        <section className="bg-slate-50 border-t border-slate-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="flex items-end justify-between mb-6">
               <div>
@@ -516,112 +418,6 @@ export function CaselNwTemplate({
           </div>
         </section>
       )}
-
-      {/* Footer */}
-      <footer className="bg-slate-950 text-slate-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="col-span-2">
-            <div className="text-xl font-extrabold text-white flex items-center gap-2 mb-3">
-              <span className="inline-flex items-center justify-center size-8 rounded-lg bg-orange-500 text-slate-900">
-                ◉
-              </span>
-              {store.name}
-            </div>
-            <p className="text-sm text-slate-400 max-w-sm mb-4">
-              {store.description ??
-                "เคสมือถือคุณภาพ ดีไซน์ครบทุกแนว ส่งเร็วทั่วไทย ของแท้ 100% รับประกันความพอใจ"}
-            </p>
-            <p className="text-xs text-slate-500">
-              ส่งสินค้าทุกวันจันทร์ – ศุกร์ · ติดต่อสอบถาม 9.00 – 21.00
-            </p>
-          </div>
-
-          <div>
-            <h4 className="text-white text-sm font-semibold mb-3">หมวดหมู่</h4>
-            <ul className="space-y-2 text-sm">
-              {navCategories.slice(0, 5).map((c) => (
-                <li key={c.category}>
-                  <Link
-                    href={categoryHref(c.category)}
-                    className="hover:text-white transition-colors"
-                  >
-                    {c.label}
-                  </Link>
-                </li>
-              ))}
-              {navCategories.length === 0 && (
-                <li>
-                  <Link
-                    href={`/stores/${store.slug}/products`}
-                    className="hover:text-white transition-colors"
-                  >
-                    สินค้าทั้งหมด
-                  </Link>
-                </li>
-              )}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white text-sm font-semibold mb-3">บริการลูกค้า</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href={`/stores/${store.slug}/about`}
-                  className="hover:text-white transition-colors"
-                >
-                  เกี่ยวกับร้าน
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={`/stores/${store.slug}/shipping`}
-                  className="hover:text-white transition-colors"
-                >
-                  วิธีจัดส่ง
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={`/stores/${store.slug}/returns`}
-                  className="hover:text-white transition-colors"
-                >
-                  เปลี่ยน/คืน
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={`/stores/${store.slug}/contact`}
-                  className="hover:text-white transition-colors"
-                >
-                  ติดต่อเรา
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-            <p>
-              © {new Date().getFullYear()} {store.name}. สงวนลิขสิทธิ์
-            </p>
-            <div className="flex gap-4">
-              <Link
-                href={`/stores/${store.slug}/terms`}
-                className="hover:text-slate-300"
-              >
-                ข้อกำหนด
-              </Link>
-              <Link
-                href={`/stores/${store.slug}/privacy`}
-                className="hover:text-slate-300"
-              >
-                ความเป็นส่วนตัว
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
