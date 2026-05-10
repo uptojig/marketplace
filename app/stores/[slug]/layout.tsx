@@ -168,7 +168,22 @@ export default async function ShopLayout({
         .map((c) => ({ label: c, category: c }));
       const accent = blocksData.accentHex ?? "#f97316";
       return (
-        <div className="min-h-screen flex flex-col bg-white text-slate-900">
+        <div
+          className="shop-page min-h-screen flex flex-col bg-white text-slate-900"
+          style={
+            {
+              ["--shop-primary" as string]: accent,
+              ["--shop-accent" as string]: accent,
+              ["--shop-bg" as string]: "#f8fafc",
+              ["--shop-card" as string]: "#ffffff",
+              ["--shop-ink" as string]: "#0f172a",
+              ["--shop-ink-muted" as string]:
+                "color-mix(in srgb, #0f172a 60%, transparent)",
+              ["--shop-border" as string]:
+                "color-mix(in srgb, #0f172a 12%, transparent)",
+            } as React.CSSProperties
+          }
+        >
           <CaselNwHeader
             storeSlug={store.slug}
             storeName={store.name}
