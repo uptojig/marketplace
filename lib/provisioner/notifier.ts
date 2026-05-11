@@ -1,7 +1,9 @@
-// Admin notifier for provisioning lifecycle events. Currently just supports
-// Discord + LINE Notify + console — adding more channels means one new fn here.
-
-import { getConfig } from "./config";
+// Admin notifier for provisioning lifecycle events.
+//
+// Reads the existing platform-wide notifier envs (NOTIFIER_DRIVER,
+// DISCORD_WEBHOOK_URL, LINE_NOTIFY_TOKEN) rather than introducing its own —
+// the provisioner just gets a richer payload shape than the generic
+// lib/notify info/error pair.
 
 export type AdminAlert = {
   level: "info" | "warning" | "error";
@@ -11,19 +13,19 @@ export type AdminAlert = {
 };
 
 export async function notifyAdmin(alert: AdminAlert): Promise<void> {
-  const cfg = getConfig();
-  const channel = cfg.whitelistAlertChannel;
-  const url = cfg.whitelistAlertWebhookUrl;
+  const driver = (process.env.NOTIFIER_DRIVER ?? "console").toLowerCase();
+  const discordUrl = process.env.DISCORD_WEBHOOK_URL;
+  const lineToken = process.env.LINE_NOTIFY_TOKEN;
 
-  if (channel === "console" || !url) {
+  if (driver === "console" || (driver === "discord" && !discordUrl) || (driver === "line" && !lineToken)) {
     // eslint-disable-next-line no-console
     console.log(`[provisioner-alert] ${alert.level.toUpperCase()} ${alert.title}\n${alert.body}`, alert.fields ?? {});
     return;
   }
 
   try {
-    if (channel === "discord") {
-      await fetch(url, {
+    if (driver === "discord" && discordUrl) {
+      await fetch(discordUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -42,7 +44,7 @@ export async function notifyAdmin(alert: AdminAlert): Promise<void> {
           ],
         }),
       });
-    } else if (channel === "line") {
+    } else if (driver === "line" && lineToken) {
       // LINE Notify uses a Bearer token + form body
       const message = `${alert.title}\n${alert.body}\n${Object.entries(alert.fields ?? {})
         .map(([k, v]) => `${k}: ${v}`)
@@ -50,7 +52,7 @@ export async function notifyAdmin(alert: AdminAlert): Promise<void> {
       await fetch("https://notify-api.line.me/api/notify", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${url}`,
+          Authorization: `Bearer ${lineToken}`,
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({ message }).toString(),

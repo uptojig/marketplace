@@ -20,12 +20,19 @@ Run through this checklist once before approving the first shop.
 
 ## 2. Cloudflare
 
-1. Create an API token at https://dash.cloudflare.com/profile/api-tokens
-   — Template: "Edit zone DNS". Restrict to the platform zone only.
-   Save as `CLOUDFLARE_API_TOKEN`.
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID` are already defined for the
+platform-email feature. The provisioner reuses them — just make sure the
+token has BOTH scopes:
 
-2. Copy the Zone ID from the platform zone overview into
-   `CLOUDFLARE_ZONE_ID`. The zone must match `MAIN_DOMAIN`.
+1. `Zone:Email Routing:Edit` — for alias provisioning (existing)
+2. `Zone:DNS:Edit`           — for shop subdomain A records (NEW)
+
+If the token only has Email Routing, regenerate it at
+https://dash.cloudflare.com/profile/api-tokens with both scopes on the
+platform zone, then update `CLOUDFLARE_API_TOKEN`.
+
+The zone must match `MAIN_DOMAIN`. Verify by reading the zone overview
+on the Cloudflare dashboard — the apex matches your `MAIN_DOMAIN` env.
 
 3. Verify a manual A record write works:
    ```
@@ -58,6 +65,15 @@ by the worker on first run.
 ```
 INTERNAL_API_SECRET=$(openssl rand -hex 32)
 CRON_SECRET=$(openssl rand -hex 32)
+```
+
+For admin alerts ("shop ready for whitelist", "droplet unhealthy"), the
+provisioner reuses the existing platform notifier:
+
+```
+NOTIFIER_DRIVER=discord            # or "line" or "console"
+DISCORD_WEBHOOK_URL=https://...    # if driver=discord
+LINE_NOTIFY_TOKEN=...              # if driver=line
 ```
 
 `INTERNAL_API_SECRET` is shared between the control plane and every shop

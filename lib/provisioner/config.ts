@@ -24,10 +24,6 @@ export type ProvisionerConfig = {
   // Cross-droplet shared secret used to sign internal calls
   // (control plane ↔ droplet update agent, on-demand TLS ask endpoint).
   internalApiSecret: string;
-
-  // Notifier for "ready_for_whitelist" admin alerts
-  whitelistAlertChannel: "discord" | "line" | "console";
-  whitelistAlertWebhookUrl: string | null;
 };
 
 let cached: ProvisionerConfig | null = null;
@@ -56,9 +52,6 @@ export function getConfig(): ProvisionerConfig {
     cfPlatformDomain: readEnv("MAIN_DOMAIN", "basketplace.co"),
     controlPlaneBaseUrl: readEnv("CONTROL_PLANE_BASE_URL", readEnv("NEXT_PUBLIC_BASE_URL")),
     internalApiSecret: readEnv("INTERNAL_API_SECRET"),
-    whitelistAlertChannel:
-      (readEnv("WHITELIST_ALERT_CHANNEL", "console") as "discord" | "line" | "console"),
-    whitelistAlertWebhookUrl: readEnv("WHITELIST_ALERT_WEBHOOK_URL") || null,
   };
   return cached;
 }
