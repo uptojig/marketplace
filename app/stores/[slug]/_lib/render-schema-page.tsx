@@ -2,20 +2,31 @@
  * Shared renderer for schema-driven content pages
  * (faq / shipping / returns / privacy / terms / etc).
  *
- * Reads the v12 multi-page schema, finds the page with the requested
- * slug, and hands it to MultiPageRenderer. Falls back to a friendly
- * "ยังไม่มีเนื้อหา" message when the agent hasn't emitted that page
- * yet (e.g. older schemas pre-SKILL-update, or briefs that explicitly
- * skipped the page).
+ * Resolution order:
+ *  1. v12 multi-page schema has a page with this slug → MultiPageRenderer
+ *  2. Generic static fallback from lib/helpPages.ts (rendered with HelpContent)
+ *  3. Bare "ยังไม่มี…" hint (only if no static content exists for this slug)
  *
- * The fallback purposely doesn't 404 — these pages are linked from
- * the footer of EVERY store, so a 404 there breaks UX and fails
- * payment-gateway merchant approval.
+ * The static fallback exists because these pages are linked from EVERY
+ * store's footer and are required for payment-gateway merchant approval —
+ * an empty placeholder fails that check.
  */
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
+import { HelpContent } from "@/components/storefront/HelpContent";
+import { getHelpPage } from "@/lib/helpPages";
+
+// Route slug → lib/helpPages.ts slug.  Most are 1:1; "returns" maps to
+// "refund" because the static catalog uses the latter name.
+const STATIC_FALLBACK_SLUGS: Record<string, string> = {
+  shipping: "shipping",
+  returns: "refund",
+  privacy: "privacy",
+  terms: "terms",
+  faq: "faq",
+};
 
 interface SchemaPageProps {
   storeSlug: string;
@@ -70,6 +81,21 @@ export async function renderSchemaPage({
         />
       );
     }
+  }
+
+  const staticSlug = STATIC_FALLBACK_SLUGS[pageSlug];
+  const staticPage = staticSlug ? getHelpPage(staticSlug) : undefined;
+  if (staticPage) {
+    return (
+      <div className="container mx-auto max-w-3xl px-4 py-12">
+        <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--shop-ink)" }}>
+          {staticPage.title}
+        </h1>
+        <article className="text-sm" style={{ color: "var(--shop-ink)" }}>
+          <HelpContent content={staticPage.content} />
+        </article>
+      </div>
+    );
   }
 
   return (
