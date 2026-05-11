@@ -18,3 +18,4 @@ public/uploads/*
 .env*.local
 .env.prod
 .env.vercel
+infra/setup/config.sh
