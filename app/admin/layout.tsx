@@ -11,6 +11,7 @@ import {
   FlaskConical,
   Shield,
   LogOut,
+  Server,
 } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -20,6 +21,7 @@ export const dynamic = "force-dynamic";
 const NAV = [
   { href: "/admin", label: "ภาพรวม", icon: LayoutDashboard, exact: true },
   { href: "/admin/stores", label: "ร้านค้า", icon: Store },
+  { href: "/admin/provisioning", label: "Provisioning", icon: Server },
   { href: "/admin/users", label: "ผู้ใช้", icon: Users },
   { href: "/admin/orders", label: "คำสั่งซื้อ", icon: ShoppingCart },
   { href: "/admin/products", label: "สินค้า", icon: Package },
