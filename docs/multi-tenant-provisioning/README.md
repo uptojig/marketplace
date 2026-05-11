@@ -131,9 +131,11 @@ See `prisma/schema.prisma` for the full definitions.
 
 ## Related docs
 
+- **[setup-do-fresh.md](./setup-do-fresh.md)** — ติดตั้งระบบใหม่ทั้งหมดบน DO
+  ตั้งแต่ศูนย์ (recommended starting point — ไทย)
+- [first-time-setup.md](./first-time-setup.md) — env + credentials checklist
+  (เน้นค่าที่ต้องตั้ง ไม่ลงรายละเอียดการ provision infra)
 - [runbook.md](./runbook.md)            — day-to-day ops + troubleshooting
-- [first-time-setup.md](./first-time-setup.md) — what to do before the first
-  shop is provisioned
 - [payment-whitelist.md](./payment-whitelist.md) — manual PG workflow
 - [architecture-decisions.md](./architecture-decisions.md) — why we chose
   this shape (with rejected alternatives)
