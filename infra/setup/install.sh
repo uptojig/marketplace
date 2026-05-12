@@ -217,9 +217,6 @@ MAIN_DOMAIN=$DOMAIN
 # --- Database ---
 DATABASE_URL=$DB_CONN
 SHOP_DATABASE_URL=$DB_CONN
-# Vercel-style aliases — schema.prisma still references these names
-POSTGRES_PRISMA_URL=$DB_CONN
-POSTGRES_URL_NON_POOLING=$DB_CONN
 
 # --- NextAuth ---
 NEXTAUTH_URL=https://$DOMAIN
