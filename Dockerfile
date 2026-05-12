@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
-RUN npm ci --legacy-peer-deps
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 
 # ── Stage 2: Build ───────────────────────────────────────
 FROM node:18-alpine AS builder

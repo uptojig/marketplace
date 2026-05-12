@@ -13,7 +13,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
-RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps && npx prisma generate
+RUN npm install --omit=dev --ignore-scripts --legacy-peer-deps --no-audit --no-fund && npx prisma generate
 
 # Need full deps including dev for build step. Use a second copy so we
 # don't pollute the runner.
@@ -22,7 +22,7 @@ RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
-RUN npm ci --ignore-scripts --legacy-peer-deps && npx prisma generate
+RUN npm install --ignore-scripts --legacy-peer-deps --no-audit --no-fund && npx prisma generate
 
 # ── Stage 2: Build ───────────────────────────────────────
 FROM node:18-alpine AS builder
