@@ -217,6 +217,9 @@ MAIN_DOMAIN=$DOMAIN
 # --- Database ---
 DATABASE_URL=$DB_CONN
 SHOP_DATABASE_URL=$DB_CONN
+# Vercel-style aliases — schema.prisma still references these names
+POSTGRES_PRISMA_URL=$DB_CONN
+POSTGRES_URL_NON_POOLING=$DB_CONN
 
 # --- NextAuth ---
 NEXTAUTH_URL=https://$DOMAIN
@@ -320,7 +323,7 @@ ok "shop image pushed"
 log "running prisma migrate deploy..."
 ssh_run "docker run --rm --env-file /etc/marketplace/control.env \
   registry.digitalocean.com/$DO_REGISTRY_NAME/control-plane:$CONTROL_IMAGE_TAG \
-  sh -c 'npx prisma migrate deploy || npx prisma db push --accept-data-loss'"
+  sh -c 'cd /app && node node_modules/prisma/build/index.js migrate deploy || node node_modules/prisma/build/index.js db push --accept-data-loss'"
 ok "migrations applied"
 
 # 4.6 — systemd unit + Caddyfile
@@ -393,8 +396,8 @@ for i in $(seq 1 20); do
   sleep 3
 done
 
-ADMIN_EMAIL_FIRST=$(echo "$ADMIN_EMAIL_FIRSTS" | cut -d, -f1 | tr -d ' ')
-log "auto-promoting $ADMIN_EMAIL_FIRST_FIRST to ADMIN (after they sign in once)..."
+ADMIN_EMAIL_FIRST=$(echo "$ADMIN_EMAILS" | cut -d, -f1 | tr -d ' ')
+log "auto-promoting $ADMIN_EMAIL_FIRST to ADMIN (after they sign in once)..."
 ssh_run "cat > /usr/local/bin/promote-admin <<'EOF'
 #!/bin/sh
 docker exec marketplace-control sh -c \"echo \\\"UPDATE \\\\\\\"User\\\\\\\" SET role='ADMIN' WHERE email='\$1';\\\" | npx prisma db execute --stdin\"
