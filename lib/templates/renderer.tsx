@@ -14,10 +14,14 @@ import { CountdownBlock } from '@/components/store-blocks/countdown-block';
 import { DropCalendarBlock } from '@/components/store-blocks/drop-calendar-block';
 import { StoryBlock } from '@/components/store-blocks/story-block';
 import { StickyBlock } from '@/components/store-blocks/sticky-block';
+import { FeaturedStoresBlock } from '@/components/store-blocks/featured-stores-block';
+import { MarketplaceCategoriesBlock } from '@/components/store-blocks/marketplace-categories-block';
+import { ProductDetailBlock } from '@/components/store-blocks/product-detail-block';
 import { DesktopPatternA } from '@/components/store-desktop/pattern-a';
 import { DesktopPatternB } from '@/components/store-desktop/pattern-b';
 import { DesktopPatternC } from '@/components/store-desktop/pattern-c';
 import { DesktopPatternD } from '@/components/store-desktop/pattern-d';
+import { DesktopPatternE } from '@/components/store-desktop/pattern-e';
 import type { PatternProps } from '@/components/store-desktop/utils';
 import type { Block, BlockType, DesktopPattern, Store, Template } from './types';
 
@@ -46,6 +50,9 @@ const BLOCK_COMPONENTS: Record<BlockType, ComponentType<BlockProps>> = {
   'drop-calendar': DropCalendarBlock,
   story: StoryBlock,
   sticky: StickyBlock,
+  'featured-stores': FeaturedStoresBlock,
+  'marketplace-categories': MarketplaceCategoriesBlock,
+  'product-detail': ProductDetailBlock,
 };
 
 /**
@@ -55,12 +62,14 @@ const BLOCK_COMPONENTS: Record<BlockType, ComponentType<BlockProps>> = {
  * B — Sidebar catalog (search-first, dense SKU)
  * C — Cover + tabs + grid (default shopping)
  * D — Feed / stream (live, video)
+ * E — Flat / linear (PDP, account, MDX content)
  */
 const DESKTOP_PATTERNS: Record<DesktopPattern, ComponentType<PatternProps>> = {
   A: DesktopPatternA,
   B: DesktopPatternB,
   C: DesktopPatternC,
   D: DesktopPatternD,
+  E: DesktopPatternE,
 };
 
 export function BlockRenderer({ block, store }: BlockProps) {

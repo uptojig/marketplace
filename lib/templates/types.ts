@@ -11,6 +11,7 @@
 // ============================================================================
 
 export type BlockType =
+  // Store blocks
   | 'hero'
   | 'store-header'
   | 'nav'
@@ -25,7 +26,11 @@ export type BlockType =
   | 'countdown'
   | 'drop-calendar'
   | 'story'
-  | 'sticky';
+  | 'sticky'
+  // Marketplace blocks (browse, PDP, etc.)
+  | 'product-detail'
+  | 'marketplace-categories'
+  | 'featured-stores';
 
 export interface Block {
   type: BlockType;
@@ -89,7 +94,16 @@ export type TemplateId =
   | 'handmade'
   | 'vintage';
 
-export type DesktopPattern = 'A' | 'B' | 'C' | 'D';
+/**
+ * Desktop layout patterns.
+ *
+ * A — Hero narrative (editorial, luxury, single-product)
+ * B — Sidebar catalog (search-first, dense SKU)
+ * C — Cover + tabs + grid (default shopping)
+ * D — Feed / stream (live, video)
+ * E — Flat / linear (PDP, account, MDX content)
+ */
+export type DesktopPattern = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface BehaviorFlags {
   bottomNav?: 'visible' | 'hidden';
@@ -234,4 +248,28 @@ export interface LiveStreamInfo {
   hostName: string;
   hostAvatarUrl?: string;
   replays?: { id: string; thumbnailUrl: string; title: string; duration: number }[];
+}
+
+// ============================================================================
+// Marketplace types (browse + PDP pages)
+// ============================================================================
+
+export interface MarketplaceCategory {
+  id: string;
+  slug: string;
+  name: string;
+  iconUrl?: string;
+  emoji?: string;
+  productCount?: number;
+}
+
+export interface FeaturedStore {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  rating: number;
+  followers: number;
+  badges?: StoreBadges;
 }

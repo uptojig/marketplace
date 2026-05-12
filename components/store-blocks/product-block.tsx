@@ -1,10 +1,11 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Star } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { BlockProps } from '@/lib/templates/renderer';
-import type { Product, Store } from '@/lib/templates/types';
+import type { Product } from '@/lib/templates/types';
 
 export function ProductBlock({ block, store }: BlockProps) {
   const products = filterProducts(store.products, block.data);
@@ -14,7 +15,15 @@ export function ProductBlock({ block, store }: BlockProps) {
 
   switch (block.variant) {
     case 'grid-2':
-      return <GridProducts products={products} cols={2} showCondition={showCondition} stockIndicators={stockIndicators} minimal={minimal} />;
+      return (
+        <GridProducts
+          products={products}
+          cols={2}
+          showCondition={showCondition}
+          stockIndicators={stockIndicators}
+          minimal={minimal}
+        />
+      );
     case 'grid-3-dense':
       return <GridProducts products={products} cols={3} dense />;
     case 'grid-4-desktop':
@@ -31,7 +40,6 @@ export function ProductBlock({ block, store }: BlockProps) {
 }
 
 function filterProducts(all: Product[], data?: Record<string, unknown>): Product[] {
-  // Real impl: filter by collection ID, source ('featured', 'recommended', 'from-live'), etc.
   void data;
   return all;
 }
@@ -97,58 +105,58 @@ function ProductCard({
       : null;
 
   return (
-    <Card className="overflow-hidden">
-      <div className="relative aspect-square">
-        <Image
-          src={product.thumbnailUrl}
-          alt={product.title}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 50vw, 25vw"
-        />
-        {discount && (
-          <Badge variant="destructive" className="absolute left-1 top-1 px-1.5 py-0 text-[10px]">
-            -{discount}%
-          </Badge>
-        )}
-        {showCondition && product.conditionLabel && (
-          <Badge variant="secondary" className="absolute bottom-1 right-1 text-[10px] capitalize">
-            {product.conditionLabel.replace('-', ' ')}
-          </Badge>
-        )}
-        {stockIndicators && product.stockLeft != null && product.stockLeft < 10 && (
-          <Badge variant="destructive" className="absolute bottom-1 left-1 text-[10px]">
-            {product.stockLeft} left
-          </Badge>
-        )}
-      </div>
-      <CardContent className={cn(dense ? 'p-1.5' : 'p-2')}>
-        <h3 className={cn('line-clamp-2 font-medium', dense ? 'text-xs' : 'text-sm')}>
-          {product.title}
-        </h3>
-        {!minimal && (
-          <>
-            <div className="mt-1 flex items-baseline gap-1">
-              <span className={cn('font-semibold text-red-600', dense ? 'text-sm' : 'text-base')}>
-                ฿{product.price.toLocaleString()}
-              </span>
-              {product.originalPrice && (
-                <span className="text-xs text-muted-foreground line-through">
-                  ฿{product.originalPrice.toLocaleString()}
+    <Link href={`/p/${product.id}`}>
+      <Card className="overflow-hidden transition hover:shadow-md">
+        <div className="relative aspect-square">
+          <Image
+            src={product.thumbnailUrl}
+            alt={product.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 50vw, 25vw"
+          />
+          {discount && (
+            <Badge variant="destructive" className="absolute left-1 top-1 px-1.5 py-0 text-[10px]">
+              -{discount}%
+            </Badge>
+          )}
+          {showCondition && product.conditionLabel && (
+            <Badge variant="secondary" className="absolute bottom-1 right-1 text-[10px] capitalize">
+              {product.conditionLabel.replace('-', ' ')}
+            </Badge>
+          )}
+          {stockIndicators && product.stockLeft != null && product.stockLeft < 10 && (
+            <Badge variant="destructive" className="absolute bottom-1 left-1 text-[10px]">
+              {product.stockLeft} left
+            </Badge>
+          )}
+        </div>
+        <CardContent className={cn(dense ? 'p-1.5' : 'p-2')}>
+          <h3 className={cn('line-clamp-2 font-medium', dense ? 'text-xs' : 'text-sm')}>
+            {product.title}
+          </h3>
+          {!minimal && (
+            <>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span className={cn('font-semibold text-red-600', dense ? 'text-sm' : 'text-base')}>
+                  ฿{product.price.toLocaleString()}
                 </span>
-              )}
-            </div>
-            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              {product.rating.toFixed(1)} · {formatNumber(product.soldCount)} sold
-            </div>
-          </>
-        )}
-        {minimal && (
-          <p className="mt-1 text-sm">฿{product.price.toLocaleString()}</p>
-        )}
-      </CardContent>
-    </Card>
+                {product.originalPrice && (
+                  <span className="text-xs text-muted-foreground line-through">
+                    ฿{product.originalPrice.toLocaleString()}
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                {product.rating.toFixed(1)} · {formatNumber(product.soldCount)} sold
+              </div>
+            </>
+          )}
+          {minimal && <p className="mt-1 text-sm">฿{product.price.toLocaleString()}</p>}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
@@ -156,33 +164,35 @@ function ListProducts({ products, showSpecs = false }: { products: Product[]; sh
   return (
     <div className="divide-y">
       {products.map((p) => (
-        <div key={p.id} className="flex gap-3 p-3">
-          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded">
-            <Image src={p.thumbnailUrl} alt={p.title} fill className="object-cover" sizes="80px" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="line-clamp-2 text-sm font-medium">{p.title}</h3>
-            {showSpecs && p.attributes && (
-              <div className="mt-1 space-x-2 text-xs text-muted-foreground">
-                {Object.entries(p.attributes).slice(0, 3).map(([k, v]) => (
-                  <span key={k}>
-                    {k}: {v}
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-base font-semibold text-red-600">
-                ฿{p.price.toLocaleString()}
-              </span>
-              {p.originalPrice && (
-                <span className="text-xs text-muted-foreground line-through">
-                  ฿{p.originalPrice.toLocaleString()}
-                </span>
+        <Link href={`/p/${p.id}`} key={p.id} className="block hover:bg-muted/30">
+          <div className="flex gap-3 p-3">
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded">
+              <Image src={p.thumbnailUrl} alt={p.title} fill className="object-cover" sizes="80px" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="line-clamp-2 text-sm font-medium">{p.title}</h3>
+              {showSpecs && p.attributes && (
+                <div className="mt-1 space-x-2 text-xs text-muted-foreground">
+                  {Object.entries(p.attributes).slice(0, 3).map(([k, v]) => (
+                    <span key={k}>
+                      {k}: {v}
+                    </span>
+                  ))}
+                </div>
               )}
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-base font-semibold text-red-600">
+                  ฿{p.price.toLocaleString()}
+                </span>
+                {p.originalPrice && (
+                  <span className="text-xs text-muted-foreground line-through">
+                    ฿{p.originalPrice.toLocaleString()}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
@@ -192,7 +202,7 @@ function EditorialProducts({ products }: { products: Product[] }) {
   return (
     <div className="grid grid-cols-2 gap-3 p-4">
       {products.map((p) => (
-        <div key={p.id} className="space-y-2">
+        <Link href={`/p/${p.id}`} key={p.id} className="space-y-2 hover:opacity-90">
           <div className="relative aspect-[3/4] overflow-hidden">
             <Image src={p.thumbnailUrl} alt={p.title} fill className="object-cover" sizes="50vw" />
           </div>
@@ -200,7 +210,7 @@ function EditorialProducts({ products }: { products: Product[] }) {
             <h3 className="line-clamp-2 text-sm tracking-wide">{p.title}</h3>
             <p className="mt-0.5 text-sm">฿{p.price.toLocaleString()}</p>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
