@@ -7,8 +7,10 @@
 # Builds standalone Next.js output for fast cold start (~50 MB image).
 
 # ── Stage 1: Dependencies ────────────────────────────────
-FROM node:18-alpine AS deps
-RUN apk add --no-cache libc6-compat openssl
+FROM node:20-bookworm-slim AS deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -17,16 +19,20 @@ RUN npm install --omit=dev --ignore-scripts --legacy-peer-deps --no-audit --no-f
 
 # Need full deps including dev for build step. Use a second copy so we
 # don't pollute the runner.
-FROM node:18-alpine AS deps-full
-RUN apk add --no-cache libc6-compat openssl
+FROM node:20-bookworm-slim AS deps-full
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 RUN npm install --ignore-scripts --legacy-peer-deps --no-audit --no-fund && npx prisma generate
 
 # ── Stage 2: Build ───────────────────────────────────────
-FROM node:18-alpine AS builder
-RUN apk add --no-cache libc6-compat openssl
+FROM node:20-bookworm-slim AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 COPY --from=deps-full /app/node_modules ./node_modules
@@ -36,8 +42,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npx prisma generate && npm run build
 
 # ── Stage 3: Runner ──────────────────────────────────────
-FROM node:18-alpine AS runner
-RUN apk add --no-cache libc6-compat openssl wget
+FROM node:20-bookworm-slim AS runner
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      openssl ca-certificates wget \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -45,8 +53,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs -s /bin/sh -m nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
