@@ -1,0 +1,48 @@
+# Reference Caddyfile — the live file is rendered into the droplet at
+# /opt/marketplace-shop/Caddyfile by cloud-init (see
+# lib/provisioner/cloud-init.ts). This copy exists only for documentation
+# and local testing.
+#
+# Placeholders rendered at boot:
+#   ${SHOP_SLUG}      — store.slug
+#   ${PLATFORM_DOMAIN} — main marketplace domain
+#   ${CONTROL_PLANE_BASE_URL} — control plane URL (for ask endpoint)
+
+{
+        admin off
+        on_demand_tls {
+                # Caddy hits this before issuing a Let's Encrypt cert for any
+                # SNI that isn't the slug subdomain. Control plane must
+                # respond 200 only for {customDomain} of an APPROVED store
+                # whose ShopDeployment.customDomainVerified = true.
+                ask ${CONTROL_PLANE_BASE_URL}/api/provisioner/caddy-ask
+                # Rate-limits keep us under Let's Encrypt's 50/week/cert limit.
+                interval 2m
+                burst    5
+        }
+        servers {
+                protocols h1 h2 h3
+        }
+}
+
+# Slug subdomain — backed by a wildcard cert distributed in the snapshot
+# and refreshed automatically via DNS-01 (since we own the platform zone).
+${SHOP_SLUG}.${PLATFORM_DOMAIN} {
+        encode zstd gzip
+        reverse_proxy localhost:3000
+}
+
+# Catch-all for vendor custom domains. on_demand triggers ACME HTTP-01
+# when the first request lands; ask endpoint gates abuse.
+:443 {
+        encode zstd gzip
+        tls {
+                on_demand
+        }
+        reverse_proxy localhost:3000
+}
+
+# HTTP → HTTPS for any host
+:80 {
+        redir https://{host}{uri} permanent
+}

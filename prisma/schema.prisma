@@ -6,9 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // --- Auth (NextAuth) ---
@@ -101,6 +100,18 @@ model Store {
   // that bundled too many decisions. Replaced by per-element toggles above.
   // Column kept to avoid a destructive migration; safe to drop in a future cleanup.
   themeId      String?  @default("modern")
+  // ── Vendor wizard (5-phase) ──
+  // Niche drives template recommendations and product warehouse filtering.
+  // brandVoice is one of: "casual" | "formal" | "playful".
+  // templateId references the 20-template registry in lib/store/wizard-data.ts.
+  // paletteId references the preset palette registry; falls back to primaryColor for legacy stores.
+  niche        String?
+  brandVoice   String?  @default("casual")
+  // templateId is null for legacy stores (they use `landingBlocks` instead).
+  // When set, it references `lib/templates/registry.ts` and the storefront
+  // renders via `StoreRenderer` from `lib/templates/renderer.tsx`.
+  templateId   String?
+  paletteId    String?
   // Custom domain (vendor brings their own); subdomain is derived from slug
   customDomain String?  @unique
   // Legal/business info shown on contact page + footer
@@ -162,6 +173,7 @@ model Store {
   categories           Category[]
   items                OrderItem[]
   identityVerification IdentityVerification?
+  deployment           ShopDeployment?
 
   @@index([approvalStatus])
 }
@@ -449,4 +461,151 @@ model IdentityVerification {
   updatedAt       DateTime                   @updatedAt
 
   store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+}
+
+// ============================================================================
+// Multi-tenant provisioning (DigitalOcean droplet per shop)
+// ============================================================================
+// Each approved store gets its own droplet so the payment provider's IP
+// whitelist requirement is satisfied: a single droplet has exactly one
+// public IP, used for both inbound (storefront) and outbound (PG API).
+//
+// Lifecycle:
+//   PENDING → CREATING_DROPLET → CONFIGURING_DNS → DEPLOYING_APP →
+//   READY_FOR_WHITELIST → WHITELIST_REQUESTED → ACTIVE
+// Failure surfaces via `lastError` + status FAILED at whichever stage broke.
+// All transitions are idempotent — retrying any stage is safe.
+
+enum ShopDeploymentStatus {
+  PENDING              // queued, no droplet created yet
+  CREATING_DROPLET     // DO API call sent, waiting for droplet to become active
+  CONFIGURING_DNS      // droplet has IP, writing CF DNS records
+  DEPLOYING_APP        // cloud-init / docker pull in progress
+  READY_FOR_WHITELIST  // health check passed, awaiting PG whitelist
+  WHITELIST_REQUESTED  // admin notified PG, waiting for confirmation
+  ACTIVE               // fully operational, payments enabled
+  SUSPENDED            // disabled by admin (TOS, non-payment) — droplet kept
+  FAILED               // stuck — see lastError + provisioning jobs
+  ARCHIVED             // droplet destroyed, IP released
+}
+
+model ShopDeployment {
+  id        String               @id @default(cuid())
+  storeId   String               @unique
+  status    ShopDeploymentStatus @default(PENDING)
+
+  // DigitalOcean droplet identity (populated once created)
+  doDropletId        BigInt?
+  doRegion           String?  // e.g. "sgp1"
+  doSize             String?  // e.g. "s-1vcpu-1gb"
+  doImageSnapshotId  String?  // snapshot used to create this droplet
+
+  // Networking — these are the IPs the PG provider whitelists
+  publicIpv4         String?  @unique
+  publicIpv6         String?
+  privateIpv4        String?  // for VPC backbone to control plane + managed DB
+
+  // Cloudflare DNS record IDs (so we can update/delete cleanly on rename/destroy)
+  cfRecordIdSubdomain String?  // {slug}.platform.com A record
+  cfRecordIdApex      String?  // myshop.com A record (if custom domain)
+  cfRecordIdWww       String?  // www.myshop.com A record (if custom domain)
+
+  // Custom domain verification — flips true once DNS lookup matches publicIpv4.
+  // Caddy's on-demand TLS `ask` endpoint refuses to issue a cert until verified.
+  customDomainVerified   Boolean   @default(false)
+  customDomainVerifiedAt DateTime?
+  customDomainLastChecked DateTime?
+
+  // Payment provider whitelist (manual workflow — PG has no API)
+  paymentWhitelistStatus       PaymentWhitelistStatus @default(NOT_REQUESTED)
+  paymentWhitelistRequestedAt  DateTime?
+  paymentWhitelistConfirmedAt  DateTime?
+  paymentWhitelistConfirmedBy  String?  // admin user id
+  paymentWhitelistNote         String?
+
+  // Health check + heartbeat — populated by control plane uptime poller.
+  // healthyAt = last 200 from /health; missedHealthChecks increments per fail.
+  healthyAt              DateTime?
+  missedHealthChecks     Int       @default(0)
+
+  // Deployment metadata — version of the snapshot the droplet was built from
+  // and the version currently running (set by the on-droplet update agent).
+  snapshotVersion        String?
+  runningVersion         String?
+
+  // Append-only error log — most recent failure surface for admin UI
+  lastError              String?
+  lastErrorAt            DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  store Store              @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  jobs  ProvisioningJob[]
+
+  @@index([status])
+  @@index([paymentWhitelistStatus])
+}
+
+enum PaymentWhitelistStatus {
+  NOT_REQUESTED  // droplet not yet ready
+  REQUESTED      // admin has contacted PG, awaiting confirmation
+  CONFIRMED      // PG confirmed IP is whitelisted → payments enabled
+  REJECTED       // PG refused (e.g. KYC failure) — store cannot use payments
+}
+
+// Provisioning job — every state transition (and retry attempt) becomes a row.
+// Acts as both a queue (status=QUEUED rows polled by the worker) and an audit
+// log so admin can see "stage X took 47s, stage Y failed twice then succeeded".
+
+enum ProvisioningJobType {
+  CREATE_DROPLET
+  WAIT_FOR_DROPLET_ACTIVE
+  CONFIGURE_DNS
+  WAIT_FOR_APP_READY
+  REQUEST_PAYMENT_WHITELIST
+  HEALTH_CHECK
+  DEPLOY_UPDATE       // push new snapshot/image version
+  DESTROY_DROPLET     // cleanup on shop deletion
+  ROTATE_IP           // for IP change (rare — usually means re-whitelist with PG)
+}
+
+enum ProvisioningJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+model ProvisioningJob {
+  id           String                @id @default(cuid())
+  deploymentId String
+  type         ProvisioningJobType
+  status       ProvisioningJobStatus @default(QUEUED)
+  attempt      Int                   @default(1)
+  maxAttempts  Int                   @default(5)
+
+  // Inputs/outputs persisted as JSON so we don't need a schema bump for every
+  // new job type. Schema layer (lib/provisioner/jobs/*) validates at runtime.
+  inputJson    Json?
+  outputJson   Json?
+  errorMessage String?
+  errorJson    Json?
+
+  // Visibility timeout pattern — only one worker picks up at a time
+  scheduledFor DateTime  @default(now())
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  // After a SUCCEEDED job, follow-up job ID for traceability in the chain
+  nextJobId    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deployment ShopDeployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+
+  @@index([deploymentId, type])
+  @@index([status, scheduledFor])
+  @@index([type, status])
 }

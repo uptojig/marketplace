@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { audit } from "@/lib/audit";
+import { provisionStore, deprovisionStore } from "@/lib/provisioner/orchestrator";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -126,6 +127,37 @@ export async function PATCH(
         },
       },
     });
+
+    // Provisioning side-effects — fire-and-forget so the admin's approve
+    // click returns immediately. The actual droplet creation is driven by
+    // the worker draining ProvisioningJob rows.
+    //
+    // - Transition INTO APPROVED   → kick provisioning (idempotent if a
+    //   deployment already exists in any non-ACTIVE state)
+    // - Transition AWAY from APPROVED to SUSPENDED/REJECTED → leave the
+    //   droplet running but the storefront becomes invisible (handled at
+    //   the storefront layer via approvalStatus). We DO destroy on a hard
+    //   REJECT only if there was never an active deployment, to keep IPs
+    //   recyclable.
+    if (
+      updated.approvalStatus === "APPROVED" &&
+      before.approvalStatus !== "APPROVED"
+    ) {
+      provisionStore(updated.id).catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error("[approval] provisionStore failed", updated.id, err);
+      });
+    } else if (
+      updated.approvalStatus === "REJECTED" &&
+      before.approvalStatus === "PENDING"
+    ) {
+      // Vendor was rejected before ever going live — release the IP if a
+      // deployment row exists (rare; only if admin had pre-provisioned).
+      deprovisionStore(updated.id).catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error("[approval] deprovisionStore failed", updated.id, err);
+      });
+    }
 
     return NextResponse.json({ ok: true, store: updated });
   } catch (e) {
