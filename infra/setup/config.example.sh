@@ -16,8 +16,9 @@ SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
 # Shop subdomains end up as <slug>.<DOMAIN>.
 DOMAIN="basketplace.co"
 
-# Admin email — first user with this email auto-promoted to ADMIN role.
-ADMIN_EMAIL="you@example.com"
+# Admin emails — comma-separated. These Google accounts auto-promote to
+# ADMIN role on first sign-in. (Mirrors ADMIN_EMAILS in .env.)
+ADMIN_EMAILS="you@example.com"
 
 # ─── DigitalOcean ───────────────────────────────────────────────────────────
 # Token scope: Droplet/Snapshot/Image/SSH Key/Tag/VPC/Database/Registry
@@ -75,7 +76,7 @@ LINE_NOTIFY_TOKEN=""
 
 # ─── Repository ─────────────────────────────────────────────────────────────
 # Branch/tag the droplet will check out + build from.
-REPO_URL="https://github.com/icueth/marketplace.git"
+REPO_URL="https://github.com/uptojig/marketplace.git"
 REPO_BRANCH="feat/multi-tenant-provisioning"
 
 # ─── Image tags ─────────────────────────────────────────────────────────────
@@ -84,3 +85,27 @@ SHOP_IMAGE_TAG="latest"
 
 # ─── Anthropic (for AI store builder feature — optional) ────────────────────
 ANTHROPIC_API_KEY=""
+
+# ─── Transactional email (Resend SMTP) ──────────────────────────────────────
+# Used by NextAuth magic-link sign-in + order/whitelist notifications.
+EMAIL_SERVER=""
+EMAIL_FROM="noreply@${DOMAIN}"
+
+# ─── Suppliers ──────────────────────────────────────────────────────────────
+# CJ Dropshipping (https://developers.cjdropshipping.com)
+CJ_API_BASE="https://developers.cjdropshipping.com/api2.0/v1"
+CJ_EMAIL=""
+CJ_API_KEY=""
+CJ_USD_THB="36"
+
+# AliExpress (optional — leave empty if not using)
+ALIEXPRESS_APP_KEY=""
+ALIEXPRESS_APP_SECRET=""
+ALIEXPRESS_ACCESS_TOKEN=""
+
+# Default supplier when seed/import doesn't specify one
+DEFAULT_SUPPLIER="CJ"
+
+# ─── Domain-IP registry ─────────────────────────────────────────────────────
+# JSON array — provisioner overwrites this at runtime per shop.
+DOMAIN_IP_REGISTRY="[]"

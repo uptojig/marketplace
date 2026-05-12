@@ -45,7 +45,7 @@ require_var() {
 require_var HOST_IP
 require_var SSH_KEY_PATH
 require_var DOMAIN
-require_var ADMIN_EMAIL
+require_var ADMIN_EMAILS
 require_var DIGITALOCEAN_TOKEN
 require_var CLOUDFLARE_API_TOKEN
 require_var CLOUDFLARE_ZONE_ID
@@ -103,7 +103,7 @@ section "Phase 2 — DigitalOcean infrastructure"
 # 2.1 — VPC
 log "checking VPC '$DO_VPC_NAME'..."
 VPC_UUID=$(do_api "https://api.digitalocean.com/v2/vpcs?per_page=200" \
-  | jq -r --arg n "$DO_VPC_NAME" '.vpcs[] | select(.name==$n) | .id' | head -n1)
+  | jq -r --arg n "$DO_VPC_NAME" '(.vpcs // [])[] | select(.name==$n) | .id' | head -n1)
 if [ -z "$VPC_UUID" ]; then
   log "creating VPC..."
   VPC_UUID=$(do_api -X POST https://api.digitalocean.com/v2/vpcs \
@@ -134,7 +134,7 @@ fi
 # 2.3 — Managed Postgres
 log "checking managed Postgres '$DO_DB_NAME'..."
 DB_INFO=$(do_api "https://api.digitalocean.com/v2/databases?per_page=200" \
-  | jq -r --arg n "$DO_DB_NAME" '.databases[] | select(.name==$n)')
+  | jq -r --arg n "$DO_DB_NAME" '(.databases // [])[] | select(.name==$n)')
 if [ -z "$DB_INFO" ]; then
   log "creating Postgres (takes ~5 min)..."
   DB_ID=$(do_api -X POST https://api.digitalocean.com/v2/databases \
@@ -165,7 +165,7 @@ ok "private connection string obtained"
 # 2.5 — Make sure the droplet (which we're installing onto) is on the VPC.
 # (We just warn — moving an existing droplet across VPCs requires recreation.)
 DROPLET_INFO=$(do_api "https://api.digitalocean.com/v2/droplets?per_page=200" \
-  | jq -r --arg ip "$HOST_IP" '.droplets[] | select(.networks.v4[]?.ip_address==$ip)')
+  | jq -r --arg ip "$HOST_IP" '(.droplets // [])[] | select(.networks.v4[]?.ip_address==$ip)')
 if [ -z "$DROPLET_INFO" ]; then
   warn "couldn't find droplet with IP $HOST_IP in this DO account — proceeding anyway"
 else
@@ -223,6 +223,11 @@ NEXTAUTH_URL=https://$DOMAIN
 NEXTAUTH_SECRET=$NEXTAUTH_SECRET_VAL
 GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
+ADMIN_EMAILS=${ADMIN_EMAILS:-}
+
+# --- Transactional email ---
+EMAIL_SERVER=${EMAIL_SERVER:-}
+EMAIL_FROM=${EMAIL_FROM:-noreply@$DOMAIN}
 
 # --- Public URLs ---
 NEXT_PUBLIC_BASE_URL=https://$DOMAIN
@@ -273,6 +278,19 @@ SPACES_SECRET=${SPACES_SECRET:-}
 
 # --- Anthropic ---
 ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+
+# --- Suppliers ---
+CJ_API_BASE=${CJ_API_BASE:-https://developers.cjdropshipping.com/api2.0/v1}
+CJ_EMAIL=${CJ_EMAIL:-}
+CJ_API_KEY=${CJ_API_KEY:-}
+CJ_USD_THB=${CJ_USD_THB:-36}
+ALIEXPRESS_APP_KEY=${ALIEXPRESS_APP_KEY:-}
+ALIEXPRESS_APP_SECRET=${ALIEXPRESS_APP_SECRET:-}
+ALIEXPRESS_ACCESS_TOKEN=${ALIEXPRESS_ACCESS_TOKEN:-}
+DEFAULT_SUPPLIER=${DEFAULT_SUPPLIER:-CJ}
+
+# --- Domain-IP registry ---
+DOMAIN_IP_REGISTRY=${DOMAIN_IP_REGISTRY:-[]}
 EOF
 )
 
@@ -336,7 +354,7 @@ section "Phase 5 — Build shop droplet snapshot"
 
 log "checking if a recent snapshot already exists..."
 SNAPSHOT_ID=$(do_api "https://api.digitalocean.com/v2/snapshots?resource_type=droplet&per_page=200" \
-  | jq -r '.snapshots[] | select(.name | startswith("shop-droplet-")) | .id' | head -n1)
+  | jq -r '(.snapshots // [])[] | select(.name | startswith("shop-droplet-")) | .id' | head -n1)
 
 if [ -z "$SNAPSHOT_ID" ]; then
   log "running build-snapshot.sh on droplet (~15 min)..."
@@ -345,7 +363,7 @@ if [ -z "$SNAPSHOT_ID" ]; then
            DO_REGION='$DO_REGION' \
            bash /opt/marketplace/infra/shop-droplet/build-snapshot.sh 2>&1 | tail -5"
   SNAPSHOT_ID=$(do_api "https://api.digitalocean.com/v2/snapshots?resource_type=droplet&per_page=200" \
-    | jq -r '.snapshots[] | select(.name | startswith("shop-droplet-")) | .id' | head -n1)
+    | jq -r '(.snapshots // [])[] | select(.name | startswith("shop-droplet-")) | .id' | head -n1)
   ok "snapshot built (id=$SNAPSHOT_ID)"
 else
   ok "reusing existing snapshot $SNAPSHOT_ID"
@@ -354,7 +372,7 @@ fi
 # Inject snapshot id + DO SSH key fingerprints into env
 log "updating env with snapshot id + SSH keys..."
 SSH_KEY_FPS=$(do_api "https://api.digitalocean.com/v2/account/keys?per_page=200" \
-  | jq -r '.ssh_keys[].fingerprint' | paste -sd, -)
+  | jq -r '(.ssh_keys // [])[].fingerprint' | paste -sd, -)
 
 ssh_run "sed -i \
   -e 's|^DO_SHOP_SNAPSHOT_ID=.*|DO_SHOP_SNAPSHOT_ID=$SNAPSHOT_ID|' \
@@ -375,7 +393,8 @@ for i in $(seq 1 20); do
   sleep 3
 done
 
-log "auto-promoting $ADMIN_EMAIL to ADMIN (after they sign in once)..."
+ADMIN_EMAIL_FIRST=$(echo "$ADMIN_EMAIL_FIRSTS" | cut -d, -f1 | tr -d ' ')
+log "auto-promoting $ADMIN_EMAIL_FIRST_FIRST to ADMIN (after they sign in once)..."
 ssh_run "cat > /usr/local/bin/promote-admin <<'EOF'
 #!/bin/sh
 docker exec marketplace-control sh -c \"echo \\\"UPDATE \\\\\\\"User\\\\\\\" SET role='ADMIN' WHERE email='\$1';\\\" | npx prisma db execute --stdin\"
@@ -398,9 +417,9 @@ ${c_bold}═══════════════════════�
        @     A    $HOST_IP
        www   A    $HOST_IP
        admin A    $HOST_IP
-  ${c_bold}2.${c_reset} Sign in once at https://$DOMAIN/signin with $ADMIN_EMAIL
+  ${c_bold}2.${c_reset} Sign in once at https://$DOMAIN/signin with $ADMIN_EMAIL_FIRST
   ${c_bold}3.${c_reset} Promote yourself to admin:
-       ${c_dim}ssh $SSH_USER@$HOST_IP "/usr/local/bin/promote-admin $ADMIN_EMAIL"${c_reset}
+       ${c_dim}ssh $SSH_USER@$HOST_IP "/usr/local/bin/promote-admin $ADMIN_EMAIL_FIRST"${c_reset}
   ${c_bold}4.${c_reset} Create a test shop and approve it — watch /admin/provisioning
 
   Useful droplet commands:
