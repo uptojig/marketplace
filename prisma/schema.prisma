@@ -100,6 +100,18 @@ model Store {
   // that bundled too many decisions. Replaced by per-element toggles above.
   // Column kept to avoid a destructive migration; safe to drop in a future cleanup.
   themeId      String?  @default("modern")
+  // ── Vendor wizard (5-phase) ──
+  // Niche drives template recommendations and product warehouse filtering.
+  // brandVoice is one of: "casual" | "formal" | "playful".
+  // templateId references the 20-template registry in lib/store/wizard-data.ts.
+  // paletteId references the preset palette registry; falls back to primaryColor for legacy stores.
+  niche        String?
+  brandVoice   String?  @default("casual")
+  // templateId is null for legacy stores (they use `landingBlocks` instead).
+  // When set, it references `lib/templates/registry.ts` and the storefront
+  // renders via `StoreRenderer` from `lib/templates/renderer.tsx`.
+  templateId   String?
+  paletteId    String?
   // Custom domain (vendor brings their own); subdomain is derived from slug
   customDomain String?  @unique
   // Legal/business info shown on contact page + footer
