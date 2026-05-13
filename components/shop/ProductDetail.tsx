@@ -1,6 +1,15 @@
 "use client";
 
 /**
+ * DEPRECATED — unwired from /stores/[slug]/products/[id] in favour of
+ * the scaffold-aligned <ProductDetailHero> + <ProductDetailTabs> pair
+ * (components/storefront/). Kept around so we can lift any UX detail
+ * the new flow misses (sticky mobile bottom-bar, FamilyDCustomizer,
+ * FeaturesBlock/ReviewsBlock/FaqBlock injection) before deletion.
+ *
+ * TODO(cleanup): delete this file once no callers remain. As of the
+ * rewire commit, grep shows zero imports.
+ *
  * Product detail — refit to match the user-supplied reference
  * (tailwinduikit "Balenciaga Signature Sweatshirt" pattern):
  *
