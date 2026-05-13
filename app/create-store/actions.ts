@@ -12,7 +12,7 @@ import {
 } from "@/lib/store/wizard-data";
 
 type CreateStoreResult =
-  | { ok: true; slug: string }
+  | { ok: true; slug: string; storeId: string; ownedBySession: boolean }
   | { ok: false; error: string };
 
 export async function createStoreFromWizard(
@@ -22,17 +22,17 @@ export async function createStoreFromWizard(
   if (!session?.user?.id) {
     return { ok: false, error: "ต้องเข้าสู่ระบบก่อนสร้างร้าน" };
   }
-  const userId = session.user.id;
+  const sessionUserId = session.user.id;
 
   // JWT may reference a User row that's been deleted (e.g. after data
   // migration or admin cleanup). Hitting prisma.store.create() with a
   // stale userId throws an opaque Store_ownerId_fkey FK violation — catch
   // it here and ask the user to re-auth instead.
-  const owner = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { id: true },
+  const sessionUser = await prisma.user.findUnique({
+    where: { id: sessionUserId },
+    select: { id: true, role: true, name: true },
   });
-  if (!owner) {
+  if (!sessionUser) {
     return {
       ok: false,
       error: "เซสชันหมดอายุ กรุณาออกจากระบบและเข้าสู่ระบบใหม่",
@@ -42,9 +42,26 @@ export async function createStoreFromWizard(
   const name = state.identity.name.trim();
   if (!name) return { ok: false, error: "ต้องระบุชื่อร้าน" };
 
-  const existing = await prisma.store.findUnique({ where: { ownerId: userId } });
+  // 1 user = 1 store at the schema level (Store.ownerId @unique). Vendors hit
+  // this guard and get an explicit error. Admins running the wizard for an
+  // extra store get a fresh emailless User attached as owner — Postgres
+  // treats NULL emails as distinct, so the @unique on User.email holds and
+  // each new store still gets its own ownerId.
+  const existing = await prisma.store.findUnique({ where: { ownerId: sessionUserId } });
+  let ownerId = sessionUserId;
   if (existing) {
-    return { ok: false, error: `คุณมีร้าน "${existing.name}" อยู่แล้ว` };
+    if (sessionUser.role !== "ADMIN") {
+      return { ok: false, error: `คุณมีร้าน "${existing.name}" อยู่แล้ว` };
+    }
+    const proxyOwner = await prisma.user.create({
+      data: {
+        email: null,
+        name: name,
+        role: "VENDOR",
+      },
+      select: { id: true },
+    });
+    ownerId = proxyOwner.id;
   }
 
   const baseSlug = slugify(name);
@@ -59,7 +76,7 @@ export async function createStoreFromWizard(
 
   const store = await prisma.store.create({
     data: {
-      ownerId: userId,
+      ownerId,
       slug,
       name,
       description: state.identity.description.trim() || null,
@@ -79,7 +96,12 @@ export async function createStoreFromWizard(
     },
   });
 
-  return { ok: true, slug: store.slug };
+  return {
+    ok: true,
+    slug: store.slug,
+    storeId: store.id,
+    ownedBySession: ownerId === sessionUserId,
+  };
 }
 
 export async function createStoreAndRedirect(state: WizardState) {
@@ -87,7 +109,15 @@ export async function createStoreAndRedirect(state: WizardState) {
   if (!result.ok) {
     throw new Error(result.error);
   }
-  redirect(`/dashboard?store=${result.slug}`);
+  // Owner === session user → vendor seller view at /dashboard.
+  // Owner is a proxy emailless User (admin running the wizard for an
+  // extra store) → admin store-detail view, since /dashboard is hard-
+  // wired to render only the session user's own store.
+  if (result.ownedBySession) {
+    redirect(`/dashboard?store=${result.slug}`);
+  } else {
+    redirect(`/admin/stores/${result.storeId}`);
+  }
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────────
