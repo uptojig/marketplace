@@ -24,6 +24,21 @@ export async function createStoreFromWizard(
   }
   const userId = session.user.id;
 
+  // JWT may reference a User row that's been deleted (e.g. after data
+  // migration or admin cleanup). Hitting prisma.store.create() with a
+  // stale userId throws an opaque Store_ownerId_fkey FK violation — catch
+  // it here and ask the user to re-auth instead.
+  const owner = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
+  if (!owner) {
+    return {
+      ok: false,
+      error: "เซสชันหมดอายุ กรุณาออกจากระบบและเข้าสู่ระบบใหม่",
+    };
+  }
+
   const name = state.identity.name.trim();
   if (!name) return { ok: false, error: "ต้องระบุชื่อร้าน" };
 
