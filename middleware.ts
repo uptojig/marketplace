@@ -51,6 +51,18 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Single-tenant shop droplet: SHOP_SLUG is baked into the per-droplet
+  // env at provision time. Everything that isn't a passthrough route maps
+  // straight to that store — no host-based routing or DB lookup needed.
+  // This is the right behavior whether the request came in via the
+  // platform subdomain or via the vendor's custom domain.
+  const shopSlug = process.env.SHOP_SLUG;
+  if (shopSlug) {
+    const target = url.clone();
+    target.pathname = `/stores/${shopSlug}${path === "/" ? "" : path}`;
+    return NextResponse.rewrite(target);
+  }
+
   // Subdomain match: <slug>.<MAIN_DOMAIN> → rewrite to /stores/<slug><path>
   const sub = extractSubdomain(host);
   if (sub) {
