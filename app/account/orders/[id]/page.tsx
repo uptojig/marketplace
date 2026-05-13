@@ -111,7 +111,7 @@ export default async function OrderDetailPage({ params }: OrderDetailProps) {
 
       <Card className="overflow-hidden">
         <Link
-          href={`/store/${order.storeId}`}
+          href={`/stores/${order.storeSlug}`}
           className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2.5 hover:bg-muted/50"
         >
           <Avatar className="h-6 w-6">
@@ -126,7 +126,7 @@ export default async function OrderDetailPage({ params }: OrderDetailProps) {
           {order.items.map((item, i) => (
             <Link
               key={i}
-              href={`/p/${item.productId}`}
+              href={`/stores/${order.storeSlug}/products/${item.productId}`}
               className="flex gap-3 p-4 hover:bg-muted/30"
             >
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded">

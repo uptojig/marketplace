@@ -11,6 +11,10 @@ export interface CartItem {
   variantId?: string;
   qty: number;
   storeId: string;
+  /** Slug used to build /stores/[slug] URLs. Optional for back-compat
+   *  with serialized localStorage carts from before this field landed —
+   *  new items added through addItem should always set it. */
+  storeSlug?: string;
   // Denormalized for display
   title: string;
   thumbnailUrl: string;
