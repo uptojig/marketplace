@@ -19,3 +19,5 @@ public/uploads/*
 .env.prod
 .env.vercel
 infra/setup/config.sh
+.tmp-vendor-templates/
+.devspace/
