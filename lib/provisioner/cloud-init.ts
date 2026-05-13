@@ -166,6 +166,7 @@ ${updateAgent.split("\n").map((l) => `      ${l}`).join("\n")}
 
 runcmd:
   - mkdir -p /var/lib/caddy /var/log/caddy
+  - echo "${cfg.doToken}" | docker login -u "${cfg.doToken}" --password-stdin registry.digitalocean.com
   - cd /opt/marketplace-shop && docker compose pull
   - cd /opt/marketplace-shop && docker compose up -d
 `;
@@ -209,6 +210,7 @@ runcmd:
   - apt-get update
   - DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
   - mkdir -p /var/lib/caddy /var/log/caddy
+  - echo "${cfg.doToken}" | docker login -u "${cfg.doToken}" --password-stdin registry.digitalocean.com
   - cd /opt/marketplace-shop && docker compose pull
   - cd /opt/marketplace-shop && docker compose up -d
 `;
