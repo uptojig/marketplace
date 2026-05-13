@@ -2,8 +2,18 @@ import Link from 'next/link';
 import { Bell, Search, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CartIconButton } from './cart-icon-button';
 
+/**
+ * Top chrome used by platform pages on basketplace.co — seller import,
+ * help, legal, vendor account. Buyer chrome lives in
+ * `components/storefront/chrome/ShopHeader.tsx` (per-store, mounted by
+ * `app/stores/[slug]/layout.tsx`). Per the Shopify-like architecture
+ * there is no buyer cart icon here — carts are per-store.
+ *
+ * TODO(phase-1b): /account/* paths move under /stores/[slug]/account/*,
+ * so the Bell + User links here will switch to the active store context
+ * once that migration lands.
+ */
 export function MarketplaceHeader() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -26,7 +36,6 @@ export function MarketplaceHeader() {
         </form>
 
         <div className="flex shrink-0 items-center gap-1">
-          <CartIconButton />
           <Button variant="ghost" size="icon" asChild className="hidden lg:flex">
             <Link href="/account/notifications" aria-label="Notifications">
               <Bell className="h-5 w-5" />

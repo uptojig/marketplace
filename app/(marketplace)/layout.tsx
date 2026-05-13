@@ -25,9 +25,8 @@ export default function MarketplaceLayout({
             <Link href="/dashboard" className="hover:underline">
               จัดการร้าน
             </Link>
-            <Link href="/orders" className="hover:underline">
-              ออเดอร์ของฉัน
-            </Link>
+            {/* Buyer "My orders" lives per-store at
+                /stores/[slug]/account/orders, not at marketplace level. */}
           </nav>
         </div>
       </header>
