@@ -13,18 +13,18 @@ import { getConfig } from "./config";
 export type CloudInitInput = {
   shopId: string;
   shopSlug: string;
-  shopDomains: string[]; // ordered list — primary first, custom after
+  shopDomains: string[]; // ordered list -- primary first, custom after
   // Postgres URL the shop droplet uses to reach the managed DB over VPC.
   // We pass the schema name separately so we don't leak the master URL.
   databaseUrl: string;
   databaseSchema: string;
-  // Internal API secret — droplet uses this to authenticate to control plane
+  // Internal API secret -- droplet uses this to authenticate to control plane
   // (caddy ask, update-agent heartbeats).
   internalApiSecret: string;
-  // Control plane base URL — used by Caddy's `on_demand_tls ask` endpoint
+  // Control plane base URL -- used by Caddy's `on_demand_tls ask` endpoint
   // and the update-agent's `/internal/agent/...` calls.
   controlPlaneBaseUrl: string;
-  // Whether snapshot is available — falls back to bootstrap install if not.
+  // Whether snapshot is available -- falls back to bootstrap install if not.
   useSnapshot: boolean;
   // Optional override for the shop image registry coordinates.
   shopImage?: string;
@@ -64,13 +64,13 @@ export function renderCloudInit(input: CloudInitInput): string {
         }
 }
 
-# Slug subdomain — managed by the platform's own wildcard cert distributed via snapshot.
+# Slug subdomain -- managed by the platform's own wildcard cert distributed via snapshot.
 ${input.shopSlug}.${cfg.cfPlatformDomain} {
         encode zstd gzip
         reverse_proxy localhost:3000
 }
 
-# Catch-all — custom domains. Caddy validates against the ask endpoint
+# Catch-all -- custom domains. Caddy validates against the ask endpoint
 # before issuing a cert via Let's Encrypt HTTP-01.
 :443 {
         encode zstd gzip
