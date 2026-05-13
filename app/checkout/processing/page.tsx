@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
@@ -9,7 +10,28 @@ import { Card } from '@/components/ui/card';
 import { fetchIntentStatus, pollIntentUntilTerminal } from '@/lib/anypay/intent-client';
 import type { AnypayIntentResponse } from '@/lib/anypay/intent-server';
 
+// Wrap the search-param consumer in Suspense so prerender doesn't bail
+// out with the missing-suspense-with-csr-bailout error. The processing
+// page is always landed on with ?intent=... so a 1-frame skeleton is
+// the correct fallback.
 export default function ProcessingPage() {
+  return (
+    <Suspense fallback={<ProcessingFallback />}>
+      <ProcessingInner />
+    </Suspense>
+  );
+}
+
+function ProcessingFallback() {
+  return (
+    <Card className="mx-auto mt-8 max-w-md p-6 text-center">
+      <Loader2 className="mx-auto h-8 w-8 animate-spin text-amber-600" />
+      <p className="mt-4 text-sm text-muted-foreground">กำลังโหลด...</p>
+    </Card>
+  );
+}
+
+function ProcessingInner() {
   const router = useRouter();
   const params = useSearchParams();
   const intentId = params.get('intent');
