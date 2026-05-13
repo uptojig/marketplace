@@ -64,13 +64,22 @@ model User {
   // Google OAuth + email magic-link users never set one — they
   // authenticate via the linked Account row instead.
   passwordHash  String?
+  phone         String?
+  // Manual phone/ID verification flag, separate from emailVerified.
+  // Powers vendor onboarding gates.
+  isVerified    Boolean   @default(false)
+  // Timestamp of the user's first paid order. Drives the
+  // `newUsersOnly` coupon eligibility check — null = never paid.
+  firstPurchaseAt DateTime?
   createdAt     DateTime  @default(now())
 
-  accounts  Account[]
-  sessions  Session[]
-  store     Store?
-  orders    Order[]
-  addresses Address[]
+  accounts     Account[]
+  sessions     Session[]
+  store        Store?
+  orders       Order[]
+  addresses    Address[]
+  couponUsages CouponUsage[]
+  paymentIntents PaymentIntent[]
 }
 
 // --- Marketplace ---
@@ -166,12 +175,17 @@ model Store {
   approvedById      String?
 
   ownerId      String   @unique
+  // Vendor template parity — soft on/off without going through the
+  // full StoreApprovalStatus state machine. Hides storefront from
+  // browse but keeps the row + data intact.
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
 
   owner                User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   products             Product[]
   categories           Category[]
   items                OrderItem[]
+  orders               Order[]
   identityVerification IdentityVerification?
   deployment           ShopDeployment?
 
@@ -209,6 +223,14 @@ model Product {
   categoryId        String?
   hasVariants       Boolean  @default(false)
   active            Boolean  @default(true)
+  // Stock tracking — stockReserved counts un-paid orders that have
+  // locked inventory but not yet decremented stockTotal. Available =
+  // stockTotal - stockReserved.
+  stockTotal        Int      @default(0)
+  stockReserved     Int      @default(0)
+  // Multi-category cache (vendor-template parity). Primary
+  // categorization still flows through categoryId/categoryName.
+  categorySlugs     Json?
   // Per-product moderation. Defaults to APPROVED so existing flow
   // isn't disrupted; new vendor uploads can be set to PENDING via
   // a settings flag (admin can toggle "require product moderation"
@@ -309,7 +331,11 @@ model ProductVariant {
   attributes        Json     // { "Size": "M", "Color": "Black" }
   priceTHB          Decimal  @db.Decimal(12, 2)
   imageUrl          String?
+  // Legacy single-counter inventory. Kept for back-compat with
+  // existing reads; new code should use stockTotal/stockReserved.
   inventory         Int?
+  stockTotal        Int      @default(0)
+  stockReserved     Int      @default(0)
   createdAt         DateTime @default(now())
 
   product Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -331,6 +357,11 @@ model Address {
   province      String
   postalCode    String
   country       String  @default("TH")
+  // User-supplied tag ("home" | "office" | etc.) for picker UX.
+  label         String?
+  // Exactly one address per user should have isDefault=true; the
+  // checkout default-picker reads this. App-layer invariant, not DB.
+  isDefault     Boolean @default(false)
   createdAt     DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -346,25 +377,70 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
   FAILED
+  // Customer-initiated return after delivery — counted separately
+  // from CANCELLED so finance reports can split refund cohorts.
+  RETURNED
+}
+
+// Customer-selected method on the checkout payment step.
+// Stored on Order + PaymentIntent so refunds can route correctly.
+enum PaymentMethod {
+  PROMPTPAY
+  CARD
+  WALLET
+  BNPL
+  COD
 }
 
 model Order {
   id                  String      @id @default(cuid())
+  // User-facing reference (e.g. ORD-1746984000-XKZ4). Distinct from
+  // the cuid id so we can show a short, copy-friendly code on the
+  // success page + emails. Nullable so old pre-vendor-merge orders
+  // still satisfy the constraint; new orders always set it.
+  orderRef            String?     @unique
   userId              String
+  // Promoting storeId off OrderItem onto Order itself: one order =
+  // one store (multi-store cart splits into multiple Orders sharing
+  // a cartId). Nullable for legacy rows pre-merge.
+  storeId             String?
+  // Multi-store cart split marker — multiple Orders share a cartId
+  // and a paymentIntentId so /order-success can group them.
+  cartId              String?
+  paymentIntentId     String?
   status              OrderStatus @default(PENDING_PAYMENT)
   subtotalTHB         Decimal     @db.Decimal(12, 2)
   shippingTHB         Decimal     @db.Decimal(12, 2) @default(0)
+  discountTHB         Decimal     @db.Decimal(12, 2) @default(0)
   totalTHB            Decimal     @db.Decimal(12, 2)
+  // Snapshot copy of the shipping address taken at order placement
+  // so the order survives the user editing/deleting their address.
   shippingAddressJson Json
+  paymentMethod       PaymentMethod?
+  // Carrier name + tracking — populated by seller fulfillment flow.
+  shippingCarrier     String?
+  trackingNumber      String?
+  estimatedDelivery   DateTime?
+  noteToStore         String?
+  paidAt              DateTime?
+  shippedAt           DateTime?
+  deliveredAt         DateTime?
+  cancelledAt         DateTime?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
-  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items   OrderItem[]
-  payment Payment?
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store          Store?         @relation(fields: [storeId], references: [id])
+  paymentIntent  PaymentIntent? @relation(fields: [paymentIntentId], references: [id])
+  items          OrderItem[]
+  payment        Payment?
+  appliedCoupons OrderCoupon[]
+  couponUsages   CouponUsage[]
 
   @@index([userId, status])
   @@index([status, createdAt])
+  @@index([storeId, createdAt])
+  @@index([cartId])
 }
 
 model OrderItem {
@@ -380,6 +456,11 @@ model OrderItem {
   externalTrackingNo  String?
   supplierStatus      String?
   supplierLastSyncAt  DateTime?
+  // Denormalized product snapshot — survives Product deletion so
+  // the customer's order history stays renderable.
+  title               String?
+  thumbnailUrl        String?
+  variantName         String?
 
   order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product         @relation(fields: [productId], references: [id])
@@ -395,10 +476,124 @@ enum PaymentProvider {
   MOCK
 }
 
+// Legacy 3-state for the original Payment model. PaymentIntent uses
+// the richer PaymentIntentStatus below.
 enum PaymentStatus {
   PENDING
   PAID
   FAILED
+}
+
+// Mirrors Anypay's intent lifecycle. Reused by /api/anypay/webhook
+// and the checkout/processing polling page.
+enum PaymentIntentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+// =====================================================================
+// PaymentIntent — our side of an Anypay (or other provider) intent.
+// One per cart-checkout (idempotency key = cartId until expired).
+// Multiple Orders (multi-store split) point to a single PaymentIntent.
+// =====================================================================
+model PaymentIntent {
+  id              String              @id // Anypay intent ID
+  cartId          String
+  userId          String
+  amountTHB       Decimal             @db.Decimal(12, 2)
+  paymentMethod   PaymentMethod
+  status          PaymentIntentStatus @default(PENDING)
+  metadata        Json                @default("{}")
+  qrCode          String?
+  redirectUrl     String?
+  expiresAt       DateTime?
+  paidAt          DateTime?
+  failureReason   String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id])
+  orders Order[]
+
+  @@index([cartId])
+  @@index([userId, createdAt])
+}
+
+// =====================================================================
+// Coupons — platform/store/product/category-scoped discount system.
+// Discount + scope shapes mirror Drizzle vendor schema verbatim so the
+// validate/calculator code can be ported with zero adaptation.
+// =====================================================================
+model Coupon {
+  id                     String         @id @default(cuid())
+  code                   String         @unique
+  // { type: 'platform' | 'store' | 'product' | 'category',
+  //   storeId?, productIds?, categorySlugs? }
+  scope                  Json
+  // { kind: 'percent' | 'fixed' | 'free_shipping',
+  //   percent?, amount?, maxDiscount? }
+  discount               Json
+  minSpendTHB            Decimal?       @db.Decimal(12, 2)
+  validFrom              DateTime?
+  validTo                DateTime
+  newUsersOnly           Boolean        @default(false)
+  requiredPaymentMethod  PaymentMethod?
+  maxUsesTotal           Int?
+  maxUsesPerUser         Int?
+  title                  String
+  description            String?
+  issuer                 String
+  // Optional Tailwind/brand token controlling the coupon card styling.
+  colorScheme            String?
+  isActive               Boolean        @default(true)
+  createdAt              DateTime       @default(now())
+
+  usages       CouponUsage[]
+  orderCoupons OrderCoupon[]
+
+  @@index([code, isActive])
+}
+
+// =====================================================================
+// CouponUsage — append-only record of each successful coupon redemption.
+// Powers maxUsesTotal + maxUsesPerUser server-side enforcement.
+// =====================================================================
+model CouponUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  orderId   String?
+  usedAt    DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order  Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([couponId])
+  @@index([userId, couponId])
+}
+
+// =====================================================================
+// OrderCoupon — join row capturing which coupons were applied to which
+// order, the slot they filled (platform/store/shipping), and the
+// resolved discount amount snapshot. Composite PK (orderId, couponId).
+// =====================================================================
+model OrderCoupon {
+  orderId  String
+  couponId String
+  code     String
+  slot     String // 'platform' | 'store' | 'shipping'
+  amountTHB Decimal @db.Decimal(12, 2)
+
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  coupon Coupon @relation(fields: [couponId], references: [id])
+
+  @@id([orderId, couponId])
+  @@index([couponId])
 }
 
 model Payment {
