@@ -10,6 +10,8 @@ import { TestimonialBlock } from "@/components/blocks/testimonial";
 import ProductList, {
   type ProductItem,
 } from "@/components/shadcn-studio/blocks/product-list-03/product-list-03";
+import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { FashionBeautyCategoryGrid } from "@/components/storefront/themes/fashion-beauty/FashionBeautyCategoryGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -140,6 +142,15 @@ export default async function StoreCategoryPage({
         )
       : 0;
 
+  // Per-template design family. fashion-beauty (lookbook /
+  // beauty-swatch / boutique) renders an editorial portrait grid
+  // and a serif display headline; the default keeps the dense
+  // shadcn-studio product-list-03.
+  const isFB = isFashionBeautyStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+
   // Adapter for shadcn-studio product-list-03. Seller chip surfaces
   // the store name + logo so every card carries the same brand row
   // regardless of whether per-product authors exist.
@@ -184,17 +195,27 @@ export default async function StoreCategoryPage({
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+      <div className={isFB ? "mt-8 flex flex-wrap items-end justify-between gap-4" : "mt-3 flex flex-wrap items-end justify-between gap-4"}>
         <div>
           <p
-            className="text-xs uppercase tracking-wide opacity-60"
-            style={{ color: "var(--shop-ink)" }}
+            className={isFB ? "text-xs uppercase tracking-[0.22em]" : "text-xs uppercase tracking-wide opacity-60"}
+            style={{ color: isFB ? "var(--shop-ink-muted)" : "var(--shop-ink)" }}
           >
-            หมวดหมู่
+            {isFB ? "Edit / Collection" : "หมวดหมู่"}
           </p>
           <h1
-            className="mt-0.5 text-2xl font-bold"
-            style={{ color: "var(--shop-ink)" }}
+            className={isFB ? "mt-2 text-4xl sm:text-5xl md:text-6xl" : "mt-0.5 text-2xl font-bold"}
+            style={
+              isFB
+                ? {
+                    color: "var(--shop-ink)",
+                    fontFamily:
+                      'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif',
+                    fontWeight: 500,
+                    letterSpacing: '-0.005em',
+                  }
+                : { color: "var(--shop-ink)" }
+            }
           >
             {headerName}
           </h1>
@@ -338,6 +359,21 @@ export default async function StoreCategoryPage({
             ดูสินค้าทั้งหมด
           </Link>
         </Card>
+      ) : isFB ? (
+        <div className="mt-10">
+          <FashionBeautyCategoryGrid
+            storeSlug={store.slug}
+            products={products.map((p) => ({
+              id: p.id,
+              title: p.titleTh ?? p.title,
+              imageUrl: p.imageUrl,
+              priceTHB: Number(p.priceTHB),
+              compareAtPriceTHB: p.compareAtPriceTHB
+                ? Number(p.compareAtPriceTHB)
+                : null,
+            }))}
+          />
+        </div>
       ) : (
         <div className="mt-2 -mx-4 sm:mx-0">
           <ProductList

@@ -1,5 +1,11 @@
 "use client";
 
+// TODO(cleanup): per Shopify-like architecture, buyer sign-up lives at
+// /stores/[slug]/signup (introduced in the fashion-beauty design pilot,
+// PR claude/design-fashion-beauty-pilot). Keep this central path only
+// for seller onboarding → /dashboard until all buyer callers point at
+// the per-store route.
+
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";

@@ -49,6 +49,9 @@ interface StoreLite {
   primaryColor: string | null;
 }
 
+const FB_DISPLAY_FONT =
+  'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
+
 const FREE_SHIPPING_THRESHOLD = 990;
 const DEFAULT_SHIPPING = 50;
 
@@ -58,7 +61,13 @@ function endOfTodayISO() {
   return d.toISOString();
 }
 
-export function StoreCartClient({ store }: { store: StoreLite }) {
+export function StoreCartClient({
+  store,
+  isFashionBeauty = false,
+}: {
+  store: StoreLite;
+  isFashionBeauty?: boolean;
+}) {
   const allLines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
@@ -96,13 +105,22 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
             เลือกซื้อสินค้าต่อ
           </Link>
           <h1
-            className="text-3xl md:text-4xl font-bold tracking-tight"
-            style={{ color: "var(--shop-ink)" }}
+            className={
+              isFashionBeauty
+                ? "text-4xl md:text-5xl"
+                : "text-3xl md:text-4xl font-bold tracking-tight"
+            }
+            style={{
+              color: "var(--shop-ink)",
+              ...(isFashionBeauty
+                ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
+                : {}),
+            }}
           >
-            ตะกร้าของคุณ
+            {isFashionBeauty ? "Your Edit" : "ตะกร้าของคุณ"}
           </h1>
           <p
-            className="mt-2 text-sm"
+            className={isFashionBeauty ? "mt-2 text-sm italic" : "mt-2 text-sm"}
             style={{ color: "var(--shop-ink-muted)" }}
           >
             {lines.length === 0
@@ -112,7 +130,7 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
         </div>
 
         {lines.length === 0 ? (
-          <EmptyCart storeSlug={store.slug} />
+          <EmptyCart storeSlug={store.slug} isFashionBeauty={isFashionBeauty} />
         ) : (
           <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start">
             {/* ── Line items ─────────────────────────────────── */}
@@ -437,7 +455,13 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
 /* ──────────────────────────────────────────────────────────────
  * Empty cart — friendly state + CTA back to catalog
  * ────────────────────────────────────────────────────────────── */
-function EmptyCart({ storeSlug }: { storeSlug: string }) {
+function EmptyCart({
+  storeSlug,
+  isFashionBeauty = false,
+}: {
+  storeSlug: string;
+  isFashionBeauty?: boolean;
+}) {
   return (
     <Card
       className="text-center py-24 rounded-2xl border border-dashed bg-transparent shadow-none"
@@ -454,23 +478,36 @@ function EmptyCart({ storeSlug }: { storeSlug: string }) {
         <ShoppingBag className="w-8 h-8" />
       </div>
       <p
-        className="text-base font-medium"
-        style={{ color: "var(--shop-ink)" }}
+        className={isFashionBeauty ? "text-2xl" : "text-base font-medium"}
+        style={{
+          color: "var(--shop-ink)",
+          ...(isFashionBeauty
+            ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500 }
+            : {}),
+        }}
       >
-        ตะกร้าของคุณยังว่างอยู่
+        {isFashionBeauty ? "Your edit is empty" : "ตะกร้าของคุณยังว่างอยู่"}
       </p>
       <p
-        className="text-sm mt-2"
+        className={isFashionBeauty ? "text-sm mt-2 italic" : "text-sm mt-2"}
         style={{ color: "var(--shop-ink-muted)" }}
       >
-        เริ่มเลือกสินค้าที่คุณชอบ
+        {isFashionBeauty
+          ? "Discover pieces curated for you"
+          : "เริ่มเลือกสินค้าที่คุณชอบ"}
       </p>
       <Button
         asChild
-        className="mt-6 h-auto rounded-md px-6 py-2.5 text-sm font-medium text-white"
+        className={
+          isFashionBeauty
+            ? "mt-6 h-auto rounded-full px-8 py-2.5 text-sm font-medium text-white"
+            : "mt-6 h-auto rounded-md px-6 py-2.5 text-sm font-medium text-white"
+        }
         style={{ background: "var(--shop-primary)" }}
       >
-        <Link href={`/stores/${storeSlug}/category`}>เลือกซื้อสินค้า</Link>
+        <Link href={`/stores/${storeSlug}/category`}>
+          {isFashionBeauty ? "Start shopping" : "เลือกซื้อสินค้า"}
+        </Link>
       </Button>
     </Card>
   );

@@ -1329,6 +1329,61 @@
   color: #fafaf9 !important;
 }
 
+/* ── Fashion-Beauty design family (PILOT) ──────────────────────
+   Activated when app/stores/[slug]/layout.tsx adds the
+   `theme-fashion-beauty` class for stores whose templateId is in
+   { lookbook, beauty-swatch, boutique } OR whose
+   landingThemeVariant is "fashion-beauty" / "B".
+
+   Token mapping mirrors FASHION_BEAUTY_TOKENS in
+   lib/landing/fashion-beauty.ts — keep them in sync.
+
+   Goal: every sub-page (cart / category / product / checkout /
+   account / signin / signup) inherits the same cream-on-rose
+   palette + serif headings without per-page rewrites. */
+.theme-fashion-beauty {
+  --shop-bg: #fbf8f4;          /* cream */
+  --shop-card: #ffffff;
+  --shop-primary: #f43f5e;     /* rose-500 */
+  --shop-accent: #fda4af;      /* rose-300 */
+  --shop-ink: #3f1d2c;         /* deep mauve */
+  --shop-ink-muted: #a18792;
+  --shop-border: #f5e1e8;      /* pale rose */
+  --shop-muted: #fef2f2;       /* rose-50 */
+}
+
+/* Headlines lift into the serif display face (Cormorant Garamond
+   via --font-fashion-display; Playfair Display + Noto Serif Thai
+   fallback). Body stays sans for legibility. */
+.theme-fashion-beauty h1,
+.theme-fashion-beauty h2,
+.theme-fashion-beauty h3 {
+  font-family: var(--font-fashion-display, "Cormorant Garamond"),
+    "Playfair Display", Georgia, "Noto Serif Thai", serif !important;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+/* Primary CTAs round to a pill — softer, more boutique. Scoped
+   to the rose-painted buttons so secondary outline CTAs keep
+   their existing radius. */
+.theme-fashion-beauty button[style*="--shop-primary"],
+.theme-fashion-beauty a[style*="--shop-primary"] {
+  border-radius: 9999px !important;
+}
+
+/* Soft shadow on cards instead of borders — magazine feel. */
+.theme-fashion-beauty [class*="rounded-2xl"][class*="border"] {
+  box-shadow: 0 1px 2px rgba(63, 29, 44, 0.04),
+    0 4px 16px rgba(63, 29, 44, 0.04) !important;
+}
+
+/* Promote product card aspect to 4/5 portrait when the page uses
+   the default square wrappers (matches lookbook intent). */
+.theme-fashion-beauty [data-fb-promote-portrait="true"] [class*="aspect-square"] {
+  aspect-ratio: 4 / 5 !important;
+}
+
 /* ─────────────────────────────────────────────────────────────
    Caselnw theme — applied via `theme-caselnw` class on the
    shop-page wrapper in app/stores/[slug]/layout.tsx whenever

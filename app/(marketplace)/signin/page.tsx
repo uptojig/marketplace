@@ -1,5 +1,12 @@
 "use client";
 
+// TODO(cleanup): per Shopify-like architecture, buyer sign-in lives at
+// /stores/[slug]/signin (introduced in the fashion-beauty design pilot,
+// PR claude/design-fashion-beauty-pilot). Keep this central path only
+// for seller onboarding → /dashboard until all buyer callers (checkout
+// bounce, account redirect, order-success redirect) are pointing at
+// the per-store route. Then this file can be deleted.
+
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
