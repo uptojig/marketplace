@@ -20,6 +20,11 @@ const ERROR_MESSAGES: Record<string, string> = {
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
 
+const SPECIALTY_DISPLAY_FONT =
+  'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
+const SPECIALTY_HAND_FONT =
+  'var(--font-specialty-hand, "Caveat"), "Permanent Marker", cursive';
+
 function ErrorBanner() {
   const params = useSearchParams();
   const error = params.get('error');
@@ -35,9 +40,11 @@ function ErrorBanner() {
 function EmailForm({
   defaultCallback,
   isFashionBeauty,
+  isSpecialty,
 }: {
   defaultCallback: string;
   isFashionBeauty: boolean;
+  isSpecialty: boolean;
 }) {
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -67,17 +74,29 @@ function EmailForm({
     );
   }
 
+  const labelCls =
+    isFashionBeauty || isSpecialty
+      ? 'mb-2 block text-xs uppercase tracking-[0.16em]'
+      : 'mb-1 block text-sm font-medium';
+  const inputCls = isFashionBeauty
+    ? 'rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
+    : isSpecialty
+      ? 'rounded-md border-[var(--shop-border)] bg-[var(--shop-card)] px-4 py-5'
+      : '';
+  const submitCls = isFashionBeauty
+    ? 'w-full rounded-full py-6 text-sm font-medium text-white hover:opacity-90'
+    : isSpecialty
+      ? 'w-full rounded-md py-6 text-sm font-medium text-white hover:opacity-90'
+      : 'w-full';
+  const submitStyle =
+    isFashionBeauty || isSpecialty
+      ? { background: 'var(--shop-primary)' }
+      : undefined;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 text-left">
       <label className="block">
-        <span
-          className={
-            isFashionBeauty
-              ? 'mb-2 block text-xs uppercase tracking-[0.18em]'
-              : 'mb-1 block text-sm font-medium'
-          }
-          style={{ color: 'var(--shop-ink-muted)' }}
-        >
+        <span className={labelCls} style={{ color: 'var(--shop-ink-muted)' }}>
           อีเมล
         </span>
         <Input
@@ -86,24 +105,14 @@ function EmailForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className={
-            isFashionBeauty
-              ? 'rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
-              : ''
-          }
+          className={inputCls}
         />
       </label>
       <Button
         type="submit"
         disabled={submitting}
-        className={
-          isFashionBeauty
-            ? 'w-full rounded-full py-6 text-sm font-medium text-white hover:opacity-90'
-            : 'w-full'
-        }
-        style={
-          isFashionBeauty ? { background: 'var(--shop-primary)' } : undefined
-        }
+        className={submitCls}
+        style={submitStyle}
       >
         {submitting ? 'กำลังส่ง...' : 'ส่งลิงก์ยืนยันทางอีเมล'}
       </Button>
@@ -115,11 +124,13 @@ export function StoreSignUpClient({
   storeSlug,
   storeName,
   isFashionBeauty,
+  isSpecialty,
   defaultCallback,
 }: {
   storeSlug: string;
   storeName: string;
   isFashionBeauty: boolean;
+  isSpecialty: boolean;
   defaultCallback: string;
 }) {
   return (
@@ -151,6 +162,38 @@ export function StoreSignUpClient({
               สมัครเพื่อรับข้อเสนอพิเศษและคอลเลคชั่นใหม่ก่อนใคร
             </p>
           </div>
+        ) : isSpecialty ? (
+          <div className="text-center">
+            <p
+              className="text-lg italic"
+              style={{
+                color: 'var(--shop-accent)',
+                fontFamily: SPECIALTY_HAND_FONT,
+              }}
+            >
+              start your story with
+            </p>
+            <h1
+              className="mt-1 text-4xl sm:text-5xl"
+              style={{
+                color: 'var(--shop-ink)',
+                fontFamily: SPECIALTY_DISPLAY_FONT,
+                fontWeight: 500,
+                letterSpacing: '-0.005em',
+              }}
+            >
+              Join the maker community
+            </h1>
+            <p
+              className="mt-3 text-sm italic"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                fontFamily: SPECIALTY_HAND_FONT,
+              }}
+            >
+              welcome to {storeName} — handcrafted, one piece at a time
+            </p>
+          </div>
         ) : (
           <div className="text-center">
             <h1 className="text-2xl font-semibold" style={{ color: 'var(--shop-ink)' }}>
@@ -170,10 +213,13 @@ export function StoreSignUpClient({
         </Suspense>
 
         <Card
+          {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
           className={
             isFashionBeauty
               ? 'rounded-2xl border bg-white p-8 shadow-sm'
-              : 'p-6'
+              : isSpecialty
+                ? 'rounded-md border p-8 shadow-sm'
+                : 'p-6'
           }
           style={{
             borderColor: 'var(--shop-border)',
@@ -186,7 +232,9 @@ export function StoreSignUpClient({
             className={
               isFashionBeauty
                 ? 'w-full rounded-full border-[var(--shop-border)] py-6'
-                : 'w-full'
+                : isSpecialty
+                  ? 'w-full rounded-md border-[var(--shop-border)] py-6'
+                  : 'w-full'
             }
           >
             <Mail className="mr-2 h-4 w-4" />
@@ -199,7 +247,7 @@ export function StoreSignUpClient({
               style={{ background: 'var(--shop-border)' }}
             />
             <span
-              className="relative bg-white px-3 text-xs uppercase tracking-[0.18em]"
+              className="relative bg-[var(--shop-card)] px-3 text-xs uppercase tracking-[0.16em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
               หรือ
@@ -210,6 +258,7 @@ export function StoreSignUpClient({
             <EmailForm
               defaultCallback={defaultCallback}
               isFashionBeauty={isFashionBeauty}
+              isSpecialty={isSpecialty}
             />
           </Suspense>
 

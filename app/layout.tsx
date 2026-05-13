@@ -6,6 +6,8 @@ import {
   IBM_Plex_Sans_Thai,
   Inter,
   Cormorant_Garamond,
+  Fraunces,
+  Caveat,
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -65,6 +67,29 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
+// Slab-serif display for the specialty design family (handmade /
+// vintage templates). Fraunces has soft slab serifs and a crafted
+// feel — distinct from fashion-beauty's Cormorant. Loaded as a CSS
+// var so only stores in this family pick it up via .theme-specialty
+// in globals.css; rest of the app pays zero cost.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-specialty-display",
+  display: "swap",
+});
+
+// Handwritten accent font for the specialty family — used for SHORT
+// decorative tags only ("handmade with love", "Lot of 1"). Caveat is
+// friendly and warm; Permanent Marker via CSS fallback for callers
+// that want the rougher stamp look.
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-specialty-hand",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Marketplace",
   description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
@@ -75,7 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="th"
-      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, "font-sans", inter.variable)}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, fraunces.variable, caveat.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>

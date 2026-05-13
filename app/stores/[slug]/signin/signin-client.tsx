@@ -21,6 +21,11 @@ const ERROR_MESSAGES: Record<string, string> = {
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
 
+const SPECIALTY_DISPLAY_FONT =
+  'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
+const SPECIALTY_HAND_FONT =
+  'var(--font-specialty-hand, "Caveat"), "Permanent Marker", cursive';
+
 function ErrorBanner() {
   const params = useSearchParams();
   const error = params.get('error');
@@ -36,9 +41,11 @@ function ErrorBanner() {
 function CredentialsForm({
   defaultCallback,
   isFashionBeauty,
+  isSpecialty,
 }: {
   defaultCallback: string;
   isFashionBeauty: boolean;
+  isSpecialty: boolean;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -75,17 +82,29 @@ function CredentialsForm({
     }
   }
 
+  const labelCls =
+    isFashionBeauty || isSpecialty
+      ? 'text-xs uppercase tracking-[0.16em]'
+      : 'text-sm font-medium';
+  const inputCls = isFashionBeauty
+    ? 'mt-2 rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
+    : isSpecialty
+      ? 'mt-2 rounded-md border-[var(--shop-border)] bg-[var(--shop-card)] px-4 py-5'
+      : 'mt-1';
+  const submitCls = isFashionBeauty
+    ? 'w-full rounded-full py-6 text-sm font-medium text-white hover:opacity-90'
+    : isSpecialty
+      ? 'w-full rounded-md py-6 text-sm font-medium text-white hover:opacity-90'
+      : 'w-full';
+  const submitStyle =
+    isFashionBeauty || isSpecialty
+      ? { background: 'var(--shop-primary)' }
+      : undefined;
+
   return (
     <form onSubmit={submit} className="space-y-4 text-left">
       <label className="block">
-        <span
-          className={
-            isFashionBeauty
-              ? 'text-xs uppercase tracking-[0.18em]'
-              : 'text-sm font-medium'
-          }
-          style={{ color: 'var(--shop-ink-muted)' }}
-        >
+        <span className={labelCls} style={{ color: 'var(--shop-ink-muted)' }}>
           อีเมล
         </span>
         <Input
@@ -95,23 +114,12 @@ function CredentialsForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={busy}
-          className={
-            isFashionBeauty
-              ? 'mt-2 rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
-              : 'mt-1'
-          }
+          className={inputCls}
           placeholder="you@example.com"
         />
       </label>
       <label className="block">
-        <span
-          className={
-            isFashionBeauty
-              ? 'text-xs uppercase tracking-[0.18em]'
-              : 'text-sm font-medium'
-          }
-          style={{ color: 'var(--shop-ink-muted)' }}
-        >
+        <span className={labelCls} style={{ color: 'var(--shop-ink-muted)' }}>
           รหัสผ่าน
         </span>
         <Input
@@ -121,11 +129,7 @@ function CredentialsForm({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={busy}
-          className={
-            isFashionBeauty
-              ? 'mt-2 rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
-              : 'mt-1'
-          }
+          className={inputCls}
         />
       </label>
       {err && (
@@ -136,14 +140,8 @@ function CredentialsForm({
       <Button
         type="submit"
         disabled={busy}
-        className={
-          isFashionBeauty
-            ? 'w-full rounded-full py-6 text-sm font-medium text-white hover:opacity-90'
-            : 'w-full'
-        }
-        style={
-          isFashionBeauty ? { background: 'var(--shop-primary)' } : undefined
-        }
+        className={submitCls}
+        style={submitStyle}
       >
         {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         เข้าสู่ระบบ
@@ -156,11 +154,13 @@ export function StoreSignInClient({
   storeSlug,
   storeName,
   isFashionBeauty,
+  isSpecialty,
   defaultCallback,
 }: {
   storeSlug: string;
   storeName: string;
   isFashionBeauty: boolean;
+  isSpecialty: boolean;
   defaultCallback: string;
 }) {
   return (
@@ -192,6 +192,38 @@ export function StoreSignInClient({
               เข้าสู่ระบบเพื่อช้อปและติดตามคำสั่งซื้อของคุณ
             </p>
           </div>
+        ) : isSpecialty ? (
+          <div className="text-center">
+            <p
+              className="text-lg italic"
+              style={{
+                color: 'var(--shop-accent)',
+                fontFamily: SPECIALTY_HAND_FONT,
+              }}
+            >
+              welcome back to
+            </p>
+            <h1
+              className="mt-1 text-4xl sm:text-5xl"
+              style={{
+                color: 'var(--shop-ink)',
+                fontFamily: SPECIALTY_DISPLAY_FONT,
+                fontWeight: 500,
+                letterSpacing: '-0.005em',
+              }}
+            >
+              Sign in
+            </h1>
+            <p
+              className="mt-3 text-sm italic"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                fontFamily: SPECIALTY_HAND_FONT,
+              }}
+            >
+              your collection at {storeName} is waiting
+            </p>
+          </div>
         ) : (
           <div className="text-center">
             <h1 className="text-2xl font-semibold" style={{ color: 'var(--shop-ink)' }}>
@@ -211,10 +243,13 @@ export function StoreSignInClient({
         </Suspense>
 
         <Card
+          {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
           className={
             isFashionBeauty
               ? 'rounded-2xl border bg-white p-8 shadow-sm'
-              : 'p-6'
+              : isSpecialty
+                ? 'rounded-md border p-8 shadow-sm'
+                : 'p-6'
           }
           style={{
             borderColor: 'var(--shop-border)',
@@ -225,6 +260,7 @@ export function StoreSignInClient({
             <CredentialsForm
               defaultCallback={defaultCallback}
               isFashionBeauty={isFashionBeauty}
+              isSpecialty={isSpecialty}
             />
           </Suspense>
 
@@ -234,7 +270,7 @@ export function StoreSignInClient({
               style={{ background: 'var(--shop-border)' }}
             />
             <span
-              className="relative bg-white px-3 text-xs uppercase tracking-[0.18em]"
+              className="relative bg-[var(--shop-card)] px-3 text-xs uppercase tracking-[0.16em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
               หรือ
@@ -247,7 +283,9 @@ export function StoreSignInClient({
             className={
               isFashionBeauty
                 ? 'w-full rounded-full border-[var(--shop-border)] py-6'
-                : 'w-full'
+                : isSpecialty
+                  ? 'w-full rounded-md border-[var(--shop-border)] py-6'
+                  : 'w-full'
             }
           >
             <Mail className="mr-2 h-4 w-4" />

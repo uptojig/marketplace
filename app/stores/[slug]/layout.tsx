@@ -27,6 +27,11 @@ import {
   fashionBeautyCssVars,
   isFashionBeautyStore,
 } from "@/lib/landing/fashion-beauty";
+import {
+  SPECIALTY_BODY_CLASS,
+  specialtyCssVars,
+  isSpecialtyStore,
+} from "@/lib/landing/specialty";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
@@ -159,6 +164,33 @@ export default async function ShopLayout({
   const fbVars = isFB ? fashionBeautyCssVars() : {};
   const fbClass = isFB ? FASHION_BEAUTY_BODY_CLASS : "";
 
+  // Specialty family (artisan / vintage) — DESIGN-B sibling to
+  // fashion-beauty. Stacked AFTER fashion-beauty so a store can't
+  // accidentally end up in both families (FB short-circuits first).
+  // Same wiring pattern: detect via templateId or landingThemeVariant,
+  // merge CSS vars and add the .theme-specialty class so the kraft +
+  // ochre + slab-serif palette cascades to every sub-page.
+  const isSpecialty = !isFB && isSpecialtyStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const specialtyVars = isSpecialty ? specialtyCssVars() : {};
+  const specialtyClass = isSpecialty ? SPECIALTY_BODY_CLASS : "";
+
+  // Combined family-aware CSS-var bag + class for the wrapper div.
+  // The two families are mutually exclusive (FB wins ties); the
+  // helpers return {} / "" when their family doesn't match so the
+  // default cascade is preserved unchanged.
+  const familyVars = { ...fbVars, ...specialtyVars };
+  const familyClass = [fbClass, specialtyClass].filter(Boolean).join(" ");
+  // Single accent override used by ShopHeader / ShopFooter to keep
+  // category chips + decoration glyphs on-palette.
+  const familyAccent = isFB
+    ? "#f43f5e"
+    : isSpecialty
+      ? "#ca8a04"
+      : null;
+
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality
   //     comes from a token preset keyed off the template id (accent,
@@ -188,15 +220,15 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${fbClass ? ` ${fbClass}` : ""}`}
-        style={{ ...tokensToCssVars(tokens), ...fbVars }}
+        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
+        style={{ ...tokensToCssVars(tokens), ...familyVars }}
       >
         <ShopHeader
           storeSlug={store.slug}
           storeName={store.name}
           storeLogoUrl={store.logoUrl}
           categories={categories}
-          accent={isFB ? "#f43f5e" : tokens.accent}
+          accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
           announcement={tokens.announcement}
@@ -206,7 +238,7 @@ export default async function ShopLayout({
         <ShopFooter
           store={store}
           categories={categories}
-          accent={isFB ? "#f43f5e" : tokens.accent}
+          accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
         />
@@ -266,15 +298,15 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${fbClass}`.trim()}
-        style={{ ...tokensToCssVars(tokens), ...fbVars }}
+        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass}`.trim()}
+        style={{ ...tokensToCssVars(tokens), ...familyVars }}
       >
         <ShopHeader
           storeSlug={store.slug}
           storeName={store.name}
           storeLogoUrl={store.logoUrl}
           categories={navCategories}
-          accent={isFB ? "#f43f5e" : tokens.accent}
+          accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
           announcement={tokens.announcement}
@@ -284,12 +316,12 @@ export default async function ShopLayout({
         <ShopFooter
           store={store}
           categories={navCategories}
-          accent={isFB ? "#f43f5e" : tokens.accent}
+          accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
         />
         <CookiesBar />
-        <ShopFloatingButtons primaryColor={isFB ? "#f43f5e" : tokens.accent} />
+        <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
       </div>
     );
   }
@@ -324,15 +356,15 @@ export default async function ShopLayout({
 
   return (
     <div
-      className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${fbClass ? ` ${fbClass}` : ""}`}
-      style={{ ...tokensToCssVars(tokens), ...fbVars }}
+      className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
+      style={{ ...tokensToCssVars(tokens), ...familyVars }}
     >
       <ShopHeader
         storeSlug={store.slug}
         storeName={store.name}
         storeLogoUrl={store.logoUrl}
         categories={categories}
-        accent={isFB ? "#f43f5e" : tokens.accent}
+        accent={familyAccent ?? tokens.accent}
         decorationGlyph={tokens.decorationGlyph}
         glyphStyle={tokens.glyphStyle}
         announcement={tokens.announcement}
@@ -342,12 +374,12 @@ export default async function ShopLayout({
       <ShopFooter
         store={store}
         categories={categories}
-        accent={isFB ? "#f43f5e" : tokens.accent}
+        accent={familyAccent ?? tokens.accent}
         decorationGlyph={tokens.decorationGlyph}
         glyphStyle={tokens.glyphStyle}
       />
       <CookiesBar />
-      <ShopFloatingButtons primaryColor={isFB ? "#f43f5e" : tokens.accent} />
+      <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
     </div>
   );
 }

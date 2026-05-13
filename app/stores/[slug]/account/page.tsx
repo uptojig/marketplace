@@ -22,9 +22,15 @@ import {
   ORDER_STATUS_LABEL,
 } from '@/lib/orders/status-ui';
 import { isFashionBeautyStore } from '@/lib/landing/fashion-beauty';
+import { isSpecialtyStore } from '@/lib/landing/specialty';
 
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
+
+const SPECIALTY_DISPLAY_FONT =
+  'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
+const SPECIALTY_HAND_FONT =
+  'var(--font-specialty-hand, "Caveat"), "Permanent Marker", cursive';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,6 +85,17 @@ export default async function AccountDashboard({
       })
     : false;
 
+  const isSpecialty = !isFB && (store
+    ? isSpecialtyStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false);
+
+  const memberSince = user?.createdAt
+    ? user.createdAt.getFullYear()
+    : new Date().getFullYear();
+
   const recentOrders = toOrderViews(recentOrdersRaw);
   const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
   const initials = displayName.slice(0, 2);
@@ -86,15 +103,33 @@ export default async function AccountDashboard({
   return (
     <div className="space-y-6">
       <Card
+        {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
         className={
           isFB
             ? "flex items-center gap-4 rounded-2xl border bg-white p-6 shadow-sm"
-            : "flex items-center gap-4 p-4"
+            : isSpecialty
+              ? "flex items-center gap-4 rounded-md border p-6 shadow-sm"
+              : "flex items-center gap-4 p-4"
+        }
+        style={
+          isSpecialty
+            ? { borderColor: 'var(--shop-border)' }
+            : undefined
         }
       >
-        <Avatar className={isFB ? "h-16 w-16" : "h-14 w-14"}>
+        <Avatar
+          className={
+            isSpecialty
+              ? "h-16 w-16 rounded-md"
+              : isFB
+                ? "h-16 w-16"
+                : "h-14 w-14"
+          }
+        >
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback className={isSpecialty ? "rounded-md" : undefined}>
+            {initials}
+          </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           {isFB && (
@@ -105,8 +140,21 @@ export default async function AccountDashboard({
               Welcome back
             </p>
           )}
+          {isSpecialty && (
+            <p
+              className="text-lg italic"
+              style={{
+                color: 'var(--shop-accent)',
+                fontFamily: SPECIALTY_HAND_FONT,
+              }}
+            >
+              welcome back
+            </p>
+          )}
           <h1
-            className={isFB ? "text-3xl" : "text-lg font-semibold"}
+            className={
+              isFB || isSpecialty ? "text-3xl" : "text-lg font-semibold"
+            }
             style={
               isFB
                 ? {
@@ -115,19 +163,42 @@ export default async function AccountDashboard({
                     color: 'var(--shop-ink)',
                     letterSpacing: '-0.005em',
                   }
-                : undefined
+                : isSpecialty
+                  ? {
+                      fontFamily: SPECIALTY_DISPLAY_FONT,
+                      fontWeight: 500,
+                      color: 'var(--shop-ink)',
+                      letterSpacing: '-0.005em',
+                    }
+                  : undefined
             }
           >
-            {isFB ? displayName : `สวัสดี, ${displayName}`}
+            {isFB
+              ? displayName
+              : isSpecialty
+                ? `Welcome back, ${displayName}`
+                : `สวัสดี, ${displayName}`}
           </h1>
-          {user?.createdAt && (
-            <p className="text-xs text-muted-foreground">
-              สมาชิกตั้งแต่{" "}
-              {user.createdAt.toLocaleDateString("th-TH", {
-                year: "numeric",
-                month: "long",
-              })}
+          {isSpecialty ? (
+            <p
+              className="text-sm italic mt-1"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                fontFamily: SPECIALTY_HAND_FONT,
+              }}
+            >
+              Member of our maker community since {memberSince}
             </p>
+          ) : (
+            user?.createdAt && (
+              <p className="text-xs text-muted-foreground">
+                สมาชิกตั้งแต่{" "}
+                {user.createdAt.toLocaleDateString("th-TH", {
+                  year: "numeric",
+                  month: "long",
+                })}
+              </p>
+            )
           )}
         </div>
       </Card>
@@ -138,21 +209,39 @@ export default async function AccountDashboard({
           label="คำสั่งซื้อที่ใช้งาน"
           value={activeOrders.toString()}
           href={`${base}/orders`}
+          isSpecialty={isSpecialty}
         />
         <StatCard
           icon={MapPin}
           label="ที่อยู่บันทึกไว้"
           value={addressCount.toString()}
           href={`${base}/addresses`}
+          isSpecialty={isSpecialty}
         />
-        <StatCard icon={Wallet} label="ยอด Anypay" value="฿0" href={`${base}/wallet`} muted />
-        <StatCard icon={Heart} label="รายการโปรด" value="0" href={`${base}/favorites`} muted />
+        <StatCard
+          icon={Wallet}
+          label="ยอด Anypay"
+          value="฿0"
+          href={`${base}/wallet`}
+          muted
+          isSpecialty={isSpecialty}
+        />
+        <StatCard
+          icon={Heart}
+          label="รายการโปรด"
+          value="0"
+          href={`${base}/favorites`}
+          muted
+          isSpecialty={isSpecialty}
+        />
       </div>
 
       <section>
         <div className="mb-3 flex items-baseline justify-between">
           <h2
-            className={isFB ? "text-2xl" : "font-semibold"}
+            className={
+              isFB || isSpecialty ? "text-2xl" : "font-semibold"
+            }
             style={
               isFB
                 ? {
@@ -160,15 +249,27 @@ export default async function AccountDashboard({
                     fontWeight: 500,
                     color: 'var(--shop-ink)',
                   }
-                : undefined
+                : isSpecialty
+                  ? {
+                      fontFamily: SPECIALTY_DISPLAY_FONT,
+                      fontWeight: 500,
+                      color: 'var(--shop-ink)',
+                    }
+                  : undefined
             }
           >
-            {isFB ? "Recent orders" : "คำสั่งซื้อล่าสุด"}
+            {isFB
+              ? "Recent orders"
+              : isSpecialty
+                ? "Recent pieces"
+                : "คำสั่งซื้อล่าสุด"}
           </h2>
           <Link
             href={`${base}/orders`}
             className="inline-flex items-center gap-1 text-sm hover:underline"
-            style={{ color: isFB ? 'var(--shop-primary)' : undefined }}
+            style={{
+              color: isFB || isSpecialty ? 'var(--shop-primary)' : undefined,
+            }}
           >
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
           </Link>
@@ -255,23 +356,72 @@ function StatCard({
   value,
   href,
   muted = false,
+  isSpecialty = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
   href: string;
   muted?: boolean;
+  isSpecialty?: boolean;
 }) {
   return (
     <Link href={href}>
-      <Card className="p-3 transition hover:shadow-md">
+      <Card
+        {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
+        className={
+          isSpecialty
+            ? "rounded-md border p-4 transition hover:shadow-md"
+            : "p-3 transition hover:shadow-md"
+        }
+        style={
+          isSpecialty
+            ? { borderColor: 'var(--shop-border)' }
+            : undefined
+        }
+      >
         <div className="flex items-center gap-3">
-          <div className="rounded-md bg-primary/10 p-2 text-primary">
+          <div
+            className={
+              isSpecialty
+                ? "rounded-md p-2"
+                : "rounded-md bg-primary/10 p-2 text-primary"
+            }
+            style={
+              isSpecialty
+                ? {
+                    background:
+                      "color-mix(in srgb, var(--shop-primary) 12%, transparent)",
+                    color: 'var(--shop-primary)',
+                  }
+                : undefined
+            }
+          >
             <Icon className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs text-muted-foreground">{label}</div>
-            <div className={`text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`}>
+            <div
+              className={
+                isSpecialty
+                  ? "text-xs uppercase tracking-[0.14em]"
+                  : "text-xs text-muted-foreground"
+              }
+              style={
+                isSpecialty
+                  ? { color: 'var(--shop-ink-muted)' }
+                  : undefined
+              }
+            >
+              {label}
+            </div>
+            <div
+              className={`text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`}
+              style={
+                isSpecialty && !muted
+                  ? { color: 'var(--shop-ink)' }
+                  : undefined
+              }
+            >
               {value}
             </div>
           </div>

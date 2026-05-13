@@ -7,7 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
+import { SpecialtyProductHero } from "@/components/storefront/themes/specialty/SpecialtyProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
@@ -47,12 +49,25 @@ export default async function ShopProductPage({
 
   // Per-template design family decision. fashion-beauty (lookbook /
   // beauty-swatch / boutique) gets the editorial portrait variant;
+  // specialty (handmade / vintage) gets the artisan kraft variant;
   // all other templates render the default hero untouched.
+  //
+  // Stack order matters: FB first wins over Specialty so a store
+  // can't accidentally render both heroes if it somehow matches
+  // both detectors.
   const isFB = isFashionBeautyStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
-  const HeroComponent = isFB ? FashionBeautyProductHero : ProductDetailHero;
+  const isSpecialty = !isFB && isSpecialtyStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const HeroComponent = isFB
+    ? FashionBeautyProductHero
+    : isSpecialty
+      ? SpecialtyProductHero
+      : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -140,9 +155,13 @@ export default async function ShopProductPage({
       />
 
       {related.length > 0 && (
-        <section className={isFB ? "space-y-6 py-8" : "space-y-3"}>
+        <section className={isFB || isSpecialty ? "space-y-6 py-8" : "space-y-3"}>
           <h2
-            className={isFB ? "text-3xl sm:text-4xl" : "text-lg font-semibold"}
+            className={
+              isFB || isSpecialty
+                ? "text-3xl sm:text-4xl"
+                : "text-lg font-semibold"
+            }
             style={{
               color: 'var(--shop-ink)',
               ...(isFB
@@ -151,14 +170,25 @@ export default async function ShopProductPage({
                       'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif',
                     fontWeight: 500,
                   }
-                : {}),
+                : isSpecialty
+                  ? {
+                      fontFamily:
+                        'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif',
+                      fontWeight: 500,
+                      letterSpacing: '-0.005em',
+                    }
+                  : {}),
             }}
           >
-            {isFB ? 'You may also love' : 'สินค้าที่เกี่ยวข้อง'}
+            {isFB
+              ? 'You may also love'
+              : isSpecialty
+                ? 'Other works from this maker'
+                : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={
-              isFB
+              isFB || isSpecialty
                 ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
                 : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
             }
@@ -167,36 +197,48 @@ export default async function ShopProductPage({
               <Link
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
-                className={isFB ? "group block" : "group overflow-hidden rounded-lg border"}
+                className={
+                  isFB || isSpecialty
+                    ? "group block"
+                    : "group overflow-hidden rounded-lg border"
+                }
                 style={
-                  isFB
+                  isFB || isSpecialty
                     ? undefined
                     : { background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }
                 }
               >
                 <div
+                  {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
                   className={
                     isFB
                       ? "overflow-hidden rounded-2xl border bg-white p-2 shadow-sm"
-                      : "aspect-square overflow-hidden"
+                      : isSpecialty
+                        ? "overflow-hidden rounded-md border p-2 shadow-sm"
+                        : "aspect-square overflow-hidden"
                   }
                   style={{
-                    ...(isFB
+                    ...(isFB || isSpecialty
                       ? { borderColor: 'var(--shop-border)' }
                       : { backgroundColor: 'var(--shop-bg)' }),
                   }}
                 >
                   {r.imageUrl && (
                     <div
+                      {...(isSpecialty ? { 'data-specialty-sepia': 'true' } : {})}
                       className={
                         isFB
                           ? "relative overflow-hidden rounded-xl"
-                          : "h-full w-full"
+                          : isSpecialty
+                            ? "relative overflow-hidden rounded-md"
+                            : "h-full w-full"
                       }
                       style={
                         isFB
                           ? { aspectRatio: '4 / 5', backgroundColor: 'var(--shop-muted)' }
-                          : undefined
+                          : isSpecialty
+                            ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
+                            : undefined
                       }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -204,7 +246,7 @@ export default async function ShopProductPage({
                         src={r.imageUrl}
                         alt={r.titleTh ?? r.title}
                         className={
-                          isFB
+                          isFB || isSpecialty
                             ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                             : "h-full w-full object-cover transition group-hover:scale-105"
                         }
@@ -212,14 +254,23 @@ export default async function ShopProductPage({
                     </div>
                   )}
                 </div>
-                <div className={isFB ? "px-1 pt-3" : "p-3"}>
+                <div className={isFB || isSpecialty ? "px-1 pt-3" : "p-3"}>
                   <div
                     className={
-                      isFB
+                      isFB || isSpecialty
                         ? "line-clamp-2 text-sm"
                         : "line-clamp-2 text-sm font-medium"
                     }
-                    style={{ color: 'var(--shop-ink, #1c1917)' }}
+                    style={{
+                      color: 'var(--shop-ink, #1c1917)',
+                      ...(isSpecialty
+                        ? {
+                            fontFamily:
+                              'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif',
+                            fontWeight: 500,
+                          }
+                        : {}),
+                    }}
                   >
                     {r.titleTh ?? r.title}
                   </div>

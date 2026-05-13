@@ -29,11 +29,18 @@ import { formatTHB } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { SpecialtyStamp } from "@/components/storefront/themes/specialty/SpecialtyDivider";
 
 export const dynamic = "force-dynamic";
 
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
+
+const SPECIALTY_DISPLAY_FONT =
+  'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
+const SPECIALTY_HAND_FONT =
+  'var(--font-specialty-hand, "Caveat"), "Permanent Marker", cursive';
 
 export default async function StoreOrderSuccess({
   params,
@@ -110,6 +117,13 @@ export default async function StoreOrderSuccess({
       })
     : false;
 
+  const isSpecialty = !isFB && (order.store
+    ? isSpecialtyStore({
+        templateId: order.store.templateId,
+        landingThemeVariant: order.store.landingThemeVariant,
+      })
+    : false);
+
   const today = new Date();
   const eta1 = new Date(today.getTime() + 1 * 86400000);
   const eta3 = new Date(today.getTime() + 3 * 86400000);
@@ -142,22 +156,42 @@ export default async function StoreOrderSuccess({
               Order placed
             </p>
           )}
+          {isSpecialty && (
+            <div className="mb-2 inline-block">
+              <SpecialtyStamp tone="primary">Order Stamped</SpecialtyStamp>
+            </div>
+          )}
           <h1
             className={
-              isFB ? "mt-2 text-4xl sm:text-5xl" : "text-3xl md:text-4xl font-bold tracking-tight"
+              isFB || isSpecialty
+                ? "mt-2 text-4xl sm:text-5xl"
+                : "text-3xl md:text-4xl font-bold tracking-tight"
             }
             style={{
               color: "var(--shop-ink)",
               ...(isFB
                 ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
-                : {}),
+                : isSpecialty
+                  ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
+                  : {}),
             }}
           >
-            {isFB ? "Thank you" : "ขอบคุณสำหรับคำสั่งซื้อ"}
+            {isFB
+              ? "Thank you"
+              : isSpecialty
+                ? "Thank you for supporting handcrafted goods"
+                : "ขอบคุณสำหรับคำสั่งซื้อ"}
           </h1>
           <p
-            className={isFB ? "mt-4 text-base italic" : "mt-3 text-base"}
-            style={{ color: "var(--shop-ink-muted)" }}
+            className={
+              isFB || isSpecialty
+                ? "mt-4 text-base italic"
+                : "mt-3 text-base"
+            }
+            style={{
+              color: "var(--shop-ink-muted)",
+              ...(isSpecialty ? { fontFamily: SPECIALTY_HAND_FONT } : {}),
+            }}
           >
             เราได้รับคำสั่งซื้อของคุณแล้ว
             {me.email && (
@@ -205,7 +239,12 @@ export default async function StoreOrderSuccess({
 
         {/* Items */}
         <Card
-          className="mt-10 rounded-2xl border shadow-sm"
+          {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
+          className={
+            isSpecialty
+              ? "mt-10 rounded-md border shadow-sm"
+              : "mt-10 rounded-2xl border shadow-sm"
+          }
           style={{
             borderColor: "var(--shop-border)",
             background: "var(--shop-card)",
@@ -216,13 +255,20 @@ export default async function StoreOrderSuccess({
             style={{ borderColor: "var(--shop-border)" }}
           >
             <h2
-              className={isFB ? "text-xl" : "text-base font-semibold"}
+              className={
+                isFB || isSpecialty ? "text-xl" : "text-base font-semibold"
+              }
               style={{
                 color: "var(--shop-ink)",
                 ...(isFB ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500 } : {}),
+                ...(isSpecialty
+                  ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500 }
+                  : {}),
               }}
             >
-              สินค้าในคำสั่งซื้อ ({order.items.length} รายการ)
+              {isSpecialty
+                ? `Your handcrafted pieces (${order.items.length})`
+                : `สินค้าในคำสั่งซื้อ (${order.items.length} รายการ)`}
             </h2>
           </div>
           <ul className="divide-y" style={{ borderColor: "var(--shop-border)" }}>
@@ -295,7 +341,9 @@ export default async function StoreOrderSuccess({
             className={
               isFB
                 ? "h-auto rounded-full py-3 text-sm font-semibold text-white"
-                : "h-auto py-3 text-sm font-semibold text-white"
+                : isSpecialty
+                  ? "h-auto rounded-md py-3 text-sm font-semibold text-white"
+                  : "h-auto py-3 text-sm font-semibold text-white"
             }
             style={{ background: "var(--shop-primary)" }}
           >
@@ -303,7 +351,7 @@ export default async function StoreOrderSuccess({
               href={`/stores/${params.slug}/account/orders/${order.id}`}
               className="inline-flex items-center justify-center gap-2"
             >
-              ติดตามสถานะคำสั่งซื้อ
+              {isSpecialty ? "Track your piece" : "ติดตามสถานะคำสั่งซื้อ"}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -313,14 +361,32 @@ export default async function StoreOrderSuccess({
             className={
               isFB
                 ? "h-auto rounded-full border-[var(--shop-ink)] py-3 text-sm font-semibold"
-                : "h-auto py-3 text-sm font-semibold"
+                : isSpecialty
+                  ? "h-auto rounded-md border-[var(--shop-ink)] py-3 text-sm font-semibold"
+                  : "h-auto py-3 text-sm font-semibold"
             }
           >
             <Link href={`/stores/${params.slug}`}>
-              {isFB ? "Continue browsing" : `กลับไป${storeName}`}
+              {isFB
+                ? "Continue browsing"
+                : isSpecialty
+                  ? "Back to the shop"
+                  : `กลับไป${storeName}`}
             </Link>
           </Button>
         </div>
+
+        {isSpecialty && (
+          <p
+            className="mt-6 text-center text-lg italic"
+            style={{
+              color: "var(--shop-accent)",
+              fontFamily: SPECIALTY_HAND_FONT,
+            }}
+          >
+            p.s. each piece ships within 5-7 days — made by hand
+          </p>
+        )}
 
         {/* LINE follow nudge — Thai market staple */}
         <div className="mt-8 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-start gap-3">

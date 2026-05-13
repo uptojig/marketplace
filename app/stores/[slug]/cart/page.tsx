@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { StoreCartClient } from "./cart-client";
 
 export const dynamic = "force-dynamic";
@@ -25,13 +26,26 @@ export default async function StoreCartPage({
   if (!store) notFound();
 
   // Tell the cart client which design family to render under. The
-  // .theme-fashion-beauty cascade on the layout wrapper handles the
-  // palette + headings; this flag lets us swap copy + a couple of
-  // layout details (serif title, italic empty state, etc).
+  // .theme-fashion-beauty / .theme-specialty cascades on the layout
+  // wrapper handle the palette + headings; these flags let us swap
+  // copy + a couple of layout details (serif title, italic empty
+  // state, etc).
+  //
+  // FB wins ties — see lib/landing/specialty.ts for the stack order.
   const isFB = isFashionBeautyStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
+  const isSpecialty = !isFB && isSpecialtyStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
 
-  return <StoreCartClient store={store} isFashionBeauty={isFB} />;
+  return (
+    <StoreCartClient
+      store={store}
+      isFashionBeauty={isFB}
+      isSpecialty={isSpecialty}
+    />
+  );
 }
