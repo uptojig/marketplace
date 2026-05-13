@@ -1,5 +1,10 @@
 'use client';
 
+// Per-store address book. Today the underlying mock data is user-level
+// (not yet scoped by storeId) — Phase 1C will add Address.storeId and
+// filter by (userId, storeId) so each store sees its own address book
+// per Q3 = A (per-store address).
+
 import { useState } from 'react';
 import { Edit2, MapPin, Plus, Star, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';

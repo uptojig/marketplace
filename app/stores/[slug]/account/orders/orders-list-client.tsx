@@ -1,22 +1,8 @@
 'use client';
 
-/**
- * Orders list — client-side tab filter + search.
- *
- * Receives Prisma-derived OrderView[] from the server component
- * parent. No mock data, no Prisma imports at runtime.
- *
- * Design ported from the marketplace-templates scaffold
- * (src/app/account/orders/page.tsx) with these wiring tweaks:
- *  - Status enum is the real Prisma OrderStatus (PENDING_PAYMENT,
- *    PAID, SUPPLIER_PLACED, SHIPPED, DELIVERED, CANCELLED, FAILED,
- *    RETURNED). The tab keys collapse SUPPLIER_PLACED into PAID
- *    and FAILED into CANCELLED via lib/orders/status-ui.
- *  - Order detail link uses /account/orders/<orderRef> (the
- *    user-facing reference), not the internal cuid.
- *  - Per-item product link uses /stores/<slug>/products/<id> so
- *    the storefront theme cascade is preserved on the trip back.
- */
+// Per-store orders list — client-side tab filter + search. Server
+// component parent already scoped the orders to this store, so this
+// component just renders.
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -36,10 +22,17 @@ import {
 } from '@/lib/orders/status-ui';
 import type { OrderView } from '@/lib/account/order-view';
 
-export function OrdersListClient({ orders }: { orders: OrderView[] }) {
+export function OrdersListClient({
+  orders,
+  storeSlug,
+}: {
+  orders: OrderView[];
+  storeSlug: string;
+}) {
   const [tab, setTab] = useState<OrderTabKey>('all');
   const [query, setQuery] = useState('');
 
+  const base = `/stores/${storeSlug}/account`;
   const q = query.trim().toLowerCase();
   const filtered = orders
     .filter((o) => matchesTab(o.status, tab))
@@ -58,7 +51,7 @@ export function OrdersListClient({ orders }: { orders: OrderView[] }) {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="ค้นหาด้วยเลขคำสั่งซื้อ ร้านค้า หรือชื่อสินค้า..."
+          placeholder="ค้นหาด้วยเลขคำสั่งซื้อ หรือชื่อสินค้า..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-9"
@@ -73,10 +66,10 @@ export function OrdersListClient({ orders }: { orders: OrderView[] }) {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={cn(
-                "shrink-0 border-b-2 px-3 py-2 text-sm transition",
+                'shrink-0 border-b-2 px-3 py-2 text-sm transition',
                 tab === t.key
-                  ? "border-primary font-medium text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
+                  ? 'border-primary font-medium text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
               {t.label}
@@ -91,19 +84,19 @@ export function OrdersListClient({ orders }: { orders: OrderView[] }) {
           <Package className="h-12 w-12 text-muted-foreground" />
           <p className="mt-3 text-sm text-muted-foreground">
             {orders.length === 0
-              ? "ยังไม่มีคำสั่งซื้อ — เริ่มช้อปได้เลย"
-              : "ไม่พบคำสั่งซื้อในหมวดนี้"}
+              ? 'ยังไม่มีคำสั่งซื้อที่ร้านนี้ — เริ่มช้อปได้เลย'
+              : 'ไม่พบคำสั่งซื้อในหมวดนี้'}
           </p>
           {orders.length === 0 && (
             <Button asChild className="mt-4">
-              <Link href="/">ไปหน้าแรก</Link>
+              <Link href={`/stores/${storeSlug}`}>ไปหน้าร้าน</Link>
             </Button>
           )}
         </div>
       ) : (
         <div className="space-y-3">
           {filtered.map((order) => (
-            <OrderCard key={order.id} order={order} />
+            <OrderCard key={order.id} order={order} base={base} />
           ))}
         </div>
       )}
@@ -111,9 +104,7 @@ export function OrdersListClient({ orders }: { orders: OrderView[] }) {
   );
 }
 
-function OrderCard({ order }: { order: OrderView }) {
-  // Per-store product link — fall back to plain text when slug is
-  // missing (very old orders pre-storeId-promotion).
+function OrderCard({ order, base }: { order: OrderView; base: string }) {
   const productHref = (productId: string) =>
     order.storeSlug
       ? `/stores/${order.storeSlug}/products/${productId}`
@@ -124,10 +115,10 @@ function OrderCard({ order }: { order: OrderView }) {
       <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2.5">
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted-foreground">
-            {new Date(order.placedAt).toLocaleDateString("th-TH", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
+            {new Date(order.placedAt).toLocaleDateString('th-TH', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
             })}
           </span>
           <span className="font-mono text-xs">{order.orderRef}</span>
@@ -137,7 +128,7 @@ function OrderCard({ order }: { order: OrderView }) {
         </Badge>
       </div>
 
-      <Link href={`/account/orders/${order.orderRef}`} className="block">
+      <Link href={`${base}/orders/${order.orderRef}`} className="block">
         <div className="px-4 py-3">
           <p className="mb-2 text-sm font-medium">{order.storeName}</p>
           <div className="space-y-2">
@@ -176,27 +167,26 @@ function OrderCard({ order }: { order: OrderView }) {
 
       <div className="flex items-center justify-between border-t bg-muted/10 px-4 py-3">
         <div className="text-xs text-muted-foreground">
-          ยอดรวม:{" "}
+          ยอดรวม:{' '}
           <span className="text-base font-semibold text-red-600">
             ฿{order.totalTHB.toLocaleString()}
           </span>
         </div>
         <div className="flex gap-2">
-          {order.status === "SHIPPED" && order.trackingNumber && (
+          {order.status === 'SHIPPED' && order.trackingNumber && (
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/account/orders/${order.orderRef}`}>ติดตามพัสดุ</Link>
+              <Link href={`${base}/orders/${order.orderRef}`}>ติดตามพัสดุ</Link>
             </Button>
           )}
-          {/* TODO(reorder): wire "ซื้อซ้ำ" once we have a server action
-              that rehydrates a cart from order items. For now it's a
-              passive link back to the first product page. */}
-          {order.status === "DELIVERED" && order.items[0] && productHref(order.items[0].productId) && (
-            <Button variant="outline" size="sm" asChild>
-              <Link href={productHref(order.items[0].productId)!}>ซื้อซ้ำ</Link>
-            </Button>
-          )}
+          {order.status === 'DELIVERED' &&
+            order.items[0] &&
+            productHref(order.items[0].productId) && (
+              <Button variant="outline" size="sm" asChild>
+                <Link href={productHref(order.items[0].productId)!}>ซื้อซ้ำ</Link>
+              </Button>
+            )}
           <Button size="sm" asChild>
-            <Link href={`/account/orders/${order.orderRef}`}>ดูรายละเอียด</Link>
+            <Link href={`${base}/orders/${order.orderRef}`}>ดูรายละเอียด</Link>
           </Button>
         </div>
       </div>

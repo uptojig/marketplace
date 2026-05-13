@@ -1,5 +1,10 @@
 'use client';
 
+// Per-store account sidebar (Shopify-like — each store has its own
+// customer view at /stores/[slug]/account/*). The caller (layout)
+// passes `storeSlug` so this client component can build hrefs without
+// reading the route params itself.
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -17,48 +22,62 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const NAV_GROUPS = [
+interface NavItemDef {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  /** Path under /stores/[slug]/account — leading slash, no slug. */
+  to: string;
+  soon?: boolean;
+}
+
+interface NavGroupDef {
+  label: string;
+  items: NavItemDef[];
+}
+
+const NAV_GROUPS: NavGroupDef[] = [
   {
     label: 'คำสั่งซื้อ',
-    items: [{ icon: Package, label: 'คำสั่งซื้อของฉัน', href: '/account/orders' }],
+    items: [{ icon: Package, label: 'คำสั่งซื้อของฉัน', to: '/orders' }],
   },
   {
     label: 'ข้อมูลของฉัน',
     items: [
-      { icon: User, label: 'โปรไฟล์', href: '/account/profile' },
-      { icon: MapPin, label: 'ที่อยู่', href: '/account/addresses' },
-      { icon: CreditCard, label: 'วิธีชำระเงิน', href: '/account/payment-methods', soon: true },
-      { icon: Wallet, label: 'Anypay Wallet', href: '/account/wallet', soon: true },
+      { icon: User, label: 'โปรไฟล์', to: '/profile' },
+      { icon: MapPin, label: 'ที่อยู่', to: '/addresses' },
+      { icon: CreditCard, label: 'วิธีชำระเงิน', to: '/payment-methods', soon: true },
+      { icon: Wallet, label: 'Anypay Wallet', to: '/wallet', soon: true },
     ],
   },
   {
     label: 'ทำงานร่วมกับร้าน',
     items: [
-      { icon: Heart, label: 'รายการโปรด', href: '/account/favorites', soon: true },
-      { icon: Store, label: 'ร้านที่ติดตาม', href: '/account/following', soon: true },
-      { icon: Star, label: 'รีวิวของฉัน', href: '/account/reviews', soon: true },
-      { icon: Ticket, label: 'คูปองของฉัน', href: '/account/coupons' },
+      { icon: Heart, label: 'รายการโปรด', to: '/favorites', soon: true },
+      { icon: Store, label: 'ร้านที่ติดตาม', to: '/following', soon: true },
+      { icon: Star, label: 'รีวิวของฉัน', to: '/reviews', soon: true },
+      { icon: Ticket, label: 'คูปองของฉัน', to: '/coupons' },
     ],
   },
   {
     label: 'การตั้งค่า',
     items: [
-      { icon: Bell, label: 'การแจ้งเตือน', href: '/account/notifications', soon: true },
-      { icon: ShieldCheck, label: 'ความปลอดภัย', href: '/account/security', soon: true },
+      { icon: Bell, label: 'การแจ้งเตือน', to: '/notifications', soon: true },
+      { icon: ShieldCheck, label: 'ความปลอดภัย', to: '/security', soon: true },
     ],
   },
 ];
 
-export function AccountSidebar() {
+export function AccountSidebar({ storeSlug }: { storeSlug: string }) {
   const pathname = usePathname();
+  const base = `/stores/${storeSlug}/account`;
 
   return (
     <aside className="space-y-5">
       <Link
-        href="/account"
+        href={base}
         className={cn(
           'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition',
-          pathname === '/account' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent',
+          pathname === base ? 'bg-primary text-primary-foreground' : 'hover:bg-accent',
         )}
       >
         <User className="h-4 w-4" />
@@ -73,11 +92,12 @@ export function AccountSidebar() {
           <nav className="space-y-0.5">
             {group.items.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              const href = `${base}${item.to}`;
+              const isActive = pathname === href || pathname.startsWith(href + '/');
               return (
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  key={href}
+                  href={href}
                   className={cn(
                     'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition',
                     isActive ? 'bg-primary/10 font-medium text-primary' : 'hover:bg-accent',

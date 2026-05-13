@@ -1,18 +1,8 @@
-// /account — buyer dashboard (Server Component).
+// /stores/[slug]/account — per-store buyer dashboard (Server Component).
 //
-// Wiring:
-//  - getServerSession → user.id; redirect to /signin if missing.
-//  - Recent orders + active-order count come from Prisma via
-//    lib/orders/queries + toOrderViews. Status filter uses the
-//    real OrderStatus enum.
-//  - Address count comes from Prisma directly (the active
-//    /api/addresses route uses the same model).
-//  - User name / avatar / joinedAt come from session + the User
-//    row.
-//
-// TODOs flagged inline:
-//  - Anypay wallet balance (no model yet — stub at ฿0).
-//  - Favorites count (no Favorite model — stub at 0).
+// Per Shopify-like architecture, each store has its own customer view.
+// Orders are filtered to this store via getUserOrders(userId, { storeSlug }).
+// Wallet + favorites stubs remain placeholders until those models land.
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -34,9 +24,6 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-// Statuses that count as "active" in the dashboard stat card. Mirrors
-// the orders-list "in-flight" grouping (rough buyer mental model:
-// "anything I'm still waiting on").
 const ACTIVE_ORDER_STATUSES = [
   'PENDING_PAYMENT',
   'PAID',
@@ -44,27 +31,36 @@ const ACTIVE_ORDER_STATUSES = [
   'SHIPPED',
 ] as const;
 
-export default async function AccountDashboard() {
+export default async function AccountDashboard({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string } | undefined)?.id;
 
   if (!userId) {
-    redirect('/signin?callbackUrl=/account');
+    redirect(`/signin?callbackUrl=/stores/${slug}/account`);
   }
 
-  // Pull everything in parallel — the page is force-dynamic anyway.
+  const base = `/stores/${slug}/account`;
+
   const [user, recentOrdersRaw, activeOrders, addressCount] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { name: true, email: true, image: true, createdAt: true },
     }),
-    getUserOrders(userId, { limit: 3 }),
+    // Per-store scope: only orders placed at this store show up.
+    getUserOrders(userId, { limit: 3, storeSlug: slug }),
     prisma.order.count({
       where: {
         userId,
         status: { in: [...ACTIVE_ORDER_STATUSES] },
+        store: { slug },
       },
     }),
+    // TODO(phase-1c): scope by Address.storeId once the migration lands.
     prisma.address.count({ where: { userId } }),
   ]);
 
@@ -98,26 +94,23 @@ export default async function AccountDashboard() {
           icon={Package}
           label="คำสั่งซื้อที่ใช้งาน"
           value={activeOrders.toString()}
-          href="/account/orders"
+          href={`${base}/orders`}
         />
         <StatCard
           icon={MapPin}
           label="ที่อยู่บันทึกไว้"
           value={addressCount.toString()}
-          href="/account/addresses"
+          href={`${base}/addresses`}
         />
-        {/* TODO(anypay): replace ฿0 with real wallet balance once the
-            wallet model lands. Kept muted to signal "coming soon". */}
-        <StatCard icon={Wallet} label="ยอด Anypay" value="฿0" href="/account/wallet" muted />
-        {/* TODO(favorites): wire Favorite model count when added. */}
-        <StatCard icon={Heart} label="รายการโปรด" value="0" href="/account/favorites" muted />
+        <StatCard icon={Wallet} label="ยอด Anypay" value="฿0" href={`${base}/wallet`} muted />
+        <StatCard icon={Heart} label="รายการโปรด" value="0" href={`${base}/favorites`} muted />
       </div>
 
       <section>
         <div className="mb-3 flex items-baseline justify-between">
           <h2 className="font-semibold">คำสั่งซื้อล่าสุด</h2>
           <Link
-            href="/account/orders"
+            href={`${base}/orders`}
             className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
           >
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
@@ -127,10 +120,10 @@ export default async function AccountDashboard() {
           <Card className="p-6 text-center">
             <Package className="mx-auto h-10 w-10 text-muted-foreground" />
             <p className="mt-2 text-sm text-muted-foreground">
-              ยังไม่มีคำสั่งซื้อ — เริ่มช้อปได้เลย
+              ยังไม่มีคำสั่งซื้อที่ร้านนี้ — เริ่มช้อปได้เลย
             </p>
             <Button asChild className="mt-4">
-              <Link href="/">ไปหน้าแรก</Link>
+              <Link href={`/stores/${slug}`}>ไปหน้าร้าน</Link>
             </Button>
           </Card>
         ) : (
@@ -138,7 +131,7 @@ export default async function AccountDashboard() {
             {recentOrders.map((o) => (
               <Card key={o.id} className="p-3">
                 <Link
-                  href={`/account/orders/${o.orderRef}`}
+                  href={`${base}/orders/${o.orderRef}`}
                   className="flex items-center gap-3"
                 >
                   {o.items[0] && (

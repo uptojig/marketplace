@@ -22,10 +22,16 @@ export async function getOrderByRef(orderRef: string) {
 
 export async function getUserOrders(
   userId: string,
-  opts: { limit?: number; cursor?: string } = {},
+  opts: { limit?: number; cursor?: string; storeSlug?: string } = {},
 ) {
   return prisma.order.findMany({
-    where: { userId },
+    where: {
+      userId,
+      // Per-store account scope (Shopify-like architecture). Optional
+      // so admin/cross-tenant surfaces can still fetch every order
+      // belonging to a user.
+      ...(opts.storeSlug ? { store: { slug: opts.storeSlug } } : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: opts.limit ?? 20,
     ...(opts.cursor ? { cursor: { id: opts.cursor }, skip: 1 } : {}),

@@ -1,18 +1,16 @@
 import Link from 'next/link';
-import { Bell, Search, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 /**
  * Top chrome used by platform pages on basketplace.co — seller import,
- * help, legal, vendor account. Buyer chrome lives in
+ * help, legal. Buyer chrome lives in
  * `components/storefront/chrome/ShopHeader.tsx` (per-store, mounted by
  * `app/stores/[slug]/layout.tsx`). Per the Shopify-like architecture
- * there is no buyer cart icon here — carts are per-store.
- *
- * TODO(phase-1b): /account/* paths move under /stores/[slug]/account/*,
- * so the Bell + User links here will switch to the active store context
- * once that migration lands.
+ * basketplace.co itself has no buyer flow — no cart icon, no account
+ * link, no notifications. Buyer "account" lives at
+ * `/stores/[slug]/account/*`, reached through the store header on each
+ * store's own domain (or `/stores/[slug]/*` preview on basketplace.co).
  */
 export function MarketplaceHeader() {
   return (
@@ -35,18 +33,6 @@ export function MarketplaceHeader() {
           </div>
         </form>
 
-        <div className="flex shrink-0 items-center gap-1">
-          <Button variant="ghost" size="icon" asChild className="hidden lg:flex">
-            <Link href="/account/notifications" aria-label="Notifications">
-              <Bell className="h-5 w-5" />
-            </Link>
-          </Button>
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/account" aria-label="Account">
-              <User className="h-5 w-5" />
-            </Link>
-          </Button>
-        </div>
       </div>
     </header>
   );

@@ -1,5 +1,10 @@
 'use client';
 
+// Per-store buyer profile. Name + phone are still mock today; Phase 1D's
+// Customer model will scope them per (userId, storeId) so the same
+// person can use a different display name at bikini551 vs audio-house.
+// Until then the page lives under per-store URL but data is user-level.
+
 import { useState } from 'react';
 import { Camera, KeyRound, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,7 +22,6 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false);
 
   const save = () => {
-    // Real impl: server action
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
