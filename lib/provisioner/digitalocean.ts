@@ -74,8 +74,10 @@ export class DOApiError extends Error {
 
 export async function createDroplet(input: CreateDropletInput): Promise<Droplet> {
   const cfg = getConfig();
+  // Use logical OR not nullish — readEnv() returns "" for missing values,
+  // and "" must fall through to the next option (not be treated as set).
   const image =
-    input.imageSnapshotId ?? cfg.doImageSnapshotId ?? input.imageSlugFallback ?? cfg.doImageFallbackSlug;
+    input.imageSnapshotId || cfg.doImageSnapshotId || input.imageSlugFallback || cfg.doImageFallbackSlug;
   const sshKeys = input.sshKeyIds ?? cfg.doSshKeyIds;
 
   const body = {
