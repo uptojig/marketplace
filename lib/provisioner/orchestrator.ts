@@ -177,6 +177,7 @@ export async function processNextJob(): Promise<boolean> {
         type: result.nextType,
         inputJson: result.nextInput,
         delayMs: result.delayMs,
+        maxAttempts: result.maxAttempts,
       });
       nextJobId = next.id;
     }

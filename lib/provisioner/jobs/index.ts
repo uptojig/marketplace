@@ -25,7 +25,12 @@ import { randomBytes } from "crypto";
 
 export type JobResult =
   | { done: true }
-  | { nextType: ProvisioningJobType; nextInput?: Record<string, unknown>; delayMs?: number };
+  | {
+      nextType: ProvisioningJobType;
+      nextInput?: Record<string, unknown>;
+      delayMs?: number;
+      maxAttempts?: number;
+    };
 
 export type JobContext = {
   deploymentId: string;
@@ -73,6 +78,7 @@ async function createDropletJob(ctx: JobContext): Promise<JobResult> {
     databaseUrl,
     databaseSchema: schemaName,
     internalApiSecret: cfg.internalApiSecret,
+    nextauthSecret: process.env.NEXTAUTH_SECRET || cfg.internalApiSecret,
     controlPlaneBaseUrl: cfg.controlPlaneBaseUrl,
     useSnapshot: Boolean(cfg.doImageSnapshotId),
   });
@@ -184,7 +190,10 @@ async function configureDnsJob(ctx: JobContext): Promise<JobResult> {
   });
 
   // Cloud-init takes ~60-90s on snapshot, ~5min on fresh image. Give it time.
-  return { nextType: "WAIT_FOR_APP_READY", delayMs: 60_000 };
+  // Default 5 retries with exp backoff caps at ~30s total — way too tight
+  // for the snapshot path which can take 175s+ (image pull + start). Bump
+  // to 30 attempts so the budget extends past worst-case cold boot.
+  return { nextType: "WAIT_FOR_APP_READY", delayMs: 60_000, maxAttempts: 30 };
 }
 
 // ─────────────────────────────────────────────────────────────────────────

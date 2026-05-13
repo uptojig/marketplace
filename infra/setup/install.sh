@@ -196,6 +196,10 @@ log "running bootstrap (this clones repo + installs Docker/Caddy)..."
 ssh_run "REPO_URL='$REPO_URL' REPO_BRANCH='$REPO_BRANCH' DOMAIN='$DOMAIN' /tmp/bootstrap.sh"
 ok "droplet bootstrapped"
 
+log "setting droplet timezone to Asia/Bangkok..."
+ssh_run "timedatectl set-timezone Asia/Bangkok"
+ok "timezone set"
+
 # ───────────────────────────────────────────────────────────────────────────
 section "Phase 4 — Write env, build images, run migrations"
 # ───────────────────────────────────────────────────────────────────────────
@@ -211,6 +215,9 @@ log "writing /etc/marketplace/control.env on droplet..."
 SHOP_IMAGE_FULL="registry.digitalocean.com/$DO_REGISTRY_NAME/shop-app:$SHOP_IMAGE_TAG"
 
 ENV_CONTENT=$(cat <<EOF
+# --- Timezone ---
+TZ=Asia/Bangkok
+
 # --- Domain ---
 MAIN_DOMAIN=$DOMAIN
 

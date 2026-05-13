@@ -21,6 +21,9 @@ export type CloudInitInput = {
   // Internal API secret -- droplet uses this to authenticate to control plane
   // (caddy ask, update-agent heartbeats).
   internalApiSecret: string;
+  // NextAuth secret -- shop app boots with auth pages, so this must be set
+  // or every request hits NO_SECRET MissingSecretError.
+  nextauthSecret: string;
   // Control plane base URL -- used by Caddy's `on_demand_tls ask` endpoint
   // and the update-agent's `/internal/agent/...` calls.
   controlPlaneBaseUrl: string;
@@ -37,6 +40,7 @@ export function renderCloudInit(input: CloudInitInput): string {
   const image = input.shopImage ?? DEFAULT_SHOP_IMAGE;
 
   // env file written to /opt/marketplace-shop/.env
+  const primaryHost = `${input.shopSlug}.${cfg.cfPlatformDomain}`;
   const envFile = [
     `SHOP_ID=${input.shopId}`,
     `SHOP_SLUG=${input.shopSlug}`,
@@ -45,7 +49,11 @@ export function renderCloudInit(input: CloudInitInput): string {
     `DATABASE_SCHEMA=${input.databaseSchema}`,
     `CONTROL_PLANE_BASE_URL=${input.controlPlaneBaseUrl}`,
     `INTERNAL_API_SECRET=${input.internalApiSecret}`,
+    `NEXTAUTH_SECRET=${input.nextauthSecret}`,
+    `NEXTAUTH_URL=https://${primaryHost}`,
+    `NEXT_PUBLIC_BASE_URL=https://${primaryHost}`,
     `PLATFORM_DOMAIN=${cfg.cfPlatformDomain}`,
+    `TZ=Asia/Bangkok`,
   ].join("\n");
 
   // The Caddyfile uses on-demand TLS for any host that isn't the slug
@@ -92,7 +100,7 @@ services:
     env_file: /opt/marketplace-shop/.env
     network_mode: host
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -163,6 +171,7 @@ ${dockerCompose.split("\n").map((l) => `      ${l}`).join("\n")}
 ${updateAgent.split("\n").map((l) => `      ${l}`).join("\n")}
 
 runcmd:
+  - timedatectl set-timezone Asia/Bangkok
   - mkdir -p /var/lib/caddy /var/log/caddy
   - echo "${cfg.doToken}" | docker login -u "${cfg.doToken}" --password-stdin registry.digitalocean.com
   - cd /opt/marketplace-shop && docker compose pull
@@ -201,6 +210,7 @@ ${dockerCompose.split("\n").map((l) => `      ${l}`).join("\n")}
 ${updateAgent.split("\n").map((l) => `      ${l}`).join("\n")}
 
 runcmd:
+  - timedatectl set-timezone Asia/Bangkok
   - install -m 0755 -d /etc/apt/keyrings
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
   - chmod a+r /etc/apt/keyrings/docker.gpg
