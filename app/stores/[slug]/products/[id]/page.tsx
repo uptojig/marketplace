@@ -7,7 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
+import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
@@ -45,14 +47,26 @@ export default async function ShopProductPage({
     orderBy: { createdAt: "desc" },
   });
 
-  // Per-template design family decision. fashion-beauty (lookbook /
-  // beauty-swatch / boutique) gets the editorial portrait variant;
-  // all other templates render the default hero untouched.
+  // Per-template design family decision. Order matters — FB is
+  // checked first so it wins over a same-template / variant overlap
+  // (in practice the template→group mapping is disjoint, but the
+  // explicit precedence keeps things safe). trust (classic /
+  // official-brand / premium-luxury) renders the squared heritage
+  // hero; FB renders the editorial portrait; everything else
+  // renders the default hero untouched.
   const isFB = isFashionBeautyStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
-  const HeroComponent = isFB ? FashionBeautyProductHero : ProductDetailHero;
+  const isTrust = !isFB && isTrustStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const HeroComponent = isFB
+    ? FashionBeautyProductHero
+    : isTrust
+      ? TrustProductHero
+      : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -140,9 +154,32 @@ export default async function ShopProductPage({
       />
 
       {related.length > 0 && (
-        <section className={isFB ? "space-y-6 py-8" : "space-y-3"}>
+        <section
+          className={
+            isFB || isTrust ? "space-y-6 py-8" : "space-y-3"
+          }
+        >
+          {/* Section eyebrow + heading. Trust adds a heritage caps
+              eyebrow above the serif headline; FB renders a serif
+              headline only; default keeps its compact sans label. */}
+          {isTrust && (
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.28em',
+                fontWeight: 600,
+              }}
+            >
+              From the Collection
+            </p>
+          )}
           <h2
-            className={isFB ? "text-3xl sm:text-4xl" : "text-lg font-semibold"}
+            className={
+              isFB || isTrust
+                ? "text-3xl sm:text-4xl"
+                : "text-lg font-semibold"
+            }
             style={{
               color: 'var(--shop-ink)',
               ...(isFB
@@ -151,25 +188,42 @@ export default async function ShopProductPage({
                       'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif',
                     fontWeight: 500,
                   }
-                : {}),
+                : isTrust
+                  ? {
+                      fontFamily:
+                        'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
+                      fontWeight: 600,
+                      letterSpacing: '-0.01em',
+                    }
+                  : {}),
             }}
           >
-            {isFB ? 'You may also love' : 'สินค้าที่เกี่ยวข้อง'}
+            {isFB
+              ? 'You may also love'
+              : isTrust
+                ? 'You may also like'
+                : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={
               isFB
                 ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
-                : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
+                : isTrust
+                  ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
+                  : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
             }
           >
             {related.map((r) => (
               <Link
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
-                className={isFB ? "group block" : "group overflow-hidden rounded-lg border"}
+                className={
+                  isFB || isTrust
+                    ? "group block"
+                    : "group overflow-hidden rounded-lg border"
+                }
                 style={
-                  isFB
+                  isFB || isTrust
                     ? undefined
                     : { background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }
                 }
@@ -178,12 +232,16 @@ export default async function ShopProductPage({
                   className={
                     isFB
                       ? "overflow-hidden rounded-2xl border bg-white p-2 shadow-sm"
-                      : "aspect-square overflow-hidden"
+                      : isTrust
+                        ? "overflow-hidden rounded-sm border bg-white"
+                        : "aspect-square overflow-hidden"
                   }
                   style={{
                     ...(isFB
                       ? { borderColor: 'var(--shop-border)' }
-                      : { backgroundColor: 'var(--shop-bg)' }),
+                      : isTrust
+                        ? { borderColor: 'var(--shop-accent)' }
+                        : { backgroundColor: 'var(--shop-bg)' }),
                   }}
                 >
                   {r.imageUrl && (
@@ -191,12 +249,16 @@ export default async function ShopProductPage({
                       className={
                         isFB
                           ? "relative overflow-hidden rounded-xl"
-                          : "h-full w-full"
+                          : isTrust
+                            ? "relative overflow-hidden"
+                            : "h-full w-full"
                       }
                       style={
                         isFB
                           ? { aspectRatio: '4 / 5', backgroundColor: 'var(--shop-muted)' }
-                          : undefined
+                          : isTrust
+                            ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
+                            : undefined
                       }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -206,26 +268,49 @@ export default async function ShopProductPage({
                         className={
                           isFB
                             ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                            : "h-full w-full object-cover transition group-hover:scale-105"
+                            : isTrust
+                              ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                              : "h-full w-full object-cover transition group-hover:scale-105"
                         }
                       />
                     </div>
                   )}
                 </div>
-                <div className={isFB ? "px-1 pt-3" : "p-3"}>
+                <div
+                  className={
+                    isFB
+                      ? "px-1 pt-3"
+                      : isTrust
+                        ? "px-1 pt-4"
+                        : "p-3"
+                  }
+                >
                   <div
                     className={
                       isFB
                         ? "line-clamp-2 text-sm"
-                        : "line-clamp-2 text-sm font-medium"
+                        : isTrust
+                          ? "line-clamp-2 text-sm leading-tight"
+                          : "line-clamp-2 text-sm font-medium"
                     }
-                    style={{ color: 'var(--shop-ink, #1c1917)' }}
+                    style={{
+                      color: 'var(--shop-ink, #1c1917)',
+                      ...(isTrust
+                        ? {
+                            fontFamily:
+                              'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
+                            fontWeight: 600,
+                          }
+                        : {}),
+                    }}
                   >
                     {r.titleTh ?? r.title}
                   </div>
                   <div
                     className="mt-1 text-sm font-semibold"
-                    style={{ color: 'var(--shop-primary)' }}
+                    style={{
+                      color: isTrust ? 'var(--shop-ink)' : 'var(--shop-primary)',
+                    }}
                   >
                     ฿ {Number(r.priceTHB).toLocaleString("th-TH")}
                   </div>

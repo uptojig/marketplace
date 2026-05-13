@@ -6,6 +6,7 @@ import {
   IBM_Plex_Sans_Thai,
   Inter,
   Cormorant_Garamond,
+  Playfair_Display,
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -65,6 +66,19 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
+// Heritage / department-store display serif for the trust design
+// family (templates: classic, official-brand, premium-luxury).
+// Loaded as a CSS variable so only stores in this family pick it
+// up (via .theme-trust in globals.css); the rest of the app keeps
+// its sans defaults at zero cost. Playfair Display pairs cleanly
+// with Noto Serif Thai for Thai glyph fallback.
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-trust-display",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Marketplace",
   description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
@@ -75,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="th"
-      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, "font-sans", inter.variable)}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>

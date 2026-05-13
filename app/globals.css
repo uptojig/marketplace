@@ -1384,6 +1384,81 @@
   aspect-ratio: 4 / 5 !important;
 }
 
+/* ── Trust design family (DESIGN-B sibling) ───────────────────
+   Activated when app/stores/[slug]/layout.tsx adds the
+   `theme-trust` class for stores whose templateId is in
+   { classic, official-brand, premium-luxury } OR whose
+   landingThemeVariant is "trust" / "C".
+
+   Token mapping mirrors TRUST_TOKENS in lib/landing/trust.ts —
+   keep them in sync.
+
+   Goal: every sub-page (cart / category / product / checkout /
+   account / signin / signup) inherits the same ivory-on-navy +
+   gold-hairline palette + serif headings + squared CTAs without
+   per-page rewrites. */
+.theme-trust {
+  --shop-bg: #fefce8;          /* ivory */
+  --shop-card: #ffffff;
+  --shop-primary: #1e293b;     /* slate-800 charcoal CTAs */
+  --shop-accent: #a17f56;      /* gold — hairlines / eyebrows ONLY */
+  --shop-ink: #0f172a;         /* slate-900 navy */
+  --shop-ink-muted: #64748b;   /* slate-500 */
+  --shop-border: #e7e5e4;      /* stone-200 hairline */
+  --shop-muted: #f5f5f4;       /* pale stone */
+}
+
+/* Headlines + sub-headlines lift into Playfair Display (loaded as
+   --font-trust-display in app/layout.tsx). Trust uses serif on
+   labels too (h4 / dt / .trust-label) — heritage signage feel.
+   Body stays sans for legibility. */
+.theme-trust h1,
+.theme-trust h2,
+.theme-trust h3,
+.theme-trust h4 {
+  font-family: var(--font-trust-display, "Playfair Display"), Georgia,
+    "Noto Serif Thai", serif !important;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Primary CTAs square off — luxury does not pill. Scoped to the
+   charcoal-painted buttons so secondary outline CTAs keep their
+   existing radius (already squared here too). The !important
+   beats the default `rounded-md` from shadcn's Button base. */
+.theme-trust button[style*="--shop-primary"],
+.theme-trust a[style*="--shop-primary"] {
+  border-radius: 0.125rem !important; /* rounded-sm */
+}
+
+/* Body sans tracking slightly looser — editorial. */
+.theme-trust body,
+.theme-trust p,
+.theme-trust span {
+  letter-spacing: 0.005em;
+}
+
+/* Gold hairline rules: any element opting in with
+   data-trust-rule="true" gets a 1px gold accent border at the
+   top, used between sections in the PDP / category / cart. */
+.theme-trust [data-trust-rule="true"] {
+  border-top: 1px solid var(--shop-accent) !important;
+}
+
+/* Subtle, no-glow shadow on cards — heritage feels solid, not soft. */
+.theme-trust [class*="rounded-2xl"][class*="border"],
+.theme-trust [class*="rounded-xl"][class*="border"] {
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03),
+    0 1px 4px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Trust frame helper — gold-rule thin frame around product
+   imagery / hero cards. Caller adds data-trust-frame="true" on
+   the wrapping element. */
+.theme-trust [data-trust-frame="true"] {
+  border: 1px solid var(--shop-accent) !important;
+}
+
 /* ─────────────────────────────────────────────────────────────
    Caselnw theme — applied via `theme-caselnw` class on the
    shop-page wrapper in app/stores/[slug]/layout.tsx whenever

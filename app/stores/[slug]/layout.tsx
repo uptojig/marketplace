@@ -27,6 +27,12 @@ import {
   fashionBeautyCssVars,
   isFashionBeautyStore,
 } from "@/lib/landing/fashion-beauty";
+import {
+  TRUST_BODY_CLASS,
+  TRUST_TOKENS,
+  trustCssVars,
+  isTrustStore,
+} from "@/lib/landing/trust";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
@@ -159,6 +165,40 @@ export default async function ShopLayout({
   const fbVars = isFB ? fashionBeautyCssVars() : {};
   const fbClass = isFB ? FASHION_BEAUTY_BODY_CLASS : "";
 
+  // Trust family (DESIGN-B sibling). Stacked alongside FB so we never
+  // break the FB cascade: if both somehow matched, FB wins because its
+  // vars merge in last. In practice the template→group lookup is
+  // disjoint (a store can only be in one TemplateGroup) so this is
+  // belt-and-braces. Reads from lib/landing/trust.ts — same shape as
+  // the fashion-beauty module.
+  const isTrust = !isFB && isTrustStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const trustVars = isTrust ? trustCssVars() : {};
+  const trustClass = isTrust ? TRUST_BODY_CLASS : "";
+
+  // Convenience aliases — the layout's three render paths all want
+  // "give me the active family's class + vars" without recomputing.
+  // FB takes precedence by virtue of being checked first above.
+  const familyClass = `${fbClass}${fbClass && trustClass ? " " : ""}${trustClass}`;
+  const familyVars = { ...trustVars, ...fbVars };
+  // Active family's accent — used by ShopHeader / ShopFooter to
+  // paint chrome links + glyph fills. FB pink stays as it was; trust
+  // borrows the gold for accents (the charcoal primary stays in CTAs).
+  const familyAccent = isFB
+    ? "#f43f5e"
+    : isTrust
+      ? TRUST_TOKENS.colors.accent
+      : null;
+  // Button shape pinned per-family — FB pills, trust squared. Falls
+  // through to the per-template default when neither applies.
+  const familyButtonShape: "pill" | "square" | null = isFB
+    ? "pill"
+    : isTrust
+      ? "square"
+      : null;
+
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality
   //     comes from a token preset keyed off the template id (accent,
@@ -188,25 +228,25 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${fbClass ? ` ${fbClass}` : ""}`}
-        style={{ ...tokensToCssVars(tokens), ...fbVars }}
+        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
+        style={{ ...tokensToCssVars(tokens), ...familyVars }}
       >
         <ShopHeader
           storeSlug={store.slug}
           storeName={store.name}
           storeLogoUrl={store.logoUrl}
           categories={categories}
-          accent={isFB ? "#f43f5e" : tokens.accent}
+          accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
           announcement={tokens.announcement}
-          buttonShape={isFB ? "pill" : tokens.buttonShape}
+          buttonShape={familyButtonShape ?? tokens.buttonShape}
         />
         <main className="flex-1">{children}</main>
         <ShopFooter
           store={store}
           categories={categories}
-          accent={isFB ? "#f43f5e" : tokens.accent}
+          accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
         />
@@ -266,30 +306,30 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${fbClass}`.trim()}
-        style={{ ...tokensToCssVars(tokens), ...fbVars }}
+        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass}`.trim()}
+        style={{ ...tokensToCssVars(tokens), ...familyVars }}
       >
         <ShopHeader
           storeSlug={store.slug}
           storeName={store.name}
           storeLogoUrl={store.logoUrl}
           categories={navCategories}
-          accent={isFB ? "#f43f5e" : tokens.accent}
+          accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
           announcement={tokens.announcement}
-          buttonShape={isFB ? "pill" : tokens.buttonShape}
+          buttonShape={familyButtonShape ?? tokens.buttonShape}
         />
         <main className="flex-1">{children}</main>
         <ShopFooter
           store={store}
           categories={navCategories}
-          accent={isFB ? "#f43f5e" : tokens.accent}
+          accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
         />
         <CookiesBar />
-        <ShopFloatingButtons primaryColor={isFB ? "#f43f5e" : tokens.accent} />
+        <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
       </div>
     );
   }
@@ -324,30 +364,30 @@ export default async function ShopLayout({
 
   return (
     <div
-      className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${fbClass ? ` ${fbClass}` : ""}`}
-      style={{ ...tokensToCssVars(tokens), ...fbVars }}
+      className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
+      style={{ ...tokensToCssVars(tokens), ...familyVars }}
     >
       <ShopHeader
         storeSlug={store.slug}
         storeName={store.name}
         storeLogoUrl={store.logoUrl}
         categories={categories}
-        accent={isFB ? "#f43f5e" : tokens.accent}
+        accent={familyAccent ?? tokens.accent}
         decorationGlyph={tokens.decorationGlyph}
         glyphStyle={tokens.glyphStyle}
         announcement={tokens.announcement}
-        buttonShape={isFB ? "pill" : tokens.buttonShape}
+        buttonShape={familyButtonShape ?? tokens.buttonShape}
       />
       <main className="flex-1">{children}</main>
       <ShopFooter
         store={store}
         categories={categories}
-        accent={isFB ? "#f43f5e" : tokens.accent}
+        accent={familyAccent ?? tokens.accent}
         decorationGlyph={tokens.decorationGlyph}
         glyphStyle={tokens.glyphStyle}
       />
       <CookiesBar />
-      <ShopFloatingButtons primaryColor={isFB ? "#f43f5e" : tokens.accent} />
+      <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
     </div>
   );
 }
