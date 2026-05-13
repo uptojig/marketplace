@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,19 +15,28 @@ export function ProductBlock({ block, store }: BlockProps) {
 
   switch (block.variant) {
     case 'grid-2':
-      return <GridProducts products={products} cols={2} showCondition={showCondition} stockIndicators={stockIndicators} minimal={minimal} />;
+      return (
+        <GridProducts
+          products={products}
+          store={store}
+          cols={2}
+          showCondition={showCondition}
+          stockIndicators={stockIndicators}
+          minimal={minimal}
+        />
+      );
     case 'grid-3-dense':
-      return <GridProducts products={products} cols={3} dense />;
+      return <GridProducts products={products} store={store} cols={3} dense />;
     case 'grid-4-desktop':
-      return <GridProducts products={products} cols={4} />;
+      return <GridProducts products={products} store={store} cols={4} />;
     case 'list':
-      return <ListProducts products={products} />;
+      return <ListProducts products={products} store={store} />;
     case 'list-with-specs':
-      return <ListProducts products={products} showSpecs />;
+      return <ListProducts products={products} store={store} showSpecs />;
     case 'editorial':
-      return <EditorialProducts products={products} />;
+      return <EditorialProducts products={products} store={store} />;
     default:
-      return <GridProducts products={products} cols={2} />;
+      return <GridProducts products={products} store={store} cols={2} />;
   }
 }
 
@@ -41,8 +51,13 @@ function formatNumber(n: number): string {
   return n.toString();
 }
 
+function productHref(store: Store, productId: string): string {
+  return `/stores/${store.slug}/products/${productId}`;
+}
+
 function GridProducts({
   products,
+  store,
   cols,
   dense = false,
   showCondition = false,
@@ -50,6 +65,7 @@ function GridProducts({
   minimal = false,
 }: {
   products: Product[];
+  store: Store;
   cols: 2 | 3 | 4;
   dense?: boolean;
   showCondition?: boolean;
@@ -68,6 +84,7 @@ function GridProducts({
         <ProductCard
           key={p.id}
           product={p}
+          href={productHref(store, p.id)}
           dense={dense}
           showCondition={showCondition}
           stockIndicators={stockIndicators}
@@ -80,12 +97,14 @@ function GridProducts({
 
 function ProductCard({
   product,
+  href,
   dense = false,
   showCondition = false,
   stockIndicators = false,
   minimal = false,
 }: {
   product: Product;
+  href: string;
   dense?: boolean;
   showCondition?: boolean;
   stockIndicators?: boolean;
@@ -97,66 +116,80 @@ function ProductCard({
       : null;
 
   return (
-    <Card className="overflow-hidden">
-      <div className="relative aspect-square">
-        <Image
-          src={product.thumbnailUrl}
-          alt={product.title}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 50vw, 25vw"
-        />
-        {discount && (
-          <Badge variant="destructive" className="absolute left-1 top-1 px-1.5 py-0 text-[10px]">
-            -{discount}%
-          </Badge>
-        )}
-        {showCondition && product.conditionLabel && (
-          <Badge variant="secondary" className="absolute bottom-1 right-1 text-[10px] capitalize">
-            {product.conditionLabel.replace('-', ' ')}
-          </Badge>
-        )}
-        {stockIndicators && product.stockLeft != null && product.stockLeft < 10 && (
-          <Badge variant="destructive" className="absolute bottom-1 left-1 text-[10px]">
-            {product.stockLeft} left
-          </Badge>
-        )}
-      </div>
-      <CardContent className={cn(dense ? 'p-1.5' : 'p-2')}>
-        <h3 className={cn('line-clamp-2 font-medium', dense ? 'text-xs' : 'text-sm')}>
-          {product.title}
-        </h3>
-        {!minimal && (
-          <>
-            <div className="mt-1 flex items-baseline gap-1">
-              <span className={cn('font-semibold text-red-600', dense ? 'text-sm' : 'text-base')}>
-                ฿{product.price.toLocaleString()}
-              </span>
-              {product.originalPrice && (
-                <span className="text-xs text-muted-foreground line-through">
-                  ฿{product.originalPrice.toLocaleString()}
+    <Link href={href} className="block transition-opacity hover:opacity-90">
+      <Card className="overflow-hidden">
+        <div className="relative aspect-square">
+          <Image
+            src={product.thumbnailUrl}
+            alt={product.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 50vw, 25vw"
+          />
+          {discount && (
+            <Badge variant="destructive" className="absolute left-1 top-1 px-1.5 py-0 text-[10px]">
+              -{discount}%
+            </Badge>
+          )}
+          {showCondition && product.conditionLabel && (
+            <Badge variant="secondary" className="absolute bottom-1 right-1 text-[10px] capitalize">
+              {product.conditionLabel.replace('-', ' ')}
+            </Badge>
+          )}
+          {stockIndicators && product.stockLeft != null && product.stockLeft < 10 && (
+            <Badge variant="destructive" className="absolute bottom-1 left-1 text-[10px]">
+              {product.stockLeft} left
+            </Badge>
+          )}
+        </div>
+        <CardContent className={cn(dense ? 'p-1.5' : 'p-2')}>
+          <h3 className={cn('line-clamp-2 font-medium', dense ? 'text-xs' : 'text-sm')}>
+            {product.title}
+          </h3>
+          {!minimal && (
+            <>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span className={cn('font-semibold text-red-600', dense ? 'text-sm' : 'text-base')}>
+                  ฿{product.price.toLocaleString()}
                 </span>
-              )}
-            </div>
-            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              {product.rating.toFixed(1)} · {formatNumber(product.soldCount)} sold
-            </div>
-          </>
-        )}
-        {minimal && (
-          <p className="mt-1 text-sm">฿{product.price.toLocaleString()}</p>
-        )}
-      </CardContent>
-    </Card>
+                {product.originalPrice && (
+                  <span className="text-xs text-muted-foreground line-through">
+                    ฿{product.originalPrice.toLocaleString()}
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                {product.rating.toFixed(1)} · {formatNumber(product.soldCount)} sold
+              </div>
+            </>
+          )}
+          {minimal && (
+            <p className="mt-1 text-sm">฿{product.price.toLocaleString()}</p>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
-function ListProducts({ products, showSpecs = false }: { products: Product[]; showSpecs?: boolean }) {
+function ListProducts({
+  products,
+  store,
+  showSpecs = false,
+}: {
+  products: Product[];
+  store: Store;
+  showSpecs?: boolean;
+}) {
   return (
     <div className="divide-y">
       {products.map((p) => (
-        <div key={p.id} className="flex gap-3 p-3">
+        <Link
+          key={p.id}
+          href={productHref(store, p.id)}
+          className="flex gap-3 p-3 hover:bg-accent"
+        >
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded">
             <Image src={p.thumbnailUrl} alt={p.title} fill className="object-cover" sizes="80px" />
           </div>
@@ -182,17 +215,21 @@ function ListProducts({ products, showSpecs = false }: { products: Product[]; sh
               )}
             </div>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
 }
 
-function EditorialProducts({ products }: { products: Product[] }) {
+function EditorialProducts({ products, store }: { products: Product[]; store: Store }) {
   return (
     <div className="grid grid-cols-2 gap-3 p-4">
       {products.map((p) => (
-        <div key={p.id} className="space-y-2">
+        <Link
+          key={p.id}
+          href={productHref(store, p.id)}
+          className="block space-y-2 transition-opacity hover:opacity-90"
+        >
           <div className="relative aspect-[3/4] overflow-hidden">
             <Image src={p.thumbnailUrl} alt={p.title} fill className="object-cover" sizes="50vw" />
           </div>
@@ -200,7 +237,7 @@ function EditorialProducts({ products }: { products: Product[] }) {
             <h3 className="line-clamp-2 text-sm tracking-wide">{p.title}</h3>
             <p className="mt-0.5 text-sm">฿{p.price.toLocaleString()}</p>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
