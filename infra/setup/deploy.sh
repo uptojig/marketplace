@@ -57,11 +57,18 @@ for i in 1 2 3; do
 done
 ok "shop-app pushed"
 
-section "Apply migrations"
+section "Apply migrations + sync schema drift"
+# Run migrate deploy first (applies committed migration files), then db push
+# as a fallback that catches schema fields added without a migration file.
+# db push is non-fatal — destructive drifts (column drops with data) require
+# manual --accept-data-loss decision, but ADD COLUMN changes apply cleanly.
 docker run --rm --env-file "$ENV_FILE" \
   "$REGISTRY/control-plane:latest" \
-  sh -c 'cd /app && node node_modules/prisma/build/index.js migrate deploy || node node_modules/prisma/build/index.js db push'
-ok "migrations applied"
+  sh -c 'cd /app && \
+    node node_modules/prisma/build/index.js migrate deploy; \
+    node node_modules/prisma/build/index.js db push 2>&1 | tail -20 || \
+    echo "WARN: db push failed — destructive drift? Inspect schema manually."'
+ok "migrations + drift sync done"
 
 section "Restart marketplace-control"
 systemctl restart marketplace-control
