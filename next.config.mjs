@@ -1,6 +1,14 @@
+import createMDX from "@next/mdx";
+
+const withMDX = createMDX({
+  // Default rehype/remark plugins are enough for the help + legal
+  // content we ship; add more here if pages start needing them.
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   eslint: {
     // ESLint runs in CI/dev; production build shouldn't gate on lint errors
     ignoreDuringBuilds: true,
@@ -25,4 +33,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withMDX(nextConfig);
