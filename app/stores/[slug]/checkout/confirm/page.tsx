@@ -39,9 +39,12 @@ export default function CheckoutConfirmPage({
   params: { slug: string };
 }) {
   const router = useRouter();
-  const lines = useCart((s) => s.lines);
-  const subtotal = useCart((s) => s.subtotalTHB());
-  const clearCart = useCart((s) => s.clear);
+  // Per-store scope — only this store's items + subtotal during confirm.
+  const allLines = useCart((s) => s.lines);
+  const clearStore = useCart((s) => s.clearStore);
+  const lines = allLines.filter((l) => l.storeSlug === params.slug);
+  const subtotal = lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0);
+  const clearCart = () => clearStore(params.slug);
 
   const [address, setAddress] = useState<Address | null>(null);
   const [shipping, setShipping] = useState(SHIPPING_OPTIONS[0]);

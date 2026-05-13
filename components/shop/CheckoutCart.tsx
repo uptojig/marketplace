@@ -16,12 +16,16 @@ export function CheckoutCart({
    *  the checkout flow is hosted under /stores/[slug]/. */
   storeSlug?: string;
 }) {
-  const lines = useCart((s) => s.lines);
+  // Per-store scope (gate 6 — Shopify-like architecture). If a caller
+  // omits storeSlug we fall back to all lines (admin/debug surfaces);
+  // every buyer-facing call site MUST pass storeSlug to avoid leaking
+  // another store's items into this checkout panel.
+  const allLines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
-  // Marketplace-level /cart no longer exists — every cart is per-store.
-  // If a caller forgets to pass storeSlug we render the panel without
-  // the "edit cart" link rather than linking to a 404.
+  const lines = storeSlug
+    ? allLines.filter((l) => l.storeSlug === storeSlug)
+    : allLines;
   const cartHref = storeSlug ? `/stores/${storeSlug}/cart` : null;
 
   return (
