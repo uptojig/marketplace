@@ -1,6 +1,12 @@
 'use client';
 
+// Per-store claimed coupons. The useUserCouponsStore is still
+// browser-wide today (cross-store). Phase 1D's Customer model will let
+// us scope it per store. For now we keep the existing wallet but the
+// page lives under the per-store path.
+
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CouponCard } from '@/components/coupons/coupon-card';
@@ -9,6 +15,8 @@ import { useUserCouponsStore } from '@/lib/coupons/store';
 import { isCouponExpired } from '@/lib/coupons/calculator';
 
 export default function MyCouponsPage() {
+  const params = useParams<{ slug: string }>();
+  const slug = params?.slug ?? '';
   const claimedIds = useUserCouponsStore((s) => s.claimedCouponIds);
   const unclaim = useUserCouponsStore((s) => s.unclaim);
 
@@ -24,6 +32,10 @@ export default function MyCouponsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold lg:text-2xl">คูปองของฉัน</h1>
         <Button asChild variant="outline" size="sm">
+          {/* TODO(phase-4): /coupons is currently a single global public
+              page (PR #28). Per Shopify-like architecture, each store
+              should have its own coupon claim page at
+              /stores/[slug]/coupons. Switch this href when that moves. */}
           <Link href="/coupons">
             <Ticket className="mr-1 h-4 w-4" /> หาคูปองเพิ่ม
           </Link>
@@ -35,7 +47,7 @@ export default function MyCouponsPage() {
           <Ticket className="h-12 w-12 text-muted-foreground/50" />
           <p className="mt-3 text-sm text-muted-foreground">ยังไม่ได้เก็บคูปองไว้</p>
           <Button asChild className="mt-4">
-            <Link href="/coupons">ไปหาคูปอง</Link>
+            <Link href={slug ? `/stores/${slug}` : '/'}>ไปหน้าร้าน</Link>
           </Button>
         </div>
       ) : (
