@@ -15,6 +15,12 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebarToggle } from "@/components/dashboard/sidebar-toggle";
 
+// PAID = paid but not yet shipped — the canonical "needs vendor
+// action" bucket for the unread badge in the sidebar. We don't count
+// SUPPLIER_PLACED here because that state implies the seller already
+// kicked off fulfillment.
+const VENDOR_ACTION_REQUIRED_STATUS = "PAID" as const;
+
 /**
  * Dashboard chrome — sidebar + topbar shell that wraps every page
  * under /dashboard/*. Models the shadcn-studio "dashboard-shell"
@@ -43,12 +49,25 @@ export default async function DashboardLayout({
       name: true,
       email: true,
       role: true,
-      store: { select: { slug: true, name: true, logoUrl: true } },
+      store: { select: { id: true, slug: true, name: true, logoUrl: true } },
     },
   });
   if (!user) redirect("/signin?next=/dashboard");
 
   const storeSlug = user.store?.slug ?? null;
+
+  // Unread-action badge — count orders waiting on vendor fulfilment.
+  // Cheap enough to run per-request (covered by the
+  // [storeId, createdAt] index on Order). Skipped when there's no
+  // store so the catalog-only flow doesn't pay the query cost.
+  const pendingOrdersCount = user.store
+    ? await prisma.order.count({
+        where: {
+          storeId: user.store.id,
+          status: VENDOR_ACTION_REQUIRED_STATUS,
+        },
+      })
+    : 0;
 
   return (
     <div className="-mx-4 -my-8 flex min-h-[calc(100vh-3.5rem)] bg-background text-foreground">
@@ -60,6 +79,7 @@ export default async function DashboardLayout({
           userName={user.name ?? user.email ?? ""}
           userEmail={user.email ?? ""}
           isAdmin={user.role === "ADMIN"}
+          pendingOrdersCount={pendingOrdersCount}
         />
       </DashboardSidebarToggle>
 
@@ -85,6 +105,7 @@ function Sidebar({
   userName,
   userEmail,
   isAdmin,
+  pendingOrdersCount,
 }: {
   storeName: string;
   storeSlug: string | null;
@@ -92,6 +113,7 @@ function Sidebar({
   userName: string;
   userEmail: string;
   isAdmin: boolean;
+  pendingOrdersCount: number;
 }) {
   return (
     <aside
@@ -172,15 +194,18 @@ function Sidebar({
 
         <NavGroup label="ร้านค้า">
           <NavItem
+            href="/dashboard/store/orders"
+            icon={<ShoppingBag className="h-4 w-4" />}
+            badge={pendingOrdersCount}
+          >
+            ออเดอร์
+          </NavItem>
+          <NavItem
             href="/dashboard/store/settings"
             icon={<Settings className="h-4 w-4" />}
           >
             ตั้งค่าร้าน
           </NavItem>
-          {/* TODO(phase-2a): "ออเดอร์" item lands here once
-              /dashboard/store/orders is built (vendor's own orders
-              view, filtered to this store). Old link was /orders
-              which pointed at the now-deleted buyer-side page. */}
         </NavGroup>
 
         {isAdmin && (
@@ -249,10 +274,15 @@ function NavItem({
   href,
   icon,
   children,
+  badge,
 }: {
   href: string;
   icon: React.ReactNode;
   children: React.ReactNode;
+  // Optional unread-count pill. Rendered only when > 0; the layout
+  // already skips the count query when there's no store so passing
+  // 0/undefined here is the no-store default.
+  badge?: number;
 }) {
   // Active highlighting is handled per-pathname client-side in a
   // future iteration; for now every item renders neutral and the
@@ -266,7 +296,19 @@ function NavItem({
         style={{ color: "var(--color-sidebar-foreground)" }}
       >
         <span className="opacity-70">{icon}</span>
-        <span className="truncate">{children}</span>
+        <span className="flex-1 truncate">{children}</span>
+        {typeof badge === "number" && badge > 0 && (
+          <span
+            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold"
+            style={{
+              background: "var(--color-sidebar-primary)",
+              color: "var(--color-sidebar-primary-foreground)",
+            }}
+            aria-label={`${badge} คำสั่งซื้อรอจัดส่ง`}
+          >
+            {badge > 99 ? "99+" : badge}
+          </span>
+        )}
       </Link>
     </li>
   );
