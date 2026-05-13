@@ -115,6 +115,26 @@ export async function findRecord(opts: {
   return list[0] ?? null;
 }
 
+// Look up which CF zone owns a given FQDN. Walks up the labels
+// (foo.bar.example.com -> bar.example.com -> example.com) and asks
+// `GET /zones?name=<candidate>` until a match is found. Useful when
+// the vendor has registered their custom domain in the same CF
+// account as the platform zone — we can then auto-manage A records
+// without the vendor having to log into their DNS provider.
+export async function findZoneForDomain(
+  domain: string,
+): Promise<{ id: string; name: string } | null> {
+  const labels = domain.toLowerCase().replace(/\.$/, "").split(".");
+  // Need at least 2 labels (foo.com) — single-label hostnames aren't zones.
+  for (let i = 0; i <= labels.length - 2; i++) {
+    const candidate = labels.slice(i).join(".");
+    const res = await cfFetch(`/zones?name=${encodeURIComponent(candidate)}&per_page=1`);
+    const list = await expectOk<Array<{ id: string; name: string }>>(res, "listZones");
+    if (list.length > 0) return { id: list[0].id, name: list[0].name };
+  }
+  return null;
+}
+
 // Public DNS resolver for verifying a vendor's custom domain points at the
 // droplet IP. We hit Cloudflare's 1.1.1.1 DoH endpoint so we don't depend
 // on whatever local resolver the host happens to have configured.

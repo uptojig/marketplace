@@ -17,7 +17,7 @@ import {
   privateIpv4,
   waitForDropletActive,
 } from "../digitalocean";
-import { upsertARecord, deleteRecord, resolveARecord } from "../cloudflare";
+import { upsertARecord, deleteRecord, resolveARecord, findZoneForDomain } from "../cloudflare";
 import { renderCloudInit } from "../cloud-init";
 import { getConfig } from "../config";
 import { notifyAdmin } from "../notifier";
@@ -144,13 +144,34 @@ async function configureDnsJob(ctx: JobContext): Promise<JobResult> {
 
   let apex: { id: string } | null = null;
   let www: { id: string } | null = null;
-  if (d.store.customDomain && isInPlatformZone(d.store.customDomain, cfg.cfPlatformDomain)) {
-    // Edge case: vendor's "custom domain" is actually a subdomain of our
-    // platform zone — we own DNS, so write the records ourselves.
-    apex = await upsertARecord({ name: d.store.customDomain, content: d.publicIpv4 });
+  if (d.store.customDomain) {
+    // Look up which CF zone owns the custom domain. If it's in the same CF
+    // account as our platform (it usually is — vendor domains tend to be
+    // registered under the same operator), we can write the A record
+    // ourselves. Falls back to vendor-managed DNS when zone isn't found.
+    const zone = await findZoneForDomain(d.store.customDomain);
+    if (zone) {
+      apex = await upsertARecord({
+        zoneId: zone.id,
+        name: d.store.customDomain,
+        content: d.publicIpv4,
+      });
+      // www.<domain> too, unless customDomain already starts with www.
+      if (!d.store.customDomain.startsWith("www.")) {
+        try {
+          www = await upsertARecord({
+            zoneId: zone.id,
+            name: `www.${d.store.customDomain}`,
+            content: d.publicIpv4,
+          });
+        } catch (err) {
+          console.warn(`[provisioner] www.${d.store.customDomain} skipped:`, err);
+        }
+      }
+    }
+    // No zone found = third-party DNS provider. Vendor must add A record
+    // themselves; WAIT_FOR_APP_READY will keep retrying until they do.
   }
-  // For truly third-party domains the vendor adds A records themselves —
-  // we just verify later in WAIT_FOR_APP_READY.
 
   await prisma.shopDeployment.update({
     where: { id: ctx.deploymentId },
