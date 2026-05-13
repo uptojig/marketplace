@@ -25,7 +25,10 @@ export type BlockType =
   | 'countdown'
   | 'drop-calendar'
   | 'story'
-  | 'sticky';
+  | 'sticky'
+  | 'featured-stores'
+  | 'marketplace-categories'
+  | 'product-detail';
 
 export interface Block {
   type: BlockType;
@@ -234,4 +237,32 @@ export interface LiveStreamInfo {
   hostName: string;
   hostAvatarUrl?: string;
   replays?: { id: string; thumbnailUrl: string; title: string; duration: number }[];
+}
+
+// ============================================================================
+// Block-specific data shapes (used via Block.data?.* — no caller-side links)
+// ============================================================================
+
+export interface FeaturedStore {
+  id: string;
+  slug: string;
+  name: string;
+  /** Used in carousel/grid card visual */
+  bannerUrl?: string;
+  logoUrl?: string;
+  rating: number;
+  followers: number;
+  /** Re-uses existing StoreBadges interface */
+  badges?: StoreBadges;
+}
+
+export interface MarketplaceCategory {
+  id: string;
+  /** Used in href: /stores/{storeSlug}/category/{slug} */
+  slug: string;
+  name: string;
+  iconUrl?: string;
+  /** Fallback emoji if no iconUrl */
+  emoji?: string;
+  productCount?: number;
 }

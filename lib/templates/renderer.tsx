@@ -14,6 +14,9 @@ import { CountdownBlock } from '@/components/store-blocks/countdown-block';
 import { DropCalendarBlock } from '@/components/store-blocks/drop-calendar-block';
 import { StoryBlock } from '@/components/store-blocks/story-block';
 import { StickyBlock } from '@/components/store-blocks/sticky-block';
+import { FeaturedStoresBlock } from '@/components/store-blocks/featured-stores-block';
+import { MarketplaceCategoriesBlock } from '@/components/store-blocks/marketplace-categories-block';
+import { ProductDetailBlock } from '@/components/store-blocks/product-detail-block';
 import { DesktopPatternA } from '@/components/store-desktop/pattern-a';
 import { DesktopPatternB } from '@/components/store-desktop/pattern-b';
 import { DesktopPatternC } from '@/components/store-desktop/pattern-c';
@@ -46,6 +49,9 @@ const BLOCK_COMPONENTS: Record<BlockType, ComponentType<BlockProps>> = {
   'drop-calendar': DropCalendarBlock,
   story: StoryBlock,
   sticky: StickyBlock,
+  'featured-stores': FeaturedStoresBlock,
+  'marketplace-categories': MarketplaceCategoriesBlock,
+  'product-detail': ProductDetailBlock,
 };
 
 /**
