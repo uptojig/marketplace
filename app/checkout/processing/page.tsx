@@ -6,7 +6,7 @@ import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { fetchIntentStatus, pollIntentUntilTerminal } from '@/lib/anypay/client';
+import { fetchIntentStatus, pollIntentUntilTerminal } from '@/lib/anypay/intent-client';
 import type { AnypayIntentResponse } from '@/lib/anypay/intent-server';
 
 export default function ProcessingPage() {
