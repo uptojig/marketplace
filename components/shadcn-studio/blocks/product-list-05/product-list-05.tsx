@@ -7,6 +7,7 @@ export type ProductItem = {
   price: number
   salePrice?: number
   category: string
+  productLink?: string
 }
 
 type ProductProps = {
@@ -29,7 +30,13 @@ const ProductList = ({ products }: ProductProps) => {
               <ProductCarousel productImages={product.productImages} />
               <CardContent className='z-10 flex flex-col gap-1 py-6'>
                 <div className='flex items-center justify-between font-semibold'>
-                  <h3 className='text-lg'>{product.name}</h3>
+                  {product.productLink ? (
+                    <a href={product.productLink} className='hover:underline'>
+                      <h3 className='text-lg'>{product.name}</h3>
+                    </a>
+                  ) : (
+                    <h3 className='text-lg'>{product.name}</h3>
+                  )}
                   <span className='text-2xl'>${product.salePrice ? product.salePrice : product.price}</span>
                 </div>
                 <div className='flex items-center justify-between'>
