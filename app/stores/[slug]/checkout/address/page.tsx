@@ -30,8 +30,11 @@ export default function CheckoutAddressPage({
   params: { slug: string };
 }) {
   const router = useRouter();
-  const lines = useCart((s) => s.lines);
-  const subtotal = useCart((s) => s.subtotalTHB());
+  // Per-store scope — only this store's items + subtotal show up
+  // during its checkout flow.
+  const allLines = useCart((s) => s.lines);
+  const lines = allLines.filter((l) => l.storeSlug === params.slug);
+  const subtotal = lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0);
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
