@@ -1,7 +1,4 @@
 import Link from 'next/link';
-import { Search } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BlockRenderer } from '@/lib/templates/renderer';
@@ -16,15 +13,18 @@ import type { Store } from '@/lib/templates/types';
  *          flash-deal, vintage
  *
  *   ┌────────────────────────────────────┐
- *   │  Logo  Store        ┃  Search      │
+ *   │  Logo  Store        ┃  Search      │  ← ShopHeader (from layout)
  *   ├──────────┬─────────────────────────┤
  *   │ Cats     │                         │
  *   │ Filters  │  Products (4-col)       │
  *   │          │  Compare / Pricing      │
  *   └──────────┴─────────────────────────┘
  *
- * Search-first catalog. Sticky top bar + sticky sidebar.
- * Hero is hidden; store-header is rendered inline in the top bar.
+ * Search-first catalog with sticky category + filter sidebar.
+ * ShopHeader from app/stores/[slug]/layout.tsx already supplies the
+ * top chrome (logo + search + cart/wishlist/account), so this pattern
+ * MUST NOT render its own inline header — doing so stacked two
+ * headers on every Pattern B store.
  */
 export function DesktopPatternB({ blocks, store }: PatternProps) {
   const countdown = findBlock(blocks, 'countdown');
@@ -34,19 +34,6 @@ export function DesktopPatternB({ blocks, store }: PatternProps) {
 
   return (
     <>
-      {/* Sticky top bar */}
-      <div className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3">
-          <InlineHeader store={store} />
-          <div className="ml-auto max-w-2xl flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder={`Search ${store.name}...`} className="pl-9" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {countdown && <BlockRenderer block={countdown} store={store} />}
 
       <div className="mx-auto max-w-7xl px-6 py-6">
@@ -64,24 +51,6 @@ export function DesktopPatternB({ blocks, store }: PatternProps) {
         </div>
       </div>
     </>
-  );
-}
-
-function InlineHeader({ store }: { store: Store }) {
-  return (
-    <div className="flex flex-shrink-0 items-center gap-2">
-      <Avatar className="h-8 w-8">
-        <AvatarImage src={store.branding.logoUrl} alt={store.name} />
-        <AvatarFallback className="text-xs">{store.name.slice(0, 2)}</AvatarFallback>
-      </Avatar>
-      <div className="text-sm font-semibold">{store.name}</div>
-      {store.badges?.official && (
-        <Badge className="bg-blue-600 text-[10px] hover:bg-blue-600">Official</Badge>
-      )}
-      {store.badges?.b2b && (
-        <Badge className="bg-purple-600 text-[10px] hover:bg-purple-600">B2B</Badge>
-      )}
-    </div>
   );
 }
 
