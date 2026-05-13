@@ -56,8 +56,6 @@ export function renderCloudInit(input: CloudInitInput): string {
         admin off
         on_demand_tls {
                 ask ${input.controlPlaneBaseUrl}/api/provisioner/caddy-ask
-                interval 2m
-                burst    5
         }
         servers {
                 protocols h1 h2 h3

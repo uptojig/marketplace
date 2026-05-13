@@ -65,9 +65,7 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 USER nextjs
 EXPOSE 3000
 
-# /health is implemented at app/api/health/route.ts (single-file endpoint
-# included in the shop droplet recipe).
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
-  CMD wget --spider -q http://localhost:3000/health || exit 1
+  CMD wget --spider -q http://localhost:3000/api/health || exit 1
 
 CMD ["node", "server.js"]

@@ -166,7 +166,7 @@ async function configureDnsJob(ctx: JobContext): Promise<JobResult> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// WAIT_FOR_APP_READY — poll the slug subdomain's /health until 200
+// WAIT_FOR_APP_READY — poll the slug subdomain's /api/health until 200
 // ─────────────────────────────────────────────────────────────────────────
 async function waitForAppReadyJob(ctx: JobContext): Promise<JobResult> {
   const cfg = getConfig();
@@ -177,14 +177,14 @@ async function waitForAppReadyJob(ctx: JobContext): Promise<JobResult> {
 
   // Probe via the slug subdomain (CF DNS only, not proxied), not the
   // raw IP — exercises the full DNS+TLS path Caddy will serve.
-  const url = `https://${d.store.slug}.${cfg.cfPlatformDomain}/health`;
+  const url = `https://${d.store.slug}.${cfg.cfPlatformDomain}/api/health`;
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(10_000),
       headers: { "user-agent": "marketplace-provisioner/1.0" },
     });
     if (!res.ok) {
-      throw new RetriableError(`/health returned ${res.status}`);
+      throw new RetriableError(`/api/health returned ${res.status}`);
     }
   } catch (err) {
     if (err instanceof RetriableError) throw err;
@@ -262,7 +262,7 @@ async function healthCheckJob(ctx: JobContext): Promise<JobResult> {
   });
   if (!d.publicIpv4) return { done: true };
 
-  const url = `https://${d.store.slug}.${cfg.cfPlatformDomain}/health`;
+  const url = `https://${d.store.slug}.${cfg.cfPlatformDomain}/api/health`;
   let ok = false;
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
