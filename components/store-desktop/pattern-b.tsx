@@ -64,7 +64,7 @@ function SidebarCategories({ store }: { store: Store }) {
         {store.collections.map((c) => (
           <Link
             key={c.id}
-            href={`/store/${store.slug}/collection/${c.id}`}
+            href={`/stores/${store.slug}/category/${encodeURIComponent(c.name)}`}
             className="flex items-center justify-between rounded-md px-3 py-1.5 text-sm hover:bg-accent"
           >
             <span>{c.name}</span>

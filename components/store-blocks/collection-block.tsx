@@ -49,7 +49,7 @@ function FeaturedCard({ collections, store }: { collections: Collection[]; store
             <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{featured.description}</p>
           )}
           <Link
-            href={`/store/${store.slug}/collection/${featured.id}`}
+            href={`/stores/${store.slug}/category/${encodeURIComponent(featured.name)}`}
             className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary"
           >
             View all <ArrowRight className="h-3 w-3" />
@@ -67,7 +67,7 @@ function CarouselCollections({ collections, store }: { collections: Collection[]
         {collections.map((c) => (
           <Link
             key={c.id}
-            href={`/store/${store.slug}/collection/${c.id}`}
+            href={`/stores/${store.slug}/category/${encodeURIComponent(c.name)}`}
             className="w-40 shrink-0"
           >
             <Card className="overflow-hidden">
@@ -94,7 +94,7 @@ function LookbookCollections({ collections, store }: { collections: Collection[]
   return (
     <div className="space-y-6 px-4 py-6">
       {collections.map((c, i) => (
-        <Link key={c.id} href={`/store/${store.slug}/collection/${c.id}`} className="block">
+        <Link key={c.id} href={`/stores/${store.slug}/category/${encodeURIComponent(c.name)}`} className="block">
           <div className={cn('grid gap-3', i % 2 === 0 ? 'grid-cols-1' : 'grid-cols-2')}>
             <AspectRatio ratio={i % 2 === 0 ? 4 / 3 : 3 / 4}>
               {c.imageUrl ? (
@@ -120,7 +120,7 @@ function SceneCollections({ collections, store }: { collections: Collection[]; s
   return (
     <div className="space-y-3 px-3 py-3">
       {collections.map((c) => (
-        <Link key={c.id} href={`/store/${store.slug}/collection/${c.id}`} className="block">
+        <Link key={c.id} href={`/stores/${store.slug}/category/${encodeURIComponent(c.name)}`} className="block">
           <Card className="overflow-hidden">
             <AspectRatio ratio={3 / 2}>
               {c.imageUrl ? (
