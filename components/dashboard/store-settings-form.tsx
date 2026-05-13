@@ -114,7 +114,7 @@ export function StoreSettingsForm({
   ownerLoginEmail,
 }: StoreSettingsFormProps) {
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+  const [toast, setToast] = useState<{ type: "ok" | "warn" | "err"; msg: string } | null>(null);
   const [pe, setPe] = useState(initialPlatformEmail);
   const [provisioning, setProvisioning] = useState(false);
   const [provisionError, setProvisionError] = useState<string | null>(null);
@@ -160,9 +160,9 @@ export function StoreSettingsForm({
           });
         }
         setToast({
-          type: warnings.length ? "err" : "ok",
+          type: warnings.length ? "warn" : "ok",
           msg: warnings.length
-            ? `บันทึกแล้ว (มีข้อควรระวัง: ${warnings.join("; ")})`
+            ? `บันทึกแล้ว — ข้อควรระวัง: ${warnings.join("; ")}`
             : "บันทึกสำเร็จแล้ว",
         });
       }
@@ -198,7 +198,9 @@ export function StoreSettingsForm({
           className={`rounded-md px-4 py-3 text-sm ${
             toast.type === "ok"
               ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
+              : toast.type === "warn"
+                ? "bg-amber-50 text-amber-800 border border-amber-200"
+                : "bg-red-50 text-red-800 border border-red-200"
           }`}
         >
           {toast.msg}

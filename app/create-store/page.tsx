@@ -32,7 +32,7 @@ export default async function CreateStorePage() {
     select: { slug: true, name: true },
   });
   if (existing) {
-    redirect(`/seller/dashboard?store=${existing.slug}`);
+    redirect(`/dashboard?store=${existing.slug}`);
   }
 
   return <Wizard onSubmit={createStoreAndRedirect} />;

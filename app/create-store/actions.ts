@@ -87,7 +87,7 @@ export async function createStoreAndRedirect(state: WizardState) {
   if (!result.ok) {
     throw new Error(result.error);
   }
-  redirect(`/seller/dashboard?store=${result.slug}`);
+  redirect(`/dashboard?store=${result.slug}`);
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────────
