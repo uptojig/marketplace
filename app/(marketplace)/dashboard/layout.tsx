@@ -177,9 +177,10 @@ function Sidebar({
           >
             ตั้งค่าร้าน
           </NavItem>
-          <NavItem href="/orders" icon={<ShoppingBag className="h-4 w-4" />}>
-            ออเดอร์
-          </NavItem>
+          {/* TODO(phase-2a): "ออเดอร์" item lands here once
+              /dashboard/store/orders is built (vendor's own orders
+              view, filtered to this store). Old link was /orders
+              which pointed at the now-deleted buyer-side page. */}
         </NavGroup>
 
         {isAdmin && (
