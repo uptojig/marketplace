@@ -1,24 +1,34 @@
 "use client";
 
 /**
- * /stores/<slug>/cart — Shopping Cart matching Tailwind UI Plus pattern.
+ * /stores/<slug>/cart — Shopping Cart matching Tailwind UI Plus pattern,
+ * with scaffold-aligned polish from marketplace-templates/src/app/cart.
  *
  * Layout: 2-column on lg+ (items 7/12, summary 5/12 sticky), stacked
  * on mobile. Per multi-page-shop spec:
  *   - Line items: image + title (link) + variant + price + qty + remove
  *   - Summary: subtotal + shipping estimate + total + checkout CTA
+ *   - Free-shipping progress bar (visual nudge, scaffold-inspired)
  *   - Trust strip at bottom: ส่งฟรี ฿990+ / คืนได้ 7 วัน / COD
  *   - Empty state: friendly bag icon + "ไปช้อป" CTA
+ *
+ * Wiring:
+ *   - Uses `useCart` from @/lib/store/cart (the active per-store
+ *     storefront cart, shared with ShopHeader). NOT `useCartStore`
+ *     from the scaffold's dead lib/cart/store.ts.
+ *   - "Buy more" CTA points to the per-store category page so the
+ *     theme cascade survives across the trip back.
  *
  * All accents via var(--shop-*) so theme cascade carries.
  */
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   ShoppingBag,
   Trash2,
   ChevronLeft,
+  Minus,
+  Plus,
   Truck,
   RotateCcw,
   Banknote,
@@ -158,7 +168,7 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                       </div>
 
                       <div className="mt-3 sm:mt-4 flex items-end justify-between">
-                        {/* Quantity stepper */}
+                        {/* Quantity stepper — scaffold-style icon buttons */}
                         <div
                           className="inline-flex items-center rounded-md border"
                           style={{ borderColor: "var(--shop-border)" }}
@@ -168,10 +178,10 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                             onClick={() => setQty(l.productId, l.qty - 1)}
                             disabled={l.qty <= 1}
                             aria-label="ลด"
-                            className="px-3 py-1.5 text-sm disabled:opacity-40"
+                            className="inline-flex h-9 w-9 items-center justify-center text-sm disabled:opacity-40"
                             style={{ color: "var(--shop-ink)" }}
                           >
-                            −
+                            <Minus className="h-3.5 w-3.5" />
                           </button>
                           <input
                             type="number"
@@ -198,10 +208,10 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                             type="button"
                             onClick={() => setQty(l.productId, l.qty + 1)}
                             aria-label="เพิ่ม"
-                            className="px-3 py-1.5 text-sm"
+                            className="inline-flex h-9 w-9 items-center justify-center text-sm"
                             style={{ color: "var(--shop-ink)" }}
                           >
-                            +
+                            <Plus className="h-3.5 w-3.5" />
                           </button>
                         </div>
 
@@ -211,6 +221,7 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                           onClick={() => remove(l.productId)}
                           className="inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
                           style={{ color: "var(--shop-ink-muted)" }}
+                          aria-label={`ลบ ${l.title}`}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                           ลบ
@@ -279,19 +290,33 @@ export function StoreCartClient({ store }: { store: StoreLite }) {
                   </div>
 
                   {remainingForFreeShipping > 0 && (
-                    <p
-                      className="text-xs"
-                      style={{ color: "var(--shop-ink-muted)" }}
-                    >
-                      ซื้ออีก{" "}
-                      <span
-                        className="font-medium"
-                        style={{ color: "var(--shop-primary)" }}
+                    <div className="space-y-1.5">
+                      <p
+                        className="text-xs"
+                        style={{ color: "var(--shop-ink-muted)" }}
                       >
-                        {formatTHB(remainingForFreeShipping)}
-                      </span>{" "}
-                      จะได้ส่งฟรี
-                    </p>
+                        ซื้ออีก{" "}
+                        <span
+                          className="font-medium"
+                          style={{ color: "var(--shop-primary)" }}
+                        >
+                          {formatTHB(remainingForFreeShipping)}
+                        </span>{" "}
+                        จะได้ส่งฟรี
+                      </p>
+                      <div
+                        className="h-1.5 w-full overflow-hidden rounded-full"
+                        style={{ background: "var(--shop-border)" }}
+                      >
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100)}%`,
+                            background: "var(--shop-primary)",
+                          }}
+                        />
+                      </div>
+                    </div>
                   )}
 
                   <div
