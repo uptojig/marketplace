@@ -31,7 +31,9 @@ export async function getUserOrders(
     ...(opts.cursor ? { cursor: { id: opts.cursor }, skip: 1 } : {}),
     include: {
       items: true,
-      store: { select: { slug: true, name: true } },
+      // logoUrl is needed by the buyer account dashboard + orders list
+      // cards (small store avatar next to the line items).
+      store: { select: { slug: true, name: true, logoUrl: true } },
       payment: { select: { status: true } },
     },
   });

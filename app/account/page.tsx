@@ -1,38 +1,95 @@
-import Link from 'next/link';
+// /account — buyer dashboard (Server Component).
+//
+// Wiring:
+//  - getServerSession → user.id; redirect to /signin if missing.
+//  - Recent orders + active-order count come from Prisma via
+//    lib/orders/queries + toOrderViews. Status filter uses the
+//    real OrderStatus enum.
+//  - Address count comes from Prisma directly (the active
+//    /api/addresses route uses the same model).
+//  - User name / avatar / joinedAt come from session + the User
+//    row.
+//
+// TODOs flagged inline:
+//  - Anypay wallet balance (no model yet — stub at ฿0).
+//  - Favorites count (no Favorite model — stub at 0).
+
 import Image from 'next/image';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
 import { ArrowRight, Heart, MapPin, Package, Wallet } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { getUserOrders } from '@/lib/orders/queries';
+import { toOrderViews } from '@/lib/account/order-view';
 import {
-  getOrders,
-  mockUser,
   ORDER_STATUS_COLOR,
   ORDER_STATUS_LABEL,
-} from '@/lib/account/mock-data';
-import { getAddresses } from '@/lib/checkout/mock-data';
+} from '@/lib/orders/status-ui';
 
-export default function AccountDashboard() {
-  const user = mockUser;
-  const recentOrders = getOrders().slice(0, 3);
-  const addresses = getAddresses();
-  const activeOrders = getOrders().filter(
-    (o) => o.status === 'pending_payment' || o.status === 'paid' || o.status === 'shipping',
-  ).length;
+export const dynamic = 'force-dynamic';
+
+// Statuses that count as "active" in the dashboard stat card. Mirrors
+// the orders-list "in-flight" grouping (rough buyer mental model:
+// "anything I'm still waiting on").
+const ACTIVE_ORDER_STATUSES = [
+  'PENDING_PAYMENT',
+  'PAID',
+  'SUPPLIER_PLACED',
+  'SHIPPED',
+] as const;
+
+export default async function AccountDashboard() {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+
+  if (!userId) {
+    redirect('/signin?callbackUrl=/account');
+  }
+
+  // Pull everything in parallel — the page is force-dynamic anyway.
+  const [user, recentOrdersRaw, activeOrders, addressCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true, image: true, createdAt: true },
+    }),
+    getUserOrders(userId, { limit: 3 }),
+    prisma.order.count({
+      where: {
+        userId,
+        status: { in: [...ACTIVE_ORDER_STATUSES] },
+      },
+    }),
+    prisma.address.count({ where: { userId } }),
+  ]);
+
+  const recentOrders = toOrderViews(recentOrdersRaw);
+  const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
+  const initials = displayName.slice(0, 2);
 
   return (
     <div className="space-y-6">
       <Card className="flex items-center gap-4 p-4">
         <Avatar className="h-14 w-14">
-          <AvatarImage src={user.avatarUrl} alt={user.fullName} />
-          <AvatarFallback>{user.fullName.slice(0, 2)}</AvatarFallback>
+          {user?.image && <AvatarImage src={user.image} alt={displayName} />}
+          <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-semibold">สวัสดี, {user.fullName}</h1>
-          <p className="text-xs text-muted-foreground">
-            สมาชิกตั้งแต่ {new Date(user.joinedAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long' })}
-          </p>
+          <h1 className="text-lg font-semibold">สวัสดี, {displayName}</h1>
+          {user?.createdAt && (
+            <p className="text-xs text-muted-foreground">
+              สมาชิกตั้งแต่{" "}
+              {user.createdAt.toLocaleDateString("th-TH", {
+                year: "numeric",
+                month: "long",
+              })}
+            </p>
+          )}
         </div>
       </Card>
 
@@ -46,10 +103,13 @@ export default function AccountDashboard() {
         <StatCard
           icon={MapPin}
           label="ที่อยู่บันทึกไว้"
-          value={addresses.length.toString()}
+          value={addressCount.toString()}
           href="/account/addresses"
         />
+        {/* TODO(anypay): replace ฿0 with real wallet balance once the
+            wallet model lands. Kept muted to signal "coming soon". */}
         <StatCard icon={Wallet} label="ยอด Anypay" value="฿0" href="/account/wallet" muted />
+        {/* TODO(favorites): wire Favorite model count when added. */}
         <StatCard icon={Heart} label="รายการโปรด" value="0" href="/account/favorites" muted />
       </div>
 
@@ -63,46 +123,63 @@ export default function AccountDashboard() {
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
-        <div className="space-y-2">
-          {recentOrders.map((o) => (
-            <Card key={o.id} className="p-3">
-              <Link
-                href={`/account/orders/${o.orderRef}`}
-                className="flex items-center gap-3"
-              >
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded">
-                  <Image
-                    src={o.items[0].thumbnailUrl}
-                    alt={o.items[0].title}
-                    fill
-                    className="object-cover"
-                    sizes="56px"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-medium">{o.storeName}</span>
-                    <Badge className={ORDER_STATUS_COLOR[o.status]} variant="outline">
-                      {ORDER_STATUS_LABEL[o.status]}
-                    </Badge>
+        {recentOrders.length === 0 ? (
+          <Card className="p-6 text-center">
+            <Package className="mx-auto h-10 w-10 text-muted-foreground" />
+            <p className="mt-2 text-sm text-muted-foreground">
+              ยังไม่มีคำสั่งซื้อ — เริ่มช้อปได้เลย
+            </p>
+            <Button asChild className="mt-4">
+              <Link href="/">ไปหน้าแรก</Link>
+            </Button>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {recentOrders.map((o) => (
+              <Card key={o.id} className="p-3">
+                <Link
+                  href={`/account/orders/${o.orderRef}`}
+                  className="flex items-center gap-3"
+                >
+                  {o.items[0] && (
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded">
+                      <Image
+                        src={o.items[0].thumbnailUrl}
+                        alt={o.items[0].title}
+                        fill
+                        className="object-cover"
+                        sizes="56px"
+                        unoptimized
+                      />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium">{o.storeName}</span>
+                      <Badge className={ORDER_STATUS_COLOR[o.status]} variant="outline">
+                        {ORDER_STATUS_LABEL[o.status]}
+                      </Badge>
+                    </div>
+                    {o.items[0] && (
+                      <p className="line-clamp-1 text-xs text-muted-foreground">
+                        {o.items[0].title}
+                        {o.items.length > 1 && ` + อีก ${o.items.length - 1} รายการ`}
+                      </p>
+                    )}
                   </div>
-                  <p className="line-clamp-1 text-xs text-muted-foreground">
-                    {o.items[0].title}
-                    {o.items.length > 1 && ` + อีก ${o.items.length - 1} รายการ`}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-red-600">
-                    ฿{o.total.toLocaleString()}
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-red-600">
+                      ฿{o.totalTHB.toLocaleString()}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {new Date(o.placedAt).toLocaleDateString("th-TH")}
+                    </div>
                   </div>
-                  <div className="text-[10px] text-muted-foreground">
-                    {new Date(o.placedAt).toLocaleDateString('th-TH')}
-                  </div>
-                </div>
-              </Link>
-            </Card>
-          ))}
-        </div>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="rounded-lg border bg-muted/30 p-4">
@@ -144,7 +221,7 @@ function StatCard({
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-xs text-muted-foreground">{label}</div>
-            <div className={`text-lg font-semibold ${muted ? 'text-muted-foreground' : ''}`}>
+            <div className={`text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`}>
               {value}
             </div>
           </div>
