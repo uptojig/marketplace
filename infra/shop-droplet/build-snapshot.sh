@@ -86,6 +86,31 @@ done
 echo "  → active. Waiting 4 minutes for cloud-init..."
 sleep 240
 
+# Fetch the builder's public IP for SSH-based cleanup
+BUILDER_IP=$(curl -sS "https://api.digitalocean.com/v2/droplets/$DROPLET_ID" \
+  -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
+  | jq -r '.droplet.networks.v4[] | select(.type=="public") | .ip_address' | head -n1)
+
+# Clean cloud-init state + wipe ConfigDrive so new droplets boot fresh.
+# Without this, the snapshot retains "instance already cloud-init-ed" flag
+# AND the ConfigDrive contents from the builder, so new droplets ignore
+# the per-shop user_data and never write /opt/marketplace-shop/.
+if [ -n "$BUILDER_IP" ] && [ -n "${DO_SSH_KEY_ID:-}" ]; then
+  echo "🧹 Cleaning cloud-init state on builder ($BUILDER_IP)..."
+  ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o LogLevel=ERROR \
+      "root@$BUILDER_IP" bash <<'CLEAN' || echo "  ⚠ ssh cleanup failed, snapshot may need post-boot cleanup"
+set -e
+cloud-init clean --logs --machine-id --seed 2>/dev/null || true
+# Wipe ConfigDrive ISO (/dev/vdb) so new boots can't read stale config
+if [ -b /dev/vdb ]; then dd if=/dev/zero of=/dev/vdb bs=1M count=64 status=none || true; fi
+rm -rf /var/lib/cloud/instances/* /var/lib/cloud/data/* 2>/dev/null || true
+sync
+CLEAN
+  echo "  ✓ cleanup done"
+else
+  echo "  ⚠ no SSH key set (DO_SSH_KEY_ID) — skipping cleanup (snapshot will need manual reset)"
+fi
+
 echo "⏻ Powering off..."
 curl -sS -X POST "https://api.digitalocean.com/v2/droplets/$DROPLET_ID/actions" \
   -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
