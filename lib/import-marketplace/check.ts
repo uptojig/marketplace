@@ -1,4 +1,3 @@
-'use server';
 
 import type { ImportSource } from '@/lib/import-sources/types';
 

@@ -1,4 +1,3 @@
-'use server';
 
 import type { SupplierProduct } from '@/lib/import-sources/types';
 import { checkIp, type IpCheckResult } from './ip-filter';
