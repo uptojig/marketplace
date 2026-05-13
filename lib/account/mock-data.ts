@@ -21,6 +21,8 @@ export interface Order {
   placedAt: string;
   status: OrderStatus;
   storeId: string;
+  /** Slug used to build /stores/[slug] URLs in account pages. */
+  storeSlug: string;
   storeName: string;
   storeLogo?: string;
   items: OrderItem[];
@@ -60,6 +62,7 @@ export const mockOrders: Order[] = [
     placedAt: '2026-05-11T10:30:00Z',
     status: 'shipping',
     storeId: 'store_1',
+    storeSlug: 'audio-house-bkk',
     storeName: 'Audio House BKK',
     storeLogo: 'https://picsum.photos/seed/logo/200',
     items: [
@@ -87,6 +90,7 @@ export const mockOrders: Order[] = [
     placedAt: '2026-05-09T15:20:00Z',
     status: 'delivered',
     storeId: 'store_1',
+    storeSlug: 'audio-house-bkk',
     storeName: 'Audio House BKK',
     storeLogo: 'https://picsum.photos/seed/logo/200',
     items: [
@@ -120,6 +124,7 @@ export const mockOrders: Order[] = [
     placedAt: '2026-05-05T09:15:00Z',
     status: 'paid',
     storeId: 'store_2',
+    storeSlug: 'thai-craft-studio',
     storeName: 'Thai Craft Studio',
     storeLogo: 'https://picsum.photos/seed/logo2/200',
     items: [
@@ -144,6 +149,7 @@ export const mockOrders: Order[] = [
     placedAt: '2026-04-30T11:00:00Z',
     status: 'cancelled',
     storeId: 'store_3',
+    storeSlug: 'glow-beauty',
     storeName: 'Glow Beauty',
     storeLogo: 'https://picsum.photos/seed/logo3/200',
     items: [

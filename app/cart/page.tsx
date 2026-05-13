@@ -99,6 +99,7 @@ function StoreGroup({ storeId, items }: { storeId: string; items: CartItem[] }) 
 
   const storeName = items[0]?.storeName ?? 'Store';
   const storeLogo = items[0]?.storeLogo;
+  const storeSlug = items[0]?.storeSlug;
   const allSelected = items.every((i) => selectedIds.includes(i.id));
   const subtotal = items
     .filter((i) => selectedIds.includes(i.id))
@@ -117,9 +118,13 @@ function StoreGroup({ storeId, items }: { storeId: string; items: CartItem[] }) 
           <AvatarImage src={storeLogo} alt={storeName} />
           <AvatarFallback className="text-[10px]">{storeName.slice(0, 2)}</AvatarFallback>
         </Avatar>
-        <Link href={`/store/${storeId}`} className="text-sm font-medium hover:underline">
-          {storeName}
-        </Link>
+        {storeSlug ? (
+          <Link href={`/stores/${storeSlug}`} className="text-sm font-medium hover:underline">
+            {storeName}
+          </Link>
+        ) : (
+          <span className="text-sm font-medium">{storeName}</span>
+        )}
       </div>
 
       <div className="divide-y">
@@ -162,22 +167,38 @@ function CartItemRow({ item }: { item: CartItem }) {
         onCheckedChange={() => toggleSelected(item.id)}
         className="mt-1"
       />
-      <Link
-        href={`/p/${item.productId}`}
-        className="relative h-20 w-20 shrink-0 overflow-hidden rounded"
-      >
-        <Image
-          src={item.thumbnailUrl}
-          alt={item.title}
-          fill
-          className="object-cover"
-          sizes="80px"
-        />
-      </Link>
-      <div className="min-w-0 flex-1">
-        <Link href={`/p/${item.productId}`}>
-          <h3 className="line-clamp-2 text-sm font-medium hover:underline">{item.title}</h3>
+      {item.storeSlug ? (
+        <Link
+          href={`/stores/${item.storeSlug}/products/${item.productId}`}
+          className="relative h-20 w-20 shrink-0 overflow-hidden rounded"
+        >
+          <Image
+            src={item.thumbnailUrl}
+            alt={item.title}
+            fill
+            className="object-cover"
+            sizes="80px"
+          />
         </Link>
+      ) : (
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded">
+          <Image
+            src={item.thumbnailUrl}
+            alt={item.title}
+            fill
+            className="object-cover"
+            sizes="80px"
+          />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        {item.storeSlug ? (
+          <Link href={`/stores/${item.storeSlug}/products/${item.productId}`}>
+            <h3 className="line-clamp-2 text-sm font-medium hover:underline">{item.title}</h3>
+          </Link>
+        ) : (
+          <h3 className="line-clamp-2 text-sm font-medium">{item.title}</h3>
+        )}
         {item.variantName && (
           <p className="mt-0.5 text-xs text-muted-foreground">Variant: {item.variantName}</p>
         )}
