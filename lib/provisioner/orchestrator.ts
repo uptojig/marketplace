@@ -111,6 +111,19 @@ export async function rejectPaymentWhitelist(opts: {
 // ─────────────────────────────────────────────────────────────────────────
 // Public: tear down completely (admin "delete shop")
 // ─────────────────────────────────────────────────────────────────────────
+// Synchronous variant — runs the teardown inline so the caller can then
+// safely delete the Store row (which cascades into ShopDeployment). The
+// async-job variant below is for the slow lane (orchestrator drain).
+export async function tearDownDeploymentNow(storeId: string): Promise<void> {
+  const deployment = await prisma.shopDeployment.findUnique({ where: { storeId } });
+  if (!deployment) return;
+  await runJob("DESTROY_DROPLET", {
+    deploymentId: deployment.id,
+    inputJson: null,
+    attempt: 1,
+  });
+}
+
 export async function deprovisionStore(storeId: string): Promise<void> {
   const deployment = await prisma.shopDeployment.findUnique({ where: { storeId } });
   if (!deployment) return;

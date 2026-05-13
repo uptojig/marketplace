@@ -8,6 +8,7 @@ import {
   provisionPlatformEmail,
   updatePlatformEmailForward,
 } from "@/lib/email/provision";
+import { tearDownDeploymentNow } from "@/lib/provisioner/orchestrator";
 
 const slugRegex = /^[a-z0-9฀-๿](?:[a-z0-9฀-๿-]*[a-z0-9฀-๿])?$/;
 const domainRegex = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
@@ -209,6 +210,14 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   try {
+    // Tear down DO droplet + CF DNS records BEFORE deleting the Store row
+    // (which cascades into ShopDeployment, otherwise we'd lose the droplet
+    // id and the records would orphan on DO). Errors here are non-fatal —
+    // if the droplet's already gone, the inner destroy* calls swallow it.
+    await tearDownDeploymentNow(params.id).catch((err) => {
+      console.error("[admin.delete-store] teardown failed", params.id, err);
+    });
+
     await prisma.store.delete({ where: { id: params.id } });
     return NextResponse.json({ ok: true });
   } catch (e) {
