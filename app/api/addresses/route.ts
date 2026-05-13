@@ -5,37 +5,37 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 /**
- * Resolve the user this request belongs to.
+ * Resolve the signed-in user, or 401.
  *
- *   1. NextAuth session → real user.
- *   2. Guest fallback (single shared "guest@marketplace.local" row)
- *      so unauthenticated checkout still works for the "Buy without
- *      signing up" path that /api/checkout supports.
+ * SECURITY: The previous version fell back to a single shared
+ * `guest@marketplace.local` row when no NextAuth session was present.
+ * That meant every anonymous visitor wrote/read addresses under the
+ * same user ID — i.e. any browser hitting GET /api/addresses while
+ * signed-out received every other anonymous visitor's saved
+ * addresses, including names, phone numbers, and street addresses.
  *
- * Replaces an earlier `getCurrentUserId()` cookie-session lookup
- * that was only ever populated by the /onboarding flow. Onboarding
- * was removed (commit 59c7c90) so the cookie always resolved null
- * and every signed-in user got dumped into the guest pool too.
+ * The fix is to require a real session for every read and write.
+ * Anonymous checkout is removed from this endpoint; the checkout
+ * UI must redirect to /signin?callbackUrl=... on 401. If we ever
+ * want guest checkout back, we have to scope guest identity with a
+ * per-browser cookie token (or session-scoped UUID), never a shared
+ * DB row.
  */
-async function resolveUserId(): Promise<string> {
+async function requireUserId(): Promise<string | null> {
   const session = await getServerSession(authOptions).catch(() => null);
-  if (session?.user?.email) {
-    const u = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true },
-    });
-    if (u) return u.id;
-  }
-  const guest = await prisma.user.upsert({
-    where: { email: "guest@marketplace.local" },
-    update: {},
-    create: { email: "guest@marketplace.local", name: "Guest" },
+  if (!session?.user?.email) return null;
+  const u = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true },
   });
-  return guest.id;
+  return u?.id ?? null;
 }
 
 export async function GET() {
-  const userId = await resolveUserId();
+  const userId = await requireUserId();
+  if (!userId) {
+    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  }
   const addresses = await prisma.address.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -56,7 +56,10 @@ const createSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const userId = await resolveUserId();
+  const userId = await requireUserId();
+  if (!userId) {
+    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  }
   const body = await req.json().catch(() => null);
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) {

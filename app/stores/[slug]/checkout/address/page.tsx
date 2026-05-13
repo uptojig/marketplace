@@ -60,6 +60,15 @@ export default function CheckoutAddressPage({
     setLoading(true);
     try {
       const res = await fetch("/api/addresses");
+      // /api/addresses returns 401 when the visitor isn't signed in.
+      // We previously fell through and rendered addresses from a shared
+      // guest user — a data leak between anonymous visitors. Bounce to
+      // /signin with a return URL so they come back here after auth.
+      if (res.status === 401) {
+        const next = `/stores/${params.slug}/checkout/address`;
+        router.replace(`/signin?callbackUrl=${encodeURIComponent(next)}`);
+        return;
+      }
       const data = (await res.json()) as { addresses: Address[] };
       setAddresses(data.addresses);
       if (data.addresses[0] && !selectedId) setSelectedId(data.addresses[0].id);

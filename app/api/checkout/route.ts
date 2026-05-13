@@ -35,21 +35,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid payload", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  // Auth: require signed-in user. For demo without auth, fall back to a guest user.
-  let userId: string | null = null;
+  // SECURITY: Require a real signed-in user. The previous version
+  // fell back to a single shared `guest@marketplace.local` row when
+  // no session was present, which let anonymous checkouts attribute
+  // orders to the same user record across visitors — and let any
+  // visitor query that user's address history via /api/addresses.
+  // If we ever want guest checkout back, we have to scope guest
+  // identity with a per-browser cookie token, not a shared DB row.
   const session = await getServerSession(authOptions).catch(() => null);
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    userId = user?.id ?? null;
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
-  if (!userId) {
-    const guest = await prisma.user.upsert({
-      where: { email: "guest@marketplace.local" },
-      update: {},
-      create: { email: "guest@marketplace.local", name: "Guest Demo" },
-    });
-    userId = guest.id;
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) {
+    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
+  const userId = user.id;
 
   try {
     const order = await createOrderFromCart({
