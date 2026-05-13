@@ -1,17 +1,17 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { ProductDetail } from "@/components/shop/ProductDetail";
+// TODO(cleanup): remove components/shop/ProductDetail.tsx once the new
+// scaffold-aligned ProductDetailHero + ProductDetailTabs flow has shipped
+// across all storefronts and there are no callers left.
+import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
+import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { cleanDescription } from "@/lib/format/cleanDescription";
-import { GlobalHeader } from "@/components/storefront/GlobalHeader";
-import { GlobalFooter } from "@/components/storefront/GlobalFooter";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
   RecentlyViewedRail,
   RecentlyViewedTracker,
 } from "@/components/storefront/RecentlyViewed";
-import { isV12Schema } from "@/lib/multi-page-migration";
-import { resolveFamily, type ThemeVariant } from "@/lib/landing/families";
 
 export const dynamic = "force-dynamic";
 
@@ -43,19 +43,6 @@ export default async function ShopProductPage({
     orderBy: { createdAt: "desc" },
   });
 
-  const store = product.store;
-  const blocksData = store.landingBlocks as any;
-  const isAiMultiPage =
-    blocksData &&
-    typeof blocksData === "object" &&
-    (isV12Schema(blocksData) ||
-      (blocksData.globalHeader && Array.isArray(blocksData.pages)) ||
-      blocksData.type === "block_registry_v1");
-  const themeVal = (store.landingThemeVariant as ThemeVariant) || "A";
-
-  const family = resolveFamily(blocksData?.designFamily || store.landingThemeVariant);
-  const primaryColor = isAiMultiPage ? (family?.themeColor ?? store.primaryColor ?? "#008BF8") : (store.primaryColor ?? "#2563eb");
-
   return (
     <div className="flex min-h-screen flex-col">
 
@@ -75,31 +62,55 @@ export default async function ShopProductPage({
             ← กลับ
           </Link>
 
-      <ProductDetail
+      <ProductDetailHero
         product={{
           id: product.id,
           title: product.titleTh ?? product.title,
-          // Subtitle = category collection (matches reference's
-          // "Balenciaga Fall Collection" position above the title)
-          subtitle: product.categoryName ?? product.store.name,
           description: cleanDescription(product.descriptionTh ?? product.description),
           priceTHB: Number(product.priceTHB),
-          imageUrl: product.imageUrl ?? undefined,
+          // Prisma stores the strikethrough price as `compareAtPriceTHB`;
+          // the hero exposes it as `originalPriceTHB` (scaffold naming).
+          originalPriceTHB: product.compareAtPriceTHB ? Number(product.compareAtPriceTHB) : null,
+          imageUrl: product.imageUrl,
           images,
-          storeName: product.store.name,
-          storeSlug: product.store.slug,
-          storePrimaryColor: primaryColor,
-          // Supplier SKU exposed in the meta strip
-          productCode: product.externalProductId,
+          // No free-form attributes blob on Prisma yet; the spec sheet
+          // is rendered in the Tabs (passes the same empty object). The
+          // hero itself does not surface attributes.
+          attributes: {},
+          // TODO(badges): wire hot/new/limited/official once Product has
+          // a badges/flags field. For now no badges are surfaced.
+          badges: [],
           variants: product.variants.map((v) => ({
             id: v.id,
-            externalVariantId: v.externalVariantId,
             attributes: v.attributes as Record<string, string>,
             priceTHB: Number(v.priceTHB),
+            imageUrl: v.imageUrl,
             inventory: v.inventory,
-            imageUrl: v.imageUrl ?? undefined,
           })),
+          // Use Prisma stockTotal as the catch-all stockLeft. When variants
+          // exist, the hero prefers the selected variant's inventory.
+          stockLeft: product.hasVariants ? null : product.stockTotal,
+          // rating / reviewCount / soldCount intentionally omitted —
+          // not in schema yet. Hero hides the meta row gracefully.
         }}
+        store={{
+          slug: product.store.slug,
+          name: product.store.name,
+          logoUrl: product.store.logoUrl,
+          // rating / followers also not in schema — hero hides them.
+        }}
+      />
+
+      <ProductDetailTabs
+        product={{
+          description: cleanDescription(product.descriptionTh ?? product.description),
+          // No structured attributes column yet; pass an empty object
+          // so the Specifications tab shows the "ยังไม่มีข้อมูลจำเพาะ"
+          // placeholder rather than dying.
+          // TODO(specs): wire Prisma `Product.attributes` Json blob once it lands.
+          attributes: {},
+        }}
+        store={{ name: product.store.name }}
       />
 
       <RecentlyViewedTracker
