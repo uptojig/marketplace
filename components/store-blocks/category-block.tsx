@@ -59,7 +59,7 @@ function ColoredTiles({ collections, store }: { collections: Collection[]; store
       {collections.slice(0, 6).map((c, i) => (
         <Link
           key={c.id}
-          href={`/store/${store.slug}/collection/${c.id}`}
+          href={`/stores/${store.slug}/category/${encodeURIComponent(c.name)}`}
           className={cn(
             'flex aspect-square flex-col items-center justify-center rounded-2xl p-3 text-center transition-transform active:scale-95',
             colors[i % colors.length],
@@ -80,7 +80,7 @@ function Chips({ collections, store }: { collections: Collection[]; store: Store
         {collections.map((c) => (
           <Link
             key={c.id}
-            href={`/store/${store.slug}/collection/${c.id}`}
+            href={`/stores/${store.slug}/category/${encodeURIComponent(c.name)}`}
             className="shrink-0 rounded-full border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-secondary/80"
           >
             {c.name}
