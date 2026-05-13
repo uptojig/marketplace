@@ -81,6 +81,7 @@ async function createDropletJob(ctx: JobContext): Promise<JobResult> {
     name: `shop-${deployment.store.slug}-${randomBytes(2).toString("hex")}`,
     userData,
     tags: ["marketplace", "shop", `shop:${deployment.store.slug}`],
+    vpcUuid: cfg.doVpcUuid || undefined,
   });
 
   await prisma.shopDeployment.update({

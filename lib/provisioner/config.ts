@@ -12,6 +12,7 @@ export type ProvisionerConfig = {
   doImageSnapshotId: string; // numeric snapshot id; required once snapshot exists
   doImageFallbackSlug: string; // e.g. "ubuntu-24-04-x64" — used before snapshot exists
   doSshKeyIds: string[]; // fingerprints or numeric IDs
+  doVpcUuid: string; // VPC where shop droplets live (must match DB's VPC)
 
   // Cloudflare
   cfToken: string;
@@ -47,6 +48,7 @@ export function getConfig(): ProvisionerConfig {
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean),
+    doVpcUuid: readEnv("DO_VPC_UUID"),
     cfToken: readEnv("CLOUDFLARE_API_TOKEN"),
     cfZoneId: readEnv("CLOUDFLARE_ZONE_ID"),
     cfPlatformDomain: readEnv("MAIN_DOMAIN", "basketplace.co"),
