@@ -92,6 +92,11 @@ ${input.shopSlug}.${cfg.cfPlatformDomain} {
 }
 `;
 
+  // update-agent runs as a host-side systemd unit (not a container) because
+  // the only container image available on droplets is shop-app, which is a
+  // slim Node base without the docker CLI -- it can't drive docker.sock even
+  // with the socket mounted. Running on the host gives us the docker CLI
+  // + compose plugin for free.
   const dockerCompose = `
 services:
   shop:
@@ -114,41 +119,69 @@ services:
       - /opt/marketplace-shop/Caddyfile:/etc/caddy/Caddyfile:ro
       - /var/lib/caddy:/data
       - /var/log/caddy:/var/log/caddy
-
-  update-agent:
-    image: ${image}
-    restart: unless-stopped
-    network_mode: host
-    env_file: /opt/marketplace-shop/.env
-    entrypoint: ["/bin/sh", "/opt/marketplace-shop/update-agent.sh"]
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/marketplace-shop:/opt/marketplace-shop
 `;
 
+  // Compare-by-digest, not by tag-string: `:latest == :latest` always equals
+  // true even when the registry moves the tag to a new image, which silently
+  // pinned every droplet to the image baked into the snapshot. Using image
+  // IDs forces a recreate whenever `docker pull` brings down a different
+  // digest under the same tag.
   const updateAgent = `#!/bin/sh
-# Pull-based update agent. Polls the control plane for desired image
-# version every 5 min. If different from currently running, pulls + restarts.
-set -e
+# Pull-based update agent. Polls every $INTERVAL seconds; if the registry
+# digest behind \${IMAGE} differs from the running container's image ID,
+# recreate the shop container via compose.
+set -u
 INTERVAL=300
+DEFAULT_IMAGE="${image}"
+CONTAINER="marketplace-shop-shop-1"
+
+. /opt/marketplace-shop/.env
+
 while true; do
-  RESP=$(wget -qO- \\
+  # Desired image from control plane (with fallback). Allows pinning a
+  # specific tag per shop for canary / rollback.
+  RESP=$(wget -qO- --timeout=15 \\
     --header="Authorization: Bearer $INTERNAL_API_SECRET" \\
-    "$CONTROL_PLANE_BASE_URL/api/provisioner/agent/desired?shopId=$SHOP_ID" || echo '{}')
-  DESIRED=$(echo "$RESP" | grep -o '"image":"[^"]*"' | cut -d'"' -f4 || true)
-  CURRENT=$(docker inspect shop --format '{{.Config.Image}}' 2>/dev/null || echo "")
-  if [ -n "$DESIRED" ] && [ "$DESIRED" != "$CURRENT" ]; then
-    echo "[update-agent] $CURRENT -> $DESIRED"
-    docker pull "$DESIRED" || { sleep $INTERVAL; continue; }
-    cd /opt/marketplace-shop
-    SHOP_IMAGE="$DESIRED" docker compose up -d --no-deps shop
+    "$CONTROL_PLANE_BASE_URL/api/provisioner/agent/desired?shopId=$SHOP_ID" 2>/dev/null || echo '{}')
+  IMAGE=$(echo "$RESP" | grep -o '"image":"[^"]*"' | cut -d'"' -f4)
+  IMAGE="\${IMAGE:-$DEFAULT_IMAGE}"
+
+  # Pull. No-op if registry digest hasn't moved.
+  if docker pull "$IMAGE" >/dev/null 2>&1; then
+    PULLED_ID=$(docker image inspect "$IMAGE" --format '{{.Id}}' 2>/dev/null || echo "")
+    RUNNING_ID=$(docker inspect "$CONTAINER" --format '{{.Image}}' 2>/dev/null || echo "")
+    if [ -n "$PULLED_ID" ] && [ "$PULLED_ID" != "$RUNNING_ID" ]; then
+      echo "[update-agent] $(date -Iseconds) recreate: $RUNNING_ID -> $PULLED_ID"
+      cd /opt/marketplace-shop
+      docker compose up -d --no-deps shop || echo "[update-agent] recreate failed"
+    fi
   fi
-  # heartbeat
-  wget -q --post-data="shopId=$SHOP_ID&running=$CURRENT" \\
+
+  CURRENT_ID=$(docker inspect "$CONTAINER" --format '{{.Image}}' 2>/dev/null || echo "")
+  wget -q --timeout=10 \\
+    --post-data="shopId=$SHOP_ID&running=$CURRENT_ID" \\
     --header="Authorization: Bearer $INTERNAL_API_SECRET" \\
-    "$CONTROL_PLANE_BASE_URL/api/provisioner/agent/heartbeat" -O /dev/null || true
+    "$CONTROL_PLANE_BASE_URL/api/provisioner/agent/heartbeat" -O /dev/null 2>/dev/null || true
+
   sleep $INTERVAL
 done
+`;
+
+  const updateAgentUnit = `[Unit]
+Description=Marketplace Shop Update Agent
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStart=/opt/marketplace-shop/update-agent.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
 `;
 
   const snapshotBoot = `#cloud-config
@@ -169,6 +202,10 @@ ${dockerCompose.split("\n").map((l) => `      ${l}`).join("\n")}
     permissions: '0755'
     content: |
 ${updateAgent.split("\n").map((l) => `      ${l}`).join("\n")}
+  - path: /etc/systemd/system/marketplace-shop-update-agent.service
+    permissions: '0644'
+    content: |
+${updateAgentUnit.split("\n").map((l) => `      ${l}`).join("\n")}
 
 runcmd:
   - timedatectl set-timezone Asia/Bangkok
@@ -176,6 +213,8 @@ runcmd:
   - echo "${cfg.doToken}" | docker login -u "${cfg.doToken}" --password-stdin registry.digitalocean.com
   - cd /opt/marketplace-shop && docker compose pull
   - cd /opt/marketplace-shop && docker compose up -d
+  - systemctl daemon-reload
+  - systemctl enable --now marketplace-shop-update-agent.service
 `;
 
   if (input.useSnapshot) {
@@ -208,6 +247,10 @@ ${dockerCompose.split("\n").map((l) => `      ${l}`).join("\n")}
     permissions: '0755'
     content: |
 ${updateAgent.split("\n").map((l) => `      ${l}`).join("\n")}
+  - path: /etc/systemd/system/marketplace-shop-update-agent.service
+    permissions: '0644'
+    content: |
+${updateAgentUnit.split("\n").map((l) => `      ${l}`).join("\n")}
 
 runcmd:
   - timedatectl set-timezone Asia/Bangkok
@@ -221,5 +264,7 @@ runcmd:
   - echo "${cfg.doToken}" | docker login -u "${cfg.doToken}" --password-stdin registry.digitalocean.com
   - cd /opt/marketplace-shop && docker compose pull
   - cd /opt/marketplace-shop && docker compose up -d
+  - systemctl daemon-reload
+  - systemctl enable --now marketplace-shop-update-agent.service
 `;
 }
