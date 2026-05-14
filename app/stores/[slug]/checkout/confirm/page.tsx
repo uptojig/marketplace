@@ -28,9 +28,10 @@ const SHIPPING_OPTIONS = [
   { id: "REGISTERED", name: "ลงทะเบียนไปรษณีย์ไทย", priceTHB: 30, eta: "3-5 วัน" },
 ];
 
+// BANK_TRANSFER removed — AnyPay covers PromptPay, card, BNPL, etc.
+// already, and operators didn't want a manual transfer slip workflow.
 const PAYMENT_OPTIONS = [
-  { id: "BANK_TRANSFER", name: "โอนเงินผ่านบัญชีธนาคาร" },
-  { id: "ANYPAY", name: "ชำระผ่าน AnyPay (Mock)" },
+  { id: "ANYPAY", name: "ชำระผ่าน AnyPay" },
 ];
 
 export default function CheckoutConfirmPage({
@@ -48,8 +49,9 @@ export default function CheckoutConfirmPage({
 
   const [address, setAddress] = useState<Address | null>(null);
   const [shipping, setShipping] = useState(SHIPPING_OPTIONS[0]);
-  const [payment, setPayment] = useState(PAYMENT_OPTIONS[1]); // default ANYPAY for demo
+  const [payment, setPayment] = useState(PAYMENT_OPTIONS[0]); // only ANYPAY now
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState<{ orderId?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -128,13 +130,57 @@ export default function CheckoutConfirmPage({
         const data = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(data.error ?? `Checkout failed (${res.status})`);
       }
-      const data = (await res.json()) as { paymentUrl: string };
+      const data = (await res.json()) as { orderId?: string; paymentUrl?: string };
       clearCart();
-      window.location.href = data.paymentUrl;
+      // Per operator request: do NOT auto-redirect to the payment gate
+      // after order creation. Buyer pays later via the orderRef from
+      // their email / account orders page; the gate URL stays available
+      // server-side so we can resurface it if needed.
+      setSubmitted({ orderId: data.orderId });
     } catch (err) {
       setError(err instanceof Error ? err.message : "ไม่สามารถสร้างออเดอร์ได้");
       setSubmitting(false);
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="bg-[var(--shop-bg)] min-h-screen">
+        <main className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-20 text-center">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600 mb-4">
+            <Check className="h-8 w-8" />
+          </div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--shop-ink)' }}>
+            สั่งซื้อสำเร็จ
+          </h1>
+          <p className="mt-2 text-sm" style={{ color: 'var(--shop-ink-muted)' }}>
+            ออเดอร์ของคุณถูกบันทึกแล้ว ระบบจะส่งรายละเอียดการชำระเงินไปทางอีเมล
+            หรือเข้าสู่ระบบเพื่อชำระเงินภายหลังในหน้าคำสั่งซื้อของคุณ
+          </p>
+          {submitted.orderId && (
+            <p className="mt-3 text-xs font-mono" style={{ color: 'var(--shop-ink-muted)' }}>
+              เลขที่ออเดอร์: {submitted.orderId}
+            </p>
+          )}
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Link
+              href={`/stores/${params.slug}/category`}
+              className="inline-flex items-center px-6 py-2.5 rounded-md text-sm font-medium text-white"
+              style={{ background: "var(--shop-primary)" }}
+            >
+              เลือกซื้อสินค้าต่อ
+            </Link>
+            <Link
+              href={`/stores/${params.slug}`}
+              className="inline-flex items-center px-6 py-2.5 rounded-md text-sm font-medium border"
+              style={{ color: 'var(--shop-ink)', borderColor: 'var(--shop-border)' }}
+            >
+              กลับหน้าร้าน
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   if (lines.length === 0) {
