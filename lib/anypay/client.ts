@@ -35,6 +35,10 @@ async function createLivePayment(input: CreatePaymentInput): Promise<CreatePayme
   const apiKey = required("ANYPAY_API_KEY");
   const secret = required("ANYPAY_SECRET");
 
+  const returnPath = input.storeSlug
+    ? `/stores/${input.storeSlug}/checkout/success?orderId=${input.orderId}`
+    : `/order-success?orderId=${input.orderId}`;
+
   const body = {
     merchant_id: merchantId,
     order_id: input.orderId,
@@ -42,7 +46,7 @@ async function createLivePayment(input: CreatePaymentInput): Promise<CreatePayme
     currency: "THB",
     description: input.description ?? `Order ${input.orderId}`,
     customer_email: input.customerEmail,
-    return_url: `${BASE_URL}/order-success?orderId=${input.orderId}`,
+    return_url: `${BASE_URL}${returnPath}`,
     webhook_url: `${BASE_URL}/api/webhook/anypay`,
   };
   const payload = JSON.stringify(body);

@@ -7,6 +7,7 @@ import { createOrderFromCart } from "@/lib/orders/create";
 import { createPayment } from "@/lib/anypay/client";
 
 const checkoutSchema = z.object({
+  storeSlug: z.string().min(1).optional(),
   items: z
     .array(
       z.object({
@@ -74,6 +75,7 @@ export async function POST(req: Request) {
       amountTHB: Number(order.totalTHB),
       customerEmail: session?.user?.email ?? undefined,
       description: `Marketplace order ${order.id}`,
+      storeSlug: parsed.data.storeSlug,
     });
 
     await prisma.payment.update({
