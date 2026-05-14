@@ -7,8 +7,10 @@ import { prisma } from "@/lib/prisma";
 import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
+import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
 import { SpecialtyProductHero } from "@/components/storefront/themes/specialty/SpecialtyProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
@@ -47,27 +49,34 @@ export default async function ShopProductPage({
     orderBy: { createdAt: "desc" },
   });
 
-  // Per-template design family decision. fashion-beauty (lookbook /
-  // beauty-swatch / boutique) gets the editorial portrait variant;
-  // specialty (handmade / vintage) gets the artisan kraft variant;
-  // all other templates render the default hero untouched.
-  //
-  // Stack order matters: FB first wins over Specialty so a store
-  // can't accidentally render both heroes if it somehow matches
-  // both detectors.
+  // Per-template design family decision. Order matters — FB is
+  // checked first, then trust, then specialty. In practice the
+  // template→group mapping is disjoint so only one detector matches
+  // per store; the explicit precedence keeps things safe.
+  // fashion-beauty (lookbook / beauty-swatch / boutique) renders
+  // the editorial portrait variant; trust (classic /
+  // official-brand / premium-luxury) renders the squared heritage
+  // hero; specialty (handmade / vintage) renders the artisan kraft
+  // hero; everything else renders the default hero untouched.
   const isFB = isFashionBeautyStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
-  const isSpecialty = !isFB && isSpecialtyStore({
+  const isTrust = !isFB && isTrustStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const isSpecialty = !isFB && !isTrust && isSpecialtyStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
   const HeroComponent = isFB
     ? FashionBeautyProductHero
-    : isSpecialty
-      ? SpecialtyProductHero
-      : ProductDetailHero;
+    : isTrust
+      ? TrustProductHero
+      : isSpecialty
+        ? SpecialtyProductHero
+        : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -155,10 +164,29 @@ export default async function ShopProductPage({
       />
 
       {related.length > 0 && (
-        <section className={isFB || isSpecialty ? "space-y-6 py-8" : "space-y-3"}>
+        <section
+          className={
+            isFB || isTrust || isSpecialty ? "space-y-6 py-8" : "space-y-3"
+          }
+        >
+          {/* Section eyebrow + heading. Trust adds a heritage caps
+              eyebrow above the serif headline; FB renders a serif
+              headline only; default keeps its compact sans label. */}
+          {isTrust && (
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.28em',
+                fontWeight: 600,
+              }}
+            >
+              From the Collection
+            </p>
+          )}
           <h2
             className={
-              isFB || isSpecialty
+              isFB || isTrust || isSpecialty
                 ? "text-3xl sm:text-4xl"
                 : "text-lg font-semibold"
             }
@@ -170,25 +198,34 @@ export default async function ShopProductPage({
                       'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif',
                     fontWeight: 500,
                   }
-                : isSpecialty
+                : isTrust
                   ? {
                       fontFamily:
-                        'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif',
-                      fontWeight: 500,
-                      letterSpacing: '-0.005em',
+                        'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
+                      fontWeight: 600,
+                      letterSpacing: '-0.01em',
                     }
-                  : {}),
+                  : isSpecialty
+                    ? {
+                        fontFamily:
+                          'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif',
+                        fontWeight: 500,
+                        letterSpacing: '-0.005em',
+                      }
+                    : {}),
             }}
           >
             {isFB
               ? 'You may also love'
-              : isSpecialty
-                ? 'Other works from this maker'
-                : 'สินค้าที่เกี่ยวข้อง'}
+              : isTrust
+                ? 'You may also like'
+                : isSpecialty
+                  ? 'Other works from this maker'
+                  : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={
-              isFB || isSpecialty
+              isFB || isTrust || isSpecialty
                 ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
                 : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
             }
@@ -198,12 +235,12 @@ export default async function ShopProductPage({
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
                 className={
-                  isFB || isSpecialty
+                  isFB || isTrust || isSpecialty
                     ? "group block"
                     : "group overflow-hidden rounded-lg border"
                 }
                 style={
-                  isFB || isSpecialty
+                  isFB || isTrust || isSpecialty
                     ? undefined
                     : { background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }
                 }
@@ -213,14 +250,20 @@ export default async function ShopProductPage({
                   className={
                     isFB
                       ? "overflow-hidden rounded-2xl border bg-white p-2 shadow-sm"
-                      : isSpecialty
-                        ? "overflow-hidden rounded-md border p-2 shadow-sm"
-                        : "aspect-square overflow-hidden"
+                      : isTrust
+                        ? "overflow-hidden rounded-sm border bg-white"
+                        : isSpecialty
+                          ? "overflow-hidden rounded-md border p-2 shadow-sm"
+                          : "aspect-square overflow-hidden"
                   }
                   style={{
-                    ...(isFB || isSpecialty
+                    ...(isFB
                       ? { borderColor: 'var(--shop-border)' }
-                      : { backgroundColor: 'var(--shop-bg)' }),
+                      : isTrust
+                        ? { borderColor: 'var(--shop-accent)' }
+                        : isSpecialty
+                          ? { borderColor: 'var(--shop-border)' }
+                          : { backgroundColor: 'var(--shop-bg)' }),
                   }}
                 >
                   {r.imageUrl && (
@@ -229,16 +272,20 @@ export default async function ShopProductPage({
                       className={
                         isFB
                           ? "relative overflow-hidden rounded-xl"
-                          : isSpecialty
-                            ? "relative overflow-hidden rounded-md"
-                            : "h-full w-full"
+                          : isTrust
+                            ? "relative overflow-hidden"
+                            : isSpecialty
+                              ? "relative overflow-hidden rounded-md"
+                              : "h-full w-full"
                       }
                       style={
                         isFB
                           ? { aspectRatio: '4 / 5', backgroundColor: 'var(--shop-muted)' }
-                          : isSpecialty
+                          : isTrust
                             ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
-                            : undefined
+                            : isSpecialty
+                              ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
+                              : undefined
                       }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -246,37 +293,63 @@ export default async function ShopProductPage({
                         src={r.imageUrl}
                         alt={r.titleTh ?? r.title}
                         className={
-                          isFB || isSpecialty
+                          isFB
                             ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                            : "h-full w-full object-cover transition group-hover:scale-105"
+                            : isTrust
+                              ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                              : isSpecialty
+                                ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                : "h-full w-full object-cover transition group-hover:scale-105"
                         }
                       />
                     </div>
                   )}
                 </div>
-                <div className={isFB || isSpecialty ? "px-1 pt-3" : "p-3"}>
+                <div
+                  className={
+                    isFB
+                      ? "px-1 pt-3"
+                      : isTrust
+                        ? "px-1 pt-4"
+                        : isSpecialty
+                          ? "px-1 pt-3"
+                          : "p-3"
+                  }
+                >
                   <div
                     className={
-                      isFB || isSpecialty
+                      isFB
                         ? "line-clamp-2 text-sm"
-                        : "line-clamp-2 text-sm font-medium"
+                        : isTrust
+                          ? "line-clamp-2 text-sm leading-tight"
+                          : isSpecialty
+                            ? "line-clamp-2 text-sm"
+                            : "line-clamp-2 text-sm font-medium"
                     }
                     style={{
                       color: 'var(--shop-ink, #1c1917)',
-                      ...(isSpecialty
+                      ...(isTrust
                         ? {
                             fontFamily:
-                              'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif',
-                            fontWeight: 500,
+                              'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
+                            fontWeight: 600,
                           }
-                        : {}),
+                        : isSpecialty
+                          ? {
+                              fontFamily:
+                                'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif',
+                              fontWeight: 500,
+                            }
+                          : {}),
                     }}
                   >
                     {r.titleTh ?? r.title}
                   </div>
                   <div
                     className="mt-1 text-sm font-semibold"
-                    style={{ color: 'var(--shop-primary)' }}
+                    style={{
+                      color: isTrust ? 'var(--shop-ink)' : 'var(--shop-primary)',
+                    }}
                   >
                     ฿ {Number(r.priceTHB).toLocaleString("th-TH")}
                   </div>

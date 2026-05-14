@@ -28,6 +28,12 @@ import {
   isFashionBeautyStore,
 } from "@/lib/landing/fashion-beauty";
 import {
+  TRUST_BODY_CLASS,
+  TRUST_TOKENS,
+  trustCssVars,
+  isTrustStore,
+} from "@/lib/landing/trust";
+import {
   SPECIALTY_BODY_CLASS,
   specialtyCssVars,
   isSpecialtyStore,
@@ -164,13 +170,28 @@ export default async function ShopLayout({
   const fbVars = isFB ? fashionBeautyCssVars() : {};
   const fbClass = isFB ? FASHION_BEAUTY_BODY_CLASS : "";
 
+  // Trust family (DESIGN-B sibling). Stacked alongside FB so we never
+  // break the FB cascade: if both somehow matched, FB wins because its
+  // vars merge in last. In practice the template→group lookup is
+  // disjoint (a store can only be in one TemplateGroup) so this is
+  // belt-and-braces. Reads from lib/landing/trust.ts — same shape as
+  // the fashion-beauty module.
+  const isTrust = !isFB && isTrustStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const trustVars = isTrust ? trustCssVars() : {};
+  const trustClass = isTrust ? TRUST_BODY_CLASS : "";
+
   // Specialty family (artisan / vintage) — DESIGN-B sibling to
-  // fashion-beauty. Stacked AFTER fashion-beauty so a store can't
-  // accidentally end up in both families (FB short-circuits first).
-  // Same wiring pattern: detect via templateId or landingThemeVariant,
-  // merge CSS vars and add the .theme-specialty class so the kraft +
-  // ochre + slab-serif palette cascades to every sub-page.
-  const isSpecialty = !isFB && isSpecialtyStore({
+  // fashion-beauty AND trust. Stacked AFTER trust so the family
+  // detection ranks FB → trust → specialty. A store can only end up
+  // in one family (the template→group lookup is disjoint); these
+  // guards are belt-and-braces. Same wiring pattern: detect via
+  // templateId or landingThemeVariant, merge CSS vars and add the
+  // .theme-specialty class so the kraft + ochre + slab-serif palette
+  // cascades to every sub-page.
+  const isSpecialty = !isFB && !isTrust && isSpecialtyStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -178,17 +199,32 @@ export default async function ShopLayout({
   const specialtyClass = isSpecialty ? SPECIALTY_BODY_CLASS : "";
 
   // Combined family-aware CSS-var bag + class for the wrapper div.
-  // The two families are mutually exclusive (FB wins ties); the
-  // helpers return {} / "" when their family doesn't match so the
-  // default cascade is preserved unchanged.
-  const familyVars = { ...fbVars, ...specialtyVars };
-  const familyClass = [fbClass, specialtyClass].filter(Boolean).join(" ");
-  // Single accent override used by ShopHeader / ShopFooter to keep
-  // category chips + decoration glyphs on-palette.
+  // The three families are mutually exclusive (FB wins, then trust,
+  // then specialty); the helpers return {} / "" when their family
+  // doesn't match so the default cascade is preserved unchanged.
+  const familyClass = [fbClass, trustClass, specialtyClass]
+    .filter(Boolean)
+    .join(" ");
+  const familyVars = { ...trustVars, ...specialtyVars, ...fbVars };
+  // Active family's accent — used by ShopHeader / ShopFooter to
+  // paint chrome links + glyph fills. FB pink stays as it was; trust
+  // borrows the gold for accents (the charcoal primary stays in CTAs);
+  // specialty uses ochre.
   const familyAccent = isFB
     ? "#f43f5e"
-    : isSpecialty
-      ? "#ca8a04"
+    : isTrust
+      ? TRUST_TOKENS.colors.accent
+      : isSpecialty
+        ? "#ca8a04"
+        : null;
+  // Button shape pinned per-family — FB pills, trust squared. Falls
+  // through to the per-template default when neither applies. Specialty
+  // uses its own per-template default (rounded-md is enforced via the
+  // .theme-specialty CSS in globals.css).
+  const familyButtonShape: "pill" | "square" | null = isFB
+    ? "pill"
+    : isTrust
+      ? "square"
       : null;
 
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
@@ -232,7 +268,7 @@ export default async function ShopLayout({
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
           announcement={tokens.announcement}
-          buttonShape={isFB ? "pill" : tokens.buttonShape}
+          buttonShape={familyButtonShape ?? tokens.buttonShape}
         />
         <main className="flex-1">{children}</main>
         <ShopFooter
@@ -310,7 +346,7 @@ export default async function ShopLayout({
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
           announcement={tokens.announcement}
-          buttonShape={isFB ? "pill" : tokens.buttonShape}
+          buttonShape={familyButtonShape ?? tokens.buttonShape}
         />
         <main className="flex-1">{children}</main>
         <ShopFooter
@@ -368,7 +404,7 @@ export default async function ShopLayout({
         decorationGlyph={tokens.decorationGlyph}
         glyphStyle={tokens.glyphStyle}
         announcement={tokens.announcement}
-        buttonShape={isFB ? "pill" : tokens.buttonShape}
+        buttonShape={familyButtonShape ?? tokens.buttonShape}
       />
       <main className="flex-1">{children}</main>
       <ShopFooter

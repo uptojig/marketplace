@@ -52,6 +52,9 @@ interface StoreLite {
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
 
+const TRUST_DISPLAY_FONT =
+  'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
 const SPECIALTY_DISPLAY_FONT =
   'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
 const SPECIALTY_HAND_FONT =
@@ -69,10 +72,12 @@ function endOfTodayISO() {
 export function StoreCartClient({
   store,
   isFashionBeauty = false,
+  isTrust = false,
   isSpecialty = false,
 }: {
   store: StoreLite;
   isFashionBeauty?: boolean;
+  isTrust?: boolean;
   isSpecialty?: boolean;
 }) {
   const allLines = useCart((s) => s.lines);
@@ -111,6 +116,18 @@ export function StoreCartClient({
             <ChevronLeft className="h-4 w-4" />
             เลือกซื้อสินค้าต่อ
           </Link>
+          {isTrust && (
+            <p
+              className="mb-2 text-xs uppercase"
+              style={{
+                color: "var(--shop-accent)",
+                letterSpacing: "0.28em",
+                fontWeight: 600,
+              }}
+            >
+              Order Summary · Maison
+            </p>
+          )}
           {isSpecialty && (
             <p
               className="text-lg italic"
@@ -124,7 +141,7 @@ export function StoreCartClient({
           )}
           <h1
             className={
-              isFashionBeauty || isSpecialty
+              isFashionBeauty || isTrust || isSpecialty
                 ? "text-4xl md:text-5xl"
                 : "text-3xl md:text-4xl font-bold tracking-tight"
             }
@@ -132,22 +149,35 @@ export function StoreCartClient({
               color: "var(--shop-ink)",
               ...(isFashionBeauty
                 ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
-                : isSpecialty
-                  ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
-                  : {}),
+                : isTrust
+                  ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600, letterSpacing: '-0.01em' }
+                  : isSpecialty
+                    ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
+                    : {}),
             }}
           >
             {isFashionBeauty
               ? "Your Edit"
-              : isSpecialty
-                ? "Your collection"
-                : "ตะกร้าของคุณ"}
+              : isTrust
+                ? "Your Order"
+                : isSpecialty
+                  ? "Your collection"
+                  : "ตะกร้าของคุณ"}
           </h1>
+          {isTrust && (
+            <div
+              aria-hidden
+              className="mt-3 h-px w-16"
+              style={{ background: "var(--shop-accent)" }}
+            />
+          )}
           <p
             className={
               isFashionBeauty || isSpecialty
                 ? "mt-2 text-sm italic"
-                : "mt-2 text-sm"
+                : isTrust
+                  ? "mt-3 text-sm"
+                  : "mt-2 text-sm"
             }
             style={{ color: "var(--shop-ink-muted)" }}
           >
@@ -161,6 +191,7 @@ export function StoreCartClient({
           <EmptyCart
             storeSlug={store.slug}
             isFashionBeauty={isFashionBeauty}
+            isTrust={isTrust}
             isSpecialty={isSpecialty}
           />
         ) : (
@@ -317,31 +348,60 @@ export function StoreCartClient({
               <Card
                 {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
                 className={
-                  isSpecialty
-                    ? "rounded-md px-6 py-7 shadow-none"
-                    : "rounded-2xl px-6 py-7 shadow-none"
+                  isTrust
+                    ? "rounded-sm px-6 py-7 shadow-none"
+                    : isSpecialty
+                      ? "rounded-md px-6 py-7 shadow-none"
+                      : "rounded-2xl px-6 py-7 shadow-none"
                 }
                 style={{
                   background: "var(--shop-card)",
-                  borderColor: "var(--shop-border)",
+                  borderColor: isTrust ? "var(--shop-accent)" : "var(--shop-border)",
                 }}
               >
+                {isTrust && (
+                  <p
+                    className="mb-2 text-xs uppercase"
+                    style={{
+                      color: "var(--shop-accent)",
+                      letterSpacing: "0.28em",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Summary
+                  </p>
+                )}
                 <h3
                   className={
-                    isSpecialty ? "text-2xl mb-5" : "text-lg font-bold mb-5"
+                    isTrust || isSpecialty
+                      ? "text-2xl mb-5"
+                      : "text-lg font-bold mb-5"
                   }
                   style={{
                     color: "var(--shop-ink)",
-                    ...(isSpecialty
-                      ? {
-                          fontFamily: SPECIALTY_DISPLAY_FONT,
-                          fontWeight: 500,
-                        }
-                      : {}),
+                    ...(isTrust
+                      ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600 }
+                      : isSpecialty
+                        ? {
+                            fontFamily: SPECIALTY_DISPLAY_FONT,
+                            fontWeight: 500,
+                          }
+                        : {}),
                   }}
                 >
-                  {isSpecialty ? "Your collection summary" : "สรุปคำสั่งซื้อ"}
+                  {isTrust
+                    ? "Order summary"
+                    : isSpecialty
+                      ? "Your collection summary"
+                      : "สรุปคำสั่งซื้อ"}
                 </h3>
+                {isTrust && (
+                  <div
+                    aria-hidden
+                    className="mb-5 h-px w-full"
+                    style={{ background: "var(--shop-accent)" }}
+                  />
+                )}
 
                 <dl className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
@@ -428,11 +488,15 @@ export function StoreCartClient({
                 <Button
                   asChild
                   size="lg"
-                  className="mt-6 h-auto w-full rounded-md py-3.5 px-4 text-base font-semibold text-white"
+                  className={
+                    isTrust
+                      ? "mt-6 h-auto w-full rounded-sm py-3.5 px-4 text-base font-semibold uppercase tracking-[0.18em] text-white"
+                      : "mt-6 h-auto w-full rounded-md py-3.5 px-4 text-base font-semibold text-white"
+                  }
                   style={{ background: "var(--shop-primary)" }}
                 >
                   <Link href={`/stores/${store.slug}/checkout/address`}>
-                    ดำเนินการชำระเงิน
+                    {isTrust ? "Proceed to checkout" : "ดำเนินการชำระเงิน"}
                   </Link>
                 </Button>
 
@@ -552,56 +616,82 @@ export function StoreCartClient({
 function EmptyCart({
   storeSlug,
   isFashionBeauty = false,
+  isTrust = false,
   isSpecialty = false,
 }: {
   storeSlug: string;
   isFashionBeauty?: boolean;
+  isTrust?: boolean;
   isSpecialty?: boolean;
 }) {
   return (
     <Card
       {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
       className={
-        isSpecialty
-          ? "text-center py-24 rounded-md border border-dashed shadow-none"
-          : "text-center py-24 rounded-2xl border border-dashed bg-transparent shadow-none"
+        isTrust
+          ? "text-center py-24 rounded-sm border bg-transparent shadow-none"
+          : isSpecialty
+            ? "text-center py-24 rounded-md border border-dashed shadow-none"
+            : "text-center py-24 rounded-2xl border border-dashed bg-transparent shadow-none"
       }
-      style={{ borderColor: "var(--shop-border)" }}
+      style={{ borderColor: isTrust ? "var(--shop-accent)" : "var(--shop-border)" }}
     >
       <div
         className={
-          isSpecialty
-            ? "inline-flex items-center justify-center w-16 h-16 rounded-md mb-4 mx-auto"
-            : "inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 mx-auto"
+          isTrust
+            ? "inline-flex items-center justify-center w-16 h-16 rounded-sm mb-4 mx-auto border"
+            : isSpecialty
+              ? "inline-flex items-center justify-center w-16 h-16 rounded-md mb-4 mx-auto"
+              : "inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 mx-auto"
         }
         style={{
-          background:
-            "color-mix(in srgb, var(--shop-primary) 12%, transparent)",
-          color: "var(--shop-primary)",
+          background: isTrust
+            ? "var(--shop-muted)"
+            : "color-mix(in srgb, var(--shop-primary) 12%, transparent)",
+          color: isTrust ? "var(--shop-ink)" : "var(--shop-primary)",
+          ...(isTrust ? { borderColor: "var(--shop-accent)" } : {}),
         }}
       >
         <ShoppingBag className="w-8 h-8" />
       </div>
+      {isTrust && (
+        <p
+          className="mt-2 text-xs uppercase"
+          style={{
+            color: "var(--shop-accent)",
+            letterSpacing: "0.28em",
+            fontWeight: 600,
+          }}
+        >
+          Maison
+        </p>
+      )}
       <p
         className={
           isFashionBeauty || isSpecialty
             ? "text-2xl"
-            : "text-base font-medium"
+            : isTrust
+              ? "text-2xl mt-1"
+              : "text-base font-medium"
         }
         style={{
           color: "var(--shop-ink)",
           ...(isFashionBeauty
             ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500 }
-            : isSpecialty
-              ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500 }
-              : {}),
+            : isTrust
+              ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600 }
+              : isSpecialty
+                ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500 }
+                : {}),
         }}
       >
         {isFashionBeauty
           ? "Your edit is empty"
-          : isSpecialty
-            ? "Your collection is empty"
-            : "ตะกร้าของคุณยังว่างอยู่"}
+          : isTrust
+            ? "Your order is empty"
+            : isSpecialty
+              ? "Your collection is empty"
+              : "ตะกร้าของคุณยังว่างอยู่"}
       </p>
       <p
         className={
@@ -616,25 +706,31 @@ function EmptyCart({
       >
         {isFashionBeauty
           ? "Discover pieces curated for you"
-          : isSpecialty
-            ? "discover pieces from our makers"
-            : "เริ่มเลือกสินค้าที่คุณชอบ"}
+          : isTrust
+            ? "Begin building your collection"
+            : isSpecialty
+              ? "discover pieces from our makers"
+              : "เริ่มเลือกสินค้าที่คุณชอบ"}
       </p>
       <Button
         asChild
         className={
           isFashionBeauty
             ? "mt-6 h-auto rounded-full px-8 py-2.5 text-sm font-medium text-white"
-            : "mt-6 h-auto rounded-md px-6 py-2.5 text-sm font-medium text-white"
+            : isTrust
+              ? "mt-6 h-auto rounded-sm px-8 py-2.5 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+              : "mt-6 h-auto rounded-md px-6 py-2.5 text-sm font-medium text-white"
         }
         style={{ background: "var(--shop-primary)" }}
       >
         <Link href={`/stores/${storeSlug}/category`}>
           {isFashionBeauty
             ? "Start shopping"
-            : isSpecialty
-              ? "Browse the makers"
-              : "เลือกซื้อสินค้า"}
+            : isTrust
+              ? "Browse the collection"
+              : isSpecialty
+                ? "Browse the makers"
+                : "เลือกซื้อสินค้า"}
         </Link>
       </Button>
     </Card>

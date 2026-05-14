@@ -62,7 +62,12 @@ export default function CheckoutAddressPage({
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/addresses");
+      // Phase 1C: scope by storeSlug so the buyer only sees addresses
+      // they've used at THIS store. Address book is per-store now
+      // (Q1=A architecture decision).
+      const res = await fetch(
+        `/api/addresses?storeSlug=${encodeURIComponent(params.slug)}`,
+      );
       // /api/addresses returns 401 when the visitor isn't signed in.
       // We previously fell through and rendered addresses from a shared
       // guest user — a data leak between anonymous visitors. Bounce to
@@ -70,6 +75,13 @@ export default function CheckoutAddressPage({
       if (res.status === 401) {
         const next = `/stores/${params.slug}/checkout/address`;
         router.replace(`/signin?callbackUrl=${encodeURIComponent(next)}`);
+        return;
+      }
+      if (!res.ok) {
+        // 404 (store not found) or other transient errors — render an
+        // empty list and let the user retry; don't crash the checkout.
+        setAddresses([]);
+        if (!selectedId) setShowForm(true);
         return;
       }
       const data = (await res.json()) as { addresses: Address[] };
@@ -94,7 +106,9 @@ export default function CheckoutAddressPage({
       const res = await fetch("/api/addresses", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(form),
+        // Phase 1C: include storeSlug so the address is created
+        // scoped to this store (not visible to other stores).
+        body: JSON.stringify({ ...form, storeSlug: params.slug }),
       });
       const data = (await res.json()) as { address?: Address; error?: unknown };
       if (!res.ok || !data.address) {

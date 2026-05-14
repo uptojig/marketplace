@@ -22,10 +22,14 @@ import {
   ORDER_STATUS_LABEL,
 } from '@/lib/orders/status-ui';
 import { isFashionBeautyStore } from '@/lib/landing/fashion-beauty';
+import { isTrustStore } from '@/lib/landing/trust';
 import { isSpecialtyStore } from '@/lib/landing/specialty';
 
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
+
+const TRUST_DISPLAY_FONT =
+  'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
 
 const SPECIALTY_DISPLAY_FONT =
   'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
@@ -70,8 +74,7 @@ export default async function AccountDashboard({
         store: { slug },
       },
     }),
-    // TODO(phase-1c): scope by Address.storeId once the migration lands.
-    prisma.address.count({ where: { userId } }),
+    prisma.address.count({ where: { userId, store: { slug } } }),
     prisma.store.findUnique({
       where: { slug },
       select: { templateId: true, landingThemeVariant: true },
@@ -85,7 +88,14 @@ export default async function AccountDashboard({
       })
     : false;
 
-  const isSpecialty = !isFB && (store
+  const isTrust = !isFB && store
+    ? isTrustStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
+
+  const isSpecialty = !isFB && !isTrust && (store
     ? isSpecialtyStore({
         templateId: store.templateId,
         landingThemeVariant: store.landingThemeVariant,
@@ -99,6 +109,12 @@ export default async function AccountDashboard({
   const recentOrders = toOrderViews(recentOrdersRaw);
   const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
   const initials = displayName.slice(0, 2);
+  // Heritage member-since year — used in the trust eyebrow above
+  // the welcome name. Falls back to the current year for accounts
+  // without a createdAt (legacy seeds).
+  const memberYear = user?.createdAt
+    ? user.createdAt.getFullYear()
+    : new Date().getFullYear();
 
   return (
     <div className="space-y-6">
@@ -107,27 +123,37 @@ export default async function AccountDashboard({
         className={
           isFB
             ? "flex items-center gap-4 rounded-2xl border bg-white p-6 shadow-sm"
-            : isSpecialty
-              ? "flex items-center gap-4 rounded-md border p-6 shadow-sm"
-              : "flex items-center gap-4 p-4"
+            : isTrust
+              ? "flex items-center gap-4 rounded-sm border bg-white p-6 shadow-sm"
+              : isSpecialty
+                ? "flex items-center gap-4 rounded-md border p-6 shadow-sm"
+                : "flex items-center gap-4 p-4"
         }
         style={
-          isSpecialty
-            ? { borderColor: 'var(--shop-border)' }
-            : undefined
+          isTrust
+            ? { borderColor: "var(--shop-accent)" }
+            : isSpecialty
+              ? { borderColor: 'var(--shop-border)' }
+              : undefined
         }
       >
         <Avatar
           className={
-            isSpecialty
-              ? "h-16 w-16 rounded-md"
-              : isFB
-                ? "h-16 w-16"
-                : "h-14 w-14"
+            isFB
+              ? "h-16 w-16"
+              : isTrust
+                ? "h-16 w-16 rounded-sm"
+                : isSpecialty
+                  ? "h-16 w-16 rounded-md"
+                  : "h-14 w-14"
           }
         >
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
-          <AvatarFallback className={isSpecialty ? "rounded-md" : undefined}>
+          <AvatarFallback
+            className={
+              isTrust ? "rounded-sm" : isSpecialty ? "rounded-md" : undefined
+            }
+          >
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -138,6 +164,18 @@ export default async function AccountDashboard({
               style={{ color: 'var(--shop-ink-muted)' }}
             >
               Welcome back
+            </p>
+          )}
+          {isTrust && (
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.28em',
+                fontWeight: 600,
+              }}
+            >
+              Est. member since {memberYear}
             </p>
           )}
           {isSpecialty && (
@@ -153,7 +191,9 @@ export default async function AccountDashboard({
           )}
           <h1
             className={
-              isFB || isSpecialty ? "text-3xl" : "text-lg font-semibold"
+              isFB || isTrust || isSpecialty
+                ? "text-3xl"
+                : "text-lg font-semibold"
             }
             style={
               isFB
@@ -163,22 +203,38 @@ export default async function AccountDashboard({
                     color: 'var(--shop-ink)',
                     letterSpacing: '-0.005em',
                   }
-                : isSpecialty
+                : isTrust
                   ? {
-                      fontFamily: SPECIALTY_DISPLAY_FONT,
-                      fontWeight: 500,
+                      fontFamily: TRUST_DISPLAY_FONT,
+                      fontWeight: 600,
                       color: 'var(--shop-ink)',
-                      letterSpacing: '-0.005em',
+                      letterSpacing: '-0.01em',
                     }
-                  : undefined
+                  : isSpecialty
+                    ? {
+                        fontFamily: SPECIALTY_DISPLAY_FONT,
+                        fontWeight: 500,
+                        color: 'var(--shop-ink)',
+                        letterSpacing: '-0.005em',
+                      }
+                    : undefined
             }
           >
             {isFB
               ? displayName
-              : isSpecialty
+              : isTrust
                 ? `Welcome back, ${displayName}`
-                : `สวัสดี, ${displayName}`}
+                : isSpecialty
+                  ? `Welcome back, ${displayName}`
+                  : `สวัสดี, ${displayName}`}
           </h1>
+          {isTrust && (
+            <div
+              aria-hidden
+              className="mt-2 h-px w-12"
+              style={{ background: 'var(--shop-accent)' }}
+            />
+          )}
           {isSpecialty ? (
             <p
               className="text-sm italic mt-1"
@@ -190,15 +246,29 @@ export default async function AccountDashboard({
               Member of our maker community since {memberSince}
             </p>
           ) : (
-            user?.createdAt && (
-              <p className="text-xs text-muted-foreground">
-                สมาชิกตั้งแต่{" "}
-                {user.createdAt.toLocaleDateString("th-TH", {
-                  year: "numeric",
-                  month: "long",
-                })}
-              </p>
-            )
+            <>
+              {user?.createdAt && !isTrust && (
+                <p className="text-xs text-muted-foreground">
+                  สมาชิกตั้งแต่{" "}
+                  {user.createdAt.toLocaleDateString("th-TH", {
+                    year: "numeric",
+                    month: "long",
+                  })}
+                </p>
+              )}
+              {user?.createdAt && isTrust && (
+                <p
+                  className="mt-3 text-xs"
+                  style={{ color: 'var(--shop-ink-muted)' }}
+                >
+                  สมาชิกตั้งแต่{" "}
+                  {user.createdAt.toLocaleDateString("th-TH", {
+                    year: "numeric",
+                    month: "long",
+                  })}
+                </p>
+              )}
+            </>
           )}
         </div>
       </Card>
@@ -206,32 +276,36 @@ export default async function AccountDashboard({
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Package}
-          label="คำสั่งซื้อที่ใช้งาน"
+          label={isTrust ? "Active orders" : "คำสั่งซื้อที่ใช้งาน"}
           value={activeOrders.toString()}
           href={`${base}/orders`}
+          isTrust={isTrust}
           isSpecialty={isSpecialty}
         />
         <StatCard
           icon={MapPin}
-          label="ที่อยู่บันทึกไว้"
+          label={isTrust ? "Saved addresses" : "ที่อยู่บันทึกไว้"}
           value={addressCount.toString()}
           href={`${base}/addresses`}
+          isTrust={isTrust}
           isSpecialty={isSpecialty}
         />
         <StatCard
           icon={Wallet}
-          label="ยอด Anypay"
+          label={isTrust ? "Wallet balance" : "ยอด Anypay"}
           value="฿0"
           href={`${base}/wallet`}
           muted
+          isTrust={isTrust}
           isSpecialty={isSpecialty}
         />
         <StatCard
           icon={Heart}
-          label="รายการโปรด"
+          label={isTrust ? "Favorites" : "รายการโปรด"}
           value="0"
           href={`${base}/favorites`}
           muted
+          isTrust={isTrust}
           isSpecialty={isSpecialty}
         />
       </div>
@@ -240,7 +314,7 @@ export default async function AccountDashboard({
         <div className="mb-3 flex items-baseline justify-between">
           <h2
             className={
-              isFB || isSpecialty ? "text-2xl" : "font-semibold"
+              isFB || isTrust || isSpecialty ? "text-2xl" : "font-semibold"
             }
             style={
               isFB
@@ -249,26 +323,40 @@ export default async function AccountDashboard({
                     fontWeight: 500,
                     color: 'var(--shop-ink)',
                   }
-                : isSpecialty
+                : isTrust
                   ? {
-                      fontFamily: SPECIALTY_DISPLAY_FONT,
-                      fontWeight: 500,
+                      fontFamily: TRUST_DISPLAY_FONT,
+                      fontWeight: 600,
                       color: 'var(--shop-ink)',
                     }
-                  : undefined
+                  : isSpecialty
+                    ? {
+                        fontFamily: SPECIALTY_DISPLAY_FONT,
+                        fontWeight: 500,
+                        color: 'var(--shop-ink)',
+                      }
+                    : undefined
             }
           >
             {isFB
               ? "Recent orders"
-              : isSpecialty
-                ? "Recent pieces"
-                : "คำสั่งซื้อล่าสุด"}
+              : isTrust
+                ? "Recent orders"
+                : isSpecialty
+                  ? "Recent pieces"
+                  : "คำสั่งซื้อล่าสุด"}
           </h2>
           <Link
             href={`${base}/orders`}
             className="inline-flex items-center gap-1 text-sm hover:underline"
             style={{
-              color: isFB || isSpecialty ? 'var(--shop-primary)' : undefined,
+              color: isFB
+                ? 'var(--shop-primary)'
+                : isTrust
+                  ? 'var(--shop-accent)'
+                  : isSpecialty
+                    ? 'var(--shop-primary)'
+                    : undefined,
             }}
           >
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
@@ -356,6 +444,7 @@ function StatCard({
   value,
   href,
   muted = false,
+  isTrust = false,
   isSpecialty = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
@@ -363,6 +452,7 @@ function StatCard({
   value: string;
   href: string;
   muted?: boolean;
+  isTrust?: boolean;
   isSpecialty?: boolean;
 }) {
   return (
@@ -370,31 +460,42 @@ function StatCard({
       <Card
         {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
         className={
-          isSpecialty
-            ? "rounded-md border p-4 transition hover:shadow-md"
-            : "p-3 transition hover:shadow-md"
+          isTrust
+            ? "rounded-sm p-4 transition hover:shadow-md"
+            : isSpecialty
+              ? "rounded-md border p-4 transition hover:shadow-md"
+              : "p-3 transition hover:shadow-md"
         }
         style={
-          isSpecialty
-            ? { borderColor: 'var(--shop-border)' }
-            : undefined
+          isTrust
+            ? { borderColor: "var(--shop-accent)" }
+            : isSpecialty
+              ? { borderColor: 'var(--shop-border)' }
+              : undefined
         }
       >
         <div className="flex items-center gap-3">
           <div
             className={
-              isSpecialty
-                ? "rounded-md p-2"
-                : "rounded-md bg-primary/10 p-2 text-primary"
+              isTrust
+                ? "rounded-sm border bg-[var(--shop-muted)] p-2"
+                : isSpecialty
+                  ? "rounded-md p-2"
+                  : "rounded-md bg-primary/10 p-2 text-primary"
             }
             style={
-              isSpecialty
+              isTrust
                 ? {
-                    background:
-                      "color-mix(in srgb, var(--shop-primary) 12%, transparent)",
-                    color: 'var(--shop-primary)',
+                    borderColor: "var(--shop-accent)",
+                    color: "var(--shop-ink)",
                   }
-                : undefined
+                : isSpecialty
+                  ? {
+                      background:
+                        "color-mix(in srgb, var(--shop-primary) 12%, transparent)",
+                      color: 'var(--shop-primary)',
+                    }
+                  : undefined
             }
           >
             <Icon className="h-4 w-4" />
@@ -402,24 +503,43 @@ function StatCard({
           <div className="min-w-0 flex-1">
             <div
               className={
-                isSpecialty
-                  ? "text-xs uppercase tracking-[0.14em]"
-                  : "text-xs text-muted-foreground"
+                isTrust
+                  ? "text-[10px] uppercase"
+                  : isSpecialty
+                    ? "text-xs uppercase tracking-[0.14em]"
+                    : "text-xs text-muted-foreground"
               }
               style={
-                isSpecialty
-                  ? { color: 'var(--shop-ink-muted)' }
-                  : undefined
+                isTrust
+                  ? {
+                      color: "var(--shop-ink-muted)",
+                      letterSpacing: "0.22em",
+                      fontWeight: 600,
+                    }
+                  : isSpecialty
+                    ? { color: 'var(--shop-ink-muted)' }
+                    : undefined
               }
             >
               {label}
             </div>
             <div
-              className={`text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`}
+              className={
+                isTrust
+                  ? `text-xl ${muted ? "text-muted-foreground" : ""}`
+                  : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
+              }
               style={
-                isSpecialty && !muted
-                  ? { color: 'var(--shop-ink)' }
-                  : undefined
+                isTrust && !muted
+                  ? {
+                      color: "var(--shop-ink)",
+                      fontFamily:
+                        'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
+                      fontWeight: 600,
+                    }
+                  : isSpecialty && !muted
+                    ? { color: 'var(--shop-ink)' }
+                    : undefined
               }
             >
               {value}

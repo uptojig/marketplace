@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { StoreCartClient } from "./cart-client";
 
@@ -26,17 +27,23 @@ export default async function StoreCartPage({
   if (!store) notFound();
 
   // Tell the cart client which design family to render under. The
-  // .theme-fashion-beauty / .theme-specialty cascades on the layout
-  // wrapper handle the palette + headings; these flags let us swap
-  // copy + a couple of layout details (serif title, italic empty
-  // state, etc).
+  // .theme-fashion-beauty / .theme-trust / .theme-specialty cascades
+  // on the layout wrapper handle the palette + headings; these flags
+  // let us swap copy + a couple of layout details (serif title,
+  // divider style, italic empty state, etc).
   //
-  // FB wins ties — see lib/landing/specialty.ts for the stack order.
+  // FB wins ties, then trust, then specialty — these are disjoint
+  // in practice but we pick a consistent winner if a future store
+  // row somehow matched more than one.
   const isFB = isFashionBeautyStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
-  const isSpecialty = !isFB && isSpecialtyStore({
+  const isTrust = !isFB && isTrustStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isSpecialty = !isFB && !isTrust && isSpecialtyStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -45,6 +52,7 @@ export default async function StoreCartPage({
     <StoreCartClient
       store={store}
       isFashionBeauty={isFB}
+      isTrust={isTrust}
       isSpecialty={isSpecialty}
     />
   );

@@ -15,6 +15,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { StoreSignInClient } from "./signin-client";
 
@@ -55,8 +56,14 @@ export default async function StoreSignInPage({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  const isTrust = !isFB && store
+    ? isTrustStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
-  const isSpecialty = !isFB && (store
+  const isSpecialty = !isFB && !isTrust && (store
     ? isSpecialtyStore({
         templateId: store.templateId,
         landingThemeVariant: store.landingThemeVariant,
@@ -68,6 +75,7 @@ export default async function StoreSignInPage({
       storeSlug={params.slug}
       storeName={store?.name ?? params.slug}
       isFashionBeauty={isFB}
+      isTrust={isTrust}
       isSpecialty={isSpecialty}
       defaultCallback={`/stores/${params.slug}/account`}
     />
