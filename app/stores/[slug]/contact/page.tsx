@@ -113,7 +113,7 @@ export default async function StoreContactPage({
               เข้าสู่ระบบเพื่อส่งข้อความถึงร้านค้า
             </p>
             <Link
-              href={`/signin?callbackUrl=/stores/${params.slug}/contact`}
+              href={`/stores/${params.slug}/signin?callbackUrl=${encodeURIComponent(`/stores/${params.slug}/contact`)}`}
               className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
               style={{ backgroundColor: "var(--shop-primary)" }}
             >

@@ -180,7 +180,7 @@ export function ShopHeader({
                 aria-label="Sign in"
                 className="hidden sm:inline-flex"
               >
-                <Link href="/signin">
+                <Link href={`/stores/${storeSlug}/signin`}>
                   <User className="size-5" />
                 </Link>
               </Button>
@@ -310,7 +310,10 @@ export function ShopHeader({
                 </Link>
               </Button>
               <Button asChild variant="outline" className="text-xs">
-                <Link href="/signin" onClick={() => setMobileOpen(false)}>
+                <Link
+                  href={`/stores/${storeSlug}/signin`}
+                  onClick={() => setMobileOpen(false)}
+                >
                   <User className="size-4" />
                   เข้าสู่ระบบ
                 </Link>

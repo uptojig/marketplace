@@ -137,12 +137,16 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
 
   return (
     <div className="lg:sticky lg:top-4 lg:self-start">
+      {/* Aspect-ratio wrapper keeps the layout stable across products
+          while object-contain lets the image breathe at its natural
+          ratio (no crop). Letterboxed area falls back to bg-muted so
+          the empty space reads as deliberate. */}
       <AspectRatio ratio={1} className="bg-muted">
         <Image
           src={images[idx]}
           alt={product.title}
           fill
-          className="object-cover"
+          className="object-contain"
           priority
           sizes="(max-width: 1024px) 100vw, 60vw"
         />
@@ -325,22 +329,24 @@ function InfoColumn({
 
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-medium">จำนวน</span>
-        <div className="inline-flex items-center rounded-md border">
+        <div className="inline-flex h-9 items-center overflow-hidden rounded-md border">
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={() => setQty(Math.max(1, qty - 1))}
             disabled={qty <= 1}
-            className="h-9 w-9 rounded-r-none"
+            className="h-9 w-9 rounded-none"
           >
             <Minus className="h-3.5 w-3.5" />
           </Button>
           <input
             type="number"
+            inputMode="numeric"
             value={qty}
             onChange={(e) => setQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-            className="h-9 w-12 border-x text-center focus:outline-none"
+            className="h-9 w-12 border-x text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            aria-label="จำนวน"
           />
           <Button
             type="button"
@@ -348,7 +354,7 @@ function InfoColumn({
             size="icon"
             onClick={() => setQty(qty + 1)}
             disabled={stockLeft != null && qty >= stockLeft}
-            className="h-9 w-9 rounded-l-none"
+            className="h-9 w-9 rounded-none"
           >
             <Plus className="h-3.5 w-3.5" />
           </Button>
