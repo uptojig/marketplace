@@ -166,10 +166,22 @@ export default async function CategoryIndexPage({
   const PET_PSEUDO: Record<string, RegExp> = {
     cats: /(?:^|\W)(cat|cats|kitten|kittens|แมว)(?:$|\W)/i,
     dogs: /(?:^|\W)(dog|dogs|puppy|puppies|หมา|สุนัข)(?:$|\W)/i,
+    // Legacy slugs (pre PR #fluffyhouse-category-icons). Kept for any
+    // bookmarked URLs / link aliases.
     food: /(?:^|\W)(food|feed|treats|ขนม|อาหาร)(?:$|\W)/i,
     toys: /(?:^|\W)(toy|toys|play|ของเล่น)(?:$|\W)/i,
     beds: /(?:^|\W)(bed|beds|house|scratcher|ที่นอน|บ้าน)(?:$|\W)/i,
     hygiene: /(?:^|\W)(litter|grooming|clean|ทราย|สบู่|แชมพู|สุขอนามัย)(?:$|\W)/i,
+    // Canonical slugs paired with the Fluffy House icon set
+    // (components/storefront/themes/pet-house/icons/). Keep in sync
+    // with TYPE_BUCKETS in PetHouseShopByType.tsx.
+    'pet-equipment':
+      /(?:^|\W)(collar|leash|harness|accessor|gear|tag|ปลอกคอ|สายจูง|อุปกรณ์)(?:$|\W)/i,
+    'pet-supplies':
+      /(?:^|\W)(bowl|bowls|feeder|feeding|water|food|treats|ชาม|น้ำ|อาหาร|ขนม)(?:$|\W)/i,
+    'pet-toys': /(?:^|\W)(toy|toys|ball|rope|bone|play|ของเล่น)(?:$|\W)/i,
+    'pet-home':
+      /(?:^|\W)(bed|beds|rug|mat|house|scratcher|ที่นอน|บ้าน|พรม)(?:$|\W)/i,
   };
   const filtered = selectedCats.length
     ? store.products.filter((p) => {
