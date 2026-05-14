@@ -91,8 +91,8 @@ export function ElectronicsTechHero({
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              Browse {storeName}&rsquo;s technical catalog with full specs and
-              SKUs.
+              เลือกชมแคตตาล็อกทางเทคนิคของ {storeName} พร้อมข้อมูลจำเพาะและ SKU
+              เต็มรูปแบบ
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-4">
@@ -107,7 +107,7 @@ export function ElectronicsTechHero({
                   fontWeight: 700,
                 }}
               >
-                VIEW CATALOG
+                ดูแคตตาล็อก
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <Link
@@ -122,7 +122,7 @@ export function ElectronicsTechHero({
                   fontWeight: 600,
                 }}
               >
-                TECHNICAL SUPPORT
+ฝ่ายสนับสนุนทางเทคนิค
               </Link>
             </div>
           </div>

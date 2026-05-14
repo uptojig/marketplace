@@ -42,21 +42,21 @@ const TIERS: ReadonlyArray<BusinessModelTierRow> = [
     qtyRange: '1-9',
     multiplier: '1.00×',
     savingsPct: 0,
-    blurb: 'Base list price',
+    blurb: 'ราคาตั้งต้น',
   },
   {
     tier: 2,
     qtyRange: '10-49',
     multiplier: '0.92×',
     savingsPct: 8,
-    blurb: 'Auto-applied at checkout',
+    blurb: 'คำนวณอัตโนมัติเมื่อชำระเงิน',
   },
   {
     tier: 3,
     qtyRange: '50+',
     multiplier: '0.85×',
     savingsPct: 15,
-    blurb: 'Best per-unit price',
+    blurb: 'ราคาต่อหน่วยดีที่สุด',
   },
 ];
 
@@ -76,7 +76,7 @@ export function BusinessModelTierLadder() {
             className="text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Deal tiers · Volume discount applied automatically
+            ระดับดีล · ส่วนลดจากปริมาณคำนวณอัตโนมัติ
           </p>
           <div
             aria-hidden
