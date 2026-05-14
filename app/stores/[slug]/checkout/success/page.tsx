@@ -30,6 +30,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,12 @@ const FB_DISPLAY_FONT =
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const TECH_DISPLAY_FONT =
+  'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif';
+
+const TECH_MONO_FONT =
+  'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace';
 
 export default async function StoreOrderSuccess({
   params,
@@ -119,6 +126,12 @@ export default async function StoreOrderSuccess({
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;
+  const isElectronicsTech = !isFB && !isTrust && order.store
+    ? isElectronicsTechStore({
+        templateId: order.store.templateId,
+        landingThemeVariant: order.store.landingThemeVariant,
+      })
+    : false;
 
   const today = new Date();
   const eta1 = new Date(today.getTime() + 1 * 86400000);
@@ -132,21 +145,37 @@ export default async function StoreOrderSuccess({
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
       <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-        {/* Hero — success state. Three flavors: default soft-rose,
-            FB editorial italic, trust stamped heritage. */}
+        {/* Hero — success state. Four flavors: default soft-rose,
+            FB editorial italic, trust stamped heritage, electronics-
+            tech mono spec-sheet "ORDER #XXXX CONFIRMED" stamp. */}
         <div className="text-center">
           <div
             className={
               isTrust
                 ? "inline-flex items-center justify-center w-20 h-20 rounded-sm border mb-5"
-                : "inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
+                : isElectronicsTech
+                  ? "inline-flex items-center justify-center w-20 h-20 rounded-md border mb-5"
+                  : "inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
             }
             style={{
               background: isTrust
                 ? "var(--shop-muted)"
-                : "color-mix(in srgb, var(--shop-primary) 14%, transparent)",
-              color: isTrust ? "var(--shop-ink)" : "var(--shop-primary)",
-              ...(isTrust ? { borderColor: "var(--shop-accent)" } : {}),
+                : isElectronicsTech
+                  ? "color-mix(in srgb, var(--shop-highlight, #34d399) 14%, transparent)"
+                  : "color-mix(in srgb, var(--shop-primary) 14%, transparent)",
+              color: isTrust
+                ? "var(--shop-ink)"
+                : isElectronicsTech
+                  ? "#047857"
+                  : "var(--shop-primary)",
+              ...(isTrust
+                ? { borderColor: "var(--shop-accent)" }
+                : isElectronicsTech
+                  ? {
+                      borderColor:
+                        "color-mix(in srgb, var(--shop-highlight, #34d399) 36%, transparent)",
+                    }
+                  : {}),
             }}
           >
             <CheckCircle2 className="w-12 h-12" strokeWidth={2} />
@@ -171,13 +200,29 @@ export default async function StoreOrderSuccess({
               Order Confirmed
             </p>
           )}
+          {isElectronicsTech && (
+            <p
+              data-tech-mono="true"
+              className="text-[11px] uppercase"
+              style={{
+                color: "var(--shop-ink-muted)",
+                fontFamily: TECH_MONO_FONT,
+                letterSpacing: "0.16em",
+                fontWeight: 600,
+              }}
+            >
+              Order #{shortCode} Confirmed
+            </p>
+          )}
           <h1
             className={
               isFB
                 ? "mt-2 text-4xl sm:text-5xl"
                 : isTrust
                   ? "mt-3 text-4xl sm:text-5xl"
-                  : "text-3xl md:text-4xl font-bold tracking-tight"
+                  : isElectronicsTech
+                    ? "mt-3 text-3xl sm:text-4xl"
+                    : "text-3xl md:text-4xl font-bold tracking-tight"
             }
             style={{
               color: "var(--shop-ink)",
@@ -185,14 +230,18 @@ export default async function StoreOrderSuccess({
                 ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
                 : isTrust
                   ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600, letterSpacing: '-0.01em' }
-                  : {}),
+                  : isElectronicsTech
+                    ? { fontFamily: TECH_DISPLAY_FONT, fontWeight: 700, letterSpacing: '-0.015em' }
+                    : {}),
             }}
           >
             {isFB
               ? "Thank you"
               : isTrust
                 ? "Thank you for your order"
-                : "ขอบคุณสำหรับคำสั่งซื้อ"}
+                : isElectronicsTech
+                  ? "Thanks — your order is in"
+                  : "ขอบคุณสำหรับคำสั่งซื้อ"}
           </h1>
           {isTrust && (
             <div
@@ -207,7 +256,9 @@ export default async function StoreOrderSuccess({
                 ? "mt-4 text-base italic"
                 : isTrust
                   ? "mt-5 text-base"
-                  : "mt-3 text-base"
+                  : isElectronicsTech
+                    ? "mt-4 text-base"
+                    : "mt-3 text-base"
             }
             style={{ color: "var(--shop-ink-muted)" }}
           >
@@ -225,23 +276,47 @@ export default async function StoreOrderSuccess({
             className={
               isTrust
                 ? "mt-7 inline-flex items-center gap-2 rounded-sm border bg-white px-5 py-2.5 shadow-sm"
-                : "mt-7 inline-flex items-center gap-2 rounded-full border bg-white px-5 py-2.5 shadow-sm"
+                : isElectronicsTech
+                  ? "mt-7 inline-flex items-center gap-2 rounded-md border bg-white px-5 py-2.5 shadow-sm"
+                  : "mt-7 inline-flex items-center gap-2 rounded-full border bg-white px-5 py-2.5 shadow-sm"
             }
-            style={{ borderColor: isTrust ? "var(--shop-accent)" : "var(--shop-border)" }}
+            style={{
+              borderColor: isTrust
+                ? "var(--shop-accent)"
+                : isElectronicsTech
+                  ? "var(--shop-border)"
+                  : "var(--shop-border)",
+            }}
           >
             <span
+              data-tech-mono={isElectronicsTech ? "true" : undefined}
               className="text-xs uppercase"
               style={{
                 color: "var(--shop-ink-muted)",
-                letterSpacing: isTrust ? "0.28em" : "0.18em",
-                fontWeight: isTrust ? 600 : undefined,
+                letterSpacing: isTrust
+                  ? "0.28em"
+                  : isElectronicsTech
+                    ? "0.16em"
+                    : "0.18em",
+                fontWeight: isTrust || isElectronicsTech ? 600 : undefined,
+                fontFamily: isElectronicsTech ? TECH_MONO_FONT : undefined,
               }}
             >
-              {isTrust ? "Order No." : "เลขที่คำสั่งซื้อ"}
+              {isTrust
+                ? "Order No."
+                : isElectronicsTech
+                  ? "Order ID"
+                  : "เลขที่คำสั่งซื้อ"}
             </span>
             <span
+              data-tech-mono={isElectronicsTech ? "true" : undefined}
               className="font-mono text-base font-bold"
-              style={{ color: "var(--shop-ink)" }}
+              style={{
+                color: isElectronicsTech ? "var(--shop-primary)" : "var(--shop-ink)",
+                ...(isElectronicsTech
+                  ? { fontFamily: TECH_MONO_FONT, letterSpacing: "-0.01em" }
+                  : {}),
+              }}
             >
               {shortCode}
             </span>
@@ -281,7 +356,9 @@ export default async function StoreOrderSuccess({
                   ? "text-xl"
                   : isTrust
                     ? "text-xl"
-                    : "text-base font-semibold"
+                    : isElectronicsTech
+                      ? "text-lg"
+                      : "text-base font-semibold"
               }
               style={{
                 color: "var(--shop-ink)",
@@ -289,10 +366,18 @@ export default async function StoreOrderSuccess({
                   ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500 }
                   : isTrust
                     ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600 }
-                    : {}),
+                    : isElectronicsTech
+                      ? {
+                          fontFamily: TECH_DISPLAY_FONT,
+                          fontWeight: 700,
+                          letterSpacing: "-0.015em",
+                        }
+                      : {}),
               }}
             >
-              สินค้าในคำสั่งซื้อ ({order.items.length} รายการ)
+              {isElectronicsTech
+                ? `Items (${order.items.length})`
+                : `สินค้าในคำสั่งซื้อ (${order.items.length} รายการ)`}
             </h2>
           </div>
           <ul className="divide-y" style={{ borderColor: "var(--shop-border)" }}>
@@ -367,7 +452,9 @@ export default async function StoreOrderSuccess({
                 ? "h-auto rounded-full py-3 text-sm font-semibold text-white"
                 : isTrust
                   ? "h-auto rounded-sm py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
-                  : "h-auto py-3 text-sm font-semibold text-white"
+                  : isElectronicsTech
+                    ? "h-auto rounded-md py-3 text-sm font-bold text-white"
+                    : "h-auto py-3 text-sm font-semibold text-white"
             }
             style={{ background: "var(--shop-primary)" }}
           >
@@ -375,7 +462,11 @@ export default async function StoreOrderSuccess({
               href={`/stores/${params.slug}/account/orders/${order.id}`}
               className="inline-flex items-center justify-center gap-2"
             >
-              {isTrust ? "Track order" : "ติดตามสถานะคำสั่งซื้อ"}
+              {isTrust
+                ? "Track order"
+                : isElectronicsTech
+                  ? "Track shipment"
+                  : "ติดตามสถานะคำสั่งซื้อ"}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -387,7 +478,9 @@ export default async function StoreOrderSuccess({
                 ? "h-auto rounded-full border-[var(--shop-ink)] py-3 text-sm font-semibold"
                 : isTrust
                   ? "h-auto rounded-sm border-[var(--shop-ink)] py-3 text-sm font-semibold uppercase tracking-[0.18em]"
-                  : "h-auto py-3 text-sm font-semibold"
+                  : isElectronicsTech
+                    ? "h-auto rounded-md border-[var(--shop-primary)] py-3 text-sm font-semibold text-[var(--shop-primary)]"
+                    : "h-auto py-3 text-sm font-semibold"
             }
           >
             <Link href={`/stores/${params.slug}`}>
@@ -395,7 +488,9 @@ export default async function StoreOrderSuccess({
                 ? "Continue browsing"
                 : isTrust
                   ? "Back to store"
-                  : `กลับไป${storeName}`}
+                  : isElectronicsTech
+                    ? "Continue shopping"
+                    : `กลับไป${storeName}`}
             </Link>
           </Button>
         </div>

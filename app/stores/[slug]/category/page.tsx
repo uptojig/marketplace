@@ -22,10 +22,18 @@ import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { TrustCategoryGrid } from "@/components/storefront/themes/trust/TrustCategoryGrid";
+import { ElectronicsTechCategoryGrid } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCategoryGrid";
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const TECH_DISPLAY_FONT =
+  'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif';
+
+const TECH_MONO_FONT =
+  'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace';
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +90,10 @@ export default async function CategoryIndexPage({
     landingThemeVariant: store.landingThemeVariant,
   });
   const isTrust = !isFB && isTrustStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isElectronicsTech = !isFB && !isTrust && isElectronicsTechStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -165,6 +177,20 @@ export default async function CategoryIndexPage({
                 Maison · The Collection
               </p>
             )}
+            {isElectronicsTech && (
+              <p
+                data-tech-mono="true"
+                className="mb-2 text-[11px] uppercase"
+                style={{
+                  color: "var(--shop-ink-muted)",
+                  fontFamily: TECH_MONO_FONT,
+                  letterSpacing: "0.16em",
+                  fontWeight: 600,
+                }}
+              >
+                Catalog · All Products
+              </p>
+            )}
             <h1
               className="text-3xl md:text-4xl tracking-tight"
               style={{
@@ -175,10 +201,20 @@ export default async function CategoryIndexPage({
                       fontWeight: 600,
                       letterSpacing: "-0.01em",
                     }
-                  : { fontWeight: 700 }),
+                  : isElectronicsTech
+                    ? {
+                        fontFamily: TECH_DISPLAY_FONT,
+                        fontWeight: 700,
+                        letterSpacing: "-0.015em",
+                      }
+                    : { fontWeight: 700 }),
               }}
             >
-              {isTrust ? "The Collection" : "สินค้าทั้งหมด"}
+              {isTrust
+                ? "The Collection"
+                : isElectronicsTech
+                  ? "All products"
+                  : "สินค้าทั้งหมด"}
             </h1>
           </div>
           <div className="flex items-center gap-4">
@@ -309,6 +345,25 @@ export default async function CategoryIndexPage({
                         compareAtPriceTHB: p.compareAtPriceTHB
                           ? Number(p.compareAtPriceTHB)
                           : null,
+                      }))}
+                    />
+                  ) : isElectronicsTech ? (
+                    <ElectronicsTechCategoryGrid
+                      storeSlug={store.slug}
+                      products={pageProducts.map((p) => ({
+                        id: p.id,
+                        title: p.titleTh ?? p.title,
+                        imageUrl: p.imageUrl,
+                        priceTHB: Number(p.priceTHB),
+                        compareAtPriceTHB: p.compareAtPriceTHB
+                          ? Number(p.compareAtPriceTHB)
+                          : null,
+                        // hasVariants OR untracked stockTotal=null → assume in-stock
+                        inStock: p.hasVariants
+                          ? true
+                          : p.stockTotal === null
+                            ? true
+                            : p.stockTotal > 0,
                       }))}
                     />
                   ) : (

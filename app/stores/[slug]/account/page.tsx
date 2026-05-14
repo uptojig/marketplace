@@ -23,12 +23,19 @@ import {
 } from '@/lib/orders/status-ui';
 import { isFashionBeautyStore } from '@/lib/landing/fashion-beauty';
 import { isTrustStore } from '@/lib/landing/trust';
+import { isElectronicsTechStore } from '@/lib/landing/electronics-tech';
 
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const TECH_DISPLAY_FONT =
+  'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif';
+
+const TECH_MONO_FONT =
+  'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,6 +95,12 @@ export default async function AccountDashboard({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  const isElectronicsTech = !isFB && !isTrust && store
+    ? isElectronicsTechStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   const recentOrders = toOrderViews(recentOrdersRaw);
   const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
@@ -98,6 +111,11 @@ export default async function AccountDashboard({
   const memberYear = user?.createdAt
     ? user.createdAt.getFullYear()
     : new Date().getFullYear();
+  // Electronics-tech member ID — last 6 chars of the userId, mono
+  // styled. Looks like "USR-7A4F12" in the spec-sheet eyebrow.
+  const memberId = userId
+    ? `USR-${userId.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(-6).padStart(6, '0')}`
+    : 'USR-000000';
 
   return (
     <div className="space-y-6">
@@ -107,10 +125,16 @@ export default async function AccountDashboard({
             ? "flex items-center gap-4 rounded-2xl border bg-white p-6 shadow-sm"
             : isTrust
               ? "flex items-center gap-4 rounded-sm border bg-white p-6 shadow-sm"
-              : "flex items-center gap-4 p-4"
+              : isElectronicsTech
+                ? "flex items-center gap-4 rounded-md border bg-white p-6"
+                : "flex items-center gap-4 p-4"
         }
         style={
-          isTrust ? { borderColor: "var(--shop-accent)" } : undefined
+          isTrust
+            ? { borderColor: "var(--shop-accent)" }
+            : isElectronicsTech
+              ? { borderColor: "var(--shop-border)" }
+              : undefined
         }
       >
         <Avatar
@@ -119,11 +143,21 @@ export default async function AccountDashboard({
               ? "h-16 w-16"
               : isTrust
                 ? "h-16 w-16 rounded-sm"
-                : "h-14 w-14"
+                : isElectronicsTech
+                  ? "h-16 w-16 rounded-md"
+                  : "h-14 w-14"
           }
         >
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
-          <AvatarFallback className={isTrust ? "rounded-sm" : undefined}>
+          <AvatarFallback
+            className={
+              isTrust
+                ? "rounded-sm"
+                : isElectronicsTech
+                  ? "rounded-md"
+                  : undefined
+            }
+          >
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -148,13 +182,29 @@ export default async function AccountDashboard({
               Est. member since {memberYear}
             </p>
           )}
+          {isElectronicsTech && (
+            <p
+              data-tech-mono="true"
+              className="text-[11px] uppercase"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                fontFamily: TECH_MONO_FONT,
+                letterSpacing: '0.16em',
+                fontWeight: 600,
+              }}
+            >
+              {memberId} · Joined {memberYear}
+            </p>
+          )}
           <h1
             className={
               isFB
                 ? "text-3xl"
                 : isTrust
                   ? "text-3xl"
-                  : "text-lg font-semibold"
+                  : isElectronicsTech
+                    ? "text-2xl sm:text-3xl"
+                    : "text-lg font-semibold"
             }
             style={
               isFB
@@ -171,14 +221,23 @@ export default async function AccountDashboard({
                       color: 'var(--shop-ink)',
                       letterSpacing: '-0.01em',
                     }
-                  : undefined
+                  : isElectronicsTech
+                    ? {
+                        fontFamily: TECH_DISPLAY_FONT,
+                        fontWeight: 700,
+                        color: 'var(--shop-ink)',
+                        letterSpacing: '-0.015em',
+                      }
+                    : undefined
             }
           >
             {isFB
               ? displayName
               : isTrust
                 ? `Welcome back, ${displayName}`
-                : `สวัสดี, ${displayName}`}
+                : isElectronicsTech
+                  ? `Hi, ${displayName}`
+                  : `สวัสดี, ${displayName}`}
           </h1>
           {isTrust && (
             <div
@@ -187,7 +246,7 @@ export default async function AccountDashboard({
               style={{ background: 'var(--shop-accent)' }}
             />
           )}
-          {user?.createdAt && !isTrust && (
+          {user?.createdAt && !isTrust && !isElectronicsTech && (
             <p className="text-xs text-muted-foreground">
               สมาชิกตั้งแต่{" "}
               {user.createdAt.toLocaleDateString("th-TH", {
@@ -208,39 +267,84 @@ export default async function AccountDashboard({
               })}
             </p>
           )}
+          {user?.createdAt && isElectronicsTech && (
+            <p
+              data-tech-mono="true"
+              className="mt-1.5 text-[11px]"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                fontFamily: TECH_MONO_FONT,
+                letterSpacing: '-0.005em',
+              }}
+            >
+              สมาชิกตั้งแต่{" "}
+              {user.createdAt.toLocaleDateString("th-TH", {
+                year: "numeric",
+                month: "long",
+              })}
+            </p>
+          )}
         </div>
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Package}
-          label={isTrust ? "Active orders" : "คำสั่งซื้อที่ใช้งาน"}
+          label={
+            isTrust
+              ? "Active orders"
+              : isElectronicsTech
+                ? "Active orders"
+                : "คำสั่งซื้อที่ใช้งาน"
+          }
           value={activeOrders.toString()}
           href={`${base}/orders`}
           isTrust={isTrust}
+          isElectronicsTech={isElectronicsTech}
         />
         <StatCard
           icon={MapPin}
-          label={isTrust ? "Saved addresses" : "ที่อยู่บันทึกไว้"}
+          label={
+            isTrust
+              ? "Saved addresses"
+              : isElectronicsTech
+                ? "Addresses"
+                : "ที่อยู่บันทึกไว้"
+          }
           value={addressCount.toString()}
           href={`${base}/addresses`}
           isTrust={isTrust}
+          isElectronicsTech={isElectronicsTech}
         />
         <StatCard
           icon={Wallet}
-          label={isTrust ? "Wallet balance" : "ยอด Anypay"}
+          label={
+            isTrust
+              ? "Wallet balance"
+              : isElectronicsTech
+                ? "Wallet"
+                : "ยอด Anypay"
+          }
           value="฿0"
           href={`${base}/wallet`}
           muted
           isTrust={isTrust}
+          isElectronicsTech={isElectronicsTech}
         />
         <StatCard
           icon={Heart}
-          label={isTrust ? "Favorites" : "รายการโปรด"}
+          label={
+            isTrust
+              ? "Favorites"
+              : isElectronicsTech
+                ? "Wishlist"
+                : "รายการโปรด"
+          }
           value="0"
           href={`${base}/favorites`}
           muted
           isTrust={isTrust}
+          isElectronicsTech={isElectronicsTech}
         />
       </div>
 
@@ -248,7 +352,11 @@ export default async function AccountDashboard({
         <div className="mb-3 flex items-baseline justify-between">
           <h2
             className={
-              isFB || isTrust ? "text-2xl" : "font-semibold"
+              isFB || isTrust
+                ? "text-2xl"
+                : isElectronicsTech
+                  ? "text-xl"
+                  : "font-semibold"
             }
             style={
               isFB
@@ -263,14 +371,23 @@ export default async function AccountDashboard({
                       fontWeight: 600,
                       color: 'var(--shop-ink)',
                     }
-                  : undefined
+                  : isElectronicsTech
+                    ? {
+                        fontFamily: TECH_DISPLAY_FONT,
+                        fontWeight: 700,
+                        color: 'var(--shop-ink)',
+                        letterSpacing: '-0.015em',
+                      }
+                    : undefined
             }
           >
             {isFB
               ? "Recent orders"
               : isTrust
                 ? "Recent orders"
-                : "คำสั่งซื้อล่าสุด"}
+                : isElectronicsTech
+                  ? "Recent orders"
+                  : "คำสั่งซื้อล่าสุด"}
           </h2>
           <Link
             href={`${base}/orders`}
@@ -280,7 +397,9 @@ export default async function AccountDashboard({
                 ? 'var(--shop-primary)'
                 : isTrust
                   ? 'var(--shop-accent)'
-                  : undefined,
+                  : isElectronicsTech
+                    ? 'var(--shop-primary)'
+                    : undefined,
             }}
           >
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
@@ -369,6 +488,7 @@ function StatCard({
   href,
   muted = false,
   isTrust = false,
+  isElectronicsTech = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -376,6 +496,7 @@ function StatCard({
   href: string;
   muted?: boolean;
   isTrust?: boolean;
+  isElectronicsTech?: boolean;
 }) {
   return (
     <Link href={href}>
@@ -383,10 +504,16 @@ function StatCard({
         className={
           isTrust
             ? "rounded-sm p-4 transition hover:shadow-md"
-            : "p-3 transition hover:shadow-md"
+            : isElectronicsTech
+              ? "rounded-md p-4 transition hover:shadow-md"
+              : "p-3 transition hover:shadow-md"
         }
         style={
-          isTrust ? { borderColor: "var(--shop-accent)" } : undefined
+          isTrust
+            ? { borderColor: "var(--shop-accent)" }
+            : isElectronicsTech
+              ? { borderColor: "var(--shop-border)" }
+              : undefined
         }
       >
         <div className="flex items-center gap-3">
@@ -394,7 +521,9 @@ function StatCard({
             className={
               isTrust
                 ? "rounded-sm border bg-[var(--shop-muted)] p-2"
-                : "rounded-md bg-primary/10 p-2 text-primary"
+                : isElectronicsTech
+                  ? "rounded-md border bg-[var(--shop-muted)] p-2"
+                  : "rounded-md bg-primary/10 p-2 text-primary"
             }
             style={
               isTrust
@@ -402,17 +531,25 @@ function StatCard({
                     borderColor: "var(--shop-accent)",
                     color: "var(--shop-ink)",
                   }
-                : undefined
+                : isElectronicsTech
+                  ? {
+                      borderColor: "var(--shop-border)",
+                      color: "var(--shop-primary)",
+                    }
+                  : undefined
             }
           >
             <Icon className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
             <div
+              data-tech-mono={isElectronicsTech ? "true" : undefined}
               className={
                 isTrust
                   ? "text-[10px] uppercase"
-                  : "text-xs text-muted-foreground"
+                  : isElectronicsTech
+                    ? "text-[10px] uppercase"
+                    : "text-xs text-muted-foreground"
               }
               style={
                 isTrust
@@ -421,16 +558,27 @@ function StatCard({
                       letterSpacing: "0.22em",
                       fontWeight: 600,
                     }
-                  : undefined
+                  : isElectronicsTech
+                    ? {
+                        color: "var(--shop-ink-muted)",
+                        fontFamily:
+                          'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace',
+                        letterSpacing: "0.16em",
+                        fontWeight: 600,
+                      }
+                    : undefined
               }
             >
               {label}
             </div>
             <div
+              data-tech-mono={isElectronicsTech ? "true" : undefined}
               className={
                 isTrust
                   ? `text-xl ${muted ? "text-muted-foreground" : ""}`
-                  : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
+                  : isElectronicsTech
+                    ? `text-xl font-bold ${muted ? "text-muted-foreground" : ""}`
+                    : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
               }
               style={
                 isTrust && !muted
@@ -440,7 +588,14 @@ function StatCard({
                         'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
                       fontWeight: 600,
                     }
-                  : undefined
+                  : isElectronicsTech && !muted
+                    ? {
+                        color: "var(--shop-ink)",
+                        fontFamily:
+                          'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace',
+                        letterSpacing: "-0.01em",
+                      }
+                    : undefined
               }
             >
               {value}

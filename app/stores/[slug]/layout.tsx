@@ -33,6 +33,12 @@ import {
   trustCssVars,
   isTrustStore,
 } from "@/lib/landing/trust";
+import {
+  ELECTRONICS_TECH_BODY_CLASS,
+  ELECTRONICS_TECH_TOKENS,
+  electronicsTechCssVars,
+  isElectronicsTechStore,
+} from "@/lib/landing/electronics-tech";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
@@ -178,26 +184,43 @@ export default async function ShopLayout({
   const trustVars = isTrust ? trustCssVars() : {};
   const trustClass = isTrust ? TRUST_BODY_CLASS : "";
 
+  // Electronics-tech family (DESIGN-B sibling). Stacked next to FB +
+  // trust so the dispatcher chain is a strict precedence ladder. In
+  // practice the template→group lookup is disjoint (a store can only
+  // be in one TemplateGroup) so this is belt-and-braces. Reads from
+  // lib/landing/electronics-tech.ts — same shape as trust + fb modules.
+  const isElectronicsTech = !isFB && !isTrust && isElectronicsTechStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const etVars = isElectronicsTech ? electronicsTechCssVars() : {};
+  const etClass = isElectronicsTech ? ELECTRONICS_TECH_BODY_CLASS : "";
+
   // Convenience aliases — the layout's three render paths all want
   // "give me the active family's class + vars" without recomputing.
-  // FB takes precedence by virtue of being checked first above.
-  const familyClass = `${fbClass}${fbClass && trustClass ? " " : ""}${trustClass}`;
-  const familyVars = { ...trustVars, ...fbVars };
+  // FB takes precedence by virtue of being checked first above, then
+  // trust, then electronics-tech. Mutually exclusive in practice.
+  const familyClass = [fbClass, trustClass, etClass].filter(Boolean).join(" ");
+  const familyVars = { ...etVars, ...trustVars, ...fbVars };
   // Active family's accent — used by ShopHeader / ShopFooter to
-  // paint chrome links + glyph fills. FB pink stays as it was; trust
-  // borrows the gold for accents (the charcoal primary stays in CTAs).
+  // paint chrome links + glyph fills. FB pink, trust gold, electronics
+  // cyan. The base primary stays in CTAs via the CSS-var cascade.
   const familyAccent = isFB
     ? "#f43f5e"
     : isTrust
       ? TRUST_TOKENS.colors.accent
-      : null;
-  // Button shape pinned per-family — FB pills, trust squared. Falls
-  // through to the per-template default when neither applies.
+      : isElectronicsTech
+        ? ELECTRONICS_TECH_TOKENS.colors.accent
+        : null;
+  // Button shape pinned per-family — FB pills, trust + electronics-tech
+  // squared. Falls through to the per-template default when none apply.
   const familyButtonShape: "pill" | "square" | null = isFB
     ? "pill"
     : isTrust
       ? "square"
-      : null;
+      : isElectronicsTech
+        ? "square"
+        : null;
 
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality

@@ -14,6 +14,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { StoreSignUpClient } from "./signup-client";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +54,12 @@ export default async function StoreSignUpPage({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  const isElectronicsTech = !isFB && !isTrust && store
+    ? isElectronicsTechStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   return (
     <StoreSignUpClient
@@ -60,6 +67,7 @@ export default async function StoreSignUpPage({
       storeName={store?.name ?? params.slug}
       isFashionBeauty={isFB}
       isTrust={isTrust}
+      isElectronicsTech={isElectronicsTech}
       defaultCallback={`/stores/${params.slug}/account`}
     />
   );

@@ -8,8 +8,10 @@ import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
+import { ElectronicsTechProductHero } from "@/components/storefront/themes/electronics-tech/ElectronicsTechProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
@@ -52,8 +54,10 @@ export default async function ShopProductPage({
   // (in practice the template→group mapping is disjoint, but the
   // explicit precedence keeps things safe). trust (classic /
   // official-brand / premium-luxury) renders the squared heritage
-  // hero; FB renders the editorial portrait; everything else
-  // renders the default hero untouched.
+  // hero; electronics-tech (catalog-dense / tech-compare /
+  // single-product) renders the spec-sheet square hero; FB renders
+  // the editorial portrait; everything else renders the default hero
+  // untouched.
   const isFB = isFashionBeautyStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
@@ -62,11 +66,17 @@ export default async function ShopProductPage({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
+  const isElectronicsTech = !isFB && !isTrust && isElectronicsTechStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
   const HeroComponent = isFB
     ? FashionBeautyProductHero
     : isTrust
       ? TrustProductHero
-      : ProductDetailHero;
+      : isElectronicsTech
+        ? ElectronicsTechProductHero
+        : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -156,11 +166,12 @@ export default async function ShopProductPage({
       {related.length > 0 && (
         <section
           className={
-            isFB || isTrust ? "space-y-6 py-8" : "space-y-3"
+            isFB || isTrust || isElectronicsTech ? "space-y-6 py-8" : "space-y-3"
           }
         >
           {/* Section eyebrow + heading. Trust adds a heritage caps
-              eyebrow above the serif headline; FB renders a serif
+              eyebrow above the serif headline; electronics-tech adds
+              a mono "YOU MAY ALSO LIKE" eyebrow; FB renders a serif
               headline only; default keeps its compact sans label. */}
           {isTrust && (
             <p
@@ -174,11 +185,28 @@ export default async function ShopProductPage({
               From the Collection
             </p>
           )}
+          {isElectronicsTech && (
+            <p
+              data-tech-mono="true"
+              className="text-[11px] uppercase"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                fontFamily:
+                  'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace',
+                letterSpacing: '0.16em',
+                fontWeight: 600,
+              }}
+            >
+              Related products
+            </p>
+          )}
           <h2
             className={
               isFB || isTrust
                 ? "text-3xl sm:text-4xl"
-                : "text-lg font-semibold"
+                : isElectronicsTech
+                  ? "text-2xl sm:text-3xl"
+                  : "text-lg font-semibold"
             }
             style={{
               color: 'var(--shop-ink)',
@@ -195,14 +223,23 @@ export default async function ShopProductPage({
                       fontWeight: 600,
                       letterSpacing: '-0.01em',
                     }
-                  : {}),
+                  : isElectronicsTech
+                    ? {
+                        fontFamily:
+                          'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif',
+                        fontWeight: 700,
+                        letterSpacing: '-0.015em',
+                      }
+                    : {}),
             }}
           >
             {isFB
               ? 'You may also love'
               : isTrust
                 ? 'You may also like'
-                : 'สินค้าที่เกี่ยวข้อง'}
+                : isElectronicsTech
+                  ? 'Compare similar products'
+                  : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={
@@ -210,7 +247,9 @@ export default async function ShopProductPage({
                 ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
                 : isTrust
                   ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
-                  : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
+                  : isElectronicsTech
+                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
+                    : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
             }
           >
             {related.map((r) => (
@@ -218,12 +257,12 @@ export default async function ShopProductPage({
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
                 className={
-                  isFB || isTrust
+                  isFB || isTrust || isElectronicsTech
                     ? "group block"
                     : "group overflow-hidden rounded-lg border"
                 }
                 style={
-                  isFB || isTrust
+                  isFB || isTrust || isElectronicsTech
                     ? undefined
                     : { background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }
                 }
@@ -234,14 +273,18 @@ export default async function ShopProductPage({
                       ? "overflow-hidden rounded-2xl border bg-white p-2 shadow-sm"
                       : isTrust
                         ? "overflow-hidden rounded-sm border bg-white"
-                        : "aspect-square overflow-hidden"
+                        : isElectronicsTech
+                          ? "overflow-hidden rounded-md border bg-white"
+                          : "aspect-square overflow-hidden"
                   }
                   style={{
                     ...(isFB
                       ? { borderColor: 'var(--shop-border)' }
                       : isTrust
                         ? { borderColor: 'var(--shop-accent)' }
-                        : { backgroundColor: 'var(--shop-bg)' }),
+                        : isElectronicsTech
+                          ? { borderColor: 'var(--shop-border)' }
+                          : { backgroundColor: 'var(--shop-bg)' }),
                   }}
                 >
                   {r.imageUrl && (
@@ -251,14 +294,18 @@ export default async function ShopProductPage({
                           ? "relative overflow-hidden rounded-xl"
                           : isTrust
                             ? "relative overflow-hidden"
-                            : "h-full w-full"
+                            : isElectronicsTech
+                              ? "relative overflow-hidden"
+                              : "h-full w-full"
                       }
                       style={
                         isFB
                           ? { aspectRatio: '4 / 5', backgroundColor: 'var(--shop-muted)' }
                           : isTrust
                             ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
-                            : undefined
+                            : isElectronicsTech
+                              ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
+                              : undefined
                       }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -270,7 +317,9 @@ export default async function ShopProductPage({
                             ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                             : isTrust
                               ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                              : "h-full w-full object-cover transition group-hover:scale-105"
+                              : isElectronicsTech
+                                ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                : "h-full w-full object-cover transition group-hover:scale-105"
                         }
                       />
                     </div>
@@ -282,7 +331,9 @@ export default async function ShopProductPage({
                       ? "px-1 pt-3"
                       : isTrust
                         ? "px-1 pt-4"
-                        : "p-3"
+                        : isElectronicsTech
+                          ? "px-1 pt-3"
+                          : "p-3"
                   }
                 >
                   <div
@@ -291,7 +342,9 @@ export default async function ShopProductPage({
                         ? "line-clamp-2 text-sm"
                         : isTrust
                           ? "line-clamp-2 text-sm leading-tight"
-                          : "line-clamp-2 text-sm font-medium"
+                          : isElectronicsTech
+                            ? "line-clamp-2 text-sm leading-tight"
+                            : "line-clamp-2 text-sm font-medium"
                     }
                     style={{
                       color: 'var(--shop-ink, #1c1917)',
@@ -301,15 +354,34 @@ export default async function ShopProductPage({
                               'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
                             fontWeight: 600,
                           }
-                        : {}),
+                        : isElectronicsTech
+                          ? {
+                              fontFamily:
+                                'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif',
+                              fontWeight: 600,
+                              letterSpacing: '-0.005em',
+                            }
+                          : {}),
                     }}
                   >
                     {r.titleTh ?? r.title}
                   </div>
                   <div
-                    className="mt-1 text-sm font-semibold"
+                    className={
+                      isElectronicsTech
+                        ? "mt-1 text-sm font-bold"
+                        : "mt-1 text-sm font-semibold"
+                    }
+                    data-tech-mono={isElectronicsTech ? 'true' : undefined}
                     style={{
                       color: isTrust ? 'var(--shop-ink)' : 'var(--shop-primary)',
+                      ...(isElectronicsTech
+                        ? {
+                            fontFamily:
+                              'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace',
+                            letterSpacing: '-0.01em',
+                          }
+                        : {}),
                     }}
                   >
                     ฿ {Number(r.priceTHB).toLocaleString("th-TH")}

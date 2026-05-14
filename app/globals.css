@@ -1459,6 +1459,100 @@
   border: 1px solid var(--shop-accent) !important;
 }
 
+/* ── Electronics-Tech design family (DESIGN-B sibling) ───────
+   Activated when app/stores/[slug]/layout.tsx adds the
+   `theme-electronics-tech` class for stores whose templateId is in
+   { catalog-dense, tech-compare, single-product } OR whose
+   landingThemeVariant is "electronics-tech" / "E".
+
+   Token mapping mirrors ELECTRONICS_TECH_TOKENS in
+   lib/landing/electronics-tech.ts — keep them in sync.
+
+   Goal: every sub-page (cart / category / product / checkout /
+   account / signin / signup) inherits the same white-on-slate
+   palette + sans heading + blue/cyan accent + mono SKU/price
+   spec-sheet feel without per-page rewrites. */
+.theme-electronics-tech {
+  --shop-bg: #ffffff;          /* pure white */
+  --shop-card: #ffffff;
+  --shop-primary: #2563eb;     /* blue-600 electric */
+  --shop-accent: #06b6d4;      /* cyan-500 secondary */
+  --shop-ink: #0f172a;         /* slate-900 */
+  --shop-ink-muted: #64748b;   /* slate-500 */
+  --shop-border: #e2e8f0;      /* slate-200 hairline */
+  --shop-muted: #f1f5f9;       /* slate-100 spec rows */
+  --shop-highlight: #34d399;   /* mint — in-stock chips */
+}
+
+/* Headlines stay SANS — electronics families never lift into serif.
+   Inter Tight (loaded as --font-tech-display in app/layout.tsx)
+   gives heading-sized authority with tight tracking. Heavy weight
+   (700) for spec-sheet emphasis. Override the existing default
+   font-family so a parent serif cascade can't bleed in. */
+.theme-electronics-tech h1,
+.theme-electronics-tech h2,
+.theme-electronics-tech h3,
+.theme-electronics-tech h4 {
+  font-family: var(--font-tech-display, "Inter Tight"), "Inter",
+    "IBM Plex Sans Thai", system-ui, sans-serif !important;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* Primary CTAs square down to rounded-md — rectangular, sharp.
+   Scoped to the blue-painted buttons so secondary outline CTAs
+   inherit the same family radius. The !important beats default
+   pill / shadcn radii from cascading. */
+.theme-electronics-tech button[style*="--shop-primary"],
+.theme-electronics-tech a[style*="--shop-primary"] {
+  border-radius: 0.375rem !important; /* rounded-md */
+}
+
+/* Opt-in mono override — any element opting in with
+   data-tech-mono="true" lifts into JetBrains Mono with tight
+   tracking for SKU codes, prices, spec values. Pair with
+   font-variant-numeric: tabular-nums for column alignment. */
+.theme-electronics-tech [data-tech-mono="true"] {
+  font-family: var(--font-tech-mono, "JetBrains Mono"), ui-monospace,
+    "SFMono-Regular", Menlo, monospace !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Subtle blue-glow shadow on cards — electronics-flat surfaces
+   sit on a faint indigo wash, not a soft drop-shadow. Scoped to
+   bordered card elements so flat utility classes (chips, inputs)
+   stay crisp. */
+.theme-electronics-tech [class*="rounded-md"][class*="border"],
+.theme-electronics-tech [class*="rounded-lg"][class*="border"],
+.theme-electronics-tech [class*="rounded-xl"][class*="border"] {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px -16px rgba(37, 99, 235, 0.18) !important;
+}
+
+/* Electronics-tech glow helper — wrap a product image / hero
+   gallery in [data-tech-glow="true"] to get a stronger blue glow
+   underneath (drop-shadow blur-xl indigo-500/10). */
+.theme-electronics-tech [data-tech-glow="true"] {
+  filter: drop-shadow(0 16px 32px rgba(37, 99, 235, 0.12))
+    drop-shadow(0 4px 12px rgba(6, 182, 212, 0.08));
+}
+
+/* Electronics-tech spec-row helper — alternating muted rows for
+   spec tables. Caller adds data-tech-row="true" on every other row. */
+.theme-electronics-tech [data-tech-row="true"] {
+  background: var(--shop-muted) !important;
+}
+
+/* In-stock chip helper — caller adds data-tech-stock="true" to
+   render mint background + dark-mint text. Keeps the value swap
+   in one place (so a future "low stock" hue change is one edit). */
+.theme-electronics-tech [data-tech-stock="true"] {
+  background: color-mix(in srgb, var(--shop-highlight) 16%, transparent) !important;
+  color: #047857 !important; /* emerald-700 — readable on mint chip */
+  border-color: color-mix(in srgb, var(--shop-highlight) 36%, transparent) !important;
+}
+
 /* ─────────────────────────────────────────────────────────────
    Caselnw theme — applied via `theme-caselnw` class on the
    shop-page wrapper in app/stores/[slug]/layout.tsx whenever
