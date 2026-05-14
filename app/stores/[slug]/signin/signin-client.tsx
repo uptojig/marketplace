@@ -24,6 +24,18 @@ const FB_DISPLAY_FONT =
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
 
+const BM_MONO_FONT =
+  'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace';
+
+const LIFESTYLE_DISPLAY_FONT =
+  'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
+
+const TECH_DISPLAY_FONT =
+  'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif';
+
+const TECH_MONO_FONT =
+  'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace';
+
 const SPECIALTY_DISPLAY_FONT =
   'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
 const SPECIALTY_HAND_FONT =
@@ -45,11 +57,17 @@ function CredentialsForm({
   defaultCallback,
   isFashionBeauty,
   isTrust,
+  isBusinessModel,
+  isLifestyle,
+  isElectronicsTech,
   isSpecialty,
 }: {
   defaultCallback: string;
   isFashionBeauty: boolean;
   isTrust: boolean;
+  isBusinessModel: boolean;
+  isLifestyle: boolean;
+  isElectronicsTech: boolean;
   isSpecialty: boolean;
 }) {
   const router = useRouter();
@@ -87,8 +105,12 @@ function CredentialsForm({
     }
   }
 
-  // Per-family input + button skinning. FB uses pill inputs + pill
-  // submit; trust uses squared rounded-sm inputs + uppercase-tracking
+  // Per-family input + button skinning. Trust uses squared rounded-sm
+  // inputs + uppercase-tracking submit; FB uses pill inputs + pill
+  // submit; business-model uses rectangular rounded inputs + bold
+  // tight-caps red submit; lifestyle uses rounded-2xl friendly inputs
+  // + rounded-full terracotta pill submit; electronics-tech uses
+  // rectangular rounded-md inputs with slate borders + bold-sans
   // submit; specialty uses rounded-md kraft inputs + rounded-md submit;
   // default keeps the shadcn baseline.
   const labelClass =
@@ -96,34 +118,70 @@ function CredentialsForm({
       ? 'text-xs uppercase tracking-[0.18em]'
       : isTrust
         ? 'text-xs uppercase'
-        : isSpecialty
-          ? 'text-xs uppercase tracking-[0.16em]'
-          : 'text-sm font-medium';
+        : isBusinessModel
+          ? 'text-xs font-semibold uppercase'
+          : isLifestyle
+            ? 'text-xs uppercase'
+            : isElectronicsTech
+              ? 'text-[11px] uppercase'
+              : isSpecialty
+                ? 'text-xs uppercase tracking-[0.16em]'
+                : 'text-sm font-medium';
   const labelStyle: React.CSSProperties = isTrust
     ? {
         color: 'var(--shop-ink-muted)',
         letterSpacing: '0.28em',
         fontWeight: 600,
       }
-    : { color: 'var(--shop-ink-muted)' };
+    : isBusinessModel
+      ? {
+          color: 'var(--shop-ink-muted)',
+          letterSpacing: '0.12em',
+        }
+      : isLifestyle
+        ? {
+            color: 'var(--shop-ink-muted)',
+            letterSpacing: '0.18em',
+            fontWeight: 600,
+          }
+        : isElectronicsTech
+          ? {
+              color: 'var(--shop-ink-muted)',
+              fontFamily: TECH_MONO_FONT,
+              letterSpacing: '0.16em',
+              fontWeight: 600,
+            }
+          : { color: 'var(--shop-ink-muted)' };
   const inputClass =
     isFashionBeauty
       ? 'mt-2 rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
       : isTrust
         ? 'mt-2 rounded-sm border-[var(--shop-accent)] bg-white px-4 py-5'
-        : isSpecialty
-          ? 'mt-2 rounded-md border-[var(--shop-border)] bg-[var(--shop-card)] px-4 py-5'
-          : 'mt-1';
+        : isBusinessModel
+          ? 'mt-1.5 rounded-md border-[var(--shop-border)] bg-white px-3 py-2.5'
+          : isLifestyle
+            ? 'mt-2 rounded-2xl border-[var(--shop-border)] bg-white px-4 py-5'
+            : isElectronicsTech
+              ? 'mt-2 rounded-md border-[var(--shop-border)] bg-white px-4 py-5'
+              : isSpecialty
+                ? 'mt-2 rounded-md border-[var(--shop-border)] bg-[var(--shop-card)] px-4 py-5'
+                : 'mt-1';
   const submitClass =
     isFashionBeauty
       ? 'w-full rounded-full py-6 text-sm font-medium text-white hover:opacity-90'
       : isTrust
         ? 'w-full rounded-sm py-6 text-sm font-semibold uppercase tracking-[0.18em] text-white hover:opacity-90'
-        : isSpecialty
-          ? 'w-full rounded-md py-6 text-sm font-medium text-white hover:opacity-90'
-          : 'w-full';
+        : isBusinessModel
+          ? 'w-full rounded-md py-5 text-sm font-bold uppercase tracking-[0.08em] text-white hover:opacity-90'
+          : isLifestyle
+            ? 'w-full rounded-full py-6 text-sm font-semibold text-white hover:opacity-90'
+            : isElectronicsTech
+              ? 'w-full rounded-md py-6 text-sm font-bold text-white hover:opacity-90'
+              : isSpecialty
+                ? 'w-full rounded-md py-6 text-sm font-medium text-white hover:opacity-90'
+                : 'w-full';
   const submitStyle =
-    isFashionBeauty || isTrust || isSpecialty
+    isFashionBeauty || isTrust || isBusinessModel || isLifestyle || isElectronicsTech || isSpecialty
       ? { background: 'var(--shop-primary)' }
       : undefined;
 
@@ -170,7 +228,17 @@ function CredentialsForm({
         style={submitStyle}
       >
         {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isTrust ? 'Sign in' : isSpecialty ? 'Sign in' : 'เข้าสู่ระบบ'}
+        {isTrust
+          ? 'Sign in'
+          : isBusinessModel
+            ? 'Sign in'
+            : isLifestyle
+              ? 'Sign in'
+              : isElectronicsTech
+                ? 'Sign in'
+                : isSpecialty
+                  ? 'Sign in'
+                  : 'เข้าสู่ระบบ'}
       </Button>
     </form>
   );
@@ -181,6 +249,9 @@ export function StoreSignInClient({
   storeName,
   isFashionBeauty,
   isTrust = false,
+  isBusinessModel = false,
+  isLifestyle = false,
+  isElectronicsTech = false,
   isSpecialty = false,
   defaultCallback,
 }: {
@@ -188,6 +259,9 @@ export function StoreSignInClient({
   storeName: string;
   isFashionBeauty: boolean;
   isTrust?: boolean;
+  isBusinessModel?: boolean;
+  isLifestyle?: boolean;
+  isElectronicsTech?: boolean;
   isSpecialty?: boolean;
   defaultCallback: string;
 }) {
@@ -255,6 +329,101 @@ export function StoreSignInClient({
               เข้าสู่ระบบเพื่อช้อปและติดตามคำสั่งซื้อของคุณ
             </p>
           </div>
+        ) : isBusinessModel ? (
+          <div className="text-center">
+            <p
+              className="text-xs font-semibold uppercase"
+              style={{
+                color: 'var(--shop-primary)',
+                letterSpacing: '0.12em',
+              }}
+            >
+              B2B Account · Sign in
+            </p>
+            <h1
+              className="mt-2 text-2xl sm:text-3xl font-bold"
+              style={{
+                color: 'var(--shop-ink)',
+                fontWeight: 700,
+                letterSpacing: '-0.015em',
+              }}
+            >
+              Sign in to {storeName}
+            </h1>
+            <p
+              className="mt-3 text-sm"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              เข้าสู่ระบบเพื่อสั่งซื้อแบบขายส่งและจัดการบัญชี B2B
+            </p>
+          </div>
+        ) : isLifestyle ? (
+          <div className="text-center">
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.18em',
+                fontWeight: 600,
+              }}
+            >
+              Welcome to {storeName}
+            </p>
+            <h1
+              className="mt-3 text-4xl sm:text-5xl"
+              style={{
+                color: 'var(--shop-ink)',
+                fontFamily: LIFESTYLE_DISPLAY_FONT,
+                fontWeight: 700,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Welcome back!
+            </h1>
+            <div
+              aria-hidden
+              data-lifestyle-squiggle="true"
+              className="mx-auto mt-5 w-24"
+            />
+            <p
+              className="mt-4 text-sm"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              เข้าสู่ระบบเพื่อช้อปและติดตามคำสั่งซื้อของคุณ
+            </p>
+          </div>
+        ) : isElectronicsTech ? (
+          <div className="text-center">
+            <p
+              data-tech-mono="true"
+              className="text-[11px] uppercase"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                fontFamily: TECH_MONO_FONT,
+                letterSpacing: '0.16em',
+                fontWeight: 600,
+              }}
+            >
+              Account Access
+            </p>
+            <h1
+              className="mt-3 text-3xl sm:text-4xl"
+              style={{
+                color: 'var(--shop-ink)',
+                fontFamily: TECH_DISPLAY_FONT,
+                fontWeight: 700,
+                letterSpacing: '-0.015em',
+              }}
+            >
+              Sign in to {storeName}
+            </h1>
+            <p
+              className="mt-4 text-sm"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              เข้าสู่ระบบเพื่อช้อปและติดตามคำสั่งซื้อของคุณ
+            </p>
+          </div>
         ) : isSpecialty ? (
           <div className="text-center">
             <p
@@ -312,9 +481,15 @@ export function StoreSignInClient({
               ? 'rounded-2xl border bg-white p-8 shadow-sm'
               : isTrust
                 ? 'rounded-sm border bg-white p-8 shadow-sm'
-                : isSpecialty
-                  ? 'rounded-md border p-8 shadow-sm'
-                  : 'p-6'
+                : isBusinessModel
+                  ? 'rounded-md border bg-white p-6 shadow-sm'
+                  : isLifestyle
+                    ? 'rounded-3xl border bg-white p-8 shadow-sm'
+                    : isElectronicsTech
+                      ? 'rounded-md border bg-white p-8'
+                      : isSpecialty
+                        ? 'rounded-md border p-8 shadow-sm'
+                        : 'p-6'
           }
           style={{
             borderColor: isTrust ? 'var(--shop-accent)' : 'var(--shop-border)',
@@ -326,6 +501,9 @@ export function StoreSignInClient({
               defaultCallback={defaultCallback}
               isFashionBeauty={isFashionBeauty}
               isTrust={isTrust}
+              isBusinessModel={isBusinessModel}
+              isLifestyle={isLifestyle}
+              isElectronicsTech={isElectronicsTech}
               isSpecialty={isSpecialty}
             />
           </Suspense>
@@ -334,10 +512,15 @@ export function StoreSignInClient({
             <div
               className="absolute inset-x-0 top-1/2 h-px"
               style={{
-                background: isTrust ? 'var(--shop-accent)' : 'var(--shop-border)',
+                background: isTrust
+                  ? 'var(--shop-accent)'
+                  : isLifestyle
+                    ? 'var(--shop-accent)'
+                    : 'var(--shop-border)',
               }}
             />
             <span
+              data-tech-mono={isElectronicsTech ? 'true' : undefined}
               className={
                 isSpecialty
                   ? 'relative bg-[var(--shop-card)] px-3 text-xs uppercase'
@@ -345,11 +528,20 @@ export function StoreSignInClient({
               }
               style={{
                 color: 'var(--shop-ink-muted)',
-                letterSpacing: isTrust ? '0.28em' : '0.18em',
-                fontWeight: isTrust ? 600 : undefined,
+                letterSpacing: isTrust
+                  ? '0.28em'
+                  : isElectronicsTech
+                    ? '0.16em'
+                    : '0.18em',
+                fontWeight: isTrust || isLifestyle || isElectronicsTech ? 600 : undefined,
+                fontFamily: isElectronicsTech ? TECH_MONO_FONT : undefined,
               }}
             >
-              หรือ
+              {isLifestyle
+                ? 'or continue with'
+                : isElectronicsTech
+                  ? 'OR'
+                  : 'หรือ'}
             </span>
           </div>
 
@@ -361,9 +553,15 @@ export function StoreSignInClient({
                 ? 'w-full rounded-full border-[var(--shop-border)] py-6'
                 : isTrust
                   ? 'w-full rounded-sm border-[var(--shop-ink)] py-6 uppercase tracking-[0.18em]'
-                  : isSpecialty
-                    ? 'w-full rounded-md border-[var(--shop-border)] py-6'
-                    : 'w-full'
+                  : isBusinessModel
+                    ? 'w-full rounded-md border-[var(--shop-border)] py-5 font-semibold'
+                    : isLifestyle
+                      ? 'w-full rounded-full border-[var(--shop-ink)] py-6'
+                      : isElectronicsTech
+                        ? 'w-full rounded-md border-[var(--shop-border)] py-6 font-semibold'
+                        : isSpecialty
+                          ? 'w-full rounded-md border-[var(--shop-border)] py-6'
+                          : 'w-full'
             }
           >
             <Mail className="mr-2 h-4 w-4" />
@@ -371,21 +569,42 @@ export function StoreSignInClient({
           </Button>
         </Card>
 
-        <p
-          className="text-center text-sm"
-          style={{ color: 'var(--shop-ink-muted)' }}
-        >
-          ยังไม่มีบัญชี?{' '}
-          <Link
-            href={`/stores/${storeSlug}/signup`}
-            className="font-medium hover:underline"
-            style={{
-              color: isTrust ? 'var(--shop-accent)' : 'var(--shop-primary)',
-            }}
-          >
-            สมัครสมาชิก
-          </Link>
-        </p>
+        <div className="space-y-3 text-center text-sm">
+          <p style={{ color: 'var(--shop-ink-muted)' }}>
+            ยังไม่มีบัญชี?{' '}
+            <Link
+              href={`/stores/${storeSlug}/signup`}
+              className="font-medium hover:underline"
+              style={{
+                color: isTrust
+                  ? 'var(--shop-accent)'
+                  : isLifestyle
+                    ? 'var(--shop-primary)'
+                    : 'var(--shop-primary)',
+              }}
+            >
+              สมัครสมาชิก
+            </Link>
+          </p>
+          {isBusinessModel && (
+            <p
+              className="text-xs"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              B2B account?{' '}
+              <Link
+                href={`/stores/${storeSlug}/signup?type=wholesale`}
+                className="font-bold uppercase hover:underline"
+                style={{
+                  color: 'var(--shop-primary)',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                Wholesale signup
+              </Link>
+            </p>
+          )}
+        </div>
       </main>
     </div>
   );

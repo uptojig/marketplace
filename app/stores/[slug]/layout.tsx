@@ -34,6 +34,24 @@ import {
   isTrustStore,
 } from "@/lib/landing/trust";
 import {
+  BUSINESS_MODEL_BODY_CLASS,
+  BUSINESS_MODEL_TOKENS,
+  businessModelCssVars,
+  isBusinessModelStore,
+} from "@/lib/landing/business-model";
+import {
+  LIFESTYLE_BODY_CLASS,
+  LIFESTYLE_TOKENS,
+  lifestyleCssVars,
+  isLifestyleStore,
+} from "@/lib/landing/lifestyle";
+import {
+  ELECTRONICS_TECH_BODY_CLASS,
+  ELECTRONICS_TECH_TOKENS,
+  electronicsTechCssVars,
+  isElectronicsTechStore,
+} from "@/lib/landing/electronics-tech";
+import {
   SPECIALTY_BODY_CLASS,
   specialtyCssVars,
   isSpecialtyStore,
@@ -183,49 +201,103 @@ export default async function ShopLayout({
   const trustVars = isTrust ? trustCssVars() : {};
   const trustClass = isTrust ? TRUST_BODY_CLASS : "";
 
-  // Specialty family (artisan / vintage) — DESIGN-B sibling to
-  // fashion-beauty AND trust. Stacked AFTER trust so the family
-  // detection ranks FB → trust → specialty. A store can only end up
-  // in one family (the template→group lookup is disjoint); these
-  // guards are belt-and-braces. Same wiring pattern: detect via
-  // templateId or landingThemeVariant, merge CSS vars and add the
-  // .theme-specialty class so the kraft + ochre + slab-serif palette
-  // cascades to every sub-page.
-  const isSpecialty = !isFB && !isTrust && isSpecialtyStore({
+  // Business-model family (DESIGN-B sibling). Targets the deal /
+  // wholesale templates (wholesale-b2b, flash-deal, subscription).
+  // Stacked alongside FB + trust so we never break their cascades:
+  // FB and trust are checked first; this only activates when neither
+  // matched. The detection set is disjoint by template group so a
+  // single store can only ever land in one family. Reads from
+  // lib/landing/business-model.ts — same shape as the trust module.
+  const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
+  const bmVars = isBusinessModel ? businessModelCssVars() : {};
+  const bmClass = isBusinessModel ? BUSINESS_MODEL_BODY_CLASS : "";
+
+  // Lifestyle family (warm catalog / outdoorsy). Stacked AFTER trust
+  // and business-model in the chain — template→group is disjoint in
+  // practice so this is belt-and-braces. Reads from
+  // lib/landing/lifestyle.ts.
+  const isLifestyle = !isFB && !isTrust && !isBusinessModel && isLifestyleStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const lifestyleVars = isLifestyle ? lifestyleCssVars() : {};
+  const lifestyleClass = isLifestyle ? LIFESTYLE_BODY_CLASS : "";
+
+  // Electronics-tech family (DESIGN-B sibling). Stacked after the four
+  // earlier families so the dispatcher is a strict precedence ladder.
+  // In practice the template→group lookup is disjoint (a store can
+  // only be in one TemplateGroup) so this is belt-and-braces. Reads
+  // from lib/landing/electronics-tech.ts.
+  const isElectronicsTech = !isFB && !isTrust && !isBusinessModel && !isLifestyle && isElectronicsTechStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const etVars = isElectronicsTech ? electronicsTechCssVars() : {};
+  const etClass = isElectronicsTech ? ELECTRONICS_TECH_BODY_CLASS : "";
+
+  // Specialty family (artisan / vintage) — DESIGN-B sibling stacked
+  // LAST in the dispatcher chain so the precedence ladder is
+  // FB → trust → business-model → lifestyle → electronics-tech →
+  // specialty. A store can only end up in one family (the template→
+  // group lookup is disjoint); these guards are belt-and-braces. Same
+  // wiring pattern: detect via templateId or landingThemeVariant,
+  // merge CSS vars and add the .theme-specialty class so the kraft +
+  // ochre + slab-serif palette cascades to every sub-page.
+  const isSpecialty =
+    !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech &&
+    isSpecialtyStore({
+      templateId: store.templateId,
+      landingThemeVariant: store.landingThemeVariant,
+    });
   const specialtyVars = isSpecialty ? specialtyCssVars() : {};
   const specialtyClass = isSpecialty ? SPECIALTY_BODY_CLASS : "";
 
-  // Combined family-aware CSS-var bag + class for the wrapper div.
-  // The three families are mutually exclusive (FB wins, then trust,
-  // then specialty); the helpers return {} / "" when their family
-  // doesn't match so the default cascade is preserved unchanged.
-  const familyClass = [fbClass, trustClass, specialtyClass]
+  // Convenience aliases — the layout's three render paths all want
+  // "give me the active family's class + vars" without recomputing.
+  // FB takes precedence by virtue of being checked first above; trust
+  // is next, business-model, lifestyle, electronics-tech, then specialty.
+  const familyClass = [fbClass, trustClass, bmClass, lifestyleClass, etClass, specialtyClass]
     .filter(Boolean)
     .join(" ");
-  const familyVars = { ...trustVars, ...specialtyVars, ...fbVars };
+  // Merge order matters — earlier checks win because their vars
+  // shadow later ones. FB → trust → business-model → lifestyle → ET → specialty.
+  const familyVars = { ...specialtyVars, ...etVars, ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
   // Active family's accent — used by ShopHeader / ShopFooter to
-  // paint chrome links + glyph fills. FB pink stays as it was; trust
-  // borrows the gold for accents (the charcoal primary stays in CTAs);
-  // specialty uses ochre.
+  // paint chrome links + glyph fills. FB pink, trust gold, business-
+  // model amber, lifestyle sage, electronics-tech cyan, specialty ochre.
+  // The base primary stays in CTAs via the CSS-var cascade.
   const familyAccent = isFB
     ? "#f43f5e"
     : isTrust
       ? TRUST_TOKENS.colors.accent
-      : isSpecialty
-        ? "#ca8a04"
-        : null;
-  // Button shape pinned per-family — FB pills, trust squared. Falls
-  // through to the per-template default when neither applies. Specialty
-  // uses its own per-template default (rounded-md is enforced via the
-  // .theme-specialty CSS in globals.css).
+      : isBusinessModel
+        ? BUSINESS_MODEL_TOKENS.colors.accent
+        : isLifestyle
+          ? LIFESTYLE_TOKENS.colors.accent
+          : isElectronicsTech
+            ? ELECTRONICS_TECH_TOKENS.colors.accent
+            : isSpecialty
+              ? "#ca8a04"
+              : null;
+  // Button shape pinned per-family — FB pills, trust squared,
+  // business-model squared, lifestyle pill, electronics-tech squared.
+  // Falls through to the per-template default when none apply.
+  // Specialty uses its own per-template default (rounded-md is enforced
+  // via the .theme-specialty CSS in globals.css).
   const familyButtonShape: "pill" | "square" | null = isFB
     ? "pill"
     : isTrust
       ? "square"
-      : null;
+      : isBusinessModel
+        ? "square"
+        : isLifestyle
+          ? "pill"
+          : isElectronicsTech
+            ? "square"
+            : null;
 
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality
