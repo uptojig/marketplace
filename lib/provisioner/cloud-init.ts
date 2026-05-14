@@ -13,7 +13,7 @@ import { getConfig } from "./config";
 export type CloudInitInput = {
   shopId: string;
   shopSlug: string;
-  shopDomains: string[]; // ordered list -- primary first, custom after
+  shopDomains: string[]; // ordered list -- slug subdomain first, custom after
   // Postgres URL the shop droplet uses to reach the managed DB over VPC.
   // We pass the schema name separately so we don't leak the master URL.
   databaseUrl: string;
@@ -27,6 +27,13 @@ export type CloudInitInput = {
   // Control plane base URL -- used by Caddy's `on_demand_tls ask` endpoint
   // and the update-agent's `/internal/agent/...` calls.
   controlPlaneBaseUrl: string;
+  // Google OAuth — when both are set, the shop registers the Google
+  // provider in NextAuth. The OAuth client's Authorized Redirect URIs
+  // must include `https://<primary-domain>/api/auth/callback/google`
+  // for each shop; Google doesn't expose an API to register those, so
+  // operators add them manually via the Cloud Console.
+  googleClientId?: string;
+  googleClientSecret?: string;
   // Whether snapshot is available -- falls back to bootstrap install if not.
   useSnapshot: boolean;
   // Optional override for the shop image registry coordinates.
@@ -40,7 +47,15 @@ export function renderCloudInit(input: CloudInitInput): string {
   const image = input.shopImage ?? DEFAULT_SHOP_IMAGE;
 
   // env file written to /opt/marketplace-shop/.env
-  const primaryHost = `${input.shopSlug}.${cfg.cfPlatformDomain}`;
+  //
+  // primaryHost: the URL the buyer sees in the address bar — custom
+  // domain when set, slug subdomain otherwise. NEXTAUTH_URL must
+  // match this exactly so the OAuth callback lands on the same
+  // origin the shopper is browsing from (Google would otherwise
+  // refuse the redirect for mismatched URIs).
+  const slugSubdomain = `${input.shopSlug}.${cfg.cfPlatformDomain}`;
+  const primaryHost =
+    input.shopDomains.find((d) => d && d !== slugSubdomain) ?? slugSubdomain;
   const envFile = [
     `SHOP_ID=${input.shopId}`,
     `SHOP_SLUG=${input.shopSlug}`,
@@ -53,6 +68,8 @@ export function renderCloudInit(input: CloudInitInput): string {
     `NEXTAUTH_URL=https://${primaryHost}`,
     `NEXT_PUBLIC_BASE_URL=https://${primaryHost}`,
     `PLATFORM_DOMAIN=${cfg.cfPlatformDomain}`,
+    ...(input.googleClientId ? [`GOOGLE_CLIENT_ID=${input.googleClientId}`] : []),
+    ...(input.googleClientSecret ? [`GOOGLE_CLIENT_SECRET=${input.googleClientSecret}`] : []),
     `TZ=Asia/Bangkok`,
   ].join("\n");
 

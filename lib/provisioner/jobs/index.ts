@@ -80,6 +80,8 @@ async function createDropletJob(ctx: JobContext): Promise<JobResult> {
     internalApiSecret: cfg.internalApiSecret,
     nextauthSecret: process.env.NEXTAUTH_SECRET || cfg.internalApiSecret,
     controlPlaneBaseUrl: cfg.controlPlaneBaseUrl,
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
     useSnapshot: Boolean(cfg.doImageSnapshotId),
   });
 
