@@ -82,6 +82,9 @@ export default async function CategoryIndexPage({
       products: {
         where: { active: true },
         orderBy: sort.orderBy,
+        include: {
+          category: { select: { name: true } },
+        },
       },
       categories: {
         orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -122,16 +125,27 @@ export default async function CategoryIndexPage({
     landingThemeVariant: store.landingThemeVariant,
   });
 
-  // Counts per category — always derived from full set so filter UI
-  // can show stable numbers regardless of which filters are on
+  // Counts per category. Look at BOTH `Product.categoryName` (legacy
+  // denormalized text) AND `Product.category.name` (FK relation). A
+  // product with null categoryName but a valid categoryId still
+  // contributes its bucket. Then seed the sidebar with the curated
+  // `store.categories` Category rows so admins see their own
+  // taxonomy even when products aren't bucketed yet.
   const categoryCounts: Record<string, number> = {};
   let uncatCount = 0;
   for (const p of store.products) {
-    if (p.categoryName) {
-      categoryCounts[p.categoryName] = (categoryCounts[p.categoryName] ?? 0) + 1;
+    const name = p.categoryName ?? p.category?.name ?? null;
+    if (name) {
+      categoryCounts[name] = (categoryCounts[name] ?? 0) + 1;
     } else {
       uncatCount += 1;
     }
+  }
+  // Seed with curated Category rows (so the sidebar lists empty
+  // categories at 0 — operator can see their full taxonomy even
+  // before products are tagged).
+  for (const c of store.categories) {
+    if (categoryCounts[c.name] === undefined) categoryCounts[c.name] = 0;
   }
   const categoryNames = Object.keys(categoryCounts).sort();
 
@@ -159,11 +173,12 @@ export default async function CategoryIndexPage({
   };
   const filtered = selectedCats.length
     ? store.products.filter((p) => {
-        const key = p.categoryName ?? "uncategorized";
+        const key = p.categoryName ?? p.category?.name ?? "uncategorized";
         if (selectedCats.includes(key)) return true;
         return selectedCats.some((sel) => {
           const regex = PET_PSEUDO[sel.toLowerCase()];
-          return regex && p.categoryName && regex.test(p.categoryName);
+          const haystack = p.categoryName ?? p.category?.name ?? "";
+          return regex && haystack && regex.test(haystack);
         });
       })
     : store.products;
