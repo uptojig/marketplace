@@ -15,6 +15,7 @@
 //   /dashboard/store/messages?tab=read      — readAt IS NOT NULL only
 //   /dashboard/store/messages?tab=replied   — repliedAt IS NOT NULL
 //   /dashboard/store/messages?storeSlug=foo — admin-picker target
+//   /dashboard/store/messages?page=N        — offset pagination
 //
 // Sort order is always createdAt DESC — newest at the top, matching
 // every other operator inbox in the dashboard.
@@ -31,11 +32,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DashboardTabs,
+  type DashboardTab,
+} from "@/components/dashboard/dashboard-tabs";
+import {
+  DashboardPagination,
+  parsePageParam,
+} from "@/components/dashboard/dashboard-pagination";
 import { prisma } from "@/lib/prisma";
 import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+
+const PAGE_SIZE = 100;
 
 type MessagesTabKey = "all" | "unread" | "read" | "replied";
 
@@ -63,9 +74,9 @@ function previewMessage(message: string, max = 80): string {
 export default async function VendorMessagesPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ tab?: string; storeSlug?: string }>;
+  searchParams?: Promise<{ tab?: string; storeSlug?: string; page?: string }>;
 }) {
-  const sp: { tab?: string; storeSlug?: string } = searchParams
+  const sp: { tab?: string; storeSlug?: string; page?: string } = searchParams
     ? await searchParams
     : {};
 
@@ -74,6 +85,7 @@ export default async function VendorMessagesPage({
   });
 
   const tab = parseTab(sp.tab);
+  const page = parsePageParam(sp.page);
 
   // Filter for the WHERE clause:
   //   unread  → readAt IS NULL
@@ -90,33 +102,73 @@ export default async function VendorMessagesPage({
           ? { repliedAt: { not: null } }
           : {};
 
-  const [messages, unreadCount, readCount, repliedCount] = await Promise.all([
-    prisma.contactMessage.findMany({
-      where: { storeId: store.id, ...whereByTab },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }),
-    prisma.contactMessage.count({
-      where: { storeId: store.id, readAt: null },
-    }),
-    prisma.contactMessage.count({
-      where: { storeId: store.id, readAt: { not: null } },
-    }),
-    prisma.contactMessage.count({
-      where: { storeId: store.id, repliedAt: { not: null } },
-    }),
-  ]);
+  const [unreadCount, readCount, repliedCount, totalForTab] = await Promise.all(
+    [
+      prisma.contactMessage.count({
+        where: { storeId: store.id, readAt: null },
+      }),
+      prisma.contactMessage.count({
+        where: { storeId: store.id, readAt: { not: null } },
+      }),
+      prisma.contactMessage.count({
+        where: { storeId: store.id, repliedAt: { not: null } },
+      }),
+      // Tab-specific total for pagination math; cheap because it
+      // shares the storeId+readAt/repliedAt indexes the per-tab
+      // counts already hit.
+      prisma.contactMessage.count({
+        where: { storeId: store.id, ...whereByTab },
+      }),
+    ],
+  );
 
-  // Preserve the active store across tab navigation. Empty when no
-  // explicit slug is needed (default owned store).
-  const slugQs = sp.storeSlug
-    ? `&storeSlug=${encodeURIComponent(sp.storeSlug)}`
-    : "";
+  const totalPages = Math.max(1, Math.ceil(totalForTab / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  const messages = await prisma.contactMessage.findMany({
+    where: { storeId: store.id, ...whereByTab },
+    orderBy: { createdAt: "desc" },
+    take: PAGE_SIZE,
+    skip: (safePage - 1) * PAGE_SIZE,
+  });
+
   const slugSuffix = sp.storeSlug
     ? `?storeSlug=${encodeURIComponent(sp.storeSlug)}`
     : "";
 
-  const totalCount = unreadCount + readCount;
+  // URL builder shared by tab chips + pagination so storeSlug + tab +
+  // page move together. Tab clicks always reset to page 1; page 1 is
+  // implicit (not serialised) to keep canonical URLs tidy.
+  function buildHref({
+    tab: tabKey,
+    page: pageNum,
+  }: {
+    tab?: MessagesTabKey;
+    page?: number;
+  } = {}) {
+    const params = new URLSearchParams();
+    if (tabKey && tabKey !== "all") params.set("tab", tabKey);
+    if (sp.storeSlug) params.set("storeSlug", sp.storeSlug);
+    if (pageNum && pageNum > 1) params.set("page", String(pageNum));
+    const qs = params.toString();
+    return qs ? `/dashboard/store/messages?${qs}` : "/dashboard/store/messages";
+  }
+
+  const dashboardTabs: ReadonlyArray<DashboardTab<MessagesTabKey>> =
+    MESSAGES_TABS.map((t) => ({
+      key: t.key,
+      label: t.label,
+      href: buildHref({ tab: t.key }),
+      active: t.key === tab,
+      count:
+        t.key === "all"
+          ? unreadCount + readCount
+          : t.key === "unread"
+            ? unreadCount
+            : t.key === "read"
+              ? readCount
+              : repliedCount,
+    }));
 
   return (
     <div className="space-y-6">
@@ -129,52 +181,7 @@ export default async function VendorMessagesPage({
         </div>
       </header>
 
-      <nav
-        aria-label="กรองตามสถานะ"
-        className="flex flex-wrap gap-2 border-b pb-px"
-      >
-        {MESSAGES_TABS.map((t) => {
-          const isActive = t.key === tab;
-          const count =
-            t.key === "all"
-              ? totalCount
-              : t.key === "unread"
-                ? unreadCount
-                : t.key === "read"
-                  ? readCount
-                  : repliedCount;
-          const href =
-            t.key === "all"
-              ? sp.storeSlug
-                ? `/dashboard/store/messages?storeSlug=${encodeURIComponent(sp.storeSlug)}`
-                : "/dashboard/store/messages"
-              : `/dashboard/store/messages?tab=${t.key}${slugQs}`;
-          return (
-            <Link
-              key={t.key}
-              href={href}
-              className={cn(
-                "shrink-0 rounded-md border px-3 py-1.5 text-sm transition",
-                isActive
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-input bg-background hover:bg-accent",
-              )}
-            >
-              {t.label}
-              {count > 0 && (
-                <span
-                  className={cn(
-                    "ml-1.5 text-xs",
-                    isActive ? "opacity-80" : "text-muted-foreground",
-                  )}
-                >
-                  ({count})
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+      <DashboardTabs tabs={dashboardTabs} />
 
       {messages.length === 0 ? (
         <div className="flex flex-col items-center rounded-lg border-2 border-dashed bg-gray-50 px-6 py-16 text-center">
@@ -193,101 +200,111 @@ export default async function VendorMessagesPage({
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-white">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead>วันที่</TableHead>
-                <TableHead>ผู้ส่ง</TableHead>
-                <TableHead>ข้อความ</TableHead>
-                <TableHead className="text-center">สถานะ</TableHead>
-                <TableHead className="text-right" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {messages.map((msg) => {
-                const isUnread = msg.readAt === null;
-                const isReplied = msg.repliedAt !== null;
-                // Visible "from" is name + best contact channel —
-                // email preferred, then phone, then nothing if neither
-                // was provided.
-                const contact = msg.email ?? msg.phone ?? null;
-                return (
-                  <TableRow
-                    key={msg.id}
-                    className={cn(
-                      "align-top",
-                      // Unread rows pop with a subtle background so
-                      // operators can scan the "todo" pile at a glance.
-                      isUnread && "bg-blue-50/40",
-                    )}
-                  >
-                    <TableCell className="text-xs text-muted-foreground">
-                      {new Date(msg.createdAt).toLocaleDateString("th-TH", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                      <div className="text-[10px] opacity-70">
-                        {new Date(msg.createdAt).toLocaleTimeString("th-TH", {
-                          hour: "2-digit",
-                          minute: "2-digit",
+        <>
+          <div className="overflow-hidden rounded-lg border bg-white">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead>วันที่</TableHead>
+                  <TableHead>ผู้ส่ง</TableHead>
+                  <TableHead>ข้อความ</TableHead>
+                  <TableHead className="text-center">สถานะ</TableHead>
+                  <TableHead className="text-right" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {messages.map((msg) => {
+                  const isUnread = msg.readAt === null;
+                  const isReplied = msg.repliedAt !== null;
+                  // Visible "from" is name + best contact channel —
+                  // email preferred, then phone, then nothing if neither
+                  // was provided.
+                  const contact = msg.email ?? msg.phone ?? null;
+                  return (
+                    <TableRow
+                      key={msg.id}
+                      className={cn(
+                        "align-top",
+                        // Unread rows pop with a subtle background so
+                        // operators can scan the "todo" pile at a glance.
+                        isUnread && "bg-blue-50/40",
+                      )}
+                    >
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(msg.createdAt).toLocaleDateString("th-TH", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
                         })}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div
-                        className={cn(
-                          "text-sm",
-                          isUnread && "font-semibold",
-                        )}
-                      >
-                        {msg.name}
-                      </div>
-                      {contact && (
-                        <div className="text-xs text-muted-foreground">
-                          {contact}
+                        <div className="text-[10px] opacity-70">
+                          {new Date(msg.createdAt).toLocaleTimeString("th-TH", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="max-w-md text-sm">
-                      <span
-                        className={cn(
-                          "block truncate",
-                          isUnread
-                            ? "text-foreground"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        {previewMessage(msg.message)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {isReplied ? (
-                        <Badge className="bg-green-600 text-white hover:bg-green-600/90">
-                          อ่าน + ตอบแล้ว
-                        </Badge>
-                      ) : isUnread ? (
-                        <Badge variant="default">ยังไม่อ่าน</Badge>
-                      ) : (
-                        <Badge variant="outline">อ่านแล้ว</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm">
-                        <Link
-                          href={`/dashboard/store/messages/${msg.id}${slugSuffix}`}
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          className={cn(
+                            "text-sm",
+                            isUnread && "font-semibold",
+                          )}
                         >
-                          ดูข้อความ
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                          {msg.name}
+                        </div>
+                        {contact && (
+                          <div className="text-xs text-muted-foreground">
+                            {contact}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-md text-sm">
+                        <span
+                          className={cn(
+                            "block truncate",
+                            isUnread
+                              ? "text-foreground"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {previewMessage(msg.message)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {isReplied ? (
+                          <Badge className="bg-green-600 text-white hover:bg-green-600/90">
+                            อ่าน + ตอบแล้ว
+                          </Badge>
+                        ) : isUnread ? (
+                          <Badge variant="default">ยังไม่อ่าน</Badge>
+                        ) : (
+                          <Badge variant="outline">อ่านแล้ว</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button asChild variant="outline" size="sm">
+                          <Link
+                            href={`/dashboard/store/messages/${msg.id}${slugSuffix}`}
+                          >
+                            ดูข้อความ
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          <DashboardPagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            totalItems={totalForTab}
+            pageSize={PAGE_SIZE}
+            hrefFor={(p) => buildHref({ tab, page: p })}
+          />
+        </>
       )}
     </div>
   );
