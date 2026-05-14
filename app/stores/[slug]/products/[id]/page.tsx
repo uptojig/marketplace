@@ -181,7 +181,7 @@ export default async function ShopProductPage({
           // TODO(specs): wire Prisma `Product.attributes` Json blob once it lands.
           attributes: {},
         }}
-        store={{ name: product.store.name }}
+        store={{ slug: product.store.slug, name: product.store.name }}
       />
 
       <RecentlyViewedTracker
