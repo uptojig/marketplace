@@ -30,6 +30,18 @@ import {
   type ReactTemplateSchema,
 } from "@/components/storefront/templates/registry";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
+import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
+import { isLifestyleStore } from "@/lib/landing/lifestyle";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { FashionBeautyHomepage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyHomepage";
+import { TrustHomepage } from "@/components/storefront/themes/trust/TrustHomepage";
+import { BusinessModelHomepage } from "@/components/storefront/themes/business-model/BusinessModelHomepage";
+import { LifestyleHomepage } from "@/components/storefront/themes/lifestyle/LifestyleHomepage";
+import { ElectronicsTechHomepage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechHomepage";
+import { SpecialtyHomepage } from "@/components/storefront/themes/specialty/SpecialtyHomepage";
 import { PetHouseHomepage } from "@/components/storefront/themes/pet-house/PetHouseHomepage";
 import { isCaseStudioStore } from "@/lib/landing/case-studio";
 import { CaseStudioHomepage } from "@/components/storefront/themes/case-studio/CaseStudioHomepage";
@@ -194,6 +206,37 @@ export default async function StorePage({
   // Renders inside the shared ShopHeader / ShopFooter chrome.
   if (isCaseStudioStore(baseStore)) {
     return <CaseStudioHomepage store={baseStore} />;
+  }
+
+  // ── 6 design-family bespoke homepages ────────────────────────
+  // Each family now ships a {Family}Homepage composer that mirrors
+  // the family's category-page visual language — per the user's
+  // 'หน้าแรกต้องดีไซน์ธีมเดียวกันกับหน้าหมวดหมู่' requirement.
+  // Family detection runs BEFORE the wizard StoreRenderer so a store
+  // whose templateId is in a known family (lookbook → FB, classic →
+  // Trust, wholesale-b2b → BM, etc.) gets the bespoke homepage
+  // instead of the generic block-renderer output.
+  const familyKey = {
+    templateId: baseStore.templateId,
+    landingThemeVariant: baseStore.landingThemeVariant,
+  };
+  if (isFashionBeautyStore(familyKey)) {
+    return <FashionBeautyHomepage store={baseStore} />;
+  }
+  if (isTrustStore(familyKey)) {
+    return <TrustHomepage store={baseStore} />;
+  }
+  if (isBusinessModelStore(familyKey)) {
+    return <BusinessModelHomepage store={baseStore} />;
+  }
+  if (isLifestyleStore(familyKey)) {
+    return <LifestyleHomepage store={baseStore} />;
+  }
+  if (isElectronicsTechStore(familyKey)) {
+    return <ElectronicsTechHomepage store={baseStore} />;
+  }
+  if (isSpecialtyStore(familyKey)) {
+    return <SpecialtyHomepage store={baseStore} />;
   }
 
   // ── New scaffold-based template (vendor wizard v2) ──────────
