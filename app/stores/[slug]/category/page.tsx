@@ -328,6 +328,18 @@ export default async function CategoryIndexPage({
     landingThemeVariant: store.landingThemeVariant,
   });
 
+  // Pet-house brand hero band — when fluffyhouse-style stores land on
+  // the catalog with one of the 4 Shop-by-Type pseudo-slugs active,
+  // surface the matching SVG icon + Thai name + result count above
+  // the breadcrumbs so the brand visual continuity from the homepage
+  // Shop-by-Type cards isn't broken at the click boundary. Renders
+  // nothing on non-pet-house stores or when no pet-* filter is active.
+  const showPetHouseHero = isPetHouseStore({
+    slug: store.slug,
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
       {showPetHouseHero && (
