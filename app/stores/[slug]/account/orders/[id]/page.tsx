@@ -48,7 +48,7 @@ export default async function OrderDetailPage({ params }: OrderDetailProps) {
   const userId = (session?.user as { id?: string } | undefined)?.id;
   if (!userId) {
     redirect(
-      `/signin?callbackUrl=/stores/${slug}/account/orders/${encodeURIComponent(id)}`,
+      `/stores/${slug}/signin?callbackUrl=/stores/${slug}/account/orders/${encodeURIComponent(id)}`,
     );
   }
 

@@ -23,7 +23,7 @@ export default async function OrdersListPage({
   const userId = (session?.user as { id?: string } | undefined)?.id;
 
   if (!userId) {
-    redirect(`/signin?callbackUrl=/stores/${slug}/account/orders`);
+    redirect(`/stores/${slug}/signin?callbackUrl=/stores/${slug}/account/orders`);
   }
 
   const orders = await getUserOrders(userId, { limit: 50, storeSlug: slug });
