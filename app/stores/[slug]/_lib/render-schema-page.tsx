@@ -17,10 +17,35 @@ import { prisma } from "@/lib/prisma";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
+import { isLifestyleStore } from "@/lib/landing/lifestyle";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
 import {
   FashionBeautyPolicyShell,
   fashionBeautyPolicyHeading,
 } from "@/components/storefront/themes/fashion-beauty/FashionBeautyPolicyShell";
+import {
+  TrustPolicyShell,
+  trustPolicyHeading,
+} from "@/components/storefront/themes/trust/TrustPolicyShell";
+import {
+  BusinessModelPolicyShell,
+  businessModelPolicyHeading,
+} from "@/components/storefront/themes/business-model/BusinessModelPolicyShell";
+import {
+  LifestylePolicyShell,
+  lifestylePolicyHeading,
+} from "@/components/storefront/themes/lifestyle/LifestylePolicyShell";
+import {
+  ElectronicsTechPolicyShell,
+  electronicsTechPolicyHeading,
+} from "@/components/storefront/themes/electronics-tech/ElectronicsTechPolicyShell";
+import {
+  SpecialtyPolicyShell,
+  specialtyPolicyHeading,
+} from "@/components/storefront/themes/specialty/SpecialtyPolicyShell";
 
 interface SchemaPageProps {
   storeSlug: string;
@@ -34,6 +59,72 @@ interface SchemaPageProps {
   fallbackBody?: ReactNode;
 }
 
+/**
+ * Wrap inner content in the matching family's bespoke policy shell.
+ * Returns the inner unchanged when the store doesn't match any
+ * family (graceful fall-through).
+ */
+function wrapInFamilyShell(
+  inner: ReactNode,
+  store: { templateId: string | null; landingThemeVariant: string | null; slug: string },
+  pageSlug: string,
+  fallbackTitle: string,
+): ReactNode {
+  const familyKey = {
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  };
+  if (isFashionBeautyStore(familyKey)) {
+    const h = fashionBeautyPolicyHeading(pageSlug, fallbackTitle);
+    return (
+      <FashionBeautyPolicyShell slug={store.slug} title={h.title} eyebrow={h.eyebrow}>
+        {inner}
+      </FashionBeautyPolicyShell>
+    );
+  }
+  if (isTrustStore(familyKey)) {
+    const h = trustPolicyHeading(pageSlug, fallbackTitle);
+    return (
+      <TrustPolicyShell slug={store.slug} title={h.title} eyebrow={h.eyebrow}>
+        {inner}
+      </TrustPolicyShell>
+    );
+  }
+  if (isBusinessModelStore(familyKey)) {
+    const h = businessModelPolicyHeading(pageSlug, fallbackTitle);
+    return (
+      <BusinessModelPolicyShell slug={store.slug} title={h.title} eyebrow={h.eyebrow}>
+        {inner}
+      </BusinessModelPolicyShell>
+    );
+  }
+  if (isLifestyleStore(familyKey)) {
+    const h = lifestylePolicyHeading(pageSlug, fallbackTitle);
+    return (
+      <LifestylePolicyShell slug={store.slug} title={h.title} eyebrow={h.eyebrow}>
+        {inner}
+      </LifestylePolicyShell>
+    );
+  }
+  if (isElectronicsTechStore(familyKey)) {
+    const h = electronicsTechPolicyHeading(pageSlug, fallbackTitle);
+    return (
+      <ElectronicsTechPolicyShell slug={store.slug} title={h.title} eyebrow={h.eyebrow}>
+        {inner}
+      </ElectronicsTechPolicyShell>
+    );
+  }
+  if (isSpecialtyStore(familyKey)) {
+    const h = specialtyPolicyHeading(pageSlug, fallbackTitle);
+    return (
+      <SpecialtyPolicyShell slug={store.slug} title={h.title} eyebrow={h.eyebrow}>
+        {inner}
+      </SpecialtyPolicyShell>
+    );
+  }
+  return inner;
+}
+
 export async function renderSchemaPage({
   storeSlug,
   pageSlug,
@@ -45,15 +136,6 @@ export async function renderSchemaPage({
     where: { slug: storeSlug },
   });
   if (!store) notFound();
-
-  // FB family pages wrap whatever inner content (v12 schema renderer OR
-  // fallback body) in a bespoke editorial shell — serif title, italic
-  // eyebrow, gold-rule divider, and inline CSS that promotes h2/h3 in
-  // the fallback HTML to serif without per-page rewrites.
-  const isFB = isFashionBeautyStore({
-    templateId: store.templateId,
-    landingThemeVariant: store.landingThemeVariant,
-  });
 
   if (
     store.landingBlocks &&
@@ -89,19 +171,7 @@ export async function renderSchemaPage({
           activeProductIds={activeProductIds}
         />
       );
-      if (isFB) {
-        const heading = fashionBeautyPolicyHeading(pageSlug, fallbackTitle);
-        return (
-          <FashionBeautyPolicyShell
-            slug={store.slug}
-            title={heading.title}
-            eyebrow={heading.eyebrow}
-          >
-            {inner}
-          </FashionBeautyPolicyShell>
-        );
-      }
-      return inner;
+      return wrapInFamilyShell(inner, store, pageSlug, fallbackTitle);
     }
   }
 
@@ -112,17 +182,9 @@ export async function renderSchemaPage({
     </p>
   );
 
-  if (isFB) {
-    const heading = fashionBeautyPolicyHeading(pageSlug, fallbackTitle);
-    return (
-      <FashionBeautyPolicyShell
-        slug={store.slug}
-        title={heading.title}
-        eyebrow={heading.eyebrow}
-      >
-        {fallback}
-      </FashionBeautyPolicyShell>
-    );
+  const wrapped = wrapInFamilyShell(fallback, store, pageSlug, fallbackTitle);
+  if (wrapped !== fallback) {
+    return wrapped;
   }
 
   return (

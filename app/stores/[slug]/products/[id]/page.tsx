@@ -8,6 +8,17 @@ import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
 import { FashionBeautyBrandStory } from "@/components/storefront/themes/fashion-beauty/FashionBeautyBrandStory";
+import { TrustBrandStory } from "@/components/storefront/themes/trust/TrustBrandStory";
+import { BusinessModelBrandStory } from "@/components/storefront/themes/business-model/BusinessModelBrandStory";
+import { LifestyleBrandStory } from "@/components/storefront/themes/lifestyle/LifestyleBrandStory";
+import { ElectronicsTechBrandStory } from "@/components/storefront/themes/electronics-tech/ElectronicsTechBrandStory";
+import { SpecialtyBrandStory } from "@/components/storefront/themes/specialty/SpecialtyBrandStory";
+import { FashionBeautyRelatedProducts } from "@/components/storefront/themes/fashion-beauty/FashionBeautyRelatedProducts";
+import { TrustRelatedProducts } from "@/components/storefront/themes/trust/TrustRelatedProducts";
+import { BusinessModelRelatedProducts } from "@/components/storefront/themes/business-model/BusinessModelRelatedProducts";
+import { LifestyleRelatedProducts } from "@/components/storefront/themes/lifestyle/LifestyleRelatedProducts";
+import { ElectronicsTechRelatedProducts } from "@/components/storefront/themes/electronics-tech/ElectronicsTechRelatedProducts";
+import { SpecialtyRelatedProducts } from "@/components/storefront/themes/specialty/SpecialtyRelatedProducts";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
 import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
@@ -231,13 +242,52 @@ export default async function ShopProductPage({
         }}
       />
 
-      {/* FB stores get an editorial brand-story panel between the hero
-          and the spec tabs — uses store.tagline / description to give
-          the PDP a magazine-letter voice. Renders nothing when the
-          store has no copy yet, so non-FB or unfilled stores see no
-          empty frame. */}
+      {/* Each family gets its bespoke brand-story panel between the
+          PDP hero and the spec/description tabs. Renders nothing when
+          the store has no tagline or description, so unfilled stores
+          see no empty frame. */}
       {isFB && (
         <FashionBeautyBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isTrust && (
+        <TrustBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isBM && (
+        <BusinessModelBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isLifestyle && (
+        <LifestyleBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isElectronicsTech && (
+        <ElectronicsTechBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isSpecialty && (
+        <SpecialtyBrandStory
           storeSlug={product.store.slug}
           storeName={product.store.name}
           tagline={product.store.tagline}
@@ -285,7 +335,97 @@ export default async function ShopProductPage({
         excludeIds={[product.id]}
       />
 
-      {related.length > 0 && (
+      {/* Per-family bespoke RelatedProducts. Each family ships a
+          fully bespoke component matching the family's category-page
+          visual language. When the store is in a family, render the
+          bespoke section and SKIP the legacy shared inline grid below.
+          Stores without a family fall through to the legacy section. */}
+      {related.length > 0 && isFB && (
+        <FashionBeautyRelatedProducts
+          storeSlug={params.slug}
+          storeName={product.store.name}
+          products={related.map((r) => ({
+            id: r.id,
+            title: r.title,
+            titleTh: r.titleTh,
+            imageUrl: r.imageUrl,
+            priceTHB: Number(r.priceTHB),
+            compareAtPriceTHB: r.compareAtPriceTHB ? Number(r.compareAtPriceTHB) : null,
+          }))}
+        />
+      )}
+      {related.length > 0 && isTrust && (
+        <TrustRelatedProducts
+          storeSlug={params.slug}
+          storeName={product.store.name}
+          products={related.map((r) => ({
+            id: r.id,
+            title: r.title,
+            titleTh: r.titleTh,
+            imageUrl: r.imageUrl,
+            priceTHB: Number(r.priceTHB),
+            compareAtPriceTHB: r.compareAtPriceTHB ? Number(r.compareAtPriceTHB) : null,
+          }))}
+        />
+      )}
+      {related.length > 0 && isBM && (
+        <BusinessModelRelatedProducts
+          storeSlug={params.slug}
+          storeName={product.store.name}
+          products={related.map((r) => ({
+            id: r.id,
+            title: r.title,
+            titleTh: r.titleTh,
+            imageUrl: r.imageUrl,
+            priceTHB: Number(r.priceTHB),
+            compareAtPriceTHB: r.compareAtPriceTHB ? Number(r.compareAtPriceTHB) : null,
+          }))}
+        />
+      )}
+      {related.length > 0 && isLifestyle && (
+        <LifestyleRelatedProducts
+          storeSlug={params.slug}
+          storeName={product.store.name}
+          products={related.map((r) => ({
+            id: r.id,
+            title: r.title,
+            titleTh: r.titleTh,
+            imageUrl: r.imageUrl,
+            priceTHB: Number(r.priceTHB),
+            compareAtPriceTHB: r.compareAtPriceTHB ? Number(r.compareAtPriceTHB) : null,
+          }))}
+        />
+      )}
+      {related.length > 0 && isElectronicsTech && (
+        <ElectronicsTechRelatedProducts
+          storeSlug={params.slug}
+          storeName={product.store.name}
+          products={related.map((r) => ({
+            id: r.id,
+            title: r.title,
+            titleTh: r.titleTh,
+            imageUrl: r.imageUrl,
+            priceTHB: Number(r.priceTHB),
+            compareAtPriceTHB: r.compareAtPriceTHB ? Number(r.compareAtPriceTHB) : null,
+          }))}
+        />
+      )}
+      {related.length > 0 && isSpecialty && (
+        <SpecialtyRelatedProducts
+          storeSlug={params.slug}
+          storeName={product.store.name}
+          products={related.map((r) => ({
+            id: r.id,
+            title: r.title,
+            titleTh: r.titleTh,
+            imageUrl: r.imageUrl,
+            priceTHB: Number(r.priceTHB),
+            compareAtPriceTHB: r.compareAtPriceTHB ? Number(r.compareAtPriceTHB) : null,
+          }))}
+        />
+      )}
+
+      {related.length > 0 && !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && (
         <section
           className={
             isFB || isTrust || isLifestyle || isElectronicsTech || isSpecialty
