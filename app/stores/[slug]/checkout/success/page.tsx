@@ -33,6 +33,8 @@ import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { SpecialtyStamp } from "@/components/storefront/themes/specialty/SpecialtyDivider";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +55,11 @@ const TECH_DISPLAY_FONT =
 
 const TECH_MONO_FONT =
   'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace';
+
+const SPECIALTY_DISPLAY_FONT =
+  'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
+const SPECIALTY_HAND_FONT =
+  'var(--font-specialty-hand, "Caveat"), "Permanent Marker", cursive';
 
 export default async function StoreOrderSuccess({
   params,
@@ -153,6 +160,13 @@ export default async function StoreOrderSuccess({
       })
     : false;
 
+  const isSpecialty = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && order.store
+    ? isSpecialtyStore({
+        templateId: order.store.templateId,
+        landingThemeVariant: order.store.landingThemeVariant,
+      })
+    : false;
+
   const today = new Date();
   const eta1 = new Date(today.getTime() + 1 * 86400000);
   const eta3 = new Date(today.getTime() + 3 * 86400000);
@@ -165,11 +179,12 @@ export default async function StoreOrderSuccess({
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
       <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-        {/* Hero — success state. Six flavors: default soft-rose, FB
+        {/* Hero — success state. Seven flavors: default soft-rose, FB
             editorial italic, trust stamped heritage, business-model
             green-check + bold sans + mono order number, lifestyle
             warm sage check ring with terracotta tick + squiggle,
-            electronics-tech mono spec-sheet "ORDER #XXXX CONFIRMED". */}
+            electronics-tech mono spec-sheet "ORDER #XXXX CONFIRMED",
+            specialty artisan kraft stamp. */}
         <div className="text-center">
           {/* Lifestyle adds a squiggle divider above the hero — soft
               catalog flourish. Pure decoration; sage SVG via globals.css */}
@@ -283,6 +298,11 @@ export default async function StoreOrderSuccess({
               Order #{shortCode} Confirmed
             </p>
           )}
+          {isSpecialty && (
+            <div className="mb-2 inline-block">
+              <SpecialtyStamp tone="primary">Order Stamped</SpecialtyStamp>
+            </div>
+          )}
           <h1
             className={
               isFB
@@ -295,7 +315,9 @@ export default async function StoreOrderSuccess({
                       ? "mt-3 text-4xl sm:text-5xl"
                       : isElectronicsTech
                         ? "mt-3 text-3xl sm:text-4xl"
-                        : "text-3xl md:text-4xl font-bold tracking-tight"
+                        : isSpecialty
+                          ? "mt-2 text-4xl sm:text-5xl"
+                          : "text-3xl md:text-4xl font-bold tracking-tight"
             }
             style={{
               color: "var(--shop-ink)",
@@ -309,7 +331,9 @@ export default async function StoreOrderSuccess({
                       ? { fontFamily: LIFESTYLE_DISPLAY_FONT, fontWeight: 700, letterSpacing: '-0.01em' }
                       : isElectronicsTech
                         ? { fontFamily: TECH_DISPLAY_FONT, fontWeight: 700, letterSpacing: '-0.015em' }
-                        : {}),
+                        : isSpecialty
+                          ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
+                          : {}),
             }}
           >
             {isFB
@@ -337,7 +361,9 @@ export default async function StoreOrderSuccess({
                     ? "We've got your order!"
                     : isElectronicsTech
                       ? "Thanks — your order is in"
-                      : "ขอบคุณสำหรับคำสั่งซื้อ"}
+                      : isSpecialty
+                        ? "Thank you for supporting handcrafted goods"
+                        : "ขอบคุณสำหรับคำสั่งซื้อ"}
           </h1>
           {isTrust && (
             <div
@@ -356,9 +382,14 @@ export default async function StoreOrderSuccess({
                     ? "mt-4 text-base"
                     : isElectronicsTech
                       ? "mt-4 text-base"
-                      : "mt-3 text-base"
+                      : isSpecialty
+                        ? "mt-4 text-base italic"
+                        : "mt-3 text-base"
             }
-            style={{ color: "var(--shop-ink-muted)" }}
+            style={{
+              color: "var(--shop-ink-muted)",
+              ...(isSpecialty ? { fontFamily: SPECIALTY_HAND_FONT } : {}),
+            }}
           >
             เราได้รับคำสั่งซื้อของคุณแล้ว
             {me.email && (
@@ -458,10 +489,13 @@ export default async function StoreOrderSuccess({
 
         {/* Items */}
         <Card
+          {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
           className={
             isLifestyle
               ? "mt-10 rounded-3xl border shadow-sm"
-              : "mt-10 rounded-2xl border shadow-sm"
+              : isSpecialty
+                ? "mt-10 rounded-md border shadow-sm"
+                : "mt-10 rounded-2xl border shadow-sm"
           }
           style={{
             borderColor: "var(--shop-border)",
@@ -482,7 +516,9 @@ export default async function StoreOrderSuccess({
                       ? "text-xl"
                       : isElectronicsTech
                         ? "text-lg"
-                        : "text-base font-semibold"
+                        : isSpecialty
+                          ? "text-xl"
+                          : "text-base font-semibold"
               }
               style={{
                 color: "var(--shop-ink)",
@@ -498,12 +534,16 @@ export default async function StoreOrderSuccess({
                             fontWeight: 700,
                             letterSpacing: "-0.015em",
                           }
-                        : {}),
+                        : isSpecialty
+                          ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500 }
+                          : {}),
               }}
             >
               {isElectronicsTech
                 ? `Items (${order.items.length})`
-                : `สินค้าในคำสั่งซื้อ (${order.items.length} รายการ)`}
+                : isSpecialty
+                  ? `Your handcrafted pieces (${order.items.length})`
+                  : `สินค้าในคำสั่งซื้อ (${order.items.length} รายการ)`}
             </h2>
           </div>
           <ul className="divide-y" style={{ borderColor: "var(--shop-border)" }}>
@@ -584,7 +624,9 @@ export default async function StoreOrderSuccess({
                       ? "h-auto rounded-full py-3 text-sm font-semibold text-white"
                       : isElectronicsTech
                         ? "h-auto rounded-md py-3 text-sm font-bold text-white"
-                        : "h-auto py-3 text-sm font-semibold text-white"
+                        : isSpecialty
+                          ? "h-auto rounded-md py-3 text-sm font-semibold text-white"
+                          : "h-auto py-3 text-sm font-semibold text-white"
             }
             style={{ background: "var(--shop-primary)" }}
           >
@@ -600,7 +642,9 @@ export default async function StoreOrderSuccess({
                     ? "Track order"
                     : isElectronicsTech
                       ? "Track shipment"
-                      : "ติดตามสถานะคำสั่งซื้อ"}
+                      : isSpecialty
+                        ? "Track your piece"
+                        : "ติดตามสถานะคำสั่งซื้อ"}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -618,7 +662,9 @@ export default async function StoreOrderSuccess({
                       ? "h-auto rounded-full border-[var(--shop-ink)] py-3 text-sm font-semibold"
                       : isElectronicsTech
                         ? "h-auto rounded-md border-[var(--shop-primary)] py-3 text-sm font-semibold text-[var(--shop-primary)]"
-                        : "h-auto py-3 text-sm font-semibold"
+                        : isSpecialty
+                          ? "h-auto rounded-md border-[var(--shop-ink)] py-3 text-sm font-semibold"
+                          : "h-auto py-3 text-sm font-semibold"
             }
           >
             <Link href={isBM ? `/stores/${params.slug}/category` : `/stores/${params.slug}`}>
@@ -632,10 +678,24 @@ export default async function StoreOrderSuccess({
                       ? "Keep shopping"
                       : isElectronicsTech
                         ? "Continue shopping"
-                        : `กลับไป${storeName}`}
+                        : isSpecialty
+                          ? "Back to the shop"
+                          : `กลับไป${storeName}`}
             </Link>
           </Button>
         </div>
+
+        {isSpecialty && (
+          <p
+            className="mt-6 text-center text-lg italic"
+            style={{
+              color: "var(--shop-accent)",
+              fontFamily: SPECIALTY_HAND_FONT,
+            }}
+          >
+            p.s. each piece ships within 5-7 days — made by hand
+          </p>
+        )}
 
         {/* LINE follow nudge — Thai market staple */}
         <div className="mt-8 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 flex items-start gap-3">

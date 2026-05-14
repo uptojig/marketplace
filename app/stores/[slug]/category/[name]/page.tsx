@@ -12,6 +12,8 @@ import ProductList, {
 } from "@/components/shadcn-studio/blocks/product-list-03/product-list-03";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { FashionBeautyCategoryGrid } from "@/components/storefront/themes/fashion-beauty/FashionBeautyCategoryGrid";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { SpecialtyCategoryGrid } from "@/components/storefront/themes/specialty/SpecialtyCategoryGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -144,9 +146,16 @@ export default async function StoreCategoryPage({
 
   // Per-template design family. fashion-beauty (lookbook /
   // beauty-swatch / boutique) renders an editorial portrait grid
-  // and a serif display headline; the default keeps the dense
-  // shadcn-studio product-list-03.
+  // and a serif display headline; specialty (handmade / vintage)
+  // renders a kraft-paper masonry grid with handwritten subtitles;
+  // the default keeps the dense shadcn-studio product-list-03.
+  //
+  // FB wins ties so a store can't accidentally render two grids.
   const isFB = isFashionBeautyStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isSpecialty = !isFB && isSpecialtyStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -195,16 +204,38 @@ export default async function StoreCategoryPage({
         </div>
       )}
 
-      <div className={isFB ? "mt-8 flex flex-wrap items-end justify-between gap-4" : "mt-3 flex flex-wrap items-end justify-between gap-4"}>
+      <div className={isFB || isSpecialty ? "mt-8 flex flex-wrap items-end justify-between gap-4" : "mt-3 flex flex-wrap items-end justify-between gap-4"}>
         <div>
           <p
-            className={isFB ? "text-xs uppercase tracking-[0.22em]" : "text-xs uppercase tracking-wide opacity-60"}
-            style={{ color: isFB ? "var(--shop-ink-muted)" : "var(--shop-ink)" }}
+            className={
+              isFB
+                ? "text-xs uppercase tracking-[0.22em]"
+                : isSpecialty
+                  ? "text-lg italic"
+                  : "text-xs uppercase tracking-wide opacity-60"
+            }
+            style={
+              isSpecialty
+                ? {
+                    color: "var(--shop-accent)",
+                    fontFamily:
+                      'var(--font-specialty-hand, "Caveat"), "Permanent Marker", cursive',
+                  }
+                : { color: isFB ? "var(--shop-ink-muted)" : "var(--shop-ink)" }
+            }
           >
-            {isFB ? "Edit / Collection" : "หมวดหมู่"}
+            {isFB
+              ? "Edit / Collection"
+              : isSpecialty
+                ? "the maker's market"
+                : "หมวดหมู่"}
           </p>
           <h1
-            className={isFB ? "mt-2 text-4xl sm:text-5xl md:text-6xl" : "mt-0.5 text-2xl font-bold"}
+            className={
+              isFB || isSpecialty
+                ? "mt-2 text-4xl sm:text-5xl md:text-6xl"
+                : "mt-0.5 text-2xl font-bold"
+            }
             style={
               isFB
                 ? {
@@ -214,7 +245,15 @@ export default async function StoreCategoryPage({
                     fontWeight: 500,
                     letterSpacing: '-0.005em',
                   }
-                : { color: "var(--shop-ink)" }
+                : isSpecialty
+                  ? {
+                      color: "var(--shop-ink)",
+                      fontFamily:
+                        'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif',
+                      fontWeight: 500,
+                      letterSpacing: '-0.005em',
+                    }
+                  : { color: "var(--shop-ink)" }
             }
           >
             {headerName}
@@ -362,6 +401,21 @@ export default async function StoreCategoryPage({
       ) : isFB ? (
         <div className="mt-10">
           <FashionBeautyCategoryGrid
+            storeSlug={store.slug}
+            products={products.map((p) => ({
+              id: p.id,
+              title: p.titleTh ?? p.title,
+              imageUrl: p.imageUrl,
+              priceTHB: Number(p.priceTHB),
+              compareAtPriceTHB: p.compareAtPriceTHB
+                ? Number(p.compareAtPriceTHB)
+                : null,
+            }))}
+          />
+        </div>
+      ) : isSpecialty ? (
+        <div className="mt-10">
+          <SpecialtyCategoryGrid
             storeSlug={store.slug}
             products={products.map((p) => ({
               id: p.id,

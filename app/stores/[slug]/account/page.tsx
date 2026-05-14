@@ -26,6 +26,7 @@ import { isTrustStore } from '@/lib/landing/trust';
 import { isBusinessModelStore } from '@/lib/landing/business-model';
 import { isLifestyleStore } from '@/lib/landing/lifestyle';
 import { isElectronicsTechStore } from '@/lib/landing/electronics-tech';
+import { isSpecialtyStore } from '@/lib/landing/specialty';
 
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
@@ -44,6 +45,11 @@ const TECH_DISPLAY_FONT =
 
 const TECH_MONO_FONT =
   'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace';
+
+const SPECIALTY_DISPLAY_FONT =
+  'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
+const SPECIALTY_HAND_FONT =
+  'var(--font-specialty-hand, "Caveat"), "Permanent Marker", cursive';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,6 +102,7 @@ export default async function AccountDashboard({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+
   const isTrust = !isFB && store
     ? isTrustStore({
         templateId: store.templateId,
@@ -123,6 +130,17 @@ export default async function AccountDashboard({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+
+  const isSpecialty = !isFB && !isTrust && (store
+    ? isSpecialtyStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false);
+
+  const memberSince = user?.createdAt
+    ? user.createdAt.getFullYear()
+    : new Date().getFullYear();
 
   const recentOrders = toOrderViews(recentOrdersRaw);
   const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
@@ -160,6 +178,7 @@ export default async function AccountDashboard({
   return (
     <div className="space-y-6">
       <Card
+        {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
         className={
           isFB
             ? "flex items-center gap-4 rounded-2xl border bg-white p-6 shadow-sm"
@@ -171,7 +190,9 @@ export default async function AccountDashboard({
                   ? "flex items-center gap-4 rounded-3xl border p-6 shadow-sm"
                   : isElectronicsTech
                     ? "flex items-center gap-4 rounded-md border bg-white p-6"
-                    : "flex items-center gap-4 p-4"
+                    : isSpecialty
+                      ? "flex items-center gap-4 rounded-md border p-6 shadow-sm"
+                      : "flex items-center gap-4 p-4"
         }
         style={
           isTrust
@@ -185,7 +206,9 @@ export default async function AccountDashboard({
                   }
                 : isElectronicsTech
                   ? { borderColor: "var(--shop-border)" }
-                  : undefined
+                  : isSpecialty
+                    ? { borderColor: 'var(--shop-border)' }
+                    : undefined
         }
       >
         <Avatar
@@ -200,7 +223,9 @@ export default async function AccountDashboard({
                     ? "h-16 w-16 rounded-2xl"
                     : isElectronicsTech
                       ? "h-16 w-16 rounded-md"
-                      : "h-14 w-14"
+                      : isSpecialty
+                        ? "h-16 w-16 rounded-md"
+                        : "h-14 w-14"
           }
         >
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
@@ -214,7 +239,9 @@ export default async function AccountDashboard({
                     ? "rounded-2xl"
                     : isElectronicsTech
                       ? "rounded-md"
-                      : undefined
+                      : isSpecialty
+                        ? "rounded-md"
+                        : undefined
             }
           >
             {initials}
@@ -279,6 +306,17 @@ export default async function AccountDashboard({
               {memberId} · Joined {memberYear}
             </p>
           )}
+          {isSpecialty && (
+            <p
+              className="text-lg italic"
+              style={{
+                color: 'var(--shop-accent)',
+                fontFamily: SPECIALTY_HAND_FONT,
+              }}
+            >
+              welcome back
+            </p>
+          )}
           <h1
             className={
               isFB
@@ -291,7 +329,9 @@ export default async function AccountDashboard({
                       ? "text-3xl"
                       : isElectronicsTech
                         ? "text-2xl sm:text-3xl"
-                        : "text-lg font-semibold"
+                        : isSpecialty
+                          ? "text-3xl"
+                          : "text-lg font-semibold"
             }
             style={
               isFB
@@ -328,7 +368,14 @@ export default async function AccountDashboard({
                             color: 'var(--shop-ink)',
                             letterSpacing: '-0.015em',
                           }
-                        : undefined
+                        : isSpecialty
+                          ? {
+                              fontFamily: SPECIALTY_DISPLAY_FONT,
+                              fontWeight: 500,
+                              color: 'var(--shop-ink)',
+                              letterSpacing: '-0.005em',
+                            }
+                          : undefined
             }
           >
             {isFB
@@ -341,7 +388,9 @@ export default async function AccountDashboard({
                     ? `Hey ${displayName}!`
                     : isElectronicsTech
                       ? `Hi, ${displayName}`
-                      : `สวัสดี, ${displayName}`}
+                      : isSpecialty
+                        ? `Welcome back, ${displayName}`
+                        : `สวัสดี, ${displayName}`}
           </h1>
           {isTrust && (
             <div
@@ -350,7 +399,7 @@ export default async function AccountDashboard({
               style={{ background: 'var(--shop-accent)' }}
             />
           )}
-          {user?.createdAt && !isTrust && !isLifestyle && !isElectronicsTech && (
+          {user?.createdAt && !isTrust && !isLifestyle && !isElectronicsTech && !isSpecialty && (
             <p className="text-xs text-muted-foreground">
               สมาชิกตั้งแต่{" "}
               {user.createdAt.toLocaleDateString("th-TH", {
@@ -398,6 +447,17 @@ export default async function AccountDashboard({
                 year: "numeric",
                 month: "long",
               })}
+            </p>
+          )}
+          {isSpecialty && (
+            <p
+              className="text-sm italic mt-1"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                fontFamily: SPECIALTY_HAND_FONT,
+              }}
+            >
+              Member of our maker community since {memberSince}
             </p>
           )}
         </div>
@@ -451,13 +511,16 @@ export default async function AccountDashboard({
                     ? "Active orders"
                     : isElectronicsTech
                       ? "Active orders"
-                      : "คำสั่งซื้อที่ใช้งาน"
+                      : isSpecialty
+                        ? "Active orders"
+                        : "คำสั่งซื้อที่ใช้งาน"
               }
               value={activeOrders.toString()}
               href={`${base}/orders`}
               isTrust={isTrust}
               isLifestyle={isLifestyle}
               isElectronicsTech={isElectronicsTech}
+              isSpecialty={isSpecialty}
             />
             <StatCard
               icon={MapPin}
@@ -468,13 +531,16 @@ export default async function AccountDashboard({
                     ? "Addresses"
                     : isElectronicsTech
                       ? "Addresses"
-                      : "ที่อยู่บันทึกไว้"
+                      : isSpecialty
+                        ? "Saved addresses"
+                        : "ที่อยู่บันทึกไว้"
               }
               value={addressCount.toString()}
               href={`${base}/addresses`}
               isTrust={isTrust}
               isLifestyle={isLifestyle}
               isElectronicsTech={isElectronicsTech}
+              isSpecialty={isSpecialty}
             />
             <StatCard
               icon={Wallet}
@@ -485,7 +551,9 @@ export default async function AccountDashboard({
                     ? "Wallet"
                     : isElectronicsTech
                       ? "Wallet"
-                      : "ยอด Anypay"
+                      : isSpecialty
+                        ? "Wallet balance"
+                        : "ยอด Anypay"
               }
               value="฿0"
               /* Wallet view doesn't exist yet (Phase 1D) — bounce back
@@ -495,6 +563,7 @@ export default async function AccountDashboard({
               isTrust={isTrust}
               isLifestyle={isLifestyle}
               isElectronicsTech={isElectronicsTech}
+              isSpecialty={isSpecialty}
             />
             <StatCard
               icon={Heart}
@@ -505,7 +574,9 @@ export default async function AccountDashboard({
                     ? "Favorites"
                     : isElectronicsTech
                       ? "Wishlist"
-                      : "รายการโปรด"
+                      : isSpecialty
+                        ? "Favorites"
+                        : "รายการโปรด"
               }
               value="0"
               /* No per-account favorites view yet — point at the
@@ -515,6 +586,7 @@ export default async function AccountDashboard({
               isTrust={isTrust}
               isLifestyle={isLifestyle}
               isElectronicsTech={isElectronicsTech}
+              isSpecialty={isSpecialty}
             />
           </>
         )}
@@ -524,7 +596,7 @@ export default async function AccountDashboard({
         <div className="mb-3 flex items-baseline justify-between">
           <h2
             className={
-              isFB || isTrust || isLifestyle
+              isFB || isTrust || isLifestyle || isSpecialty
                 ? "text-2xl"
                 : isElectronicsTech
                   ? "text-xl"
@@ -556,7 +628,13 @@ export default async function AccountDashboard({
                           color: 'var(--shop-ink)',
                           letterSpacing: '-0.015em',
                         }
-                      : undefined
+                      : isSpecialty
+                        ? {
+                            fontFamily: SPECIALTY_DISPLAY_FONT,
+                            fontWeight: 500,
+                            color: 'var(--shop-ink)',
+                          }
+                        : undefined
             }
           >
             {isFB
@@ -567,7 +645,9 @@ export default async function AccountDashboard({
                   ? "Recent orders"
                   : isElectronicsTech
                     ? "Recent orders"
-                    : "คำสั่งซื้อล่าสุด"}
+                    : isSpecialty
+                      ? "Recent pieces"
+                      : "คำสั่งซื้อล่าสุด"}
           </h2>
           <Link
             href={`${base}/orders`}
@@ -581,7 +661,9 @@ export default async function AccountDashboard({
                     ? 'var(--shop-primary)'
                     : isElectronicsTech
                       ? 'var(--shop-primary)'
-                      : undefined,
+                      : isSpecialty
+                        ? 'var(--shop-primary)'
+                        : undefined,
             }}
           >
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
@@ -673,6 +755,7 @@ function StatCard({
   isBM = false,
   isLifestyle = false,
   isElectronicsTech = false,
+  isSpecialty = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -683,10 +766,12 @@ function StatCard({
   isBM?: boolean;
   isLifestyle?: boolean;
   isElectronicsTech?: boolean;
+  isSpecialty?: boolean;
 }) {
   return (
     <Link href={href}>
       <Card
+        {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
         className={
           isTrust
             ? "rounded-sm p-4 transition hover:shadow-md"
@@ -696,7 +781,9 @@ function StatCard({
                 ? "rounded-3xl p-4 transition hover:shadow-md"
                 : isElectronicsTech
                   ? "rounded-md p-4 transition hover:shadow-md"
-                  : "p-3 transition hover:shadow-md"
+                  : isSpecialty
+                    ? "rounded-md border p-4 transition hover:shadow-md"
+                    : "p-3 transition hover:shadow-md"
         }
         style={
           isTrust
@@ -713,7 +800,9 @@ function StatCard({
                   }
                 : isElectronicsTech
                   ? { borderColor: "var(--shop-border)" }
-                  : undefined
+                  : isSpecialty
+                    ? { borderColor: 'var(--shop-border)' }
+                    : undefined
         }
       >
         <div className="flex items-center gap-3">
@@ -727,7 +816,9 @@ function StatCard({
                     ? "rounded-full p-2 text-white"
                     : isElectronicsTech
                       ? "rounded-md border bg-[var(--shop-muted)] p-2"
-                      : "rounded-md bg-primary/10 p-2 text-primary"
+                      : isSpecialty
+                        ? "rounded-md p-2"
+                        : "rounded-md bg-primary/10 p-2 text-primary"
             }
             style={
               isTrust
@@ -750,7 +841,13 @@ function StatCard({
                           borderColor: "var(--shop-border)",
                           color: "var(--shop-primary)",
                         }
-                      : undefined
+                      : isSpecialty
+                        ? {
+                            background:
+                              "color-mix(in srgb, var(--shop-primary) 12%, transparent)",
+                            color: 'var(--shop-primary)',
+                          }
+                        : undefined
             }
           >
             <Icon className="h-4 w-4" />
@@ -767,7 +864,9 @@ function StatCard({
                       ? "text-[10px] uppercase"
                       : isElectronicsTech
                         ? "text-[10px] uppercase"
-                        : "text-xs text-muted-foreground"
+                        : isSpecialty
+                          ? "text-xs uppercase tracking-[0.14em]"
+                          : "text-xs text-muted-foreground"
               }
               style={
                 isTrust
@@ -795,7 +894,9 @@ function StatCard({
                             letterSpacing: "0.16em",
                             fontWeight: 600,
                           }
-                        : undefined
+                        : isSpecialty
+                          ? { color: 'var(--shop-ink-muted)' }
+                          : undefined
               }
             >
               {label}
@@ -845,7 +946,9 @@ function StatCard({
                               'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace',
                             letterSpacing: "-0.01em",
                           }
-                        : undefined
+                        : isSpecialty && !muted
+                          ? { color: 'var(--shop-ink)' }
+                          : undefined
               }
             >
               {value}

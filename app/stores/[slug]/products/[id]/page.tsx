@@ -11,11 +11,13 @@ import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProd
 import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
 import { ElectronicsTechProductHero } from "@/components/storefront/themes/electronics-tech/ElectronicsTechProductHero";
+import { SpecialtyProductHero } from "@/components/storefront/themes/specialty/SpecialtyProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
@@ -54,16 +56,18 @@ export default async function ShopProductPage({
   });
 
   // Per-template design family decision. Order matters — FB is
-  // checked first so it wins over a same-template / variant overlap
-  // (in practice the template→group mapping is disjoint, but the
-  // explicit precedence keeps things safe). trust (classic /
+  // checked first, then trust, then specialty. In practice the
+  // template→group mapping is disjoint so only one detector matches
+  // per store; the explicit precedence keeps things safe.
+  // fashion-beauty (lookbook / beauty-swatch / boutique) renders
+  // the editorial portrait variant; trust (classic /
   // official-brand / premium-luxury) renders the squared heritage
-  // hero; FB renders the editorial portrait; business-model
-  // (wholesale-b2b / flash-deal / subscription) renders the
-  // rectangular deal-dashboard hero; lifestyle (home-living /
+  // hero; business-model (wholesale-b2b / flash-deal / subscription)
+  // renders the rectangular deal-dashboard hero; lifestyle (home-living /
   // sport-active / kids-toys) renders the warm catalog hero;
   // electronics-tech (catalog-dense / tech-compare / single-product)
-  // renders the spec-sheet square hero; everything else renders the
+  // renders the spec-sheet square hero; specialty (handmade / vintage)
+  // renders the artisan kraft hero; everything else renders the
   // default hero untouched.
   const isFB = isFashionBeautyStore({
     templateId: product.store.templateId,
@@ -85,6 +89,10 @@ export default async function ShopProductPage({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
+  const isSpecialty = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && isSpecialtyStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
   const HeroComponent = isFB
     ? FashionBeautyProductHero
     : isTrust
@@ -95,7 +103,9 @@ export default async function ShopProductPage({
           ? LifestyleProductHero
           : isElectronicsTech
             ? ElectronicsTechProductHero
-            : ProductDetailHero;
+            : isSpecialty
+              ? SpecialtyProductHero
+              : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -192,7 +202,7 @@ export default async function ShopProductPage({
       {related.length > 0 && (
         <section
           className={
-            isFB || isTrust || isLifestyle || isElectronicsTech
+            isFB || isTrust || isLifestyle || isElectronicsTech || isSpecialty
               ? "space-y-6 py-8"
               : isBM
                 ? "space-y-4 py-6"
@@ -258,7 +268,7 @@ export default async function ShopProductPage({
           )}
           <h2
             className={
-              isFB || isTrust || isLifestyle
+              isFB || isTrust || isLifestyle || isSpecialty
                 ? "text-3xl sm:text-4xl"
                 : isBM
                   ? "text-xl sm:text-2xl"
@@ -295,7 +305,14 @@ export default async function ShopProductPage({
                           fontWeight: 700,
                           letterSpacing: '-0.015em',
                         }
-                      : {}),
+                      : isSpecialty
+                        ? {
+                            fontFamily:
+                              'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif',
+                            fontWeight: 500,
+                            letterSpacing: '-0.005em',
+                          }
+                        : {}),
             }}
           >
             {isFB
@@ -308,7 +325,9 @@ export default async function ShopProductPage({
                     ? 'You may also love'
                     : isElectronicsTech
                       ? 'Compare similar products'
-                      : 'สินค้าที่เกี่ยวข้อง'}
+                      : isSpecialty
+                        ? 'Other works from this maker'
+                        : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={
@@ -320,7 +339,9 @@ export default async function ShopProductPage({
                     ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-3"
                     : isElectronicsTech
                       ? "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
-                      : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
+                      : isSpecialty
+                        ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
+                        : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
             }
           >
             {related.map((r) => (
@@ -328,18 +349,19 @@ export default async function ShopProductPage({
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
                 className={
-                  isFB || isTrust || isLifestyle || isElectronicsTech
+                  isFB || isTrust || isLifestyle || isElectronicsTech || isSpecialty
                     ? "group block"
                     : "group overflow-hidden rounded-lg border"
                 }
                 style={
-                  isFB || isTrust || isLifestyle || isElectronicsTech
+                  isFB || isTrust || isLifestyle || isElectronicsTech || isSpecialty
                     ? undefined
                     : { background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }
                 }
               >
                 <div
                   data-lifestyle-frame={isLifestyle ? 'true' : undefined}
+                  {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
                   className={
                     isFB
                       ? "overflow-hidden rounded-2xl border bg-white p-2 shadow-sm"
@@ -349,7 +371,9 @@ export default async function ShopProductPage({
                           ? "overflow-hidden rounded-3xl bg-white"
                           : isElectronicsTech
                             ? "overflow-hidden rounded-md border bg-white"
-                            : "aspect-square overflow-hidden"
+                            : isSpecialty
+                              ? "overflow-hidden rounded-md border p-2 shadow-sm"
+                              : "aspect-square overflow-hidden"
                   }
                   style={{
                     ...(isFB
@@ -360,11 +384,14 @@ export default async function ShopProductPage({
                           ? {}
                           : isElectronicsTech
                             ? { borderColor: 'var(--shop-border)' }
-                            : { backgroundColor: 'var(--shop-bg)' }),
+                            : isSpecialty
+                              ? { borderColor: 'var(--shop-border)' }
+                              : { backgroundColor: 'var(--shop-bg)' }),
                   }}
                 >
                   {r.imageUrl && (
                     <div
+                      {...(isSpecialty ? { 'data-specialty-sepia': 'true' } : {})}
                       className={
                         isFB
                           ? "relative overflow-hidden rounded-xl"
@@ -374,7 +401,9 @@ export default async function ShopProductPage({
                               ? "relative overflow-hidden"
                               : isElectronicsTech
                                 ? "relative overflow-hidden"
-                                : "h-full w-full"
+                                : isSpecialty
+                                  ? "relative overflow-hidden rounded-md"
+                                  : "h-full w-full"
                       }
                       style={
                         isFB
@@ -385,7 +414,9 @@ export default async function ShopProductPage({
                               ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
                               : isElectronicsTech
                                 ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
-                                : undefined
+                                : isSpecialty
+                                  ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
+                                  : undefined
                       }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -401,7 +432,9 @@ export default async function ShopProductPage({
                                 ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
                                 : isElectronicsTech
                                   ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                                  : "h-full w-full object-cover transition group-hover:scale-105"
+                                  : isSpecialty
+                                    ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                    : "h-full w-full object-cover transition group-hover:scale-105"
                         }
                       />
                     </div>
@@ -417,7 +450,9 @@ export default async function ShopProductPage({
                           ? "px-1 pt-4"
                           : isElectronicsTech
                             ? "px-1 pt-3"
-                            : "p-3"
+                            : isSpecialty
+                              ? "px-1 pt-3"
+                              : "p-3"
                   }
                 >
                   <div
@@ -430,7 +465,9 @@ export default async function ShopProductPage({
                             ? "line-clamp-2 text-base leading-tight"
                             : isElectronicsTech
                               ? "line-clamp-2 text-sm leading-tight"
-                              : "line-clamp-2 text-sm font-medium"
+                              : isSpecialty
+                                ? "line-clamp-2 text-sm"
+                                : "line-clamp-2 text-sm font-medium"
                     }
                     style={{
                       color: 'var(--shop-ink, #1c1917)',
@@ -453,7 +490,13 @@ export default async function ShopProductPage({
                                 fontWeight: 600,
                                 letterSpacing: '-0.005em',
                               }
-                            : {}),
+                            : isSpecialty
+                              ? {
+                                  fontFamily:
+                                    'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif',
+                                  fontWeight: 500,
+                                }
+                              : {}),
                     }}
                   >
                     {r.titleTh ?? r.title}

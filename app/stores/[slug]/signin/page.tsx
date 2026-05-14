@@ -19,6 +19,7 @@ import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { StoreSignInClient } from "./signin-client";
 
 export const dynamic = "force-dynamic";
@@ -83,6 +84,13 @@ export default async function StoreSignInPage({
       })
     : false;
 
+  const isSpecialty = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && store
+    ? isSpecialtyStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
+
   return (
     <StoreSignInClient
       storeSlug={params.slug}
@@ -92,6 +100,7 @@ export default async function StoreSignInPage({
       isBusinessModel={isBusinessModel}
       isLifestyle={isLifestyle}
       isElectronicsTech={isElectronicsTech}
+      isSpecialty={isSpecialty}
       defaultCallback={`/stores/${params.slug}/account`}
     />
   );

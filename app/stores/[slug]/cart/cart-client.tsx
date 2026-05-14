@@ -69,6 +69,11 @@ const TECH_DISPLAY_FONT =
 const TECH_MONO_FONT =
   'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace';
 
+const SPECIALTY_DISPLAY_FONT =
+  'var(--font-specialty-display, "Fraunces"), Georgia, "Noto Serif Thai", serif';
+const SPECIALTY_HAND_FONT =
+  'var(--font-specialty-hand, "Caveat"), "Permanent Marker", cursive';
+
 const FREE_SHIPPING_THRESHOLD = 990;
 const DEFAULT_SHIPPING = 50;
 
@@ -99,6 +104,7 @@ export function StoreCartClient({
   isBusinessModel = false,
   isLifestyle = false,
   isElectronicsTech = false,
+  isSpecialty = false,
 }: {
   store: StoreLite;
   isFashionBeauty?: boolean;
@@ -106,6 +112,7 @@ export function StoreCartClient({
   isBusinessModel?: boolean;
   isLifestyle?: boolean;
   isElectronicsTech?: boolean;
+  isSpecialty?: boolean;
 }) {
   const allLines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
@@ -192,9 +199,20 @@ export function StoreCartClient({
               Cart · {itemCount.toLocaleString().padStart(2, '0')} item{itemCount === 1 ? '' : 's'}
             </p>
           )}
+          {isSpecialty && (
+            <p
+              className="text-lg italic"
+              style={{
+                color: "var(--shop-accent)",
+                fontFamily: SPECIALTY_HAND_FONT,
+              }}
+            >
+              the maker's basket
+            </p>
+          )}
           <h1
             className={
-              isFashionBeauty || isTrust || isLifestyle
+              isFashionBeauty || isTrust || isLifestyle || isSpecialty
                 ? "text-4xl md:text-5xl"
                 : isElectronicsTech
                   ? "text-3xl md:text-4xl"
@@ -212,7 +230,9 @@ export function StoreCartClient({
                       ? { fontFamily: LIFESTYLE_DISPLAY_FONT, fontWeight: 700, letterSpacing: '-0.01em' }
                       : isElectronicsTech
                         ? { fontFamily: TECH_DISPLAY_FONT, fontWeight: 700, letterSpacing: '-0.015em' }
-                        : {}),
+                        : isSpecialty
+                          ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
+                          : {}),
             }}
           >
             {isFashionBeauty
@@ -225,7 +245,9 @@ export function StoreCartClient({
                     ? "Your basket"
                     : isElectronicsTech
                       ? "Shopping cart"
-                      : "ตะกร้าของคุณ"}
+                      : isSpecialty
+                        ? "Your collection"
+                        : "ตะกร้าของคุณ"}
           </h1>
           {isTrust && (
             <div
@@ -243,11 +265,13 @@ export function StoreCartClient({
           )}
           <p
             className={
-              isFashionBeauty
+              isFashionBeauty || isSpecialty
                 ? "mt-2 text-sm italic"
-                : isElectronicsTech
+                : isTrust
                   ? "mt-3 text-sm"
-                  : "mt-3 text-sm"
+                  : isElectronicsTech
+                    ? "mt-3 text-sm"
+                    : "mt-3 text-sm"
             }
             data-tech-mono={isElectronicsTech ? "true" : undefined}
             style={{
@@ -271,6 +295,7 @@ export function StoreCartClient({
             isBusinessModel={isBusinessModel}
             isLifestyle={isLifestyle}
             isElectronicsTech={isElectronicsTech}
+            isSpecialty={isSpecialty}
           />
         ) : (
           <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start">
@@ -362,12 +387,12 @@ export function StoreCartClient({
 
               <ul
                 className={
-                  isLifestyle
+                  isLifestyle || isSpecialty
                     ? "space-y-4"
                     : "border-t border-b divide-y"
                 }
                 style={
-                  isLifestyle
+                  isLifestyle || isSpecialty
                     ? undefined
                     : { borderColor: "var(--shop-border)" }
                 }
@@ -375,10 +400,13 @@ export function StoreCartClient({
                 {lines.map((l) => (
                   <li
                     key={l.productId}
+                    {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
                     className={
                       isLifestyle
                         ? "flex p-5 rounded-3xl border"
-                        : "flex py-6 sm:py-8"
+                        : isSpecialty
+                          ? "flex rounded-md border p-4 sm:p-5"
+                          : "flex py-6 sm:py-8"
                     }
                     style={
                       isLifestyle
@@ -386,7 +414,9 @@ export function StoreCartClient({
                             background: "var(--shop-muted)",
                             borderColor: "var(--shop-border)",
                           }
-                        : undefined
+                        : isSpecialty
+                          ? { borderColor: "var(--shop-border)" }
+                          : undefined
                     }
                   >
                     {/* Image — object-contain so the natural product
@@ -396,6 +426,9 @@ export function StoreCartClient({
                         space so it doesn't read as broken. */}
                     <Link
                       href={`/stores/${store.slug}/products/${l.productId}`}
+                      {...(isSpecialty
+                        ? { 'data-specialty-sepia': 'true' }
+                        : {})}
                       className={
                         isLifestyle
                           ? "shrink-0 h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden bg-white"
@@ -554,6 +587,7 @@ export function StoreCartClient({
               </h2>
 
               <Card
+                {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
                 className={
                   isTrust
                     ? "rounded-sm px-6 py-7 shadow-none"
@@ -563,7 +597,9 @@ export function StoreCartClient({
                         ? "rounded-3xl px-6 py-7 shadow-sm"
                         : isElectronicsTech
                           ? "rounded-md px-6 py-7 shadow-none"
-                          : "rounded-2xl px-6 py-7 shadow-none"
+                          : isSpecialty
+                            ? "rounded-md px-6 py-7 shadow-none"
+                            : "rounded-2xl px-6 py-7 shadow-none"
                 }
                 style={{
                   background: isLifestyle
@@ -633,7 +669,9 @@ export function StoreCartClient({
                           ? "text-2xl mb-5"
                           : isElectronicsTech
                             ? "text-xl mb-5"
-                            : "text-lg font-bold mb-5"
+                            : isSpecialty
+                              ? "text-2xl mb-5"
+                              : "text-lg font-bold mb-5"
                   }
                   style={{
                     color: "var(--shop-ink)",
@@ -649,7 +687,12 @@ export function StoreCartClient({
                                 fontWeight: 700,
                                 letterSpacing: "-0.015em",
                               }
-                            : {}),
+                            : isSpecialty
+                              ? {
+                                  fontFamily: SPECIALTY_DISPLAY_FONT,
+                                  fontWeight: 500,
+                                }
+                              : {}),
                   }}
                 >
                   {isTrust
@@ -660,7 +703,9 @@ export function StoreCartClient({
                         ? "Your order"
                         : isElectronicsTech
                           ? "Order summary"
-                          : "สรุปคำสั่งซื้อ"}
+                          : isSpecialty
+                            ? "Your collection summary"
+                            : "สรุปคำสั่งซื้อ"}
                 </h3>
                 {isTrust && (
                   <div
@@ -881,13 +926,26 @@ export function StoreCartClient({
               {/* Trust strip */}
               <div className="mt-5 grid grid-cols-3 gap-3 text-center">
                 {[
-                  { icon: Truck, label: "ส่งฟรี ฿990+" },
-                  { icon: RotateCcw, label: "คืนได้ 7 วัน" },
-                  { icon: Banknote, label: "COD ได้" },
+                  {
+                    icon: Truck,
+                    label: isSpecialty ? "made in 5-7 days" : "ส่งฟรี ฿990+",
+                  },
+                  {
+                    icon: RotateCcw,
+                    label: isSpecialty ? "rework available" : "คืนได้ 7 วัน",
+                  },
+                  {
+                    icon: Banknote,
+                    label: isSpecialty ? "supporting makers" : "COD ได้",
+                  },
                 ].map(({ icon: Icon, label }, i) => (
                   <Card
                     key={i}
-                    className="flex flex-col items-center gap-1 rounded-lg border-0 py-2 shadow-none"
+                    className={
+                      isSpecialty
+                        ? "flex flex-col items-center gap-1 rounded-md border py-2 shadow-none"
+                        : "flex flex-col items-center gap-1 rounded-lg border-0 py-2 shadow-none"
+                    }
                     style={{
                       background:
                         "color-mix(in srgb, var(--shop-card) 88%, transparent)",
@@ -907,6 +965,18 @@ export function StoreCartClient({
                   </Card>
                 ))}
               </div>
+
+              {isSpecialty && (
+                <p
+                  className="mt-5 text-center text-lg italic"
+                  style={{
+                    color: "var(--shop-accent)",
+                    fontFamily: SPECIALTY_HAND_FONT,
+                  }}
+                >
+                  thank you for supporting makers
+                </p>
+              )}
             </section>
           </div>
         )}
@@ -964,6 +1034,7 @@ function EmptyCart({
   isBusinessModel = false,
   isLifestyle = false,
   isElectronicsTech = false,
+  isSpecialty = false,
 }: {
   storeSlug: string;
   isFashionBeauty?: boolean;
@@ -971,9 +1042,11 @@ function EmptyCart({
   isBusinessModel?: boolean;
   isLifestyle?: boolean;
   isElectronicsTech?: boolean;
+  isSpecialty?: boolean;
 }) {
   return (
     <Card
+      {...(isSpecialty ? { 'data-specialty-kraft': 'true' } : {})}
       className={
         isTrust
           ? "text-center py-24 rounded-sm border bg-transparent shadow-none"
@@ -983,7 +1056,9 @@ function EmptyCart({
               ? "text-center py-24 rounded-3xl border bg-[var(--shop-muted)] shadow-sm"
               : isElectronicsTech
                 ? "text-center py-24 rounded-md border bg-transparent shadow-none"
-                : "text-center py-24 rounded-2xl border border-dashed bg-transparent shadow-none"
+                : isSpecialty
+                  ? "text-center py-24 rounded-md border border-dashed shadow-none"
+                  : "text-center py-24 rounded-2xl border border-dashed bg-transparent shadow-none"
       }
       style={{ borderColor: isTrust ? "var(--shop-accent)" : "var(--shop-border)" }}
     >
@@ -997,7 +1072,9 @@ function EmptyCart({
                 ? "inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 mx-auto bg-white"
                 : isElectronicsTech
                   ? "inline-flex items-center justify-center w-16 h-16 rounded-md mb-4 mx-auto border"
-                  : "inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 mx-auto"
+                  : isSpecialty
+                    ? "inline-flex items-center justify-center w-16 h-16 rounded-md mb-4 mx-auto"
+                    : "inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 mx-auto"
         }
         style={{
           background: isTrust
@@ -1072,7 +1149,9 @@ function EmptyCart({
                 ? "text-2xl mt-1"
                 : isElectronicsTech
                   ? "text-xl mt-1 font-bold"
-                  : "text-base font-medium"
+                  : isSpecialty
+                    ? "text-2xl mt-1"
+                    : "text-base font-medium"
         }
         style={{
           color: "var(--shop-ink)",
@@ -1090,7 +1169,9 @@ function EmptyCart({
                         fontWeight: 700,
                         letterSpacing: "-0.015em",
                       }
-                    : {}),
+                    : isSpecialty
+                      ? { fontFamily: SPECIALTY_DISPLAY_FONT, fontWeight: 500 }
+                      : {}),
         }}
       >
         {isFashionBeauty
@@ -1103,11 +1184,20 @@ function EmptyCart({
                 ? "Your basket is empty"
                 : isElectronicsTech
                   ? "Your cart is empty"
-                  : "ตะกร้าของคุณยังว่างอยู่"}
+                  : isSpecialty
+                    ? "Your collection is empty"
+                    : "ตะกร้าของคุณยังว่างอยู่"}
       </p>
       <p
-        className={isFashionBeauty ? "text-sm mt-2 italic" : "text-sm mt-2"}
-        style={{ color: "var(--shop-ink-muted)" }}
+        className={
+          isFashionBeauty || isSpecialty
+            ? "text-sm mt-2 italic"
+            : "text-sm mt-2"
+        }
+        style={{
+          color: "var(--shop-ink-muted)",
+          ...(isSpecialty ? { fontFamily: SPECIALTY_HAND_FONT } : {}),
+        }}
       >
         {isFashionBeauty
           ? "Discover pieces curated for you"
@@ -1119,7 +1209,9 @@ function EmptyCart({
                 ? "Find something you'll love"
                 : isElectronicsTech
                   ? "Browse our catalog to find your next gear"
-                  : "เริ่มเลือกสินค้าที่คุณชอบ"}
+                  : isSpecialty
+                    ? "discover pieces from our makers"
+                    : "เริ่มเลือกสินค้าที่คุณชอบ"}
       </p>
       <Button
         asChild
@@ -1149,7 +1241,9 @@ function EmptyCart({
                   ? "Keep shopping"
                   : isElectronicsTech
                     ? "Browse catalog"
-                    : "เลือกซื้อสินค้า"}
+                    : isSpecialty
+                      ? "Browse the makers"
+                      : "เลือกซื้อสินค้า"}
         </Link>
       </Button>
     </Card>

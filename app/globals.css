@@ -1719,6 +1719,101 @@
   color: #ffffff !important;
 }
 
+/* ── Specialty design family (artisan / vintage paper) ─────────
+   Activated when app/stores/[slug]/layout.tsx adds the
+   `theme-specialty` class for stores whose templateId is in
+   { handmade, vintage } OR whose landingThemeVariant is
+   "specialty" / "H".
+
+   Token mapping mirrors SPECIALTY_TOKENS in
+   lib/landing/specialty.ts — keep them in sync.
+
+   Goal: every sub-page (cart / category / product / checkout /
+   account / signin / signup) inherits the same kraft-paper +
+   ochre + slab-serif palette without per-page rewrites. */
+.theme-specialty {
+  --shop-bg: #f5efe3;          /* kraft paper */
+  --shop-card: #fbf9f3;        /* soft warm white card */
+  --shop-primary: #ca8a04;     /* ochre — yellow-600 */
+  --shop-accent: #b45309;      /* terra-rose — amber-700 */
+  --shop-ink: #44403c;         /* warm near-black — stone-700 */
+  --shop-ink-muted: #78716c;   /* warm stone-500 */
+  --shop-border: #e7e2d6;      /* pale taupe hairline */
+  --shop-muted: #dad6c4;       /* faded sage / kraft tint */
+}
+
+/* Headlines lift into Fraunces slab-serif (via --font-specialty-display;
+   Georgia + Noto Serif Thai fallback). Body stays sans for legibility.
+   Weight 500 — crafted, not bold-shouty. */
+.theme-specialty h1,
+.theme-specialty h2,
+.theme-specialty h3 {
+  font-family: var(--font-specialty-display, "Fraunces"), Georgia,
+    "Noto Serif Thai", serif !important;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+/* Primary CTAs stay rectangular with rounded-md — artisan, not pill.
+   Scoped to the ochre-painted buttons so secondary outline CTAs keep
+   their existing radius. */
+.theme-specialty button[style*="--shop-primary"],
+.theme-specialty a[style*="--shop-primary"] {
+  border-radius: 0.375rem !important; /* rounded-md */
+}
+
+/* Override luxurious 2xl cards down to a small rounded shape when
+   they carry the shop-card token — keeps the artisan rectangular feel
+   even on pages we don't touch (checkout/address & confirm). */
+.theme-specialty [class*="rounded-2xl"][class*="border"] {
+  border-radius: 0.5rem !important;
+}
+
+/* Sepia tint wrappers — opt-in via data-attribute so we don't tint
+   every image accidentally. Hero gallery / category card images use
+   this for a soft vintage-paper feel without going full retro. */
+.theme-specialty [data-specialty-sepia="true"] {
+  filter: sepia(0.08) saturate(0.95);
+}
+
+/* Kraft-paper card backdrop — subtle warm gradient + grain feel
+   applied to cards that carry shop-card on this skin. Avoids needing
+   a real SVG noise asset; the radial-gradient + slight stripe sells
+   the kraft texture. */
+.theme-specialty [data-specialty-kraft="true"] {
+  background-color: #fbf9f3;
+  background-image:
+    radial-gradient(at 22% 18%, rgba(202, 138, 4, 0.04) 0%, transparent 45%),
+    radial-gradient(at 78% 82%, rgba(180, 83, 9, 0.04) 0%, transparent 45%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(120, 113, 108, 0.018) 0px,
+      rgba(120, 113, 108, 0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+/* Stamp-style badge — rotated 3deg with dashed border, evokes a
+   curator's stamp. Pair with the SpecialtyStamp component for
+   "One-of-a-kind", "Lot of 1", "Est. 1962" callouts. */
+.theme-specialty [data-specialty-stamp="true"] {
+  transform: rotate(-3deg);
+  border-style: dashed;
+  border-width: 1.5px;
+}
+
+/* Inputs / textareas / selects across the specialty cascade —
+   force rounded-md kraft tint so the checkout/address + confirm
+   pages we don't touch still feel like the same shop. */
+.theme-specialty input:not([type="checkbox"]):not([type="radio"]),
+.theme-specialty textarea,
+.theme-specialty select {
+  border-radius: 0.375rem !important;
+  background-color: var(--shop-card, #fbf9f3);
+  border-color: var(--shop-border, #e7e2d6);
+}
+
 /* ─────────────────────────────────────────────────────────────
    Caselnw theme — applied via `theme-caselnw` class on the
    shop-page wrapper in app/stores/[slug]/layout.tsx whenever
