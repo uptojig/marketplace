@@ -1,7 +1,9 @@
 /**
  * PetHouseBrandStory — yellow rounded card with cat+dog illustration on
- * the left and the brand story copy + CTA on the right. SVG ported
- * verbatim from the design mockup. Server component (static copy).
+ * the left and the brand story copy + mini stats row + founder quote +
+ * CTA on the right. SVG ported verbatim from the design mockup.
+ *
+ * Server component (static copy).
  */
 
 import Link from 'next/link';
@@ -10,13 +12,22 @@ interface Props {
   storeSlug: string;
 }
 
+// TODO(stats): wire to real counters once Order + Review tables are
+// queryable from this page. Numbers are placeholders for now — they are
+// not (yet) derived from Prisma.
+const MINI_STATS = [
+  { value: '1,200+', label: 'ลูกค้า' },
+  { value: '5,000+', label: 'ออเดอร์' },
+  { value: '4.9★', label: 'Reviews' },
+];
+
 export function PetHouseBrandStory({ storeSlug }: Props) {
   return (
     <section
       className="mx-6 sm:mx-8 mb-9"
-      style={{ background: '#FAEBA0', borderRadius: '12px', padding: '32px' }}
+      style={{ background: '#FAEBA0', borderRadius: '12px', padding: '24px' }}
     >
-      <div className="mx-auto max-w-[1100px] grid gap-6 md:grid-cols-[1fr_1.3fr] items-center">
+      <div className="mx-auto max-w-[1100px] grid gap-6 md:grid-cols-[1fr_1.3fr] items-start">
         {/* Cat + Dog illustration */}
         <div className="relative mx-auto w-full max-w-[180px] aspect-square">
           <svg viewBox="0 0 180 180" width="100%" height="100%" aria-hidden>
@@ -138,7 +149,7 @@ export function PetHouseBrandStory({ storeSlug }: Props) {
             เราอยากใช้กับน้องของเรา
           </h3>
           <p
-            className="mb-3.5 max-w-[360px]"
+            className="mb-4 max-w-[420px]"
             style={{
               fontSize: '12px',
               lineHeight: 1.7,
@@ -149,6 +160,80 @@ export function PetHouseBrandStory({ storeSlug }: Props) {
             ใช้เองมาก่อนถึงจะเอามาขาย ·
             ตอบทุกคำถามที่คุณมีเรื่องการดูแลสัตว์เลี้ยง
           </p>
+
+          {/* Mini stats row — 3 stats separated by · */}
+          {/* TODO(stats): wire to real counters once Order + Review tables
+              are queryable from this page. */}
+          <div
+            className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-4"
+            style={{
+              borderTop: '0.5px solid rgba(91, 160, 51, 0.25)',
+              borderBottom: '0.5px solid rgba(91, 160, 51, 0.25)',
+              padding: '8px 0',
+            }}
+          >
+            {MINI_STATS.map((s, i) => (
+              <span key={s.label} className="inline-flex items-baseline gap-1.5">
+                {i > 0 && (
+                  <span
+                    aria-hidden
+                    style={{ color: '#5BA033', opacity: 0.4, marginRight: 6 }}
+                  >
+                    ·
+                  </span>
+                )}
+                <span
+                  className="font-semibold"
+                  style={{
+                    fontSize: '13px',
+                    color: '#3B2F1F',
+                    letterSpacing: '-0.2px',
+                  }}
+                >
+                  {s.value}
+                </span>
+                <span
+                  className="font-semibold uppercase"
+                  style={{
+                    fontSize: '9px',
+                    letterSpacing: '2px',
+                    color: '#5BA033',
+                  }}
+                >
+                  {s.label}
+                </span>
+              </span>
+            ))}
+          </div>
+
+          {/* Founder quote */}
+          <blockquote
+            className="mb-4 italic"
+            style={{
+              borderLeft: '3px solid #5BA033',
+              paddingLeft: '12px',
+              fontSize: '12px',
+              lineHeight: 1.6,
+              color: 'rgba(92, 61, 31, 0.85)',
+              fontFamily: 'Georgia, serif',
+              maxWidth: '420px',
+            }}
+          >
+            &ldquo;เริ่มจากที่บ้านเลี้ยงน้อง 3 ตัว — เลือกของให้น้องของเราเอง
+            ก่อนจะส่งต่อให้คนอื่น&rdquo;
+            <footer
+              className="not-italic mt-1.5"
+              style={{
+                fontSize: '10px',
+                color: '#5C3D1F',
+                opacity: 0.7,
+                fontFamily: 'inherit',
+              }}
+            >
+              — Fluffy House Team
+            </footer>
+          </blockquote>
+
           <Link
             href={`/stores/${storeSlug}/about`}
             className="inline-flex items-center gap-1.5 font-semibold"
