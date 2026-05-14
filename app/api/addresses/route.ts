@@ -31,19 +31,45 @@ async function requireUserId(): Promise<string | null> {
   return u?.id ?? null;
 }
 
-export async function GET() {
+/**
+ * Resolve a store slug to its id. Returns null when the slug doesn't
+ * exist so callers can return 404 (not a silent empty array, which
+ * would mask typos and let attackers probe).
+ */
+async function resolveStoreId(slug: string | null | undefined): Promise<string | null> {
+  if (!slug) return null;
+  const store = await prisma.store.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
+  return store?.id ?? null;
+}
+
+export async function GET(req: Request) {
   const userId = await requireUserId();
   if (!userId) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
+
+  const { searchParams } = new URL(req.url);
+  const storeSlug = searchParams.get("storeSlug");
+  if (!storeSlug) {
+    return NextResponse.json({ error: "Missing storeSlug" }, { status: 400 });
+  }
+  const storeId = await resolveStoreId(storeSlug);
+  if (!storeId) {
+    return NextResponse.json({ error: "Store not found" }, { status: 404 });
+  }
+
   const addresses = await prisma.address.findMany({
-    where: { userId },
+    where: { userId, storeId },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json({ addresses });
 }
 
 const createSchema = z.object({
+  storeSlug: z.string().min(1),
   recipientName: z.string().min(1).max(120),
   phone: z.string().min(1).max(40),
   line1: z.string().min(1).max(200),
@@ -65,8 +91,14 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
+  const { storeSlug, ...addressData } = parsed.data;
+  const storeId = await resolveStoreId(storeSlug);
+  if (!storeId) {
+    return NextResponse.json({ error: "Store not found" }, { status: 404 });
+  }
+
   const created = await prisma.address.create({
-    data: { ...parsed.data, userId },
+    data: { ...addressData, userId, storeId },
   });
   return NextResponse.json({ address: created });
 }

@@ -68,8 +68,7 @@ export default async function AccountDashboard({
         store: { slug },
       },
     }),
-    // TODO(phase-1c): scope by Address.storeId once the migration lands.
-    prisma.address.count({ where: { userId } }),
+    prisma.address.count({ where: { userId, store: { slug } } }),
     prisma.store.findUnique({
       where: { slug },
       select: { templateId: true, landingThemeVariant: true },
