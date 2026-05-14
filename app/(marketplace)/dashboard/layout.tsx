@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import {
   LayoutDashboard,
+  Mail,
   Package,
   Tags,
   ShoppingBag,
@@ -75,17 +76,24 @@ export default async function DashboardLayout({
   });
   if (!displayUser) redirect("/signin?next=/dashboard");
 
-  // Unread-action badge — count orders waiting on vendor fulfilment
-  // FOR THE CURRENTLY-PICKED STORE (so admins switching to another
-  // shop see THAT shop's pending count, not their own). Cheap enough
-  // to run per-request (covered by the [storeId, createdAt] index on
-  // Order).
-  const pendingOrdersCount = await prisma.order.count({
-    where: {
-      storeId: store.id,
-      status: VENDOR_ACTION_REQUIRED_STATUS,
-    },
-  });
+  // Unread-action badges — counted in parallel for the active store.
+  //   • pendingOrdersCount → orders awaiting vendor fulfilment (PAID).
+  //   • unreadMessagesCount → ContactMessage rows still readAt = null.
+  // Both run per-request; covered by [storeId, …] composite indexes.
+  const [pendingOrdersCount, unreadMessagesCount] = await Promise.all([
+    prisma.order.count({
+      where: {
+        storeId: store.id,
+        status: VENDOR_ACTION_REQUIRED_STATUS,
+      },
+    }),
+    prisma.contactMessage.count({
+      where: {
+        storeId: store.id,
+        readAt: null,
+      },
+    }),
+  ]);
 
   return (
     <div className="-mx-4 -my-8 flex min-h-[calc(100vh-3.5rem)] bg-background text-foreground">
@@ -98,6 +106,7 @@ export default async function DashboardLayout({
           userEmail={displayUser.email ?? ""}
           isAdmin={displayUser.role === "ADMIN"}
           pendingOrdersCount={pendingOrdersCount}
+          unreadMessagesCount={unreadMessagesCount}
         />
       </DashboardSidebarToggle>
 
@@ -136,6 +145,7 @@ function Sidebar({
   userEmail,
   isAdmin,
   pendingOrdersCount,
+  unreadMessagesCount,
 }: {
   storeName: string;
   storeSlug: string | null;
@@ -144,6 +154,7 @@ function Sidebar({
   userEmail: string;
   isAdmin: boolean;
   pendingOrdersCount: number;
+  unreadMessagesCount: number;
 }) {
   // Build a query string suffix to append to dashboard nav hrefs so
   // the picker selection survives page navigation. Empty when no
@@ -237,6 +248,13 @@ function Sidebar({
             ออเดอร์
           </NavItem>
           <NavItem
+            href={`/dashboard/store/messages${suffix}`}
+            icon={<Mail className="h-4 w-4" />}
+            badge={unreadMessagesCount}
+          >
+            ข้อความ
+          </NavItem>
+          <NavItem
             href={`/dashboard/store/settings${suffix}`}
             icon={<Settings className="h-4 w-4" />}
           >
@@ -324,6 +342,11 @@ function NavItem({
   // future iteration; for now every item renders neutral and the
   // current page's content area gives the contextual cue. Keeps
   // this component tree fully server-rendered.
+  //
+  // Badge a11y: the screen-reader label echoes the link's own text
+  // (`children`) when it's a string so the reader announces e.g.
+  // "ออเดอร์, ค้าง 3 รายการ" instead of a bare digit.
+  const childLabel = typeof children === "string" ? children : "รายการ";
   return (
     <li>
       <Link
@@ -340,7 +363,7 @@ function NavItem({
               background: "var(--color-sidebar-primary)",
               color: "var(--color-sidebar-primary-foreground)",
             }}
-            aria-label={`${badge} คำสั่งซื้อรอจัดส่ง`}
+            aria-label={`${childLabel} ค้าง ${badge} รายการ`}
           >
             {badge > 99 ? "99+" : badge}
           </span>

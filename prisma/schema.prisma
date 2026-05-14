@@ -189,6 +189,7 @@ model Store {
   addresses            Address[]
   identityVerification IdentityVerification?
   deployment           ShopDeployment?
+  contactMessages      ContactMessage[]
 
   @@index([approvalStatus])
 }
@@ -811,4 +812,33 @@ model ProvisioningJob {
   @@index([deploymentId, type])
   @@index([status, scheduledFor])
   @@index([type, status])
+}
+
+// Persisted submissions from the public contact form at
+// /stores/<slug>/contact. The PR #56 flow originally only emailed the
+// store's contactEmail via Resend — this row is the new source of
+// truth so vendors can find messages even when email delivery is
+// flaky or contactEmail isn't set.
+//
+// readAt/readById track whether the vendor has acknowledged the
+// message (null = unread). readById matters in the multi-vendor case
+// where multiple operators share an inbox via the dashboard picker —
+// it audits WHO marked the row read, not just when.
+model ContactMessage {
+  id        String    @id @default(cuid())
+  storeId   String
+  name      String
+  email     String?
+  phone     String?
+  message   String    @db.Text
+  // Null = unread; populated = read at this timestamp.
+  readAt    DateTime?
+  // Audit who marked it read (for the multi-vendor case).
+  readById  String?
+  createdAt DateTime  @default(now())
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, createdAt])
+  @@index([storeId, readAt])
 }
