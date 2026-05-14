@@ -34,6 +34,18 @@ import {
   isTrustStore,
 } from "@/lib/landing/trust";
 import {
+  BUSINESS_MODEL_BODY_CLASS,
+  BUSINESS_MODEL_TOKENS,
+  businessModelCssVars,
+  isBusinessModelStore,
+} from "@/lib/landing/business-model";
+import {
+  LIFESTYLE_BODY_CLASS,
+  LIFESTYLE_TOKENS,
+  lifestyleCssVars,
+  isLifestyleStore,
+} from "@/lib/landing/lifestyle";
+import {
   ELECTRONICS_TECH_BODY_CLASS,
   ELECTRONICS_TECH_TOKENS,
   electronicsTechCssVars,
@@ -184,12 +196,37 @@ export default async function ShopLayout({
   const trustVars = isTrust ? trustCssVars() : {};
   const trustClass = isTrust ? TRUST_BODY_CLASS : "";
 
-  // Electronics-tech family (DESIGN-B sibling). Stacked next to FB +
-  // trust so the dispatcher chain is a strict precedence ladder. In
-  // practice the template→group lookup is disjoint (a store can only
-  // be in one TemplateGroup) so this is belt-and-braces. Reads from
-  // lib/landing/electronics-tech.ts — same shape as trust + fb modules.
-  const isElectronicsTech = !isFB && !isTrust && isElectronicsTechStore({
+  // Business-model family (DESIGN-B sibling). Targets the deal /
+  // wholesale templates (wholesale-b2b, flash-deal, subscription).
+  // Stacked alongside FB + trust so we never break their cascades:
+  // FB and trust are checked first; this only activates when neither
+  // matched. The detection set is disjoint by template group so a
+  // single store can only ever land in one family. Reads from
+  // lib/landing/business-model.ts — same shape as the trust module.
+  const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const bmVars = isBusinessModel ? businessModelCssVars() : {};
+  const bmClass = isBusinessModel ? BUSINESS_MODEL_BODY_CLASS : "";
+
+  // Lifestyle family (warm catalog / outdoorsy). Stacked AFTER trust
+  // and business-model in the chain — template→group is disjoint in
+  // practice so this is belt-and-braces. Reads from
+  // lib/landing/lifestyle.ts.
+  const isLifestyle = !isFB && !isTrust && !isBusinessModel && isLifestyleStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const lifestyleVars = isLifestyle ? lifestyleCssVars() : {};
+  const lifestyleClass = isLifestyle ? LIFESTYLE_BODY_CLASS : "";
+
+  // Electronics-tech family (DESIGN-B sibling). Stacked last in the
+  // chain so the dispatcher is a strict precedence ladder. In practice
+  // the template→group lookup is disjoint (a store can only be in one
+  // TemplateGroup) so this is belt-and-braces. Reads from
+  // lib/landing/electronics-tech.ts.
+  const isElectronicsTech = !isFB && !isTrust && !isBusinessModel && !isLifestyle && isElectronicsTechStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -198,29 +235,43 @@ export default async function ShopLayout({
 
   // Convenience aliases — the layout's three render paths all want
   // "give me the active family's class + vars" without recomputing.
-  // FB takes precedence by virtue of being checked first above, then
-  // trust, then electronics-tech. Mutually exclusive in practice.
-  const familyClass = [fbClass, trustClass, etClass].filter(Boolean).join(" ");
-  const familyVars = { ...etVars, ...trustVars, ...fbVars };
+  // FB takes precedence by virtue of being checked first above; trust
+  // is next, business-model, lifestyle, then electronics-tech.
+  const familyClass = [fbClass, trustClass, bmClass, lifestyleClass, etClass]
+    .filter(Boolean)
+    .join(" ");
+  // Merge order matters — earlier checks win because their vars
+  // shadow later ones. FB → trust → business-model → lifestyle → ET.
+  const familyVars = { ...etVars, ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
   // Active family's accent — used by ShopHeader / ShopFooter to
-  // paint chrome links + glyph fills. FB pink, trust gold, electronics
-  // cyan. The base primary stays in CTAs via the CSS-var cascade.
+  // paint chrome links + glyph fills. FB pink, trust gold, business-
+  // model amber, lifestyle sage, electronics-tech cyan. The base
+  // primary stays in CTAs via the CSS-var cascade.
   const familyAccent = isFB
     ? "#f43f5e"
     : isTrust
       ? TRUST_TOKENS.colors.accent
-      : isElectronicsTech
-        ? ELECTRONICS_TECH_TOKENS.colors.accent
-        : null;
-  // Button shape pinned per-family — FB pills, trust + electronics-tech
-  // squared. Falls through to the per-template default when none apply.
+      : isBusinessModel
+        ? BUSINESS_MODEL_TOKENS.colors.accent
+        : isLifestyle
+          ? LIFESTYLE_TOKENS.colors.accent
+          : isElectronicsTech
+            ? ELECTRONICS_TECH_TOKENS.colors.accent
+            : null;
+  // Button shape pinned per-family — FB pills, trust squared,
+  // business-model squared, lifestyle pill, electronics-tech squared.
+  // Falls through to the per-template default when none apply.
   const familyButtonShape: "pill" | "square" | null = isFB
     ? "pill"
     : isTrust
       ? "square"
-      : isElectronicsTech
+      : isBusinessModel
         ? "square"
-        : null;
+        : isLifestyle
+          ? "pill"
+          : isElectronicsTech
+            ? "square"
+            : null;
 
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality

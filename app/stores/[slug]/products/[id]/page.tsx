@@ -8,9 +8,13 @@ import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
+import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
+import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
 import { ElectronicsTechProductHero } from "@/components/storefront/themes/electronics-tech/ElectronicsTechProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
+import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
@@ -54,10 +58,13 @@ export default async function ShopProductPage({
   // (in practice the template→group mapping is disjoint, but the
   // explicit precedence keeps things safe). trust (classic /
   // official-brand / premium-luxury) renders the squared heritage
-  // hero; electronics-tech (catalog-dense / tech-compare /
-  // single-product) renders the spec-sheet square hero; FB renders
-  // the editorial portrait; everything else renders the default hero
-  // untouched.
+  // hero; FB renders the editorial portrait; business-model
+  // (wholesale-b2b / flash-deal / subscription) renders the
+  // rectangular deal-dashboard hero; lifestyle (home-living /
+  // sport-active / kids-toys) renders the warm catalog hero;
+  // electronics-tech (catalog-dense / tech-compare / single-product)
+  // renders the spec-sheet square hero; everything else renders the
+  // default hero untouched.
   const isFB = isFashionBeautyStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
@@ -66,7 +73,15 @@ export default async function ShopProductPage({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
-  const isElectronicsTech = !isFB && !isTrust && isElectronicsTechStore({
+  const isBM = !isFB && !isTrust && isBusinessModelStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const isLifestyle = !isFB && !isTrust && !isBM && isLifestyleStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const isElectronicsTech = !isFB && !isTrust && !isBM && !isLifestyle && isElectronicsTechStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
@@ -74,9 +89,13 @@ export default async function ShopProductPage({
     ? FashionBeautyProductHero
     : isTrust
       ? TrustProductHero
-      : isElectronicsTech
-        ? ElectronicsTechProductHero
-        : ProductDetailHero;
+      : isBM
+        ? BusinessModelProductHero
+        : isLifestyle
+          ? LifestyleProductHero
+          : isElectronicsTech
+            ? ElectronicsTechProductHero
+            : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -122,9 +141,16 @@ export default async function ShopProductPage({
             imageUrl: v.imageUrl,
             inventory: v.inventory,
           })),
-          // Use Prisma stockTotal as the catch-all stockLeft. When variants
-          // exist, the hero prefers the selected variant's inventory.
-          stockLeft: product.hasVariants ? null : product.stockTotal,
+          // Use Prisma stockTotal as stockLeft. For dropshipping products
+          // (CJ / AliExpress) stockTotal often stays 0 because real stock
+          // lives on the supplier side — treat 0 as "stock unknown" (null)
+          // so the Add to Cart button stays enabled instead of locking
+          // the buyer out. Variants override this via their own inventory.
+          stockLeft: product.hasVariants
+            ? null
+            : product.stockTotal > 0
+              ? product.stockTotal
+              : null,
           // rating / reviewCount / soldCount intentionally omitted —
           // not in schema yet. Hero hides the meta row gracefully.
         }}
@@ -166,13 +192,20 @@ export default async function ShopProductPage({
       {related.length > 0 && (
         <section
           className={
-            isFB || isTrust || isElectronicsTech ? "space-y-6 py-8" : "space-y-3"
+            isFB || isTrust || isLifestyle || isElectronicsTech
+              ? "space-y-6 py-8"
+              : isBM
+                ? "space-y-4 py-6"
+                : "space-y-3"
           }
         >
           {/* Section eyebrow + heading. Trust adds a heritage caps
-              eyebrow above the serif headline; electronics-tech adds
-              a mono "YOU MAY ALSO LIKE" eyebrow; FB renders a serif
-              headline only; default keeps its compact sans label. */}
+              eyebrow above the serif headline; FB renders a serif
+              headline only; business-model uses a tight-caps utility
+              label; lifestyle adds an optimistic sage caps tagline
+              above the geometric sans headline; electronics-tech adds
+              a mono "Related products" eyebrow; default keeps its
+              compact sans label. */}
           {isTrust && (
             <p
               className="text-xs uppercase"
@@ -183,6 +216,29 @@ export default async function ShopProductPage({
               }}
             >
               From the Collection
+            </p>
+          )}
+          {isBM && (
+            <p
+              className="text-xs font-semibold uppercase"
+              style={{
+                color: 'var(--shop-primary)',
+                letterSpacing: '0.12em',
+              }}
+            >
+              Related deals
+            </p>
+          )}
+          {isLifestyle && (
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.18em',
+                fontWeight: 600,
+              }}
+            >
+              More from the basket
             </p>
           )}
           {isElectronicsTech && (
@@ -202,11 +258,13 @@ export default async function ShopProductPage({
           )}
           <h2
             className={
-              isFB || isTrust
+              isFB || isTrust || isLifestyle
                 ? "text-3xl sm:text-4xl"
-                : isElectronicsTech
-                  ? "text-2xl sm:text-3xl"
-                  : "text-lg font-semibold"
+                : isBM
+                  ? "text-xl sm:text-2xl"
+                  : isElectronicsTech
+                    ? "text-2xl sm:text-3xl"
+                    : "text-lg font-semibold"
             }
             style={{
               color: 'var(--shop-ink)',
@@ -223,23 +281,34 @@ export default async function ShopProductPage({
                       fontWeight: 600,
                       letterSpacing: '-0.01em',
                     }
-                  : isElectronicsTech
+                  : isLifestyle
                     ? {
                         fontFamily:
-                          'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif',
-                        fontWeight: 700,
-                        letterSpacing: '-0.015em',
+                          'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
+                        fontWeight: 600,
+                        letterSpacing: '-0.01em',
                       }
-                    : {}),
+                    : isElectronicsTech
+                      ? {
+                          fontFamily:
+                            'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif',
+                          fontWeight: 700,
+                          letterSpacing: '-0.015em',
+                        }
+                      : {}),
             }}
           >
             {isFB
               ? 'You may also love'
               : isTrust
                 ? 'You may also like'
-                : isElectronicsTech
-                  ? 'Compare similar products'
-                  : 'สินค้าที่เกี่ยวข้อง'}
+                : isBM
+                  ? 'ดีลใกล้เคียง'
+                  : isLifestyle
+                    ? 'You may also love'
+                    : isElectronicsTech
+                      ? 'Compare similar products'
+                      : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={
@@ -247,9 +316,11 @@ export default async function ShopProductPage({
                 ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
                 : isTrust
                   ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
-                  : isElectronicsTech
-                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
-                    : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
+                  : isLifestyle
+                    ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-3"
+                    : isElectronicsTech
+                      ? "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
+                      : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
             }
           >
             {related.map((r) => (
@@ -257,34 +328,39 @@ export default async function ShopProductPage({
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
                 className={
-                  isFB || isTrust || isElectronicsTech
+                  isFB || isTrust || isLifestyle || isElectronicsTech
                     ? "group block"
                     : "group overflow-hidden rounded-lg border"
                 }
                 style={
-                  isFB || isTrust || isElectronicsTech
+                  isFB || isTrust || isLifestyle || isElectronicsTech
                     ? undefined
                     : { background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }
                 }
               >
                 <div
+                  data-lifestyle-frame={isLifestyle ? 'true' : undefined}
                   className={
                     isFB
                       ? "overflow-hidden rounded-2xl border bg-white p-2 shadow-sm"
                       : isTrust
                         ? "overflow-hidden rounded-sm border bg-white"
-                        : isElectronicsTech
-                          ? "overflow-hidden rounded-md border bg-white"
-                          : "aspect-square overflow-hidden"
+                        : isLifestyle
+                          ? "overflow-hidden rounded-3xl bg-white"
+                          : isElectronicsTech
+                            ? "overflow-hidden rounded-md border bg-white"
+                            : "aspect-square overflow-hidden"
                   }
                   style={{
                     ...(isFB
                       ? { borderColor: 'var(--shop-border)' }
                       : isTrust
                         ? { borderColor: 'var(--shop-accent)' }
-                        : isElectronicsTech
-                          ? { borderColor: 'var(--shop-border)' }
-                          : { backgroundColor: 'var(--shop-bg)' }),
+                        : isLifestyle
+                          ? {}
+                          : isElectronicsTech
+                            ? { borderColor: 'var(--shop-border)' }
+                            : { backgroundColor: 'var(--shop-bg)' }),
                   }}
                 >
                   {r.imageUrl && (
@@ -294,18 +370,22 @@ export default async function ShopProductPage({
                           ? "relative overflow-hidden rounded-xl"
                           : isTrust
                             ? "relative overflow-hidden"
-                            : isElectronicsTech
+                            : isLifestyle
                               ? "relative overflow-hidden"
-                              : "h-full w-full"
+                              : isElectronicsTech
+                                ? "relative overflow-hidden"
+                                : "h-full w-full"
                       }
                       style={
                         isFB
                           ? { aspectRatio: '4 / 5', backgroundColor: 'var(--shop-muted)' }
                           : isTrust
                             ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
-                            : isElectronicsTech
+                            : isLifestyle
                               ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
-                              : undefined
+                              : isElectronicsTech
+                                ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
+                                : undefined
                       }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -317,9 +397,11 @@ export default async function ShopProductPage({
                             ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                             : isTrust
                               ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                              : isElectronicsTech
-                                ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                                : "h-full w-full object-cover transition group-hover:scale-105"
+                              : isLifestyle
+                                ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                                : isElectronicsTech
+                                  ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                  : "h-full w-full object-cover transition group-hover:scale-105"
                         }
                       />
                     </div>
@@ -331,9 +413,11 @@ export default async function ShopProductPage({
                       ? "px-1 pt-3"
                       : isTrust
                         ? "px-1 pt-4"
-                        : isElectronicsTech
-                          ? "px-1 pt-3"
-                          : "p-3"
+                        : isLifestyle
+                          ? "px-1 pt-4"
+                          : isElectronicsTech
+                            ? "px-1 pt-3"
+                            : "p-3"
                   }
                 >
                   <div
@@ -342,9 +426,11 @@ export default async function ShopProductPage({
                         ? "line-clamp-2 text-sm"
                         : isTrust
                           ? "line-clamp-2 text-sm leading-tight"
-                          : isElectronicsTech
-                            ? "line-clamp-2 text-sm leading-tight"
-                            : "line-clamp-2 text-sm font-medium"
+                          : isLifestyle
+                            ? "line-clamp-2 text-base leading-tight"
+                            : isElectronicsTech
+                              ? "line-clamp-2 text-sm leading-tight"
+                              : "line-clamp-2 text-sm font-medium"
                     }
                     style={{
                       color: 'var(--shop-ink, #1c1917)',
@@ -354,14 +440,20 @@ export default async function ShopProductPage({
                               'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
                             fontWeight: 600,
                           }
-                        : isElectronicsTech
+                        : isLifestyle
                           ? {
                               fontFamily:
-                                'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif',
+                                'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
                               fontWeight: 600,
-                              letterSpacing: '-0.005em',
                             }
-                          : {}),
+                          : isElectronicsTech
+                            ? {
+                                fontFamily:
+                                  'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif',
+                                fontWeight: 600,
+                                letterSpacing: '-0.005em',
+                              }
+                            : {}),
                     }}
                   >
                     {r.titleTh ?? r.title}
@@ -375,13 +467,18 @@ export default async function ShopProductPage({
                     data-tech-mono={isElectronicsTech ? 'true' : undefined}
                     style={{
                       color: isTrust ? 'var(--shop-ink)' : 'var(--shop-primary)',
-                      ...(isElectronicsTech
+                      ...(isLifestyle
                         ? {
                             fontFamily:
-                              'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace',
-                            letterSpacing: '-0.01em',
+                              'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
                           }
-                        : {}),
+                        : isElectronicsTech
+                          ? {
+                              fontFamily:
+                                'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace',
+                              letterSpacing: '-0.01em',
+                            }
+                          : {}),
                     }}
                   >
                     ฿ {Number(r.priceTHB).toLocaleString("th-TH")}

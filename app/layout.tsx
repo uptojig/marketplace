@@ -9,6 +9,7 @@ import {
   JetBrains_Mono,
   Cormorant_Garamond,
   Playfair_Display,
+  Outfit,
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -81,6 +82,33 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+// Geometric humanist sans for the lifestyle design family
+// (templates: home-living, sport-active, kids-toys). Outfit is a
+// modern catalog face — friendly + grown-up, pairs cleanly with
+// Prompt for Thai glyphs. Loaded as a CSS variable so only stores
+// in this family pick it up (via .theme-lifestyle in globals.css);
+// the rest of the app keeps its DM Sans default at zero cost.
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-lifestyle-display",
+  display: "swap",
+});
+
+// Dashboard / wholesale-utility mono face for the business-model
+// design family (templates: wholesale-b2b, flash-deal, subscription).
+// Loaded as a CSS variable so only stores in this family pick it up
+// (via .theme-business-model [data-bm-mono="true"] in globals.css);
+// the rest of the app keeps its sans defaults at zero cost. JetBrains
+// Mono has tabular numerals which read cleanly in tier-pricing tables,
+// countdown timers, and SKU/MOQ chips.
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-bm-mono",
+  display: "swap",
+});
+
 // Spec-sheet display sans for the electronics-tech design family
 // (templates: catalog-dense, tech-compare, single-product). Inter
 // Tight is Inter's tighter-tracking sibling — reads as authoritative
@@ -101,7 +129,7 @@ const interTight = Inter_Tight({
 // Inter Tight; loaded as a CSS variable so opting in is a simple
 // `font-family: var(--font-tech-mono)` (or className "font-mono"
 // inside the .theme-electronics-tech cascade).
-const jetbrainsMono = JetBrains_Mono({
+const jetBrainsMonoTech = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-tech-mono",
@@ -118,7 +146,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="th"
-      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, interTight.variable, jetbrainsMono.variable, "font-sans", inter.variable)}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, outfit.variable, jetBrainsMono.variable, interTight.variable, jetBrainsMonoTech.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>

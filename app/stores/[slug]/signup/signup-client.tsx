@@ -23,6 +23,9 @@ const FB_DISPLAY_FONT =
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
 
+const LIFESTYLE_DISPLAY_FONT =
+  'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
+
 const TECH_DISPLAY_FONT =
   'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif';
 
@@ -45,11 +48,15 @@ function EmailForm({
   defaultCallback,
   isFashionBeauty,
   isTrust,
+  isBusinessModel,
+  isLifestyle,
   isElectronicsTech,
 }: {
   defaultCallback: string;
   isFashionBeauty: boolean;
   isTrust: boolean;
+  isBusinessModel: boolean;
+  isLifestyle: boolean;
   isElectronicsTech: boolean;
 }) {
   const [email, setEmail] = useState('');
@@ -82,48 +89,73 @@ function EmailForm({
 
   // Per-family input + submit skinning. Trust uses squared rounded-sm
   // inputs with gold-hairline borders + uppercase-tracking submit;
-  // electronics-tech uses rounded-md inputs with slate borders + bold
-  // sans submit.
+  // business-model uses rectangular rounded-md inputs + bold red
+  // tight-caps submit; lifestyle uses rounded-2xl friendly inputs +
+  // rounded-full terracotta pill submit; electronics-tech uses
+  // rounded-md inputs with slate borders + bold sans submit.
   const labelClass =
     isFashionBeauty
       ? 'mb-2 block text-xs uppercase tracking-[0.18em]'
       : isTrust
         ? 'mb-2 block text-xs uppercase'
-        : isElectronicsTech
-          ? 'mb-2 block text-[11px] uppercase'
-          : 'mb-1 block text-sm font-medium';
+        : isBusinessModel
+          ? 'mb-1.5 block text-xs font-semibold uppercase'
+          : isLifestyle
+            ? 'mb-2 block text-xs uppercase'
+            : isElectronicsTech
+              ? 'mb-2 block text-[11px] uppercase'
+              : 'mb-1 block text-sm font-medium';
   const labelStyle: React.CSSProperties = isTrust
     ? {
         color: 'var(--shop-ink-muted)',
         letterSpacing: '0.28em',
         fontWeight: 600,
       }
-    : isElectronicsTech
+    : isBusinessModel
       ? {
           color: 'var(--shop-ink-muted)',
-          fontFamily: TECH_MONO_FONT,
-          letterSpacing: '0.16em',
-          fontWeight: 600,
+          letterSpacing: '0.12em',
         }
-      : { color: 'var(--shop-ink-muted)' };
+      : isLifestyle
+        ? {
+            color: 'var(--shop-ink-muted)',
+            letterSpacing: '0.18em',
+            fontWeight: 600,
+          }
+        : isElectronicsTech
+          ? {
+              color: 'var(--shop-ink-muted)',
+              fontFamily: TECH_MONO_FONT,
+              letterSpacing: '0.16em',
+              fontWeight: 600,
+            }
+          : { color: 'var(--shop-ink-muted)' };
   const inputClass =
     isFashionBeauty
       ? 'rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
       : isTrust
         ? 'rounded-sm border-[var(--shop-accent)] bg-white px-4 py-5'
-        : isElectronicsTech
-          ? 'rounded-md border-[var(--shop-border)] bg-white px-4 py-5'
-          : '';
+        : isBusinessModel
+          ? 'rounded-md border-[var(--shop-border)] bg-white px-3 py-2.5'
+          : isLifestyle
+            ? 'rounded-2xl border-[var(--shop-border)] bg-white px-4 py-5'
+            : isElectronicsTech
+              ? 'rounded-md border-[var(--shop-border)] bg-white px-4 py-5'
+              : '';
   const submitClass =
     isFashionBeauty
       ? 'w-full rounded-full py-6 text-sm font-medium text-white hover:opacity-90'
       : isTrust
         ? 'w-full rounded-sm py-6 text-sm font-semibold uppercase tracking-[0.18em] text-white hover:opacity-90'
-        : isElectronicsTech
-          ? 'w-full rounded-md py-6 text-sm font-bold text-white hover:opacity-90'
-          : 'w-full';
+        : isBusinessModel
+          ? 'w-full rounded-md py-5 text-sm font-bold uppercase tracking-[0.08em] text-white hover:opacity-90'
+          : isLifestyle
+            ? 'w-full rounded-full py-6 text-sm font-semibold text-white hover:opacity-90'
+            : isElectronicsTech
+              ? 'w-full rounded-md py-6 text-sm font-bold text-white hover:opacity-90'
+              : 'w-full';
   const submitStyle =
-    isFashionBeauty || isTrust || isElectronicsTech
+    isFashionBeauty || isTrust || isBusinessModel || isLifestyle || isElectronicsTech
       ? { background: 'var(--shop-primary)' }
       : undefined;
 
@@ -152,9 +184,13 @@ function EmailForm({
           ? 'กำลังส่ง...'
           : isTrust
             ? 'Send sign-up link'
-            : isElectronicsTech
+            : isBusinessModel
               ? 'Send sign-up link'
-              : 'ส่งลิงก์ยืนยันทางอีเมล'}
+              : isLifestyle
+                ? 'Send sign-up link'
+                : isElectronicsTech
+                  ? 'Send sign-up link'
+                  : 'ส่งลิงก์ยืนยันทางอีเมล'}
       </Button>
     </form>
   );
@@ -165,6 +201,8 @@ export function StoreSignUpClient({
   storeName,
   isFashionBeauty,
   isTrust = false,
+  isBusinessModel = false,
+  isLifestyle = false,
   isElectronicsTech = false,
   defaultCallback,
 }: {
@@ -172,6 +210,8 @@ export function StoreSignUpClient({
   storeName: string;
   isFashionBeauty: boolean;
   isTrust?: boolean;
+  isBusinessModel?: boolean;
+  isLifestyle?: boolean;
   isElectronicsTech?: boolean;
   defaultCallback: string;
 }) {
@@ -239,6 +279,69 @@ export function StoreSignUpClient({
               สมัครเพื่อเริ่มสะสมที่ {storeName}
             </p>
           </div>
+        ) : isBusinessModel ? (
+          <div className="text-center">
+            <p
+              className="text-xs font-semibold uppercase"
+              style={{
+                color: 'var(--shop-primary)',
+                letterSpacing: '0.12em',
+              }}
+            >
+              B2B Account · New
+            </p>
+            <h1
+              className="mt-2 text-2xl sm:text-3xl font-bold"
+              style={{
+                color: 'var(--shop-ink)',
+                fontWeight: 700,
+                letterSpacing: '-0.015em',
+              }}
+            >
+              Create your account
+            </h1>
+            <p
+              className="mt-3 text-sm"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              สมัครเพื่อเริ่มสั่งซื้อแบบขายส่งที่ {storeName}
+            </p>
+          </div>
+        ) : isLifestyle ? (
+          <div className="text-center">
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.18em',
+                fontWeight: 600,
+              }}
+            >
+              Hello from {storeName}
+            </p>
+            <h1
+              className="mt-3 text-4xl sm:text-5xl"
+              style={{
+                color: 'var(--shop-ink)',
+                fontFamily: LIFESTYLE_DISPLAY_FONT,
+                fontWeight: 700,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Join us
+            </h1>
+            <div
+              aria-hidden
+              data-lifestyle-squiggle="true"
+              className="mx-auto mt-5 w-24"
+            />
+            <p
+              className="mt-4 text-sm"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              สมัครเพื่อเริ่มช้อปกับเรา
+            </p>
+          </div>
         ) : isElectronicsTech ? (
           <div className="text-center">
             <p
@@ -295,9 +398,13 @@ export function StoreSignUpClient({
               ? 'rounded-2xl border bg-white p-8 shadow-sm'
               : isTrust
                 ? 'rounded-sm border bg-white p-8 shadow-sm'
-                : isElectronicsTech
-                  ? 'rounded-md border bg-white p-8'
-                  : 'p-6'
+                : isBusinessModel
+                  ? 'rounded-md border bg-white p-6 shadow-sm'
+                  : isLifestyle
+                    ? 'rounded-3xl border bg-white p-8 shadow-sm'
+                    : isElectronicsTech
+                      ? 'rounded-md border bg-white p-8'
+                      : 'p-6'
           }
           style={{
             borderColor: isTrust ? 'var(--shop-accent)' : 'var(--shop-border)',
@@ -312,9 +419,13 @@ export function StoreSignUpClient({
                 ? 'w-full rounded-full border-[var(--shop-border)] py-6'
                 : isTrust
                   ? 'w-full rounded-sm border-[var(--shop-ink)] py-6 uppercase tracking-[0.18em]'
-                  : isElectronicsTech
-                    ? 'w-full rounded-md border-[var(--shop-border)] py-6 font-semibold'
-                    : 'w-full'
+                  : isBusinessModel
+                    ? 'w-full rounded-md border-[var(--shop-border)] py-5 font-semibold'
+                    : isLifestyle
+                      ? 'w-full rounded-full border-[var(--shop-ink)] py-6'
+                      : isElectronicsTech
+                        ? 'w-full rounded-md border-[var(--shop-border)] py-6 font-semibold'
+                        : 'w-full'
             }
           >
             <Mail className="mr-2 h-4 w-4" />
@@ -325,10 +436,15 @@ export function StoreSignUpClient({
             <div
               className="absolute inset-x-0 top-1/2 h-px"
               style={{
-                background: isTrust ? 'var(--shop-accent)' : 'var(--shop-border)',
+                background: isTrust
+                  ? 'var(--shop-accent)'
+                  : isLifestyle
+                    ? 'var(--shop-accent)'
+                    : 'var(--shop-border)',
               }}
             />
             <span
+              data-tech-mono={isElectronicsTech ? 'true' : undefined}
               className="relative bg-white px-3 text-xs uppercase"
               style={{
                 color: 'var(--shop-ink-muted)',
@@ -337,11 +453,15 @@ export function StoreSignUpClient({
                   : isElectronicsTech
                     ? '0.16em'
                     : '0.18em',
-                fontWeight: isTrust || isElectronicsTech ? 600 : undefined,
+                fontWeight: isTrust || isLifestyle || isElectronicsTech ? 600 : undefined,
                 fontFamily: isElectronicsTech ? TECH_MONO_FONT : undefined,
               }}
             >
-              {isElectronicsTech ? 'OR' : 'หรือ'}
+              {isLifestyle
+                ? 'or continue with'
+                : isElectronicsTech
+                  ? 'OR'
+                  : 'หรือ'}
             </span>
           </div>
 
@@ -350,6 +470,8 @@ export function StoreSignUpClient({
               defaultCallback={defaultCallback}
               isFashionBeauty={isFashionBeauty}
               isTrust={isTrust}
+              isBusinessModel={isBusinessModel}
+              isLifestyle={isLifestyle}
               isElectronicsTech={isElectronicsTech}
             />
           </Suspense>
@@ -369,21 +491,42 @@ export function StoreSignUpClient({
           </p>
         </Card>
 
-        <p
-          className="text-center text-sm"
-          style={{ color: 'var(--shop-ink-muted)' }}
-        >
-          มีบัญชีอยู่แล้ว?{' '}
-          <Link
-            href={`/stores/${storeSlug}/signin`}
-            className="font-medium hover:underline"
-            style={{
-              color: isTrust ? 'var(--shop-accent)' : 'var(--shop-primary)',
-            }}
-          >
-            เข้าสู่ระบบ
-          </Link>
-        </p>
+        <div className="space-y-3 text-center text-sm">
+          <p style={{ color: 'var(--shop-ink-muted)' }}>
+            มีบัญชีอยู่แล้ว?{' '}
+            <Link
+              href={`/stores/${storeSlug}/signin`}
+              className="font-medium hover:underline"
+              style={{
+                color: isTrust
+                  ? 'var(--shop-accent)'
+                  : isLifestyle
+                    ? 'var(--shop-primary)'
+                    : 'var(--shop-primary)',
+              }}
+            >
+              เข้าสู่ระบบ
+            </Link>
+          </p>
+          {isBusinessModel && (
+            <p
+              className="text-xs"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              B2B account?{' '}
+              <Link
+                href={`/stores/${storeSlug}/signup?type=wholesale`}
+                className="font-bold uppercase hover:underline"
+                style={{
+                  color: 'var(--shop-primary)',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                Wholesale signup
+              </Link>
+            </p>
+          )}
+        </div>
       </main>
     </div>
   );
