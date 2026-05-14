@@ -170,6 +170,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="th"
+      data-theme="marketplace-fantasy"
       className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, outfit.variable, jetBrainsMono.variable, interTight.variable, jetBrainsMonoTech.variable, fraunces.variable, caveat.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
