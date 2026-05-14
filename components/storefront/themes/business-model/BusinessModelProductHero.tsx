@@ -586,9 +586,9 @@ function InfoColumn({
                   letterSpacing: '0.12em',
                 }}
               >
-                <th className="px-3 py-2 font-semibold">Qty</th>
-                <th className="px-3 py-2 font-semibold">Unit price</th>
-                <th className="px-3 py-2 text-right font-semibold">Save</th>
+                <th className="px-3 py-2 font-semibold">จำนวน</th>
+                <th className="px-3 py-2 font-semibold">ราคาต่อหน่วย</th>
+                <th className="px-3 py-2 text-right font-semibold">ประหยัด</th>
               </tr>
             </thead>
             <tbody>
@@ -842,7 +842,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Authorized · Bulk supplier
+              ผู้จำหน่ายขายส่งที่ได้รับอนุญาต
             </div>
           </div>
           <Button

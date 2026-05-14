@@ -90,7 +90,7 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
             className="text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Deal dashboard · Featured deals
+            ดีลที่กำลังจะหมดเวลา · ดีลแนะนำ
           </p>
           <div
             aria-hidden
@@ -109,7 +109,7 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
                   lineHeight: 1.1,
                 }}
               >
-                Today&rsquo;s best deals
+                ดีลวันนี้
               </h2>
               {products.length > 0 && (
                 <span

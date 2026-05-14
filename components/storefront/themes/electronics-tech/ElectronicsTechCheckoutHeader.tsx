@@ -56,7 +56,7 @@ export function ElectronicsTechCheckoutHeader({
               fontWeight: 600,
             }}
           >
-            ORDER LOG · STEP {step}/2
+            บันทึกคำสั่งซื้อ · ขั้นตอน {step}/2
           </p>
           <h1
             className="mt-4 text-3xl sm:text-4xl"

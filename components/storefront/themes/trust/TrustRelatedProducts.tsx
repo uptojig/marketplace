@@ -80,7 +80,7 @@ export function TrustRelatedProducts({
             fontWeight: 600,
           }}
         >
-          From the Collection · {storeName}
+          จากคอลเลกชัน · {storeName}
         </p>
         <h2
           className="mt-3 text-3xl sm:text-4xl"
@@ -92,7 +92,7 @@ export function TrustRelatedProducts({
             lineHeight: 1.15,
           }}
         >
-          You may also like
+          คุณอาจชอบสินค้าเหล่านี้
         </h2>
         <div
           aria-hidden
@@ -147,7 +147,7 @@ export function TrustRelatedProducts({
                         fontWeight: 600,
                       }}
                     >
-                      No image
+                      ไม่มีรูป
                     </div>
                   )}
 
@@ -174,7 +174,7 @@ export function TrustRelatedProducts({
                         letterSpacing: '0.22em',
                       }}
                     >
-                      Save {discount}%
+                      ลด {discount}%
                     </span>
                   )}
                 </div>

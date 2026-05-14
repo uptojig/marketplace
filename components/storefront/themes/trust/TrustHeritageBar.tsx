@@ -28,7 +28,7 @@ const PILLARS: Pillar[] = [
 export function TrustHeritageBar() {
   return (
     <section
-      aria-label="Maison heritage pillars"
+      aria-label="เสาหลักของเมซอน"
       className="border-y"
       style={{
         background: 'var(--shop-muted)',

@@ -53,7 +53,7 @@ export function TrustHero({ storeSlug, storeName, bannerUrl }: TrustHeroProps) {
 
   return (
     <section
-      aria-label="Maison hero"
+      aria-label="ส่วนหัวเมซอน"
       style={{ background: 'var(--shop-bg)' }}
     >
       <div
@@ -202,7 +202,7 @@ export function TrustHero({ storeSlug, storeName, bannerUrl }: TrustHeroProps) {
               >
                 <Image
                   src={bannerUrl}
-                  alt={`${storeName} maison banner`}
+                  alt={`แบนเนอร์เมซอน ${storeName}`}
                   fill
                   sizes="(max-width: 1024px) 0vw, 40vw"
                   className="object-cover"

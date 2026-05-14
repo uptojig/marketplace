@@ -338,7 +338,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
           <nav
             className="mt-16 flex items-center justify-center gap-6 border-t border-dashed pt-6"
             style={{ borderColor: 'var(--shop-accent)' }}
-            aria-label="Pagination"
+            aria-label="แบ่งหน้า"
           >
             {currentPage > 1 ? (
               <Link
