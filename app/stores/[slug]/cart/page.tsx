@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -44,27 +45,27 @@ export default async function StoreCartPage({
   // FB takes precedence — they're disjoint in practice but we pick a
   // consistent winner if a future store row somehow matched multiple.
   const isFB = isFashionBeautyStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
   const isTrust = !isFB && isTrustStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
   const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
   const isLifestyle = !isFB && !isTrust && !isBusinessModel && isLifestyleStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
   const isElectronicsTech = !isFB && !isTrust && !isBusinessModel && !isLifestyle && isElectronicsTechStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
   const isSpecialty = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && isSpecialtyStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
 

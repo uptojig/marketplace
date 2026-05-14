@@ -16,6 +16,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -71,7 +72,7 @@ function wrapInFamilyShell(
   fallbackTitle: string,
 ): ReactNode {
   const familyKey = {
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   };
   if (isFashionBeautyStore(familyKey)) {

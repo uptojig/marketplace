@@ -28,6 +28,7 @@ import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -137,38 +138,38 @@ export default async function StoreOrderSuccess({
 
   const isFB = order.store
     ? isFashionBeautyStore({
-        templateId: order.store.templateId,
+        templateId: effectiveTemplateId(order.store),
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;
   const isTrust = !isFB && order.store
     ? isTrustStore({
-        templateId: order.store.templateId,
+        templateId: effectiveTemplateId(order.store),
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;
   const isBM = !isFB && !isTrust && order.store
     ? isBusinessModelStore({
-        templateId: order.store.templateId,
+        templateId: effectiveTemplateId(order.store),
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;
   const isLifestyle = !isFB && !isTrust && !isBM && order.store
     ? isLifestyleStore({
-        templateId: order.store.templateId,
+        templateId: effectiveTemplateId(order.store),
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;
   const isElectronicsTech = !isFB && !isTrust && !isBM && !isLifestyle && order.store
     ? isElectronicsTechStore({
-        templateId: order.store.templateId,
+        templateId: effectiveTemplateId(order.store),
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;
 
   const isSpecialty = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && order.store
     ? isSpecialtyStore({
-        templateId: order.store.templateId,
+        templateId: effectiveTemplateId(order.store),
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;

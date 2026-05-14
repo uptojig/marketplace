@@ -17,6 +17,7 @@ import {
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 import { HtmlRenderer, isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isValidThemeVariant } from "@/lib/landing/families";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
 import {
@@ -216,8 +217,13 @@ export default async function StorePage({
   // whose templateId is in a known family (lookbook → FB, classic →
   // Trust, wholesale-b2b → BM, etc.) gets the bespoke homepage
   // instead of the generic block-renderer output.
+  // effectiveTemplateId() applies a slug→templateId fallback for
+  // legacy stores whose `templateId` column is null. Without it,
+  // pre-wizard-v2 stores all fall through to the generic grid and
+  // look identical regardless of niche. See lib/landing/legacy-slug-template.ts.
+  const effectiveTpl = effectiveTemplateId(baseStore);
   const familyKey = {
-    templateId: baseStore.templateId,
+    templateId: effectiveTpl,
     landingThemeVariant: baseStore.landingThemeVariant,
   };
   if (isFashionBeautyStore(familyKey)) {
@@ -244,11 +250,8 @@ export default async function StorePage({
   // one of the 20 registry entries. Render via StoreRenderer (block
   // dispatcher + desktop pattern). Legacy stores have templateId = null
   // and fall through to the landingBlocks paths below.
-  if (
-    baseStore.templateId &&
-    baseStore.templateId in STORE_TEMPLATES
-  ) {
-    const template = STORE_TEMPLATES[baseStore.templateId as TemplateId];
+  if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
+    const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
     const store = await mapStoreFromPrisma(baseStore);
     return <StoreRenderer store={store} template={template} />;
   }
