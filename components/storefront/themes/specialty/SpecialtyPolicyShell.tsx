@@ -47,7 +47,7 @@ export interface SpecialtyPolicyShellProps {
 export function SpecialtyPolicyShell({
   slug,
   title,
-  eyebrow = 'from the studio',
+  eyebrow = 'จากสตูดิโอ',
   children,
 }: SpecialtyPolicyShellProps) {
   return (
@@ -61,7 +61,7 @@ export function SpecialtyPolicyShell({
         >
           {/* Stamped curator badge at the top */}
           <div className="flex justify-center">
-            <SpecialtyStamp tone="primary">Stamped</SpecialtyStamp>
+            <SpecialtyStamp tone="primary">ประทับแล้ว</SpecialtyStamp>
           </div>
 
           <header className="mt-6 text-center">
@@ -165,7 +165,7 @@ export function SpecialtyPolicyShell({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            ← back to the studio
+            ← กลับสตูดิโอ
           </Link>
         </div>
       </main>
@@ -185,20 +185,20 @@ export function specialtyPolicyHeading(
 ): { eyebrow: string; title: string } {
   switch (pageSlug) {
     case 'shipping':
-      return { eyebrow: 'from the studio', title: 'How we ship' };
+      return { eyebrow: 'จากสตูดิโอ', title: 'วิธีจัดส่ง' };
     case 'returns':
-      return { eyebrow: 'rework available', title: 'Returns & repairs' };
+      return { eyebrow: 'ซ่อมแซมได้', title: 'การคืนสินค้าและซ่อมแซม' };
     case 'faq':
-      return { eyebrow: 'ask the makers', title: 'Common questions' };
+      return { eyebrow: 'ถามช่างฝีมือ', title: 'คำถามที่พบบ่อย' };
     case 'privacy':
-      return { eyebrow: 'promise to you', title: 'Privacy' };
+      return { eyebrow: 'สัญญากับคุณ', title: 'ความเป็นส่วนตัว' };
     case 'terms':
-      return { eyebrow: 'the agreement', title: 'Terms' };
+      return { eyebrow: 'ข้อตกลง', title: 'เงื่อนไข' };
     case 'about':
-      return { eyebrow: 'the studio', title: 'About our makers' };
+      return { eyebrow: 'สตูดิโอ', title: 'เกี่ยวกับช่างฝีมือของเรา' };
     case 'help':
-      return { eyebrow: "we're here to help", title: 'Help center' };
+      return { eyebrow: 'เราพร้อมช่วย', title: 'ศูนย์ช่วยเหลือ' };
     default:
-      return { eyebrow: 'from the studio', title: fallbackTitle };
+      return { eyebrow: 'จากสตูดิโอ', title: fallbackTitle };
   }
 }

@@ -223,22 +223,22 @@ function InfoColumn({
         <div className="flex flex-wrap items-center gap-2">
           {product.badges.includes('hot') && (
             <Badge className="rounded-full bg-[var(--shop-primary)] hover:bg-[var(--shop-primary)]">
-              Bestseller
+              ขายดี
             </Badge>
           )}
           {product.badges.includes('new') && (
             <Badge variant="outline" className="rounded-full">
-              New In
+              มาใหม่
             </Badge>
           )}
           {product.badges.includes('limited') && (
             <Badge variant="outline" className="rounded-full">
-              Limited
+              จำนวนจำกัด
             </Badge>
           )}
           {product.badges.includes('official') && (
             <Badge variant="outline" className="rounded-full">
-              Official
+              ของแท้
             </Badge>
           )}
         </div>
@@ -258,14 +258,14 @@ function InfoColumn({
             <>
               <span>·</span>
               <Link href="#reviews" className="hover:underline">
-                {product.reviewCount.toLocaleString()} reviews
+                {product.reviewCount.toLocaleString()} รีวิว
               </Link>
             </>
           )}
           {product.soldCount != null && (
             <>
               <span>·</span>
-              <span>{product.soldCount.toLocaleString()} sold</span>
+              <span>ขายแล้ว {product.soldCount.toLocaleString()}</span>
             </>
           )}
         </div>
@@ -450,7 +450,7 @@ function InfoColumn({
                 )}
                 {store.rating != null && store.followers != null && <span>·</span>}
                 {store.followers != null && (
-                  <span>{(store.followers / 1000).toFixed(1)}k followers</span>
+                  <span>ผู้ติดตาม {(store.followers / 1000).toFixed(1)}k</span>
                 )}
               </div>
             )}

@@ -47,9 +47,9 @@ export interface LifestyleCategoryPageProps {
 }
 
 const SORT_OPTIONS: Array<{ key: string; label: string }> = [
-  { key: 'newest', label: 'Newest' },
-  { key: 'price-asc', label: 'Lowest price' },
-  { key: 'price-desc', label: 'Highest price' },
+  { key: 'newest', label: 'ใหม่ล่าสุด' },
+  { key: 'price-asc', label: 'ราคาต่ำ-สูง' },
+  { key: 'price-desc', label: 'ราคาสูง-ต่ำ' },
 ];
 
 export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
@@ -80,13 +80,13 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to store
+            กลับไปที่ร้าน
           </Link>
           <p
             className="mt-6 text-xs font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--shop-accent)' }}
           >
-            Shop the catalog
+            ดูแคตตาล็อก
           </p>
           <div className="mt-2 flex flex-col items-baseline justify-between gap-3 sm:flex-row">
             <h1
@@ -99,13 +99,13 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
                 lineHeight: 1.05,
               }}
             >
-              Everything from {storeName}
+              ของทั้งหมดจาก {storeName}
             </h1>
             <span
               className="text-sm font-semibold"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              {filteredCount.toLocaleString()} good thing{filteredCount === 1 ? '' : 's'}
+              ของดีๆ {filteredCount.toLocaleString()} ชิ้น
             </span>
           </div>
         </header>
@@ -118,12 +118,12 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
               style={{ color: 'var(--shop-ink-muted)' }}
             >
               <ListFilter className="h-3.5 w-3.5" />
-              Filter
+              กรอง
             </span>
             <ChipLink
               href={buildUrl()}
               active={selectedCats.length === 0}
-              label="All"
+              label="ทั้งหมด"
             />
             {categoryNames.map((name) => {
               const active = selectedCats.includes(name);
@@ -141,7 +141,7 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
               <ChipLink
                 href={buildUrl('uncategorized')}
                 active={selectedCats.includes('uncategorized')}
-                label="Other"
+                label="อื่นๆ"
                 count={uncatCount}
               />
             )}
@@ -153,7 +153,7 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
               style={{ color: 'var(--shop-ink-muted)' }}
             >
               <ArrowUpDown className="h-3.5 w-3.5" />
-              Sort
+              เรียง
             </span>
             {SORT_OPTIONS.map((opt) => {
               const active = sortKey === opt.key;
@@ -209,7 +209,7 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
                   }}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Previous
+                  ก่อนหน้า
                 </Link>
               ) : (
                 <span
@@ -220,7 +220,7 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
                   }}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Previous
+                  ก่อนหน้า
                 </span>
               )}
               <span
@@ -231,7 +231,7 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
                   fontFamily: LIFESTYLE_DISPLAY_FONT,
                 }}
               >
-                Page {currentPage} of {totalPages}
+                หน้า {currentPage} จาก {totalPages}
               </span>
               {currentPage < totalPages ? (
                 <Link
@@ -242,7 +242,7 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
                     color: 'var(--shop-ink)',
                   }}
                 >
-                  Next
+                  ถัดไป
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               ) : (
@@ -253,7 +253,7 @@ export function LifestyleCategoryPage(props: LifestyleCategoryPageProps) {
                     color: 'var(--shop-ink-muted)',
                   }}
                 >
-                  Next
+                  ถัดไป
                   <ChevronRight className="h-4 w-4" />
                 </span>
               )}
@@ -334,15 +334,15 @@ function LifestyleEmptyCatalog({
           fontWeight: 600,
         }}
       >
-        Nothing matches yet
+        ยังไม่มีของที่ตรง
       </h2>
       <p
         className="mt-3 text-sm"
         style={{ color: 'var(--shop-ink-muted)' }}
       >
         {hasFilters
-          ? 'Try clearing your filters to browse the full catalog.'
-          : 'Our catalog is being styled — pop back soon for a fresh drop.'}
+          ? 'ลองล้างตัวกรองเพื่อดูแคตตาล็อกทั้งหมด'
+          : 'เรากำลังจัดของใหม่ — แวะมาดูใหม่เร็วๆ นี้นะ'}
       </p>
       {hasFilters ? (
         <Link
@@ -350,7 +350,7 @@ function LifestyleEmptyCatalog({
           className="mt-6 inline-flex h-11 items-center justify-center rounded-full px-7 text-sm font-semibold text-white transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Clear filters
+          ล้างตัวกรอง
         </Link>
       ) : (
         <Link
@@ -358,7 +358,7 @@ function LifestyleEmptyCatalog({
           className="mt-6 inline-flex h-11 items-center justify-center rounded-full px-7 text-sm font-semibold text-white transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Back to store
+          กลับไปที่ร้าน
         </Link>
       )}
     </div>

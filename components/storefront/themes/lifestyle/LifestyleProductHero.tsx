@@ -258,7 +258,7 @@ function InfoColumn({
           fontWeight: 600,
         }}
       >
-        Built for everyday adventures
+        ออกแบบมาเพื่อทุกวัน
       </p>
 
       <h1
@@ -284,7 +284,7 @@ function InfoColumn({
         <div className="flex flex-wrap items-center gap-2">
           {product.badges.includes('hot') && (
             <Badge className="rounded-full bg-[var(--shop-primary)] text-white hover:bg-[var(--shop-primary)]">
-              Favorite
+              ยอดนิยม
             </Badge>
           )}
           {product.badges.includes('new') && (
@@ -293,7 +293,7 @@ function InfoColumn({
               className="rounded-full border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              Just landed
+              ของใหม่
             </Badge>
           )}
           {product.badges.includes('limited') && (
@@ -302,7 +302,7 @@ function InfoColumn({
               className="rounded-full border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              Limited stock
+              จำนวนจำกัด
             </Badge>
           )}
           {product.badges.includes('official') && (
@@ -311,7 +311,7 @@ function InfoColumn({
               className="rounded-full border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              Verified store
+              ร้านยืนยัน
             </Badge>
           )}
         </div>
@@ -331,14 +331,14 @@ function InfoColumn({
             <>
               <span>·</span>
               <Link href="#reviews" className="hover:underline">
-                {product.reviewCount.toLocaleString()} reviews
+                {product.reviewCount.toLocaleString()} รีวิว
               </Link>
             </>
           )}
           {product.soldCount != null && (
             <>
               <span>·</span>
-              <span>{product.soldCount.toLocaleString()} sold</span>
+              <span>ขายแล้ว {product.soldCount.toLocaleString()}</span>
             </>
           )}
         </div>
@@ -367,7 +367,7 @@ function InfoColumn({
                 className="rounded-full bg-[var(--shop-muted)] px-3 py-0.5 text-xs font-semibold"
                 style={{ color: 'var(--shop-ink)' }}
               >
-                Save {discount}%
+                ลด {discount}%
               </span>
             </>
           )}
@@ -530,22 +530,22 @@ function InfoColumn({
             fontWeight: 600,
           }}
         >
-          Why you&apos;ll love it
+          ทำไมคุณถึงจะรักของชิ้นนี้
         </p>
         <ul className="space-y-2.5">
           <BenefitRow
             icon={<Leaf className="h-4 w-4" />}
-            title="Built to last"
+            title="ใช้ได้นาน"
             tagline="ออกแบบมาให้ใช้งานได้ทนนาน"
           />
           <BenefitRow
             icon={<Heart className="h-4 w-4" />}
-            title="Loved by families"
+            title="ครอบครัวชื่นชอบ"
             tagline="แบบที่ครอบครัวเลือกใช้จริง"
           />
           <BenefitRow
             icon={<ShieldCheck className="h-4 w-4" />}
-            title="Trusted quality"
+            title="คุณภาพไว้ใจได้"
             tagline="คุณภาพที่เราการันตี"
           />
         </ul>
@@ -579,7 +579,7 @@ function InfoColumn({
               className="text-xs"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Trusted by our community
+              ชุมชนเราไว้ใจ
             </div>
           </div>
           <Button

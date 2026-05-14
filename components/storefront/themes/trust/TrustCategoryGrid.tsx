@@ -103,7 +103,7 @@ export function TrustCategoryGrid({
                       letterSpacing: '0.22em',
                     }}
                   >
-                    SAVE {discount}%
+                    ลด {discount}%
                   </span>
                 )}
               </div>

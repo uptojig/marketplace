@@ -20,15 +20,15 @@ interface Pillar {
 }
 
 const PILLARS: Pillar[] = [
-  { caps: 'Authentic', descriptor: '100% genuine' },
-  { caps: 'Atelier', descriptor: 'Handcrafted detail' },
-  { caps: 'Archival', descriptor: 'Seasonal collection' },
+  { caps: 'ของแท้', descriptor: 'รับประกันของแท้ 100%' },
+  { caps: 'อาตเลียร์', descriptor: 'งานหัตถกรรมพิถีพิถัน' },
+  { caps: 'คลาสสิก', descriptor: 'คอลเลกชันตามฤดูกาล' },
 ];
 
 export function TrustHeritageBar() {
   return (
     <section
-      aria-label="Maison heritage pillars"
+      aria-label="เสาหลักของเมซอน"
       className="border-y"
       style={{
         background: 'var(--shop-muted)',
@@ -84,7 +84,7 @@ export function TrustHeritageBar() {
                   letterSpacing: '0.22em',
                 }}
               >
-                {`No. 0${i + 1}`}
+                {`ลำดับ 0${i + 1}`}
               </p>
             </li>
           ))}

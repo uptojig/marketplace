@@ -97,7 +97,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
             }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Return to the Maison
+            กลับสู่เมซอน
           </Link>
 
           <p
@@ -108,7 +108,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
               fontWeight: 600,
             }}
           >
-            Maison · Your Order Book
+            เมซอน · สมุดคำสั่งซื้อ
           </p>
 
           {/* Title cartouche — squared frame, gold trim. */}
@@ -126,7 +126,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                 lineHeight: 1.05,
               }}
             >
-              The Shopping Bag
+              ตะกร้าสินค้า
             </h1>
           </div>
 
@@ -139,8 +139,8 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
             }}
           >
             {lines.length === 0
-              ? `Your order book is empty. Browse the latest collection from ${store.name}.`
-              : `${itemCount.toLocaleString()} item${itemCount === 1 ? '' : 's'} entered into the order book — please review before despatch.`}
+              ? `สมุดคำสั่งซื้อของคุณว่างเปล่า ดูคอลเลกชันล่าสุดจาก ${store.name}`
+              : `${itemCount.toLocaleString()} รายการบันทึกในสมุดคำสั่งซื้อ — กรุณาตรวจสอบก่อนจัดส่ง`}
           </p>
         </header>
 
@@ -165,9 +165,9 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                   fontWeight: 600,
                 }}
               >
-                <span>Article</span>
-                <span className="text-center">Quantity</span>
-                <span className="text-right">Total</span>
+                <span>รายการสินค้า</span>
+                <span className="text-center">จำนวน</span>
+                <span className="text-right">รวม</span>
                 <span />
               </div>
 
@@ -226,7 +226,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         className="mt-2 text-sm"
                         style={{ color: 'var(--shop-ink-muted)' }}
                       >
-                        Unit · {formatTHB(l.priceTHB)}
+                        ราคาต่อชิ้น · {formatTHB(l.priceTHB)}
                       </p>
 
                       {/* Mobile: qty + total stack inside the body
@@ -257,7 +257,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         }}
                         aria-label={`ลบ ${l.title}`}
                       >
-                        Remove from order
+                        ลบออกจากคำสั่งซื้อ
                       </button>
                     </div>
 
@@ -291,7 +291,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         }}
                         aria-label={`ลบ ${l.title}`}
                       >
-                        Remove
+                        ลบ
                       </button>
                     </div>
                   </li>
@@ -315,11 +315,11 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                     fontWeight: 600,
                   }}
                 >
-                  [ Add{' '}
+                  [ เพิ่มอีก{' '}
                   <span style={{ color: 'var(--shop-ink)' }}>
                     {formatTHB(remainingForFreeShipping)}
                   </span>{' '}
-                  more for complimentary despatch ]
+                  เพื่อรับสิทธิ์จัดส่งฟรี ]
                 </p>
               )}
             </section>
@@ -346,7 +346,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                     fontWeight: 600,
                   }}
                 >
-                  Order Summary
+                  สรุปคำสั่งซื้อ
                 </p>
                 <h3
                   className="mt-2 text-2xl"
@@ -356,7 +356,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                     fontWeight: 600,
                   }}
                 >
-                  Statement of Account
+                  รายการชำระเงิน
                 </h3>
 
                 <div
@@ -376,7 +376,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         fontSize: '11px',
                       }}
                     >
-                      Subtotal
+                      ยอดรวมย่อย
                     </dt>
                     <dd
                       className="font-semibold tabular-nums"
@@ -395,7 +395,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         fontSize: '11px',
                       }}
                     >
-                      Despatch
+                      ค่าจัดส่ง
                     </dt>
                     <dd
                       className="font-semibold tabular-nums"
@@ -404,7 +404,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                           shipping === 0 ? 'var(--shop-accent)' : 'var(--shop-ink)',
                       }}
                     >
-                      {shipping === 0 ? 'Complimentary' : formatTHB(shipping)}
+                      {shipping === 0 ? 'ฟรี' : formatTHB(shipping)}
                     </dd>
                   </div>
                   <div
@@ -420,7 +420,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         fontSize: '12px',
                       }}
                     >
-                      Total Due
+                      ยอดชำระทั้งหมด
                     </dt>
                     <dd
                       className="text-2xl font-semibold tabular-nums"
@@ -442,7 +442,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                     letterSpacing: '0.28em',
                   }}
                 >
-                  Proceed to Checkout
+                  ดำเนินการชำระเงิน
                 </Link>
 
                 <p
@@ -454,7 +454,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                   }}
                 >
                   <ShieldCheck className="h-3 w-3" />
-                  Secure Checkout · Basketplace
+                  ชำระเงินปลอดภัย · Basketplace
                 </p>
               </div>
 
@@ -478,7 +478,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 600,
                       }}
                     >
-                      Complimentary Despatch
+                      จัดส่งฟรี
                     </div>
                     <div
                       className="mt-1 text-sm"
@@ -487,7 +487,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 500,
                       }}
                     >
-                      On orders above {formatTHB(FREE_SHIPPING_THRESHOLD)}
+                      เมื่อสั่งซื้อตั้งแต่ {formatTHB(FREE_SHIPPING_THRESHOLD)} ขึ้นไป
                     </div>
                   </div>
                 </li>
@@ -505,7 +505,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 600,
                       }}
                     >
-                      Returns Accepted
+                      รับคืนสินค้า
                     </div>
                     <div
                       className="mt-1 text-sm"
@@ -514,7 +514,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 500,
                       }}
                     >
-                      Within seven days of delivery
+                      ภายใน 7 วันหลังรับสินค้า
                     </div>
                   </div>
                 </li>
@@ -614,7 +614,7 @@ function TrustEmptyCart({ storeSlug }: { storeSlug: string }) {
           fontWeight: 600,
         }}
       >
-        Order Book · Empty
+        สมุดคำสั่งซื้อ · ว่างเปล่า
       </p>
       <h2
         className="mt-3 text-3xl sm:text-4xl"
@@ -625,7 +625,7 @@ function TrustEmptyCart({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '-0.01em',
         }}
       >
-        Your shopping bag awaits
+        ตะกร้าสินค้าของคุณ
       </h2>
       <div
         aria-hidden
@@ -640,7 +640,7 @@ function TrustEmptyCart({ storeSlug }: { storeSlug: string }) {
           fontWeight: 500,
         }}
       >
-        Browse the latest pieces from the maison and enter them into your order book.
+        เลือกชมสินค้าล่าสุดจากเมซอนและเพิ่มลงในสมุดคำสั่งซื้อของคุณ
       </p>
       <Link
         href={`/stores/${storeSlug}/category`}
@@ -650,7 +650,7 @@ function TrustEmptyCart({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '0.28em',
         }}
       >
-        Browse the Collection
+        ดูคอลเลกชัน
       </Link>
     </div>
   );

@@ -28,11 +28,11 @@ export interface TrustCheckoutHeaderProps {
 }
 
 export function TrustCheckoutHeader({ step }: TrustCheckoutHeaderProps) {
-  const title = step === 1 ? 'Order Details' : 'Confirm Your Order';
+  const title = step === 1 ? 'ที่อยู่จัดส่ง' : 'ยืนยันคำสั่งซื้อ';
   const descriptor =
     step === 1
-      ? 'Provide your shipping address — we will dispatch with care.'
-      : 'Review the details and complete your order.';
+      ? 'กรุณาระบุที่อยู่จัดส่ง — เราจะจัดส่งให้คุณอย่างพิถีพิถัน'
+      : 'ตรวจสอบรายละเอียดและยืนยันคำสั่งซื้อของคุณ';
 
   return (
     <div style={{ background: 'var(--shop-bg)' }}>
@@ -46,7 +46,7 @@ export function TrustCheckoutHeader({ step }: TrustCheckoutHeaderProps) {
               fontWeight: 600,
             }}
           >
-            Maison · Checkout · Step {step} of 2
+            เมซอน · ชำระเงิน · ขั้นตอนที่ {step} จาก 2
           </p>
           <h1
             className="mt-4 text-4xl sm:text-5xl"

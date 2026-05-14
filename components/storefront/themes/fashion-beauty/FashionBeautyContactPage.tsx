@@ -62,7 +62,7 @@ export function FashionBeautyContactPage({
             className="text-[11px] uppercase tracking-[0.28em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Get in touch
+            ติดต่อเรา
           </p>
           <h1
             className="mt-3 text-5xl sm:text-6xl"
@@ -74,7 +74,7 @@ export function FashionBeautyContactPage({
               lineHeight: 1.05,
             }}
           >
-            Say hello to our team
+            ส่งข้อความถึงเรา
           </h1>
           <div
             aria-hidden
@@ -89,7 +89,7 @@ export function FashionBeautyContactPage({
             }}
           >
             {tagline ||
-              `Whether you have a styling question, want help finding the right size, or just want to chat about the next collection — we're here. ${storeName} reads every message.`}
+              `ไม่ว่าจะมีคำถามเรื่องการแต่งตัว ต้องการความช่วยเหลือเลือกไซซ์ หรืออยากพูดคุยเกี่ยวกับคอลเลกชันถัดไป — เรายินดีรับฟัง ${storeName} อ่านทุกข้อความที่ส่งมา`}
           </p>
         </header>
 
@@ -116,7 +116,7 @@ export function FashionBeautyContactPage({
                 fontWeight: 500,
               }}
             >
-              Visit the boutique
+              แวะมาที่บูทีค
             </h2>
           </div>
 
@@ -126,7 +126,7 @@ export function FashionBeautyContactPage({
                 className="text-[11px] uppercase tracking-[0.22em]"
                 style={{ color: 'var(--shop-ink-muted)' }}
               >
-                Address
+                ที่อยู่
               </p>
               {addressLines.length > 0 ? (
                 <div
@@ -145,7 +145,7 @@ export function FashionBeautyContactPage({
                     color: 'var(--shop-ink-muted)',
                   }}
                 >
-                  Address will appear soon.
+                  ที่อยู่จะปรากฏเร็วๆ นี้
                 </p>
               )}
             </div>
@@ -155,7 +155,7 @@ export function FashionBeautyContactPage({
                 className="text-[11px] uppercase tracking-[0.22em]"
                 style={{ color: 'var(--shop-ink-muted)' }}
               >
-                Direct
+                ช่องทางติดต่อ
               </p>
               <div className="mt-2">
                 <StoreContactRows store={store} />
@@ -169,7 +169,7 @@ export function FashionBeautyContactPage({
                 className="mb-3 text-[11px] uppercase tracking-[0.22em]"
                 style={{ color: 'var(--shop-ink-muted)' }}
               >
-                Follow the boutique
+                ติดตามบูทีค
               </p>
               <StoreSocialIcons store={store} />
             </div>
@@ -185,7 +185,7 @@ export function FashionBeautyContactPage({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            ← Back to the boutique
+            ← กลับสู่บูทีค
           </Link>
         </div>
       </main>

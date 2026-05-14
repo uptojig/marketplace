@@ -198,7 +198,7 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
           }}
         >
           <Zap className="h-3 w-3" style={{ color: 'var(--shop-primary)' }} />
-          1Y Warranty
+          ประกัน 1 ปี
         </span>
         <span
           className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] uppercase"
@@ -211,7 +211,7 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
           }}
         >
           <Truck className="h-3 w-3" style={{ color: 'var(--shop-primary)' }} />
-          Ships from TH
+          จัดส่งจากไทย
         </span>
         <span
           className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] uppercase"
@@ -227,7 +227,7 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
             className="h-3 w-3"
             style={{ color: 'var(--shop-primary)' }}
           />
-          Authentic
+          ของแท้
         </span>
       </div>
 
@@ -353,7 +353,7 @@ function InfoColumn({
         <div className="flex flex-wrap items-center gap-2">
           {product.badges.includes('hot') && (
             <Badge className="rounded-md bg-[var(--shop-primary)] text-white hover:bg-[var(--shop-primary)]">
-              BESTSELLER
+              ขายดี
             </Badge>
           )}
           {product.badges.includes('new') && (
@@ -362,7 +362,7 @@ function InfoColumn({
               className="rounded-md border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-accent)' }}
             >
-              NEW
+              ใหม่
             </Badge>
           )}
           {product.badges.includes('limited') && (
@@ -371,7 +371,7 @@ function InfoColumn({
               className="rounded-md border-[var(--shop-primary)]"
               style={{ color: 'var(--shop-primary)' }}
             >
-              LIMITED
+              จำนวนจำกัด
             </Badge>
           )}
           {product.badges.includes('official') && (
@@ -380,7 +380,7 @@ function InfoColumn({
               className="rounded-md border-[var(--shop-primary)]"
               style={{ color: 'var(--shop-primary)' }}
             >
-              OFFICIAL
+              ทางการ
             </Badge>
           )}
         </div>
@@ -405,14 +405,14 @@ function InfoColumn({
             <>
               <span>·</span>
               <Link href="#reviews" className="hover:underline">
-                {product.reviewCount.toLocaleString()} reviews
+                {product.reviewCount.toLocaleString()} รีวิว
               </Link>
             </>
           )}
           {product.soldCount != null && (
             <>
               <span>·</span>
-              <span>{product.soldCount.toLocaleString()} sold</span>
+              <span>ขายแล้ว {product.soldCount.toLocaleString()} ชิ้น</span>
             </>
           )}
         </div>
@@ -473,7 +473,7 @@ function InfoColumn({
             style={{ letterSpacing: '0.14em' }}
           >
             <CheckCircle2 className="h-3.5 w-3.5" />
-            In stock — ships today
+            มีสินค้า — จัดส่งวันนี้
           </span>
         ) : (
           <span
@@ -485,7 +485,7 @@ function InfoColumn({
               fontFamily: TECH_MONO_FONT,
             }}
           >
-            Out of stock
+            สินค้าหมด
           </span>
         )}
         {stockLeft != null && stockLeft > 0 && stockLeft < 10 && (
@@ -499,7 +499,7 @@ function InfoColumn({
               fontWeight: 600,
             }}
           >
-            {stockLeft} units left
+            เหลือ {stockLeft} ชิ้น
           </span>
         )}
       </div>
@@ -523,15 +523,15 @@ function InfoColumn({
             background: 'var(--shop-muted)',
           }}
         >
-          Specifications
+          ข้อมูลจำเพาะ
         </div>
         <dl className="divide-y" style={{ borderColor: 'var(--shop-border)' }}>
-          <SpecRow label="Brand" value={store.name} />
-          <SpecRow label="Model" value={model} mono row />
+          <SpecRow label="แบรนด์" value={store.name} />
+          <SpecRow label="รุ่น" value={model} mono row />
           <SpecRow label="SKU" value={sku} mono />
           <SpecRow
-            label="Availability"
-            value={outOfStock ? 'Out of stock' : 'In stock'}
+            label="สถานะสินค้า"
+            value={outOfStock ? 'สินค้าหมด' : 'มีสินค้า'}
             row
           />
         </dl>
@@ -549,7 +549,7 @@ function InfoColumn({
               fontWeight: 600,
             }}
           >
-            Option:{' '}
+            ตัวเลือก:{' '}
             <span style={{ color: 'var(--shop-ink)' }}>
               {selectedVariant ? variantLabel(selectedVariant.attributes) : '—'}
             </span>
@@ -591,7 +591,7 @@ function InfoColumn({
             fontWeight: 600,
           }}
         >
-          Qty
+          จำนวน
         </span>
         <div
           className="inline-flex h-9 items-center overflow-hidden rounded-md border bg-white"
@@ -621,7 +621,7 @@ function InfoColumn({
               fontFamily: TECH_MONO_FONT,
               fontWeight: 600,
             }}
-            aria-label="Qty"
+            aria-label="จำนวน"
           />
           <Button
             type="button"
@@ -705,7 +705,7 @@ function InfoColumn({
               fontWeight: 600,
             }}
           >
-            Warranty
+            การรับประกัน
           </div>
           <div
             className="mt-1 text-sm font-semibold"
@@ -725,7 +725,7 @@ function InfoColumn({
               fontWeight: 600,
             }}
           >
-            Ships
+            จัดส่ง
           </div>
           <div
             className="mt-1 text-sm font-semibold"
@@ -745,7 +745,7 @@ function InfoColumn({
               fontWeight: 600,
             }}
           >
-            Return
+            คืนสินค้า
           </div>
           <div
             className="mt-1 text-sm font-semibold"
@@ -792,7 +792,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Authorized · Authentic
+              ตัวแทนจำหน่าย · ของแท้
             </div>
           </div>
           <Button
@@ -801,7 +801,7 @@ function InfoColumn({
             asChild
             className="rounded-md border-[var(--shop-primary)] text-[var(--shop-primary)]"
           >
-            <Link href={storeHref(store.slug)}>View store</Link>
+            <Link href={storeHref(store.slug)}>ดูร้านค้า</Link>
           </Button>
         </div>
       </Card>

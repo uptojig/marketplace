@@ -56,7 +56,7 @@ export function FashionBeautyRelatedProducts({
           className="text-[11px] uppercase tracking-[0.28em]"
           style={{ color: 'var(--shop-ink-muted)' }}
         >
-          From the editor
+          จากบรรณาธิการ
         </p>
         <h2
           className="mt-2 text-3xl sm:text-4xl"
@@ -68,7 +68,7 @@ export function FashionBeautyRelatedProducts({
             lineHeight: 1.1,
           }}
         >
-          You may also love
+          คุณอาจชื่นชอบ
         </h2>
         <p
           className="mt-3 text-base italic"
@@ -77,7 +77,7 @@ export function FashionBeautyRelatedProducts({
             color: 'var(--shop-ink-muted)',
           }}
         >
-          Pieces curated to pair with this look
+          ชิ้นงานคัดสรรเพื่อจับคู่กับลุคนี้
         </p>
         <div
           aria-hidden
@@ -157,7 +157,7 @@ export function FashionBeautyRelatedProducts({
                     color: 'var(--shop-ink-muted)',
                   }}
                 >
-                  from {storeName}
+                  จาก {storeName}
                 </p>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span

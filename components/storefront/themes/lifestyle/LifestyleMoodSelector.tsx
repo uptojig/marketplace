@@ -43,9 +43,9 @@ interface MoodCard {
 const MOODS: MoodCard[] = [
   {
     key: 'home',
-    eyebrow: 'For your home',
-    title: 'Soft, slow living',
-    body: 'Pieces that warm a room and quiet the day.',
+    eyebrow: 'สำหรับบ้านคุณ',
+    title: 'อยู่อย่างสบายๆ',
+    body: 'ของที่ทำให้ห้องอุ่นขึ้น และวันก็เนิบช้าลง',
     // Soft sage tinted card — uses --shop-accent at low opacity layered
     // over white so it stays readable in any palette remap.
     background:
@@ -54,9 +54,9 @@ const MOODS: MoodCard[] = [
   },
   {
     key: 'self',
-    eyebrow: 'For yourself',
-    title: 'Everyday rituals',
-    body: 'Small comforts that fit how you live now.',
+    eyebrow: 'สำหรับตัวคุณเอง',
+    title: 'ความสุขประจำวัน',
+    body: 'ของเล็กๆ ที่เข้ากับวิถีชีวิตคุณตอนนี้',
     // Soft terracotta tinted card.
     background:
       'linear-gradient(135deg, rgba(234, 88, 12, 0.14) 0%, rgba(234, 88, 12, 0.04) 100%), #ffffff',
@@ -64,9 +64,9 @@ const MOODS: MoodCard[] = [
   },
   {
     key: 'gift',
-    eyebrow: 'For a gift',
-    title: 'Easy to love',
-    body: 'Hand-picked finds that always land well.',
+    eyebrow: 'สำหรับเป็นของขวัญ',
+    title: 'ง่ายที่จะรัก',
+    body: 'ของที่คัดมาให้ ส่งให้ใครก็โดนใจ',
     // Soft mauve tinted card — sits between sage + terracotta visually
     // without competing with either accent.
     background:
@@ -94,7 +94,7 @@ export function LifestyleMoodSelector({ storeSlug }: LifestyleMoodSelectorProps)
             className="text-xs font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--shop-accent)' }}
           >
-            Pick a mood · Browse by feeling
+            เลือกอารมณ์ · ดูตามความรู้สึก
           </p>
           <h2
             className="mx-auto mt-3 max-w-2xl text-3xl sm:text-4xl md:text-5xl"
@@ -106,7 +106,7 @@ export function LifestyleMoodSelector({ storeSlug }: LifestyleMoodSelectorProps)
               lineHeight: 1.1,
             }}
           >
-            Shop the way you live
+            เลือกซื้อตามไลฟ์สไตล์
           </h2>
         </div>
 
@@ -185,7 +185,7 @@ function MoodCardLink({
           className="mt-6 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] transition group-hover:gap-2.5"
           style={{ color: 'var(--shop-accent)' }}
         >
-          Shop the mood
+          เลือกตามอารมณ์
           <ArrowRight className="h-3.5 w-3.5" />
         </span>
       </article>

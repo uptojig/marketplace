@@ -67,7 +67,7 @@ export function TrustContactPage({
               fontWeight: 600,
             }}
           >
-            Maison · Correspondence
+            เมซอน · จดหมายติดต่อ
           </p>
 
           {/* Title cartouche — gold-rule top + bottom. */}
@@ -85,7 +85,7 @@ export function TrustContactPage({
                 lineHeight: 1.05,
               }}
             >
-              At Your Service
+              พร้อมให้บริการคุณ
             </h1>
           </div>
 
@@ -98,7 +98,7 @@ export function TrustContactPage({
             }}
           >
             {tagline ||
-              `Address all enquiries to the maison. ${storeName} answers each correspondence personally — sizing, bespoke commissions, the next collection.`}
+              `ติดต่อสอบถามทุกข้อสงสัยมาที่เมซอน ${storeName} ตอบทุกข้อความด้วยตนเอง — เรื่องไซส์ การสั่งทำพิเศษ และคอลเลกชันถัดไป`}
           </p>
         </header>
 
@@ -112,7 +112,7 @@ export function TrustContactPage({
               fontWeight: 600,
             }}
           >
-            Despatch Your Letter
+            ส่งข้อความถึงเรา
           </p>
           <div
             className="rounded-sm border-2 bg-white p-1"
@@ -139,7 +139,7 @@ export function TrustContactPage({
                 fontWeight: 600,
               }}
             >
-              Visit the Maison
+              เยี่ยมชมเมซอน
             </p>
           </div>
 
@@ -152,7 +152,7 @@ export function TrustContactPage({
               letterSpacing: '-0.01em',
             }}
           >
-            House Particulars
+            ข้อมูลเมซอน
           </h2>
 
           <div
@@ -171,7 +171,7 @@ export function TrustContactPage({
                   fontWeight: 600,
                 }}
               >
-                Address
+                ที่อยู่
               </p>
               {addressLines.length > 0 ? (
                 <div
@@ -195,7 +195,7 @@ export function TrustContactPage({
                     fontWeight: 500,
                   }}
                 >
-                  Address to be inscribed shortly.
+                  จะแจ้งที่อยู่ในเร็ว ๆ นี้
                 </p>
               )}
             </div>
@@ -209,7 +209,7 @@ export function TrustContactPage({
                   fontWeight: 600,
                 }}
               >
-                Direct Lines
+                ช่องทางติดต่อ
               </p>
               <div className="mt-3">
                 <StoreContactRows store={store} />
@@ -230,7 +230,7 @@ export function TrustContactPage({
                   fontWeight: 600,
                 }}
               >
-                Follow the House
+                ติดตามเมซอน
               </p>
               <div className="flex justify-center">
                 <StoreSocialIcons store={store} />
@@ -249,7 +249,7 @@ export function TrustContactPage({
               fontWeight: 600,
             }}
           >
-            Return to the Maison
+            กลับสู่เมซอน
           </Link>
         </div>
       </main>

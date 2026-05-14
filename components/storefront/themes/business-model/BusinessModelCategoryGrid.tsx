@@ -109,7 +109,7 @@ export function BusinessModelCategoryGrid({
                       letterSpacing: '0.12em',
                     }}
                   >
-                    FLASH
+                    ดีลด่วน
                   </span>
                 )}
                 {lowStock && (

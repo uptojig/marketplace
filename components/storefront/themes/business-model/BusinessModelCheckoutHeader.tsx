@@ -37,11 +37,11 @@ export interface BusinessModelCheckoutHeaderProps {
 export function BusinessModelCheckoutHeader({
   step,
 }: BusinessModelCheckoutHeaderProps): JSX.Element {
-  const title = step === 1 ? 'Shipping Details' : 'Confirm Bulk Order';
+  const title = step === 1 ? 'ที่อยู่จัดส่ง' : 'ยืนยันคำสั่งซื้อจำนวนมาก';
   const subtitle =
     step === 1
-      ? 'Provide delivery address for the order.'
-      : 'Review the order before submission.';
+      ? 'ระบุที่อยู่จัดส่งสำหรับคำสั่งซื้อนี้'
+      : 'ตรวจสอบคำสั่งซื้อก่อนยืนยัน';
 
   return (
     <div style={{ background: 'var(--shop-bg)' }}>
@@ -54,11 +54,11 @@ export function BusinessModelCheckoutHeader({
               letterSpacing: '0.12em',
             }}
           >
-            <span>ORDER LEDGER</span>
+            <span>คำสั่งซื้อ</span>
             <span aria-hidden style={{ color: 'var(--shop-border)' }}>
               {' · '}
             </span>
-            <span>STEP </span>
+            <span>ขั้นตอน </span>
             <span
               data-bm-mono="true"
               style={{

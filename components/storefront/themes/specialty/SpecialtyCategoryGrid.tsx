@@ -42,14 +42,14 @@ export interface SpecialtyCategoryProduct {
  * gets the same tag — no hydration flicker.
  */
 const ORIGIN_HINTS = [
-  'Made in Chiang Mai',
-  'Made in Bangkok',
-  'Made in Lampang',
-  'Hand-stitched',
-  'Hand-thrown',
-  'Hand-dyed',
-  'Studio piece',
-  'One-of-a-kind',
+  'ทำที่เชียงใหม่',
+  'ทำที่กรุงเทพ',
+  'ทำที่ลำปาง',
+  'เย็บด้วยมือ',
+  'ปั้นด้วยมือ',
+  'ย้อมด้วยมือ',
+  'งานสตูดิโอ',
+  'ชิ้นเดียวในโลก',
 ];
 
 function hintFor(id: string): string {

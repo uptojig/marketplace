@@ -66,7 +66,7 @@ export function BusinessModelRelatedProducts({
     <section
       className="my-12 rounded-md border bg-white p-6 sm:p-8"
       style={{ borderColor: 'var(--shop-border)' }}
-      aria-label={`Related deals from ${storeName}`}
+      aria-label={`ดีลที่เกี่ยวข้องจาก ${storeName}`}
     >
       {/* Dashboard header — eyebrow + bold sans h2 + row-count chip */}
       <header className="mb-6 sm:mb-8">
@@ -78,7 +78,7 @@ export function BusinessModelRelatedProducts({
               letterSpacing: '0.12em',
             }}
           >
-            <span>Deal dashboard</span>
+            <span>ดีลที่กำลังจะหมดเวลา</span>
             <span aria-hidden style={{ margin: '0 0.45em', opacity: 0.6 }}>
               ·
             </span>
@@ -90,7 +90,7 @@ export function BusinessModelRelatedProducts({
                 letterSpacing: '0.16em',
               }}
             >
-              RELATED
+              ที่เกี่ยวข้อง
             </span>
           </p>
           <span
@@ -101,7 +101,7 @@ export function BusinessModelRelatedProducts({
               background: 'var(--shop-muted)',
             }}
           >
-            <span className="uppercase tracking-[0.12em]">Rows</span>
+            <span className="uppercase tracking-[0.12em]">รายการ</span>
             <span
               data-bm-mono="true"
               style={{
@@ -132,7 +132,7 @@ export function BusinessModelRelatedProducts({
             lineHeight: 1.1,
           }}
         >
-          Related deals
+          ดีลที่เกี่ยวข้อง
         </h2>
         <p
           className="mt-2 text-sm"
@@ -141,8 +141,7 @@ export function BusinessModelRelatedProducts({
             fontFamily: BM_HEADING_FONT,
           }}
         >
-          More live SKUs from {storeName} — same deal terms, same wholesale
-          pricing.
+          SKU ที่ยังมีให้สั่งซื้อจาก {storeName} — เงื่อนไขดีลเดียวกัน ราคาขายส่งเดียวกัน
         </p>
       </header>
 
@@ -215,7 +214,7 @@ export function BusinessModelRelatedProducts({
                         letterSpacing: '0.12em',
                       }}
                     >
-                      FLASH
+                      ดีลด่วน
                     </span>
                   )}
                 </div>
@@ -276,7 +275,7 @@ export function BusinessModelRelatedProducts({
                         letterSpacing: '0.06em',
                       }}
                     >
-                      Save {discount}%
+                      ประหยัด {discount}%
                     </span>
                   )}
                 </div>
@@ -300,7 +299,7 @@ export function BusinessModelRelatedProducts({
             letterSpacing: '0.12em',
           }}
         >
-          Same deal terms · daily refresh
+          เงื่อนไขดีลเดียวกัน · รีเซ็ตทุกวัน
         </p>
         <Link
           href={`/stores/${storeSlug}/category`}
@@ -310,7 +309,7 @@ export function BusinessModelRelatedProducts({
             color: 'var(--shop-ink)',
           }}
         >
-          View full catalog
+          ดูแคตตาล็อกทั้งหมด
         </Link>
       </div>
     </section>

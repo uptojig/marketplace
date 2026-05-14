@@ -43,7 +43,7 @@ export interface LifestylePolicyShellProps {
 export function LifestylePolicyShell({
   slug,
   title,
-  eyebrow = 'Good to know',
+  eyebrow = 'ดีที่ต้องรู้',
   children,
 }: LifestylePolicyShellProps) {
   return (
@@ -140,7 +140,7 @@ export function LifestylePolicyShell({
               color: 'var(--shop-ink)',
             }}
           >
-            Back to the catalog
+            กลับไปที่แคตตาล็อก
           </Link>
         </div>
       </main>
@@ -159,20 +159,20 @@ export function lifestylePolicyHeading(
 ): { eyebrow: string; title: string } {
   switch (pageSlug) {
     case 'shipping':
-      return { eyebrow: 'Good to know', title: 'How we ship' };
+      return { eyebrow: 'ดีที่ต้องรู้', title: 'วิธีการจัดส่ง' };
     case 'returns':
-      return { eyebrow: 'Good to know', title: 'Returns made easy' };
+      return { eyebrow: 'ดีที่ต้องรู้', title: 'คืนสินค้าง่ายๆ' };
     case 'faq':
-      return { eyebrow: 'Curious?', title: 'Common questions' };
+      return { eyebrow: 'อยากรู้?', title: 'คำถามที่พบบ่อย' };
     case 'privacy':
-      return { eyebrow: 'Heads up', title: 'Privacy' };
+      return { eyebrow: 'แจ้งให้ทราบ', title: 'ความเป็นส่วนตัว' };
     case 'terms':
-      return { eyebrow: 'Heads up', title: 'Terms' };
+      return { eyebrow: 'แจ้งให้ทราบ', title: 'เงื่อนไขการใช้งาน' };
     case 'about':
-      return { eyebrow: 'About us', title: 'Our story' };
+      return { eyebrow: 'เกี่ยวกับเรา', title: 'เรื่องของเรา' };
     case 'help':
-      return { eyebrow: "We're here", title: 'Help center' };
+      return { eyebrow: 'เราพร้อมช่วย', title: 'ศูนย์ช่วยเหลือ' };
     default:
-      return { eyebrow: 'Good to know', title: fallbackTitle };
+      return { eyebrow: 'ดีที่ต้องรู้', title: fallbackTitle };
   }
 }

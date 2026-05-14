@@ -114,7 +114,7 @@ export function ElectronicsTechOrderSuccessPage({
               fontWeight: 700,
             }}
           >
-            ORDER #{shortCode} CONFIRMED
+            คำสั่งซื้อ #{shortCode} ยืนยันแล้ว
           </p>
 
           <h1
@@ -127,7 +127,7 @@ export function ElectronicsTechOrderSuccessPage({
               lineHeight: 1.1,
             }}
           >
-            Thanks — your order is in
+            ขอบคุณ — เราได้รับคำสั่งซื้อแล้ว
           </h1>
 
           <p
@@ -137,10 +137,10 @@ export function ElectronicsTechOrderSuccessPage({
               fontFamily: TECH_DISPLAY_FONT,
             }}
           >
-            We&rsquo;ve logged your order with {storeName}
+            เราได้บันทึกคำสั่งซื้อของคุณกับ {storeName} แล้ว
             {buyerEmail ? (
               <>
-                . A confirmation has been sent to{' '}
+                {' '}อีเมลยืนยันถูกส่งไปยัง{' '}
                 <span
                   data-tech-mono="true"
                   style={{
@@ -175,7 +175,7 @@ export function ElectronicsTechOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              Estimated Delivery
+              วันที่คาดว่าจะได้รับ
             </p>
             <p
               data-tech-mono="true"
@@ -202,7 +202,7 @@ export function ElectronicsTechOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              Status
+              สถานะ
             </p>
             <p
               data-tech-mono="true"
@@ -232,7 +232,7 @@ export function ElectronicsTechOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              SHIPMENT MANIFEST
+              รายการจัดส่ง
             </p>
             <p
               data-tech-mono="true"
@@ -244,7 +244,7 @@ export function ElectronicsTechOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              {items.length} ITEM{items.length === 1 ? '' : 'S'}
+              {items.length} ชิ้น
             </p>
           </div>
 
@@ -317,7 +317,7 @@ export function ElectronicsTechOrderSuccessPage({
                         fontWeight: 600,
                       }}
                     >
-                      QTY · {it.qty}
+                      จำนวน · {it.qty}
                     </span>
                   </div>
                 </div>
@@ -353,7 +353,7 @@ export function ElectronicsTechOrderSuccessPage({
                 fontWeight: 700,
               }}
             >
-              Total
+              ยอดรวม
             </span>
             <span
               data-tech-mono="true"
@@ -382,7 +382,7 @@ export function ElectronicsTechOrderSuccessPage({
               letterSpacing: '0.08em',
             }}
           >
-            Track shipment
+            ติดตามการจัดส่ง
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
@@ -395,7 +395,7 @@ export function ElectronicsTechOrderSuccessPage({
               letterSpacing: '0.08em',
             }}
           >
-            Continue shopping
+            เลือกซื้อต่อ
           </Link>
         </div>
 
@@ -419,7 +419,7 @@ export function ElectronicsTechOrderSuccessPage({
                 fontWeight: 700,
               }}
             >
-              Shipment Notifications
+              แจ้งเตือนสถานะการจัดส่ง
             </p>
             <p
               className="mt-1 text-sm"
@@ -429,7 +429,7 @@ export function ElectronicsTechOrderSuccessPage({
                 fontWeight: 500,
               }}
             >
-              Add {storeName} on LINE for real-time tracking + restock alerts.
+              เพิ่ม {storeName} บน LINE เพื่อรับการติดตามแบบเรียลไทม์ + แจ้งเตือนสินค้าเข้าใหม่
             </p>
           </div>
           <a
@@ -443,7 +443,7 @@ export function ElectronicsTechOrderSuccessPage({
               letterSpacing: '0.1em',
             }}
           >
-            Add LINE
+            เพิ่ม LINE
           </a>
         </div>
 
@@ -472,7 +472,7 @@ export function ElectronicsTechOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              PAYMENT · {paymentStatusLabel}
+              การชำระเงิน · {paymentStatusLabel}
             </p>
           )}
         </div>

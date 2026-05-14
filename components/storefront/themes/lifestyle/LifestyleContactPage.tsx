@@ -67,7 +67,7 @@ export function LifestyleContactPage({
             className="text-xs font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--shop-accent)' }}
           >
-            Say hi
+            ทักทายกัน
           </p>
           <h1
             className="mt-3 text-4xl sm:text-5xl md:text-6xl"
@@ -79,7 +79,7 @@ export function LifestyleContactPage({
               lineHeight: 1.05,
             }}
           >
-            Drop us a line
+            ส่งข้อความหาเรา
           </h1>
           {/* Sage hand-drawn squiggle divider */}
           <div
@@ -92,7 +92,7 @@ export function LifestyleContactPage({
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             {tagline ||
-              `Got a question about a piece, a recommendation, or just want to say hello? ${storeName} reads every message and writes back.`}
+              `มีคำถามเรื่องสินค้า อยากได้คำแนะนำ หรือแค่อยากทักทาย? ${storeName} อ่านทุกข้อความและตอบกลับเสมอ`}
           </p>
         </header>
 
@@ -119,7 +119,7 @@ export function LifestyleContactPage({
                 letterSpacing: '-0.01em',
               }}
             >
-              Send a message
+              ส่งข้อความ
             </h2>
           </div>
           <ContactForm storeSlug={slug} storeName={storeName} />
@@ -129,7 +129,7 @@ export function LifestyleContactPage({
             style={{ color: 'var(--shop-accent)' }}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            We usually reply within a day
+            เรามักตอบกลับภายใน 1 วัน
           </p>
         </section>
 
@@ -158,7 +158,7 @@ export function LifestyleContactPage({
                 letterSpacing: '-0.01em',
               }}
             >
-              Find us
+              เจอเราได้ที่นี่
             </h2>
           </div>
 
@@ -169,7 +169,7 @@ export function LifestyleContactPage({
                 style={{ color: 'var(--shop-ink-muted)' }}
               >
                 <MapPin className="h-3.5 w-3.5" />
-                Address
+                ที่อยู่
               </p>
               {addressLines.length > 0 ? (
                 <div
@@ -185,7 +185,7 @@ export function LifestyleContactPage({
                   className="mt-2 text-sm"
                   style={{ color: 'var(--shop-ink-muted)' }}
                 >
-                  Address coming soon.
+                  เร็วๆ นี้
                 </p>
               )}
             </div>
@@ -195,7 +195,7 @@ export function LifestyleContactPage({
                 className="text-xs font-semibold uppercase tracking-[0.18em]"
                 style={{ color: 'var(--shop-ink-muted)' }}
               >
-                Direct
+                ติดต่อโดยตรง
               </p>
               <div className="mt-2">
                 <StoreContactRows store={store} />
@@ -212,7 +212,7 @@ export function LifestyleContactPage({
                 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em]"
                 style={{ color: 'var(--shop-ink-muted)' }}
               >
-                Follow along
+                ติดตามเรา
               </p>
               <StoreSocialIcons store={store} />
             </div>
@@ -226,7 +226,7 @@ export function LifestyleContactPage({
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to {storeName}
+            กลับไปที่ {storeName}
           </Link>
         </div>
       </main>

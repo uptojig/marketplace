@@ -91,13 +91,13 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Keep shopping
+            เลือกซื้อต่อ
           </Link>
           <p
             className="mt-6 text-xs font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--shop-accent)' }}
           >
-            Your basket · Almost there
+            ตะกร้าของคุณ · ใกล้เสร็จแล้ว
           </p>
           <h1
             className="mt-2 text-4xl sm:text-5xl md:text-6xl"
@@ -109,15 +109,15 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
               lineHeight: 1.05,
             }}
           >
-            Your basket
+            ตะกร้าของคุณ
           </h1>
           <p
             className="mt-3 max-w-xl text-base"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             {lines.length === 0
-              ? `Looks like ${store.name} hasn't found its way in yet — let's change that.`
-              : `${itemCount.toLocaleString()} good thing${itemCount === 1 ? '' : 's'} from ${store.name}, ready when you are.`}
+              ? `ดูเหมือนยังไม่มีของจาก ${store.name} ในตะกร้า — ไปเลือกของดีๆ กันเถอะ`
+              : `ของดีๆ ${itemCount.toLocaleString()} ชิ้น จาก ${store.name} พร้อมแล้วเมื่อคุณพร้อม`}
           </p>
         </header>
 
@@ -141,8 +141,8 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
               >
                 <Truck className="h-3.5 w-3.5" />
                 {shipping === 0
-                  ? "You're getting free shipping"
-                  : `Add ${formatTHB(remainingForFreeShipping)} for free shipping`}
+                  ? 'คุณได้สิทธิ์ส่งฟรีแล้ว'
+                  : `เพิ่มอีก ${formatTHB(remainingForFreeShipping)} เพื่อรับสิทธิ์ส่งฟรี`}
               </div>
 
               {lines.map((l) => (
@@ -189,7 +189,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                         className="mt-1 text-xs"
                         style={{ color: 'var(--shop-ink-muted)' }}
                       >
-                        from {store.name}
+                        จาก {store.name}
                       </p>
                       <div className="mt-3 flex flex-wrap items-baseline gap-3">
                         <span
@@ -209,7 +209,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                             background: '#ffffff',
                           }}
                         >
-                          Everyday essentials
+                          ของใช้ทุกวัน
                         </span>
                       </div>
                     </div>
@@ -267,7 +267,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                         style={{ color: 'var(--shop-ink-muted)' }}
                         aria-label={`ลบ ${l.title}`}
                       >
-                        Remove
+                        ลบ
                       </button>
                     </div>
                   </div>
@@ -293,7 +293,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                   className="text-xs font-semibold uppercase tracking-[0.18em]"
                   style={{ color: 'var(--shop-accent)' }}
                 >
-                  Your basket
+                  ตะกร้าของคุณ
                 </p>
                 <h3
                   className="mt-1 text-2xl sm:text-3xl"
@@ -304,7 +304,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                     letterSpacing: '-0.01em',
                   }}
                 >
-                  Order summary
+                  สรุปคำสั่งซื้อ
                 </h3>
 
                 {/* Sage squiggle divider above totals */}
@@ -316,7 +316,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
 
                 <dl className="space-y-3.5 text-sm">
                   <div className="flex items-center justify-between">
-                    <dt style={{ color: 'var(--shop-ink-muted)' }}>Subtotal</dt>
+                    <dt style={{ color: 'var(--shop-ink-muted)' }}>ยอดรวม</dt>
                     <dd
                       className="font-semibold"
                       style={{ color: 'var(--shop-ink)' }}
@@ -325,7 +325,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                     </dd>
                   </div>
                   <div className="flex items-center justify-between">
-                    <dt style={{ color: 'var(--shop-ink-muted)' }}>Shipping</dt>
+                    <dt style={{ color: 'var(--shop-ink-muted)' }}>ค่าจัดส่ง</dt>
                     <dd
                       className="font-semibold"
                       style={{
@@ -333,7 +333,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                           shipping === 0 ? 'var(--shop-accent)' : 'var(--shop-ink)',
                       }}
                     >
-                      {shipping === 0 ? 'Free' : formatTHB(shipping)}
+                      {shipping === 0 ? 'ฟรี' : formatTHB(shipping)}
                     </dd>
                   </div>
                   <div
@@ -348,7 +348,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 600,
                       }}
                     >
-                      Total
+                      ยอดสุทธิ
                     </dt>
                     <dd
                       className="text-2xl font-semibold"
@@ -367,7 +367,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                   className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                   style={{ background: 'var(--shop-primary)' }}
                 >
-                  Checkout
+                  ชำระเงิน
                 </Link>
 
                 <p
@@ -375,7 +375,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                   style={{ color: 'var(--shop-ink-muted)' }}
                 >
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  Secure checkout · protected by Basketplace
+                  ชำระเงินปลอดภัย · ดูแลโดย Basketplace
                 </p>
               </div>
 
@@ -390,7 +390,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                     style={{ color: 'var(--shop-accent)' }}
                   />
                   <span>
-                    Free shipping on orders over{' '}
+                    ส่งฟรีเมื่อซื้อครบ{' '}
                     <span className="font-semibold">
                       {formatTHB(FREE_SHIPPING_THRESHOLD)}
                     </span>
@@ -401,7 +401,7 @@ export function LifestyleCartPage({ store }: { store: StoreLite }) {
                     className="mt-0.5 h-4 w-4 shrink-0"
                     style={{ color: 'var(--shop-accent)' }}
                   />
-                  <span>Easy returns within 7 days</span>
+                  <span>คืนสินค้าง่ายๆ ภายใน 7 วัน</span>
                 </li>
               </ul>
             </aside>
@@ -439,21 +439,20 @@ function LifestyleEmptyCart({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '-0.01em',
         }}
       >
-        Your basket is empty
+        ตะกร้าของคุณยังว่างอยู่
       </h2>
       <p
         className="mx-auto mt-3 max-w-md text-base"
         style={{ color: 'var(--shop-ink-muted)' }}
       >
-        Find something you&rsquo;ll love — every piece in our catalog is hand
-        chosen for the way you live.
+        เลือกของที่ชอบ — ทุกชิ้นในแคตตาล็อกเราคัดมาให้เข้ากับวิถีชีวิตของคุณ
       </p>
       <Link
         href={`/stores/${storeSlug}/category`}
         className="mt-8 inline-flex h-12 items-center justify-center rounded-full px-10 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
         style={{ background: 'var(--shop-primary)' }}
       >
-        Start shopping
+        เริ่มเลือกซื้อ
       </Link>
     </div>
   );

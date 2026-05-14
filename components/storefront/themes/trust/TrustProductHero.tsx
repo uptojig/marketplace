@@ -297,7 +297,7 @@ function InfoColumn({
         <div className="flex flex-wrap items-center gap-2">
           {product.badges.includes('hot') && (
             <Badge className="rounded-sm bg-[var(--shop-primary)] text-white hover:bg-[var(--shop-primary)]">
-              BESTSELLER
+              ขายดี
             </Badge>
           )}
           {product.badges.includes('new') && (
@@ -306,7 +306,7 @@ function InfoColumn({
               className="rounded-sm border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              NEW ARRIVAL
+              ของใหม่
             </Badge>
           )}
           {product.badges.includes('limited') && (
@@ -315,7 +315,7 @@ function InfoColumn({
               className="rounded-sm border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              LIMITED EDITION
+              รุ่นพิเศษ
             </Badge>
           )}
           {product.badges.includes('official') && (
@@ -324,7 +324,7 @@ function InfoColumn({
               className="rounded-sm border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              OFFICIAL
+              ของแท้
             </Badge>
           )}
         </div>
@@ -344,14 +344,14 @@ function InfoColumn({
             <>
               <span>·</span>
               <Link href="#reviews" className="hover:underline">
-                {product.reviewCount.toLocaleString()} reviews
+                {product.reviewCount.toLocaleString()} รีวิว
               </Link>
             </>
           )}
           {product.soldCount != null && (
             <>
               <span>·</span>
-              <span>{product.soldCount.toLocaleString()} sold</span>
+              <span>ขายแล้ว {product.soldCount.toLocaleString()} ชิ้น</span>
             </>
           )}
         </div>
@@ -383,7 +383,7 @@ function InfoColumn({
                   color: 'var(--shop-accent)',
                 }}
               >
-                Save {discount}%
+                ลด {discount}%
               </span>
             </>
           )}
@@ -570,7 +570,7 @@ function InfoColumn({
             className="uppercase"
             style={{ letterSpacing: '0.18em', fontWeight: 600 }}
           >
-            MADE IN
+            ผลิตที่
           </div>
           <div
             className="mt-1 text-sm"
@@ -580,7 +580,7 @@ function InfoColumn({
               fontWeight: 500,
             }}
           >
-            Thailand
+            ประเทศไทย
           </div>
         </div>
         <div>
@@ -588,7 +588,7 @@ function InfoColumn({
             className="uppercase"
             style={{ letterSpacing: '0.18em', fontWeight: 600 }}
           >
-            HOUSE
+            เมซอน
           </div>
           <div
             className="mt-1 text-sm"
@@ -598,7 +598,7 @@ function InfoColumn({
               fontWeight: 500,
             }}
           >
-            Est. {estYear}
+            ก่อตั้ง {estYear}
           </div>
         </div>
       </div>
@@ -635,7 +635,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Maison · Heritage House
+              เมซอน · บ้านมรดก
             </div>
           </div>
           <Button
@@ -671,7 +671,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Complimentary Shipping
+              จัดส่งฟรี
             </div>
             <div className="text-sm">ส่งฟรีเมื่อสั่ง ฿990 ขึ้นไป</div>
           </div>
@@ -690,7 +690,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Buyer Protection
+              คุ้มครองผู้ซื้อ
             </div>
             <div className="text-sm">คุ้มครองผู้ซื้อโดย Basketplace</div>
           </div>
@@ -709,7 +709,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Authenticity Guaranteed
+              รับประกันของแท้
             </div>
             <div className="text-sm">ของแท้ทุกชิ้น รับประกันโดยร้าน</div>
           </div>

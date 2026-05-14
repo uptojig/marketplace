@@ -47,7 +47,7 @@ export function LifestyleBrandStory({
           className="text-xs font-semibold uppercase tracking-[0.18em]"
           style={{ color: 'var(--shop-accent)' }}
         >
-          Our story · {storeName}
+          เรื่องของเรา · {storeName}
         </p>
         <h2
           className="mt-2 text-3xl sm:text-4xl"
@@ -59,7 +59,7 @@ export function LifestyleBrandStory({
             lineHeight: 1.15,
           }}
         >
-          Made for everyday
+          ของใช้ทุกวัน
         </h2>
         {/* Sage squiggle flourish in place of a hairline rule */}
         <div
@@ -81,7 +81,7 @@ export function LifestyleBrandStory({
         className="inline-flex h-12 shrink-0 items-center justify-center rounded-full px-7 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
         style={{ background: 'var(--shop-primary)' }}
       >
-        Discover our world
+        ดูร้านทั้งหมด
       </Link>
     </section>
   );

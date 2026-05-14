@@ -45,7 +45,7 @@ export function FashionBeautyBrandStory({
           className="text-[11px] uppercase tracking-[0.28em]"
           style={{ color: 'var(--shop-ink-muted)' }}
         >
-          From the boutique
+          จากบูทีค
         </p>
         <h2
           className="mt-2 text-3xl sm:text-4xl"
@@ -57,7 +57,7 @@ export function FashionBeautyBrandStory({
             lineHeight: 1.15,
           }}
         >
-          A note from {storeName}
+          ข้อความจาก {storeName}
         </h2>
         <div
           aria-hidden
@@ -83,7 +83,7 @@ export function FashionBeautyBrandStory({
           color: 'var(--shop-ink)',
         }}
       >
-        Discover the boutique
+        ดูร้านทั้งหมด
       </Link>
     </section>
   );

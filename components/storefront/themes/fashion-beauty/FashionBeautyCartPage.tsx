@@ -72,13 +72,13 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to the boutique
+            กลับสู่บูทีค
           </Link>
           <p
             className="mt-6 text-[11px] uppercase tracking-[0.28em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            The Edit · Curated for you
+            คอลเลกชัน · คัดสรรเพื่อคุณ
           </p>
           <h1
             className="mt-2 text-5xl sm:text-6xl"
@@ -90,15 +90,15 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
               lineHeight: 1.05,
             }}
           >
-            Your Edit
+            คอลเลกชันของคุณ
           </h1>
           <p
             className="mt-3 max-w-xl text-base italic"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             {lines.length === 0
-              ? 'A few pieces from ' + store.name + ' are waiting for you to discover them.'
-              : itemCount.toLocaleString() + ' piece' + (itemCount === 1 ? '' : 's') + ' selected — review your edit before we wrap it for you.'}
+              ? 'ชิ้นงานคัดสรรจาก ' + store.name + ' รอให้คุณค้นพบ'
+              : 'เลือกไว้ ' + itemCount.toLocaleString() + ' ชิ้น — ตรวจดูคอลเลกชันก่อนเราห่อให้คุณ'}
           </p>
         </header>
 
@@ -155,7 +155,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                         className="mt-1 text-sm italic"
                         style={{ color: 'var(--shop-ink-muted)' }}
                       >
-                        from {store.name}
+                        จาก {store.name}
                       </p>
                       <p
                         className="mt-3 text-base font-semibold"
@@ -222,7 +222,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                         }}
                         aria-label={`ลบ ${l.title}`}
                       >
-                        Remove from edit
+                        ลบจากคอลเลกชัน
                       </button>
                     </div>
                   </div>
@@ -238,7 +238,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                     color: 'var(--shop-ink-muted)',
                   }}
                 >
-                  Add {formatTHB(remainingForFreeShipping)} more and we&rsquo;ll wrap it for free.
+                  เพิ่มอีก {formatTHB(remainingForFreeShipping)} เพื่อรับการห่อจัดส่งฟรี
                 </p>
               )}
             </section>
@@ -263,7 +263,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                   className="text-[11px] uppercase tracking-[0.28em]"
                   style={{ color: 'var(--shop-ink-muted)' }}
                 >
-                  Summary
+                  สรุปคำสั่งซื้อ
                 </p>
                 <h3
                   className="mt-1 text-3xl"
@@ -274,7 +274,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                     letterSpacing: '-0.005em',
                   }}
                 >
-                  Your order
+                  คำสั่งซื้อของคุณ
                 </h3>
 
                 <div
@@ -285,13 +285,13 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
 
                 <dl className="mt-6 space-y-3.5 text-sm">
                   <div className="flex items-center justify-between">
-                    <dt style={{ color: 'var(--shop-ink-muted)' }}>Subtotal</dt>
+                    <dt style={{ color: 'var(--shop-ink-muted)' }}>ยอดรวมสินค้า</dt>
                     <dd className="font-medium" style={{ color: 'var(--shop-ink)' }}>
                       {formatTHB(subtotal)}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between">
-                    <dt style={{ color: 'var(--shop-ink-muted)' }}>Shipping</dt>
+                    <dt style={{ color: 'var(--shop-ink-muted)' }}>ค่าจัดส่ง</dt>
                     <dd
                       className="font-medium"
                       style={{
@@ -299,7 +299,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                           shipping === 0 ? 'var(--shop-primary)' : 'var(--shop-ink)',
                       }}
                     >
-                      {shipping === 0 ? 'Complimentary' : formatTHB(shipping)}
+                      {shipping === 0 ? 'จัดส่งฟรี' : formatTHB(shipping)}
                     </dd>
                   </div>
                   <div
@@ -314,7 +314,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 500,
                       }}
                     >
-                      Total
+                      ยอดรวม
                     </dt>
                     <dd
                       className="text-2xl font-semibold"
@@ -330,7 +330,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                   className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                   style={{ background: 'var(--shop-primary)' }}
                 >
-                  Proceed to checkout
+                  ดำเนินการชำระเงิน
                 </Link>
 
                 <p
@@ -341,7 +341,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                   }}
                 >
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  Secure checkout · protected by Basketplace
+                  ชำระเงินปลอดภัย · คุ้มครองโดย Basketplace
                 </p>
               </div>
 
@@ -355,11 +355,11 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
               >
                 <li className="flex items-center gap-2">
                   <Truck className="h-4 w-4" />
-                  Complimentary shipping on orders over {formatTHB(FREE_SHIPPING_THRESHOLD)}
+                  จัดส่งฟรีเมื่อสั่งซื้อตั้งแต่ {formatTHB(FREE_SHIPPING_THRESHOLD)} ขึ้นไป
                 </li>
                 <li className="flex items-center gap-2">
                   <RotateCcw className="h-4 w-4" />
-                  Easy returns within 7 days of delivery
+                  คืนได้ใน 7 วันหลังได้รับสินค้า
                 </li>
               </ul>
             </aside>
@@ -389,7 +389,7 @@ function FashionBeautyEmptyCart({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '-0.005em',
         }}
       >
-        Your edit is empty
+        คอลเลกชันของคุณยังว่างอยู่
       </h2>
       <p
         className="mt-4 text-base italic"
@@ -398,14 +398,14 @@ function FashionBeautyEmptyCart({ storeSlug }: { storeSlug: string }) {
           color: 'var(--shop-ink-muted)',
         }}
       >
-        Discover pieces curated by our team — every season, hand-picked.
+        ค้นพบชิ้นงานคัดสรรจากทีมของเรา — ทุกฤดูกาล คัดมาด้วยใจ
       </p>
       <Link
         href={`/stores/${storeSlug}/category`}
         className="mt-8 inline-flex h-12 items-center justify-center rounded-full px-10 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
         style={{ background: 'var(--shop-primary)' }}
       >
-        Start shopping
+        เริ่มช้อปปิ้ง
       </Link>
     </div>
   );

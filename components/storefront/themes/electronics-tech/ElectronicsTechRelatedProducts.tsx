@@ -78,7 +78,7 @@ export function ElectronicsTechRelatedProducts({
             fontWeight: 600,
           }}
         >
-          COMPARE SIMILAR PRODUCTS
+          เปรียบเทียบสินค้า
         </p>
         <div className="mt-2 flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-baseline">
           <h2
@@ -91,7 +91,7 @@ export function ElectronicsTechRelatedProducts({
               lineHeight: 1.15,
             }}
           >
-            Related products
+            สินค้าที่เกี่ยวข้อง
           </h2>
           <span
             data-tech-mono="true"
@@ -103,7 +103,7 @@ export function ElectronicsTechRelatedProducts({
               fontWeight: 600,
             }}
           >
-            FROM {storeName.toUpperCase()}
+            จาก {storeName.toUpperCase()}
           </span>
         </div>
         {/* Mint hairline rule — same accent the brand-story panel uses,
@@ -182,7 +182,7 @@ export function ElectronicsTechRelatedProducts({
                     }}
                   >
                     <CheckCircle2 className="h-2.5 w-2.5" />
-                    In stock
+                    มีสินค้า
                   </span>
                 </div>
               </div>

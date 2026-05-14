@@ -71,7 +71,7 @@ export function SpecialtyRelatedProducts({
             color: 'var(--shop-accent)',
           }}
         >
-          from the same maker · {storeName}
+          จากช่างฝีมือคนเดียวกัน · {storeName}
         </p>
         <h2
           className="mt-1 text-3xl sm:text-4xl"
@@ -83,7 +83,7 @@ export function SpecialtyRelatedProducts({
             lineHeight: 1.1,
           }}
         >
-          Other works from this maker
+          งานชิ้นอื่นจากช่างฝีมือคนนี้
         </h2>
         <div
           aria-hidden
@@ -165,7 +165,7 @@ export function SpecialtyRelatedProducts({
                     color: 'var(--shop-accent)',
                   }}
                 >
-                  made by hand
+                  งานทำมือ
                 </p>
                 <div className="mt-1.5 flex items-baseline gap-2">
                   <span

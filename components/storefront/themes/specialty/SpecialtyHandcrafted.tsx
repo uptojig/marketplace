@@ -84,7 +84,7 @@ export async function SpecialtyHandcrafted({
               color: 'var(--shop-accent)',
             }}
           >
-            from the atelier
+            จากอาเทเลีย
           </p>
           <div className="mt-1 flex flex-col items-baseline justify-between gap-3 sm:flex-row">
             <h2
@@ -97,7 +97,7 @@ export async function SpecialtyHandcrafted({
                 lineHeight: 1.05,
               }}
             >
-              Handcrafted this season
+              งานทำมือฤดูนี้
             </h2>
             <Link
               href={`/stores/${storeSlug}/category`}
@@ -107,7 +107,7 @@ export async function SpecialtyHandcrafted({
                 color: 'var(--shop-accent)',
               }}
             >
-              see the full catalogue
+              ดูแค็ตตาล็อกทั้งหมด
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -125,13 +125,13 @@ export async function SpecialtyHandcrafted({
                 color: 'var(--shop-accent)',
               }}
             >
-              nothing on the bench yet
+              ยังไม่มีงานบนโต๊ะ
             </p>
             <p
               className="mt-2 text-sm"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              The maker is preparing the next batch — check back soon.
+              ช่างฝีมือกำลังเตรียมงานชุดถัดไป — แวะมาดูใหม่เร็วๆ นี้
             </p>
           </div>
         ) : (
@@ -202,7 +202,7 @@ export async function SpecialtyHandcrafted({
                       }}
                       className="text-base italic"
                     >
-                      By {p.store?.name ?? storeName}
+                      โดย {p.store?.name ?? storeName}
                     </span>
                     <p
                       className="mt-1 line-clamp-2 text-sm leading-snug"
@@ -234,7 +234,7 @@ export async function SpecialtyHandcrafted({
                         color: 'var(--shop-ink-muted)',
                       }}
                     >
-                      made by hand
+                      งานทำมือ
                     </p>
                   </div>
                 </Link>

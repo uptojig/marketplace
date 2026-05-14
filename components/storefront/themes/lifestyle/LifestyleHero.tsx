@@ -50,7 +50,7 @@ export function LifestyleHero({
             className="text-xs font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--shop-accent)' }}
           >
-            Welcome to {storeName} · Made for everyday
+            ยินดีต้อนรับสู่ {storeName} · ของใช้ทุกวัน
           </p>
           <h1
             className="mt-4 text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
@@ -62,7 +62,7 @@ export function LifestyleHero({
               lineHeight: 1.02,
             }}
           >
-            Find what feels like home
+            เจอของที่ใช่สำหรับคุณ
           </h1>
 
           {/* Sage squiggle divider directly under the h1 */}
@@ -77,8 +77,8 @@ export function LifestyleHero({
             className="mt-6 max-w-xl text-base leading-relaxed sm:text-lg"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            We curate pieces that fit how you live — pieces that hold up,
-            soften with use, and quietly become favorites.
+            เราคัดของที่เข้ากับวิถีชีวิตคุณ — ของที่ใช้ทนนาน
+            ยิ่งใช้ยิ่งรัก แล้วก็กลายเป็นของโปรดไปเอง
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-5">
@@ -90,7 +90,7 @@ export function LifestyleHero({
                 fontFamily: LIFESTYLE_DISPLAY_FONT,
               }}
             >
-              Start exploring
+              เริ่มเลือกชม
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
@@ -103,7 +103,7 @@ export function LifestyleHero({
                 paddingBottom: '2px',
               }}
             >
-              About us
+              เกี่ยวกับเรา
             </Link>
           </div>
         </div>

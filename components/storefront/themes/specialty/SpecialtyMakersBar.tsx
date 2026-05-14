@@ -35,16 +35,16 @@ interface Pillar {
 
 const PILLARS: Pillar[] = [
   {
-    title: 'made by hand',
-    descriptor: '5-7 days production from the studio bench',
+    title: 'ทำด้วยมือ',
+    descriptor: 'ใช้เวลา 5-7 วันจากโต๊ะงานในสตูดิโอ',
   },
   {
-    title: 'small batch',
-    descriptor: 'limited each season — never restocked the same way',
+    title: 'ผลิตจำนวนน้อย',
+    descriptor: 'จำกัดในแต่ละฤดู — ไม่ผลิตซ้ำในแบบเดียวกัน',
   },
   {
-    title: 'each piece signed',
-    descriptor: 'maker attribution on every finished work',
+    title: 'แต่ละชิ้นมีลายเซ็น',
+    descriptor: 'ระบุชื่อช่างฝีมือบนผลงานทุกชิ้น',
   },
 ];
 
@@ -52,7 +52,7 @@ export function SpecialtyMakersBar() {
   return (
     <section
       data-specialty-kraft="true"
-      aria-label="Maker credentials"
+      aria-label="คุณสมบัติของช่างฝีมือ"
       className="border-b"
       style={{
         background: 'var(--shop-card)',

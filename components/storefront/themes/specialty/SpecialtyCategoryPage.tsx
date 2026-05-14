@@ -57,9 +57,9 @@ export interface SpecialtyCategoryPageProps {
 }
 
 const SORT_OPTIONS: Array<{ key: string; label: string }> = [
-  { key: 'newest', label: 'newest finds' },
-  { key: 'price-asc', label: 'lowest price' },
-  { key: 'price-desc', label: 'highest price' },
+  { key: 'newest', label: 'ใหม่ล่าสุด' },
+  { key: 'price-asc', label: 'ราคาต่ำสุด' },
+  { key: 'price-desc', label: 'ราคาสูงสุด' },
 ];
 
 export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
@@ -90,7 +90,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to the studio
+            กลับสตูดิโอ
           </Link>
           <p
             className="mt-6 text-2xl"
@@ -99,7 +99,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
               color: 'var(--shop-accent)',
             }}
           >
-            from the makers
+            จากช่างฝีมือ
           </p>
           <div className="mt-1 flex flex-col items-baseline justify-between gap-3 sm:flex-row">
             <h1
@@ -112,13 +112,13 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
                 lineHeight: 1.05,
               }}
             >
-              The full catalogue
+              แค็ตตาล็อกทั้งหมด
             </h1>
             <span
               className="text-sm"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              {filteredCount.toLocaleString()} piece{filteredCount === 1 ? '' : 's'} from {storeName}
+              {filteredCount.toLocaleString()} ชิ้นจาก {storeName}
             </span>
           </div>
         </header>
@@ -134,7 +134,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
               className="text-[11px] uppercase tracking-[0.22em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Filter
+              ตัวกรอง
             </span>
             <Link
               href={buildUrl()}
@@ -155,7 +155,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
                     : 'var(--shop-ink-muted)',
               }}
             >
-              All
+              ทั้งหมด
             </Link>
             {categoryNames.map((name) => {
               const active = selectedCats.includes(name);
@@ -197,7 +197,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
                     : 'var(--shop-ink-muted)',
                 }}
               >
-                Other ({uncatCount})
+                อื่นๆ ({uncatCount})
               </Link>
             )}
           </div>
@@ -208,7 +208,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
               className="text-[11px] uppercase tracking-[0.22em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Sort
+              จัดเรียง
             </span>
             {SORT_OPTIONS.map((opt) => {
               const active = sortKey === opt.key;
@@ -300,7 +300,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
                       }}
                       className="text-base italic"
                     >
-                      By {storeName}
+                      โดย {storeName}
                     </span>
                     <p
                       className="mt-1 line-clamp-2 text-sm leading-snug"
@@ -338,7 +338,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
           <nav
             className="mt-16 flex items-center justify-center gap-6 border-t border-dashed pt-6"
             style={{ borderColor: 'var(--shop-accent)' }}
-            aria-label="Pagination"
+            aria-label="แบ่งหน้า"
           >
             {currentPage > 1 ? (
               <Link
@@ -350,7 +350,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
                 }}
               >
                 <ChevronLeft className="h-4 w-4" />
-                previous
+                ก่อนหน้า
               </Link>
             ) : (
               <span
@@ -358,7 +358,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
                 style={{ fontFamily: SPECIALTY_HAND_FONT, color: 'var(--shop-ink-muted)' }}
               >
                 <ChevronLeft className="h-4 w-4" />
-                previous
+                ก่อนหน้า
               </span>
             )}
             <span
@@ -368,7 +368,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              Page <span style={{ color: 'var(--shop-ink)' }}>{currentPage}</span> of{' '}
+              หน้า <span style={{ color: 'var(--shop-ink)' }}>{currentPage}</span> จาก{' '}
               {totalPages}
             </span>
             {currentPage < totalPages ? (
@@ -380,7 +380,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
                   color: 'var(--shop-ink)',
                 }}
               >
-                next
+                ถัดไป
                 <ChevronRight className="h-4 w-4" />
               </Link>
             ) : (
@@ -388,7 +388,7 @@ export function SpecialtyCategoryPage(props: SpecialtyCategoryPageProps) {
                 className="inline-flex items-center gap-2 text-lg opacity-40"
                 style={{ fontFamily: SPECIALTY_HAND_FONT, color: 'var(--shop-ink-muted)' }}
               >
-                next
+                ถัดไป
                 <ChevronRight className="h-4 w-4" />
               </span>
             )}
@@ -417,7 +417,7 @@ function SpecialtyEmptyCatalog({
           color: 'var(--shop-accent)',
         }}
       >
-        nothing on the bench yet
+        ยังไม่มีงานบนโต๊ะ
       </p>
       <h2
         className="mt-1 text-3xl"
@@ -427,15 +427,15 @@ function SpecialtyEmptyCatalog({
           fontWeight: 500,
         }}
       >
-        No pieces match
+        ไม่พบงานที่ตรงกับเงื่อนไข
       </h2>
       <p
         className="mt-3 text-sm"
         style={{ color: 'var(--shop-ink-muted)' }}
       >
         {hasFilters
-          ? 'Try clearing your filters to see the full studio catalogue.'
-          : 'The maker is preparing the next batch — check back soon.'}
+          ? 'ลองล้างตัวกรองเพื่อดูแค็ตตาล็อกของสตูดิโอทั้งหมด'
+          : 'ช่างฝีมือกำลังเตรียมงานชุดถัดไป — แวะมาดูใหม่เร็วๆ นี้'}
       </p>
       {hasFilters ? (
         <Link
@@ -443,7 +443,7 @@ function SpecialtyEmptyCatalog({
           className="mt-6 inline-flex h-10 items-center justify-center rounded-md px-7 text-sm font-semibold text-white transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Clear filters
+          ล้างตัวกรอง
         </Link>
       ) : (
         <Link
@@ -451,7 +451,7 @@ function SpecialtyEmptyCatalog({
           className="mt-6 inline-flex h-10 items-center justify-center rounded-md px-7 text-sm font-semibold text-white transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Back to the studio
+          กลับสตูดิโอ
         </Link>
       )}
     </div>

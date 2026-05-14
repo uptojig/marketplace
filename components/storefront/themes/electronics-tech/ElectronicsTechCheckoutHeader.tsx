@@ -35,11 +35,11 @@ export interface ElectronicsTechCheckoutHeaderProps {
 export function ElectronicsTechCheckoutHeader({
   step,
 }: ElectronicsTechCheckoutHeaderProps) {
-  const title = step === 1 ? 'Shipping address' : 'Order verification';
+  const title = step === 1 ? 'ที่อยู่จัดส่ง' : 'ยืนยันคำสั่งซื้อ';
   const descriptor =
     step === 1
-      ? 'Enter delivery address for shipment.'
-      : 'Review and confirm order details.';
+      ? 'กรอกที่อยู่สำหรับจัดส่งสินค้า'
+      : 'ตรวจสอบและยืนยันรายละเอียดคำสั่งซื้อ';
 
   return (
     <div style={{ background: 'var(--shop-bg)' }}>
@@ -56,7 +56,7 @@ export function ElectronicsTechCheckoutHeader({
               fontWeight: 600,
             }}
           >
-            ORDER LOG · STEP {step}/2
+            บันทึกคำสั่งซื้อ · ขั้นตอน {step}/2
           </p>
           <h1
             className="mt-4 text-3xl sm:text-4xl"

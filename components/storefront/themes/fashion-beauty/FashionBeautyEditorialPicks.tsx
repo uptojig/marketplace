@@ -51,7 +51,7 @@ export async function FashionBeautyEditorialPicks({ storeId, storeSlug }: Props)
 
   if (products.length === 0) return null;
 
-  const storeName = store?.name ?? 'the boutique';
+  const storeName = store?.name ?? 'บูทีค';
 
   return (
     <section
@@ -66,7 +66,7 @@ export async function FashionBeautyEditorialPicks({ storeId, storeSlug }: Props)
               className="text-[11px] uppercase tracking-[0.28em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              From the editor
+              จากบรรณาธิการ
             </p>
             <h2
               className="mt-2 text-4xl sm:text-5xl"
@@ -78,7 +78,7 @@ export async function FashionBeautyEditorialPicks({ storeId, storeSlug }: Props)
                 lineHeight: 1.05,
               }}
             >
-              Today&rsquo;s pick
+              คัดสรรประจำวัน
             </h2>
             <div
               aria-hidden
@@ -94,7 +94,7 @@ export async function FashionBeautyEditorialPicks({ storeId, storeSlug }: Props)
               color: 'var(--shop-ink)',
             }}
           >
-            Browse the full edit &rarr;
+            ดูคอลเลกชันทั้งหมด &rarr;
           </Link>
         </header>
 
@@ -136,7 +136,7 @@ export async function FashionBeautyEditorialPicks({ storeId, storeSlug }: Props)
                           color: 'var(--shop-ink-muted)',
                         }}
                       >
-                        No image
+                        ไม่มีรูป
                       </div>
                     )}
                   </div>
@@ -161,7 +161,7 @@ export async function FashionBeautyEditorialPicks({ storeId, storeSlug }: Props)
                       color: 'var(--shop-ink-muted)',
                     }}
                   >
-                    from {storeName}
+                    จาก {storeName}
                   </p>
                   <p
                     className="mt-3 text-base font-semibold"

@@ -241,7 +241,7 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
               letterSpacing: '0.12em',
             }}
           >
-            FLASH DEAL
+            ดีลด่วน
           </span>
         )}
       </div>
@@ -403,7 +403,7 @@ function InfoColumn({
             letterSpacing: '0.12em',
           }}
         >
-          CARTON
+          ต่อลัง
           <span
             data-bm-mono="true"
             className="font-bold"
@@ -433,7 +433,7 @@ function InfoColumn({
         <div className="flex flex-wrap items-center gap-2">
           {product.badges.includes('hot') && (
             <Badge className="rounded-sm bg-[var(--shop-primary)] text-white hover:bg-[var(--shop-primary)]">
-              BESTSELLER
+              ขายดี
             </Badge>
           )}
           {product.badges.includes('new') && (
@@ -442,7 +442,7 @@ function InfoColumn({
               className="rounded-sm border-[var(--shop-border)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              NEW
+              ใหม่
             </Badge>
           )}
           {product.badges.includes('limited') && (
@@ -451,7 +451,7 @@ function InfoColumn({
               className="rounded-sm border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-accent)' }}
             >
-              LIMITED STOCK
+              สินค้ามีจำนวนจำกัด
             </Badge>
           )}
         </div>
@@ -471,7 +471,7 @@ function InfoColumn({
             <>
               <span>·</span>
               <Link href="#reviews" className="hover:underline">
-                {product.reviewCount.toLocaleString()} reviews
+                {product.reviewCount.toLocaleString()} รีวิว
               </Link>
             </>
           )}
@@ -482,7 +482,7 @@ function InfoColumn({
                 data-bm-mono="true"
                 style={{ fontFamily: BM_MONO_FONT, fontVariantNumeric: 'tabular-nums' }}
               >
-                {product.soldCount.toLocaleString()} sold
+                ขายแล้ว {product.soldCount.toLocaleString()}
               </span>
             </>
           )}
@@ -533,7 +533,7 @@ function InfoColumn({
                 color: '#ffffff',
               }}
             >
-              SAVE {totalDiscount}%
+              ประหยัด {totalDiscount}%
             </span>
           )}
         </div>
@@ -570,7 +570,7 @@ function InfoColumn({
             letterSpacing: '0.12em',
           }}
         >
-          Volume pricing
+          ราคาตามปริมาณ
         </div>
         <div
           className="overflow-hidden rounded-md border"
@@ -586,9 +586,9 @@ function InfoColumn({
                   letterSpacing: '0.12em',
                 }}
               >
-                <th className="px-3 py-2 font-semibold">Qty</th>
-                <th className="px-3 py-2 font-semibold">Unit price</th>
-                <th className="px-3 py-2 text-right font-semibold">Save</th>
+                <th className="px-3 py-2 font-semibold">จำนวน</th>
+                <th className="px-3 py-2 font-semibold">ราคาต่อหน่วย</th>
+                <th className="px-3 py-2 text-right font-semibold">ประหยัด</th>
               </tr>
             </thead>
             <tbody>
@@ -842,7 +842,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Authorized · Bulk supplier
+              ผู้จำหน่ายขายส่งที่ได้รับอนุญาต
             </div>
           </div>
           <Button
@@ -910,7 +910,7 @@ function InfoColumn({
               >
                 {moq}
               </span>{' '}
-              · Carton{' '}
+              · ต่อลัง{' '}
               <span
                 data-bm-mono="true"
                 style={{ fontFamily: BM_MONO_FONT, fontVariantNumeric: 'tabular-nums' }}

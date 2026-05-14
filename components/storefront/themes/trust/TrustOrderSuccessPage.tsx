@@ -92,7 +92,7 @@ export function TrustOrderSuccessPage({
               fontWeight: 600,
             }}
           >
-            Order Placed · With Gratitude
+            คำสั่งซื้อยืนยันแล้ว · ขอบคุณ
           </p>
 
           {/* Title cartouche — gold-rule top + bottom. */}
@@ -110,7 +110,7 @@ export function TrustOrderSuccessPage({
                 lineHeight: 1.05,
               }}
             >
-              Thank you for your order
+              ขอบคุณสำหรับคำสั่งซื้อ
             </h1>
           </div>
 
@@ -128,14 +128,14 @@ export function TrustOrderSuccessPage({
               fontWeight: 500,
             }}
           >
-            Your order has been received and the maison is preparing it with care
+            เราได้รับคำสั่งซื้อของคุณแล้ว เมซอนกำลังจัดเตรียมสินค้าอย่างพิถีพิถัน
             {buyerEmail ? (
               <>
-                . A confirmation has been despatched to{' '}
-                <span style={{ color: 'var(--shop-ink)' }}>{buyerEmail}</span>.
+                ส่งอีเมลยืนยันไปที่{' '}
+                <span style={{ color: 'var(--shop-ink)' }}>{buyerEmail}</span>
               </>
             ) : (
-              '.'
+              ''
             )}
           </p>
 
@@ -153,7 +153,7 @@ export function TrustOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              Order Number
+              เลขที่คำสั่งซื้อ
             </p>
             <p
               className="mt-1 text-2xl font-semibold tabular-nums"
@@ -181,7 +181,7 @@ export function TrustOrderSuccessPage({
                   fontWeight: 600,
                 }}
               >
-                Despatch Window
+                ระยะเวลาจัดส่ง
               </p>
               <p
                 className="mt-2 text-sm"
@@ -203,7 +203,7 @@ export function TrustOrderSuccessPage({
                   fontWeight: 600,
                 }}
               >
-                Status
+                สถานะ
               </p>
               <p
                 className="mt-2 text-sm"
@@ -229,7 +229,7 @@ export function TrustOrderSuccessPage({
               fontWeight: 600,
             }}
           >
-            Maison · Order Manifest
+            เมซอน · รายการสินค้า
           </p>
           <h2
             className="mt-2 text-2xl sm:text-3xl"
@@ -240,7 +240,7 @@ export function TrustOrderSuccessPage({
               letterSpacing: '-0.01em',
             }}
           >
-            {items.length} piece{items.length === 1 ? '' : 's'} in transit
+            {items.length} ชิ้นในระหว่างจัดส่ง
           </h2>
 
           <div
@@ -259,9 +259,9 @@ export function TrustOrderSuccessPage({
             }}
           >
             <span />
-            <span>Article</span>
-            <span className="text-center">Quantity</span>
-            <span className="text-right">Total</span>
+            <span>รายการสินค้า</span>
+            <span className="text-center">จำนวน</span>
+            <span className="text-right">รวม</span>
           </div>
 
           <ul className="divide-y" style={{ borderColor: 'var(--shop-border)' }}>
@@ -320,7 +320,7 @@ export function TrustOrderSuccessPage({
                       fontWeight: 600,
                     }}
                   >
-                    Qty <span style={{ color: 'var(--shop-ink)' }}>{it.qty}</span>
+                    จำนวน <span style={{ color: 'var(--shop-ink)' }}>{it.qty}</span>
                   </p>
                 </div>
 
@@ -353,7 +353,7 @@ export function TrustOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              Total Charged
+              ยอดชำระทั้งหมด
             </span>
             <span
               className="text-2xl font-semibold tabular-nums"
@@ -377,7 +377,7 @@ export function TrustOrderSuccessPage({
               letterSpacing: '0.28em',
             }}
           >
-            Track Your Order
+            ติดตามคำสั่งซื้อ
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
@@ -389,7 +389,7 @@ export function TrustOrderSuccessPage({
               letterSpacing: '0.28em',
             }}
           >
-            Browse the Collection
+            ดูคอลเลกชัน
           </Link>
         </div>
 
@@ -411,7 +411,7 @@ export function TrustOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              Stay Apprised
+              รับข่าวสาร
             </p>
             <p
               className="mt-1 text-sm"
@@ -421,8 +421,7 @@ export function TrustOrderSuccessPage({
                 fontWeight: 500,
               }}
             >
-              Add {storeName} on LINE for despatch updates and a first look at the
-              next collection.
+              เพิ่ม {storeName} เป็นเพื่อนใน LINE เพื่อรับข้อมูลการจัดส่งและชมคอลเลกชันใหม่ก่อนใคร
             </p>
           </div>
           <a
@@ -435,7 +434,7 @@ export function TrustOrderSuccessPage({
               letterSpacing: '0.22em',
             }}
           >
-            Add LINE
+            เพิ่มเพื่อน LINE
           </a>
         </div>
 
@@ -449,14 +448,14 @@ export function TrustOrderSuccessPage({
           }}
         >
           <p>
-            Full Reference ·{' '}
+            รหัสอ้างอิงเต็ม ·{' '}
             <span className="font-mono normal-case" style={{ letterSpacing: '0.05em' }}>
               {fullId}
             </span>
           </p>
           {paymentStatusLabel && (
             <p>
-              Payment ·{' '}
+              การชำระเงิน ·{' '}
               <span style={{ color: 'var(--shop-ink)' }}>{paymentStatusLabel}</span>
             </p>
           )}

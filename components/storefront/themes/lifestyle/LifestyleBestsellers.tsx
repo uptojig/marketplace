@@ -46,14 +46,14 @@ export interface LifestyleBestsellersProps {
  */
 function benefitTagline(id: string): string {
   const lines = [
-    'Built for everyday adventures',
-    'A friend in every basket',
-    'Made to be loved + used',
-    'Comfort that travels with you',
-    'Soft on hands, kind to the planet',
-    'A small joy for the home',
-    'Designed with care',
-    'Honest craft, honest price',
+    'เพื่อนคู่ใจในทุกๆ วัน',
+    'เพื่อนใหม่ในตะกร้าทุกใบ',
+    'ทำมาเพื่อให้รัก + ใช้จริง',
+    'ความสบายที่ติดตัวคุณไปทุกที่',
+    'อ่อนโยนต่อมือ ใส่ใจโลก',
+    'ความสุขเล็กๆ สำหรับบ้าน',
+    'ออกแบบด้วยใจ',
+    'งานฝีมือซื่อสัตย์ ราคาเป็นมิตร',
   ];
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
@@ -102,7 +102,7 @@ export async function LifestyleBestsellers({
               className="text-xs font-semibold uppercase tracking-[0.18em]"
               style={{ color: 'var(--shop-accent)' }}
             >
-              Loved by everyone · This season&rsquo;s bestsellers
+              คนชอบกันเยอะ · ของขายดีฤดูกาลนี้
             </p>
             <h2
               className="mt-3 text-3xl sm:text-4xl md:text-5xl"
@@ -114,7 +114,7 @@ export async function LifestyleBestsellers({
                 lineHeight: 1.1,
               }}
             >
-              This season&rsquo;s favorites
+              ของโปรดของฤดูกาลนี้
             </h2>
           </div>
           <Link
@@ -125,7 +125,7 @@ export async function LifestyleBestsellers({
               fontFamily: LIFESTYLE_DISPLAY_FONT,
             }}
           >
-            View the catalog
+            ดูแคตตาล็อก
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -142,8 +142,7 @@ export async function LifestyleBestsellers({
                 fontFamily: LIFESTYLE_DISPLAY_FONT,
               }}
             >
-              Our shelves are being styled — pop back soon for the first
-              drop.
+              เรากำลังจัดของขึ้นชั้น — แวะมาดูของชุดแรกเร็วๆ นี้นะ
             </p>
           </div>
         ) : (
@@ -191,7 +190,7 @@ function BestsellerCard({
       : null;
   const title = product.titleTh ?? product.title;
   const tagline = benefitTagline(product.id);
-  const tag = product.categoryName ?? 'Everyday essentials';
+  const tag = product.categoryName ?? 'ของใช้ทุกวัน';
 
   return (
     <Link
@@ -237,7 +236,7 @@ function BestsellerCard({
               className="absolute right-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold text-white"
               style={{ background: 'var(--shop-primary)' }}
             >
-              Save {discount}%
+              ลด {discount}%
             </span>
           )}
         </div>

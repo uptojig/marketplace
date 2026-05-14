@@ -30,11 +30,11 @@ export interface SpecialtyCheckoutHeaderProps {
 }
 
 export function SpecialtyCheckoutHeader({ step }: SpecialtyCheckoutHeaderProps) {
-  const title = step === 1 ? 'Where to send it' : 'ready to send';
+  const title = step === 1 ? 'จัดส่งไปที่ไหน' : 'พร้อมส่งแล้ว';
   const descriptor =
     step === 1
-      ? "we'll wrap it carefully and ship within 5-7 days"
-      : "all set — we'll send a note when it's on the way";
+      ? 'เราจะห่ออย่างใส่ใจและจัดส่งภายใน 5-7 วัน'
+      : "เรียบร้อย — เราจะส่งข้อความเมื่อจัดส่งให้";
 
   return (
     <div style={{ background: 'var(--shop-bg)' }}>
@@ -52,7 +52,7 @@ export function SpecialtyCheckoutHeader({ step }: SpecialtyCheckoutHeaderProps) 
                 color: 'var(--shop-accent)',
               }}
             >
-              letter · step {step} of 2
+              จดหมาย · ขั้น {step} จาก 2
             </p>
             <h1
               className="mt-1 text-4xl sm:text-5xl"
