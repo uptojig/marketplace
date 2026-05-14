@@ -5,12 +5,13 @@
 // row for vendor-specific actions: mark shipped (with carrier +
 // tracking dialog), mark delivered, cancel.
 //
-// Authorization:
-//   1. requireStoreOwner() — resolves the signed-in user's store, or
-//      404s anything not owned by them.
+// Authorization (multi-store):
+//   1. resolveDashboardStore({ requestedSlug }) — picks the active
+//      store. Admins can be on any store; owners are limited to
+//      their own. Anyone else lands on their default or is bounced.
 //   2. Cross-store probe defence — even after (1), we verify the
-//      loaded order's storeId matches our store. If a vendor pasted a
-//      sibling store's orderRef into the URL, we 404 here.
+//      loaded order's storeId matches the picked store. If a vendor
+//      pasted a sibling store's orderRef into the URL, we 404 here.
 
 import Image from "next/image";
 import Link from "next/link";
@@ -43,26 +44,32 @@ import {
   isTerminalStatus,
   timelineIndex,
 } from "@/lib/orders/status-ui";
-import { requireStoreOwner } from "@/lib/stores/require-store-owner";
+import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 import { cn, formatTHB } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function VendorOrderDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ storeSlug?: string }>;
 }) {
   const { id } = await params;
-  const store = await requireStoreOwner({
-    callbackUrl: `/dashboard/store/orders/${id}`,
+  const sp: { storeSlug?: string } = searchParams ? await searchParams : {};
+
+  const { store } = await resolveDashboardStore({
+    requestedSlug: sp.storeSlug,
+    noStoreRedirect: `/signin?next=/dashboard/store/orders/${id}`,
   });
 
   const raw = await getStoreOrderByRef(id);
   if (!raw) notFound();
-  // Cross-store probe protection. requireStoreOwner already proved
-  // the session owns `store`; this catches the case where someone
-  // appends another vendor's orderRef onto their URL.
+  // Cross-store probe protection. resolveDashboardStore already
+  // proved the session can edit `store`; this catches the case where
+  // someone appends another vendor's orderRef onto their URL while
+  // on store A.
   if (raw.storeId !== store.id) notFound();
 
   const order = toOrderView(raw);
@@ -73,12 +80,17 @@ export default async function VendorOrderDetailPage({
     ? PAYMENT_METHOD_INFO[order.paymentMethod]
     : null;
 
+  // Preserve the active store across the back-link.
+  const slugSuffix = sp.storeSlug
+    ? `?storeSlug=${encodeURIComponent(sp.storeSlug)}`
+    : "";
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <Link
-            href="/dashboard/store/orders"
+            href={`/dashboard/store/orders${slugSuffix}`}
             className="text-xs text-muted-foreground hover:underline"
           >
             ← กลับไปคำสั่งซื้อทั้งหมด

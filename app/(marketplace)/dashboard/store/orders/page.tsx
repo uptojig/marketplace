@@ -1,13 +1,11 @@
 // Vendor-side orders list — /dashboard/store/orders.
 //
-// One-store-per-user model: the page resolves the current owner's
-// store via `requireStoreOwner()` (no slug in the URL). Authorization
-// is centralized in that helper; this page only renders.
-//
-// Status tabs (All / Paid / Shipped / Delivered / Cancelled / Returned)
-// are URL-search-param driven so back/forward navigation and shared
-// links pick up the right filter. We render server-side from the
-// filter, then re-render on tab clicks via `<Link>` navigation.
+// Multi-store model (Phase 2A): the page resolves the active store
+// via `resolveDashboardStore({ requestedSlug })`. Admins can pick any
+// store; owners are scoped to their own. Status tabs (All / Paid /
+// Shipped / Delivered / Cancelled / Returned) are URL-search-param
+// driven so back/forward navigation and shared links pick up both
+// the right filter AND the right store.
 
 import Link from "next/link";
 import { Inbox } from "lucide-react";
@@ -27,7 +25,7 @@ import {
   ORDER_STATUS_COLOR,
   ORDER_STATUS_LABEL,
 } from "@/lib/orders/status-ui";
-import { requireStoreOwner } from "@/lib/stores/require-store-owner";
+import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 import { cn, formatTHB } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -71,14 +69,19 @@ function parseTab(raw: string | string[] | undefined): VendorTabKey {
 export default async function VendorOrdersPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ tab?: string }>;
+  searchParams?: Promise<{ tab?: string; storeSlug?: string }>;
 }) {
-  const store = await requireStoreOwner();
-
   // Next 15's searchParams is a Promise; fall back to an empty object
   // typed as the same shape so older build runs still render during
   // incremental upgrades.
-  const sp: { tab?: string } = searchParams ? await searchParams : {};
+  const sp: { tab?: string; storeSlug?: string } = searchParams
+    ? await searchParams
+    : {};
+
+  const { store } = await resolveDashboardStore({
+    requestedSlug: sp.storeSlug,
+  });
+
   const tab = parseTab(sp.tab);
   const tabDef = VENDOR_TABS.find((t) => t.key === tab) ?? VENDOR_TABS[0];
 
@@ -91,6 +94,12 @@ export default async function VendorOrdersPage({
   // we fetch unscoped totals once (cheap because they're indexed on
   // storeId+status) and use them only as a heuristic count.
   const statusCounts = await prisma_groupCounts(store.id);
+
+  // Preserve the active store across tab navigation. Empty when no
+  // explicit slug is needed (default owned store).
+  const slugQs = sp.storeSlug
+    ? `&storeSlug=${encodeURIComponent(sp.storeSlug)}`
+    : "";
 
   return (
     <div className="space-y-6">
@@ -115,8 +124,10 @@ export default async function VendorOrdersPage({
               : (statusCounts[t.status as OrderStatus] ?? 0);
           const href =
             t.key === "all"
-              ? "/dashboard/store/orders"
-              : `/dashboard/store/orders?tab=${t.key}`;
+              ? sp.storeSlug
+                ? `/dashboard/store/orders?storeSlug=${encodeURIComponent(sp.storeSlug)}`
+                : "/dashboard/store/orders"
+              : `/dashboard/store/orders?tab=${t.key}${slugQs}`;
           return (
             <Link
               key={t.key}
@@ -212,7 +223,11 @@ export default async function VendorOrdersPage({
                     <TableCell className="text-right">
                       <Button asChild variant="outline" size="sm">
                         <Link
-                          href={`/dashboard/store/orders/${order.orderRef ?? order.id}`}
+                          href={
+                            sp.storeSlug
+                              ? `/dashboard/store/orders/${order.orderRef ?? order.id}?storeSlug=${encodeURIComponent(sp.storeSlug)}`
+                              : `/dashboard/store/orders/${order.orderRef ?? order.id}`
+                          }
                         >
                           ดูรายละเอียด
                         </Link>

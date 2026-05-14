@@ -1,30 +1,26 @@
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CategoriesManager } from "@/components/dashboard/categories-manager";
+import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 
 export const dynamic = "force-dynamic";
 
-export default async function StoreCategoriesPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    redirect("/signin?next=/dashboard/store/categories");
-  }
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: { store: true },
+export default async function StoreCategoriesPage({
+  searchParams,
+}: {
+  searchParams?: { storeSlug?: string };
+}) {
+  const { store } = await resolveDashboardStore({
+    requestedSlug: searchParams?.storeSlug,
   });
-  if (!user?.store) redirect("/");
 
   const [categoryRows, productRows] = await Promise.all([
     prisma.category.findMany({
-      where: { storeId: user.store.id },
+      where: { storeId: store.id },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
       include: { _count: { select: { products: true } } },
     }),
     prisma.product.findMany({
-      where: { storeId: user.store.id },
+      where: { storeId: store.id },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -61,7 +57,7 @@ export default async function StoreCategoriesPage() {
 
   return (
     <CategoriesManager
-      storeSlug={user.store.slug}
+      storeSlug={store.slug}
       categories={categories}
       products={products}
     />

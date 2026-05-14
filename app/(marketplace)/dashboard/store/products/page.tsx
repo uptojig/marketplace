@@ -1,30 +1,34 @@
 import Link from "next/link";
 import Image from "next/image";
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
 import { Plus, Pencil } from "lucide-react";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
 import { TranslateTitlesButton } from "@/components/dashboard/translate-titles-button";
+import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 
 export const dynamic = "force-dynamic";
 
-export default async function StoreProductsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) redirect("/signin?next=/dashboard/store/products");
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: { store: true },
+export default async function StoreProductsPage({
+  searchParams,
+}: {
+  searchParams?: { storeSlug?: string };
+}) {
+  // Multi-store resolution (admin / multi-owner). Falls back to the
+  // signed-in user's owned store; redirects home when neither admin
+  // nor owner of any store. See lib/stores/resolve-dashboard-store.ts.
+  const { store } = await resolveDashboardStore({
+    requestedSlug: searchParams?.storeSlug,
   });
-  // Signed-in user without a store has nothing to manage here.
-  // Admins provision stores via /admin/stores/new and assign
-  // ownership; bump anyone else back to the homepage.
-  if (!user?.store) redirect("/");
+
+  // Preserve the active store across nav links so deep-links stay on
+  // the picked store. Empty when we're on the user's default owned
+  // store and no explicit slug needed in the URL.
+  const slugSuffix = searchParams?.storeSlug
+    ? `?storeSlug=${encodeURIComponent(searchParams.storeSlug)}`
+    : "";
 
   const products = await prisma.product.findMany({
-    where: { storeId: user.store.id },
+    where: { storeId: store.id },
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { variants: true } },
@@ -35,7 +39,7 @@ export default async function StoreProductsPage() {
   // many rows still fall back to English on category/PDP/search.
   // Skips inactive products — those won't render publicly anyway.
   const untranslatedCount = await prisma.product.count({
-    where: { storeId: user.store.id, active: true, titleTh: null },
+    where: { storeId: store.id, active: true, titleTh: null },
   });
 
   return (
@@ -50,7 +54,7 @@ export default async function StoreProductsPage() {
         <div className="flex shrink-0 flex-wrap items-start gap-2">
           <TranslateTitlesButton untranslatedCount={untranslatedCount} />
           <Link
-            href="/dashboard/store/products/new"
+            href={`/dashboard/store/products/new${slugSuffix}`}
             className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -68,7 +72,7 @@ export default async function StoreProductsPage() {
             เริ่มต้นเพิ่มสินค้าเข้าร้านได้ในหน้าเดียว
           </p>
           <Link
-            href="/dashboard/store/products/new"
+            href={`/dashboard/store/products/new${slugSuffix}`}
             className="mt-5 inline-flex items-center gap-1.5 rounded-md bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -92,7 +96,7 @@ export default async function StoreProductsPage() {
                 <tr key={p.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <Link
-                      href={`/dashboard/store/products/${p.id}`}
+                      href={`/dashboard/store/products/${p.id}${slugSuffix}`}
                       className="flex items-center gap-3"
                     >
                       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-gray-100">
@@ -149,7 +153,7 @@ export default async function StoreProductsPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/dashboard/store/products/${p.id}`}
+                      href={`/dashboard/store/products/${p.id}${slugSuffix}`}
                       className="inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs hover:bg-accent"
                     >
                       <Pencil className="h-3 w-3" />

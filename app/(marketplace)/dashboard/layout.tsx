@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
+import { headers } from "next/headers";
 import {
   LayoutDashboard,
   Package,
@@ -11,9 +11,10 @@ import {
   ExternalLink,
   PlusSquare,
 } from "lucide-react";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebarToggle } from "@/components/dashboard/sidebar-toggle";
+import { StorePicker } from "@/components/dashboard/store-picker";
+import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 
 // PAID = paid but not yet shipped — the canonical "needs vendor
 // action" bucket for the unread badge in the sidebar. We don't count
@@ -35,57 +36,84 @@ const VENDOR_ACTION_REQUIRED_STATUS = "PAID" as const;
  * Mobile: sidebar collapses behind a burger button via a tiny client
  * component (DashboardSidebarToggle) so we keep this layout server-
  * rendered for the auth + store name lookup.
+ *
+ * Multi-store: the layout reads the request URL via the x-pathname /
+ * x-search headers injected by middleware (Next.js layouts don't get
+ * searchParams natively). The current store is then resolved via
+ * `resolveDashboardStore` so the sidebar brand row + pending-orders
+ * badge follow the picker selection.
  */
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) redirect("/signin?next=/dashboard");
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    select: {
-      name: true,
-      email: true,
-      role: true,
-      store: { select: { id: true, slug: true, name: true, logoUrl: true } },
+  // Pull the requested store slug out of the URL via the headers our
+  // middleware sets. `x-search` is the raw "?storeSlug=foo&..." string;
+  // empty/missing means "use default owned store".
+  // headers() is synchronous in Next 14; switching to async-aware
+  // shape will require revisiting on the Next 15 upgrade.
+  const headerList = headers();
+  const search = headerList.get("x-search") ?? "";
+  const requestedSlug =
+    new URLSearchParams(search).get("storeSlug") ?? undefined;
+
+  // resolveDashboardStore handles: not-signed-in → redirect, no-store
+  // → redirect, cross-tenant probe → fall back to default. The page-
+  // level call to the same helper will return the same store.
+  const { store, availableStores, isAdmin, userId } =
+    await resolveDashboardStore({
+      requestedSlug,
+      noStoreRedirect: "/signin?next=/dashboard",
+    });
+
+  // User-pill identity = the SIGNED-IN user (might be admin viewing
+  // someone else's store), not the store owner.
+  const displayUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, email: true, role: true },
+  });
+  if (!displayUser) redirect("/signin?next=/dashboard");
+
+  // Unread-action badge — count orders waiting on vendor fulfilment
+  // FOR THE CURRENTLY-PICKED STORE (so admins switching to another
+  // shop see THAT shop's pending count, not their own). Cheap enough
+  // to run per-request (covered by the [storeId, createdAt] index on
+  // Order).
+  const pendingOrdersCount = await prisma.order.count({
+    where: {
+      storeId: store.id,
+      status: VENDOR_ACTION_REQUIRED_STATUS,
     },
   });
-  if (!user) redirect("/signin?next=/dashboard");
-
-  const storeSlug = user.store?.slug ?? null;
-
-  // Unread-action badge — count orders waiting on vendor fulfilment.
-  // Cheap enough to run per-request (covered by the
-  // [storeId, createdAt] index on Order). Skipped when there's no
-  // store so the catalog-only flow doesn't pay the query cost.
-  const pendingOrdersCount = user.store
-    ? await prisma.order.count({
-        where: {
-          storeId: user.store.id,
-          status: VENDOR_ACTION_REQUIRED_STATUS,
-        },
-      })
-    : 0;
 
   return (
     <div className="-mx-4 -my-8 flex min-h-[calc(100vh-3.5rem)] bg-background text-foreground">
       <DashboardSidebarToggle>
         <Sidebar
-          storeName={user.store?.name ?? "ร้านของฉัน"}
-          storeSlug={storeSlug}
-          storeLogoUrl={user.store?.logoUrl ?? null}
-          userName={user.name ?? user.email ?? ""}
-          userEmail={user.email ?? ""}
-          isAdmin={user.role === "ADMIN"}
+          storeName={store.name}
+          storeSlug={store.slug}
+          storeLogoUrl={store.logoUrl ?? null}
+          userName={displayUser.name ?? displayUser.email ?? ""}
+          userEmail={displayUser.email ?? ""}
+          isAdmin={displayUser.role === "ADMIN"}
           pendingOrdersCount={pendingOrdersCount}
         />
       </DashboardSidebarToggle>
 
       {/* Main column — topbar + scrollable content */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar storeSlug={storeSlug} />
+        <Topbar
+          storeSlug={store.slug}
+          currentStore={{
+            id: store.id,
+            slug: store.slug,
+            name: store.name,
+            logoUrl: store.logoUrl ?? null,
+          }}
+          availableStores={availableStores}
+          isAdmin={isAdmin}
+        />
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
           <div className="mx-auto max-w-6xl">{children}</div>
         </main>
@@ -97,6 +125,8 @@ export default async function DashboardLayout({
 /* ─────────────────────────────────────────────────────────────────
  * Sidebar — operator-curated nav rail. Uses var(--sidebar*) tokens
  * so the rail follows the active radix-nova palette in light + dark.
+ * Nav links append `?storeSlug=<current>` so switching pages keeps
+ * the picker selection intact.
  * ───────────────────────────────────────────────────────────────── */
 function Sidebar({
   storeName,
@@ -115,6 +145,12 @@ function Sidebar({
   isAdmin: boolean;
   pendingOrdersCount: number;
 }) {
+  // Build a query string suffix to append to dashboard nav hrefs so
+  // the picker selection survives page navigation. Empty when no
+  // explicit slug is needed (i.e. the user is on their default owned
+  // store) — falling back to the owner's default keeps URLs short.
+  const suffix = storeSlug ? `?storeSlug=${encodeURIComponent(storeSlug)}` : "";
+
   return (
     <aside
       className="flex w-64 shrink-0 flex-col border-r"
@@ -167,13 +203,13 @@ function Sidebar({
 
         <NavGroup label="สินค้า">
           <NavItem
-            href="/dashboard/store/products"
+            href={`/dashboard/store/products${suffix}`}
             icon={<Package className="h-4 w-4" />}
           >
             สินค้าของร้าน
           </NavItem>
           <NavItem
-            href="/dashboard/store/categories"
+            href={`/dashboard/store/categories${suffix}`}
             icon={<Tags className="h-4 w-4" />}
           >
             หมวดหมู่
@@ -194,14 +230,14 @@ function Sidebar({
 
         <NavGroup label="ร้านค้า">
           <NavItem
-            href="/dashboard/store/orders"
+            href={`/dashboard/store/orders${suffix}`}
             icon={<ShoppingBag className="h-4 w-4" />}
             badge={pendingOrdersCount}
           >
             ออเดอร์
           </NavItem>
           <NavItem
-            href="/dashboard/store/settings"
+            href={`/dashboard/store/settings${suffix}`}
             icon={<Settings className="h-4 w-4" />}
           >
             ตั้งค่าร้าน
@@ -315,13 +351,33 @@ function NavItem({
 }
 
 /* ─────────────────────────────────────────────────────────────────
- * Topbar — slim 56px row. Currently shows "ดูหน้าร้าน" CTA when the
- * operator owns a store. Search + notifications can plug in here
- * later without touching the page-level files.
+ * Topbar — slim 56px row. Hosts the StorePicker (multi-store admins
+ * + future multi-owner users) plus the "ดูหน้าร้าน" CTA so the
+ * operator can preview the picked store's public face in one click.
  * ───────────────────────────────────────────────────────────────── */
-function Topbar({ storeSlug }: { storeSlug: string | null }) {
+function Topbar({
+  storeSlug,
+  currentStore,
+  availableStores,
+  isAdmin,
+}: {
+  storeSlug: string | null;
+  currentStore: {
+    id: string;
+    slug: string;
+    name: string;
+    logoUrl: string | null;
+  };
+  availableStores: { id: string; slug: string; name: string; logoUrl: string | null }[];
+  isAdmin: boolean;
+}) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background px-4 sm:px-6 lg:px-8">
+      <StorePicker
+        currentStore={currentStore}
+        availableStores={availableStores}
+        isAdmin={isAdmin}
+      />
       <div className="flex-1" />
       {storeSlug && (
         <a
