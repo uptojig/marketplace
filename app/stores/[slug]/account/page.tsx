@@ -23,6 +23,7 @@ import {
 } from '@/lib/orders/status-ui';
 import { isFashionBeautyStore } from '@/lib/landing/fashion-beauty';
 import { isTrustStore } from '@/lib/landing/trust';
+import { isBusinessModelStore } from '@/lib/landing/business-model';
 import { isLifestyleStore } from '@/lib/landing/lifestyle';
 
 const FB_DISPLAY_FONT =
@@ -30,6 +31,9 @@ const FB_DISPLAY_FONT =
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const BM_MONO_FONT =
+  'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace';
 
 const LIFESTYLE_DISPLAY_FONT =
   'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
@@ -91,7 +95,16 @@ export default async function AccountDashboard({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
-  const isLifestyle = !isFB && !isTrust && store
+  // business-model — only checked when FB and trust both miss.
+  // Renders the dashboard-style welcome with mono stat values + tier
+  // badge + active-subscriptions count.
+  const isBM = !isFB && !isTrust && store
+    ? isBusinessModelStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
+  const isLifestyle = !isFB && !isTrust && !isBM && store
     ? isLifestyleStore({
         templateId: store.templateId,
         landingThemeVariant: store.landingThemeVariant,
@@ -108,6 +121,24 @@ export default async function AccountDashboard({
     ? user.createdAt.getFullYear()
     : new Date().getFullYear();
 
+  // Business-model dashboard stats — total orders count + total
+  // spent across all orders + a static "tier" classification driven
+  // by spend. Only computed when this family is active.
+  let bmTotalOrders = 0;
+  let bmTotalSpent = 0;
+  let bmTier = 'Bronze';
+  if (isBM) {
+    const allOrders = await prisma.order.findMany({
+      where: { userId, store: { slug } },
+      select: { totalTHB: true },
+    });
+    bmTotalOrders = allOrders.length;
+    bmTotalSpent = allOrders.reduce((acc, o) => acc + Number(o.totalTHB), 0);
+    if (bmTotalSpent >= 100000) bmTier = 'Platinum';
+    else if (bmTotalSpent >= 30000) bmTier = 'Gold';
+    else if (bmTotalSpent >= 10000) bmTier = 'Silver';
+  }
+
   return (
     <div className="space-y-6">
       <Card
@@ -116,19 +147,23 @@ export default async function AccountDashboard({
             ? "flex items-center gap-4 rounded-2xl border bg-white p-6 shadow-sm"
             : isTrust
               ? "flex items-center gap-4 rounded-sm border bg-white p-6 shadow-sm"
-              : isLifestyle
-                ? "flex items-center gap-4 rounded-3xl border p-6 shadow-sm"
-                : "flex items-center gap-4 p-4"
+              : isBM
+                ? "flex items-center gap-4 rounded-md border bg-white p-5 shadow-sm"
+                : isLifestyle
+                  ? "flex items-center gap-4 rounded-3xl border p-6 shadow-sm"
+                  : "flex items-center gap-4 p-4"
         }
         style={
           isTrust
             ? { borderColor: "var(--shop-accent)" }
-            : isLifestyle
-              ? {
-                  background: "var(--shop-muted)",
-                  borderColor: "var(--shop-border)",
-                }
-              : undefined
+            : isBM
+              ? { borderColor: "var(--shop-border)" }
+              : isLifestyle
+                ? {
+                    background: "var(--shop-muted)",
+                    borderColor: "var(--shop-border)",
+                  }
+                : undefined
         }
       >
         <Avatar
@@ -137,9 +172,11 @@ export default async function AccountDashboard({
               ? "h-16 w-16"
               : isTrust
                 ? "h-16 w-16 rounded-sm"
-                : isLifestyle
-                  ? "h-16 w-16 rounded-2xl"
-                  : "h-14 w-14"
+                : isBM
+                  ? "h-14 w-14 rounded-md"
+                  : isLifestyle
+                    ? "h-16 w-16 rounded-2xl"
+                    : "h-14 w-14"
           }
         >
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
@@ -147,9 +184,11 @@ export default async function AccountDashboard({
             className={
               isTrust
                 ? "rounded-sm"
-                : isLifestyle
-                  ? "rounded-2xl"
-                  : undefined
+                : isBM
+                  ? "rounded-md"
+                  : isLifestyle
+                    ? "rounded-2xl"
+                    : undefined
             }
           >
             {initials}
@@ -176,6 +215,17 @@ export default async function AccountDashboard({
               Est. member since {memberYear}
             </p>
           )}
+          {isBM && (
+            <p
+              className="text-xs font-semibold uppercase"
+              style={{
+                color: 'var(--shop-primary)',
+                letterSpacing: '0.12em',
+              }}
+            >
+              B2B Account · Tier {bmTier}
+            </p>
+          )}
           {isLifestyle && (
             <p
               className="text-xs uppercase inline-flex items-center gap-1.5"
@@ -195,9 +245,11 @@ export default async function AccountDashboard({
                 ? "text-3xl"
                 : isTrust
                   ? "text-3xl"
-                  : isLifestyle
-                    ? "text-3xl"
-                    : "text-lg font-semibold"
+                  : isBM
+                    ? "text-2xl font-bold"
+                    : isLifestyle
+                      ? "text-3xl"
+                      : "text-lg font-semibold"
             }
             style={
               isFB
@@ -214,23 +266,31 @@ export default async function AccountDashboard({
                       color: 'var(--shop-ink)',
                       letterSpacing: '-0.01em',
                     }
-                  : isLifestyle
+                  : isBM
                     ? {
-                        fontFamily: LIFESTYLE_DISPLAY_FONT,
                         fontWeight: 700,
                         color: 'var(--shop-ink)',
-                        letterSpacing: '-0.01em',
+                        letterSpacing: '-0.015em',
                       }
-                    : undefined
+                    : isLifestyle
+                      ? {
+                          fontFamily: LIFESTYLE_DISPLAY_FONT,
+                          fontWeight: 700,
+                          color: 'var(--shop-ink)',
+                          letterSpacing: '-0.01em',
+                        }
+                      : undefined
             }
           >
             {isFB
               ? displayName
               : isTrust
                 ? `Welcome back, ${displayName}`
-                : isLifestyle
-                  ? `Hey ${displayName}!`
-                  : `สวัสดี, ${displayName}`}
+                : isBM
+                  ? `Welcome back, ${displayName}`
+                  : isLifestyle
+                    ? `Hey ${displayName}!`
+                    : `สวัสดี, ${displayName}`}
           </h1>
           {isTrust && (
             <div
@@ -276,64 +336,104 @@ export default async function AccountDashboard({
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={Package}
-          label={
-            isTrust
-              ? "Active orders"
-              : isLifestyle
-                ? "Active orders"
-                : "คำสั่งซื้อที่ใช้งาน"
-          }
-          value={activeOrders.toString()}
-          href={`${base}/orders`}
-          isTrust={isTrust}
-          isLifestyle={isLifestyle}
-        />
-        <StatCard
-          icon={MapPin}
-          label={
-            isTrust
-              ? "Saved addresses"
-              : isLifestyle
-                ? "Addresses"
-                : "ที่อยู่บันทึกไว้"
-          }
-          value={addressCount.toString()}
-          href={`${base}/addresses`}
-          isTrust={isTrust}
-          isLifestyle={isLifestyle}
-        />
-        <StatCard
-          icon={Wallet}
-          label={
-            isTrust
-              ? "Wallet balance"
-              : isLifestyle
-                ? "Wallet"
-                : "ยอด Anypay"
-          }
-          value="฿0"
-          href={`${base}/wallet`}
-          muted
-          isTrust={isTrust}
-          isLifestyle={isLifestyle}
-        />
-        <StatCard
-          icon={Heart}
-          label={
-            isTrust
-              ? "Favorites"
-              : isLifestyle
-                ? "Favorites"
-                : "รายการโปรด"
-          }
-          value="0"
-          href={`${base}/favorites`}
-          muted
-          isTrust={isTrust}
-          isLifestyle={isLifestyle}
-        />
+        {isBM ? (
+          <>
+            {/* Dashboard stat row — total orders / total spent /
+                active subscriptions / tier. Mono numerics + tight
+                caps labels. Wholesale buyers want spreadsheet data
+                up top, not a wallet placeholder. */}
+            <StatCard
+              icon={Package}
+              label="Total orders"
+              value={bmTotalOrders.toString()}
+              href={`${base}/orders`}
+              isBM
+            />
+            <StatCard
+              icon={Wallet}
+              label="Total spent"
+              value={`฿${bmTotalSpent.toLocaleString('th-TH')}`}
+              href={`${base}/orders`}
+              isBM
+            />
+            <StatCard
+              icon={Heart}
+              label="Active subs"
+              value="0"
+              href={`${base}/orders`}
+              muted
+              isBM
+            />
+            <StatCard
+              icon={MapPin}
+              label="Tier"
+              value={bmTier}
+              href={`${base}/orders`}
+              isBM
+            />
+          </>
+        ) : (
+          <>
+            <StatCard
+              icon={Package}
+              label={
+                isTrust
+                  ? "Active orders"
+                  : isLifestyle
+                    ? "Active orders"
+                    : "คำสั่งซื้อที่ใช้งาน"
+              }
+              value={activeOrders.toString()}
+              href={`${base}/orders`}
+              isTrust={isTrust}
+              isLifestyle={isLifestyle}
+            />
+            <StatCard
+              icon={MapPin}
+              label={
+                isTrust
+                  ? "Saved addresses"
+                  : isLifestyle
+                    ? "Addresses"
+                    : "ที่อยู่บันทึกไว้"
+              }
+              value={addressCount.toString()}
+              href={`${base}/addresses`}
+              isTrust={isTrust}
+              isLifestyle={isLifestyle}
+            />
+            <StatCard
+              icon={Wallet}
+              label={
+                isTrust
+                  ? "Wallet balance"
+                  : isLifestyle
+                    ? "Wallet"
+                    : "ยอด Anypay"
+              }
+              value="฿0"
+              href={`${base}/wallet`}
+              muted
+              isTrust={isTrust}
+              isLifestyle={isLifestyle}
+            />
+            <StatCard
+              icon={Heart}
+              label={
+                isTrust
+                  ? "Favorites"
+                  : isLifestyle
+                    ? "Favorites"
+                    : "รายการโปรด"
+              }
+              value="0"
+              href={`${base}/favorites`}
+              muted
+              isTrust={isTrust}
+              isLifestyle={isLifestyle}
+            />
+          </>
+        )}
       </div>
 
       <section>
@@ -471,6 +571,7 @@ function StatCard({
   href,
   muted = false,
   isTrust = false,
+  isBM = false,
   isLifestyle = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
@@ -479,6 +580,7 @@ function StatCard({
   href: string;
   muted?: boolean;
   isTrust?: boolean;
+  isBM?: boolean;
   isLifestyle?: boolean;
 }) {
   return (
@@ -487,19 +589,26 @@ function StatCard({
         className={
           isTrust
             ? "rounded-sm p-4 transition hover:shadow-md"
-            : isLifestyle
-              ? "rounded-3xl p-4 transition hover:shadow-md"
-              : "p-3 transition hover:shadow-md"
+            : isBM
+              ? "rounded-md p-4 transition hover:shadow-md"
+              : isLifestyle
+                ? "rounded-3xl p-4 transition hover:shadow-md"
+                : "p-3 transition hover:shadow-md"
         }
         style={
           isTrust
             ? { borderColor: "var(--shop-accent)" }
-            : isLifestyle
+            : isBM
               ? {
                   borderColor: "var(--shop-border)",
-                  background: "var(--shop-card)",
+                  background: "#fafafa",
                 }
-              : undefined
+              : isLifestyle
+                ? {
+                    borderColor: "var(--shop-border)",
+                    background: "var(--shop-card)",
+                  }
+                : undefined
         }
       >
         <div className="flex items-center gap-3">
@@ -507,9 +616,11 @@ function StatCard({
             className={
               isTrust
                 ? "rounded-sm border bg-[var(--shop-muted)] p-2"
-                : isLifestyle
-                  ? "rounded-full p-2 text-white"
-                  : "rounded-md bg-primary/10 p-2 text-primary"
+                : isBM
+                  ? "rounded-md border bg-white p-2"
+                  : isLifestyle
+                    ? "rounded-full p-2 text-white"
+                    : "rounded-md bg-primary/10 p-2 text-primary"
             }
             style={
               isTrust
@@ -517,12 +628,17 @@ function StatCard({
                     borderColor: "var(--shop-accent)",
                     color: "var(--shop-ink)",
                   }
-                : isLifestyle
+                : isBM
                   ? {
-                      background: "var(--shop-accent)",
-                      color: "#ffffff",
+                      borderColor: "var(--shop-border)",
+                      color: "var(--shop-primary)",
                     }
-                  : undefined
+                  : isLifestyle
+                    ? {
+                        background: "var(--shop-accent)",
+                        color: "#ffffff",
+                      }
+                    : undefined
             }
           >
             <Icon className="h-4 w-4" />
@@ -532,9 +648,11 @@ function StatCard({
               className={
                 isTrust
                   ? "text-[10px] uppercase"
-                  : isLifestyle
-                    ? "text-[10px] uppercase"
-                    : "text-xs text-muted-foreground"
+                  : isBM
+                    ? "text-[10px] font-semibold uppercase"
+                    : isLifestyle
+                      ? "text-[10px] uppercase"
+                      : "text-xs text-muted-foreground"
               }
               style={
                 isTrust
@@ -543,24 +661,32 @@ function StatCard({
                       letterSpacing: "0.22em",
                       fontWeight: 600,
                     }
-                  : isLifestyle
+                  : isBM
                     ? {
                         color: "var(--shop-ink-muted)",
-                        letterSpacing: "0.18em",
-                        fontWeight: 600,
+                        letterSpacing: "0.12em",
                       }
-                    : undefined
+                    : isLifestyle
+                      ? {
+                          color: "var(--shop-ink-muted)",
+                          letterSpacing: "0.18em",
+                          fontWeight: 600,
+                        }
+                      : undefined
               }
             >
               {label}
             </div>
             <div
+              data-bm-mono={isBM ? "true" : undefined}
               className={
                 isTrust
                   ? `text-xl ${muted ? "text-muted-foreground" : ""}`
-                  : isLifestyle
-                    ? `text-xl ${muted ? "text-muted-foreground" : ""}`
-                    : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
+                  : isBM
+                    ? `text-lg font-bold ${muted ? "text-muted-foreground" : ""}`
+                    : isLifestyle
+                      ? `text-xl ${muted ? "text-muted-foreground" : ""}`
+                      : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
               }
               style={
                 isTrust && !muted
@@ -570,14 +696,23 @@ function StatCard({
                         'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
                       fontWeight: 600,
                     }
-                  : isLifestyle && !muted
+                  : isBM && !muted
                     ? {
                         color: "var(--shop-ink)",
                         fontFamily:
-                          'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
+                          'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace',
+                        fontVariantNumeric: "tabular-nums",
                         fontWeight: 700,
+                        letterSpacing: "-0.01em",
                       }
-                    : undefined
+                    : isLifestyle && !muted
+                      ? {
+                          color: "var(--shop-ink)",
+                          fontFamily:
+                            'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
+                          fontWeight: 700,
+                        }
+                      : undefined
               }
             >
               {value}

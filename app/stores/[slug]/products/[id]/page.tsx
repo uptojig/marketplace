@@ -8,9 +8,11 @@ import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
+import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
@@ -54,8 +56,10 @@ export default async function ShopProductPage({
   // (in practice the template→group mapping is disjoint, but the
   // explicit precedence keeps things safe). trust (classic /
   // official-brand / premium-luxury) renders the squared heritage
-  // hero; FB renders the editorial portrait; lifestyle (home-living
-  // / sport-active / kids-toys) renders the warm catalog hero;
+  // hero; FB renders the editorial portrait; business-model
+  // (wholesale-b2b / flash-deal / subscription) renders the
+  // rectangular deal-dashboard hero; lifestyle (home-living /
+  // sport-active / kids-toys) renders the warm catalog hero;
   // everything else renders the default hero untouched.
   const isFB = isFashionBeautyStore({
     templateId: product.store.templateId,
@@ -65,7 +69,11 @@ export default async function ShopProductPage({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
-  const isLifestyle = !isFB && !isTrust && isLifestyleStore({
+  const isBM = !isFB && !isTrust && isBusinessModelStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const isLifestyle = !isFB && !isTrust && !isBM && isLifestyleStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
@@ -73,9 +81,11 @@ export default async function ShopProductPage({
     ? FashionBeautyProductHero
     : isTrust
       ? TrustProductHero
-      : isLifestyle
-        ? LifestyleProductHero
-        : ProductDetailHero;
+      : isBM
+        ? BusinessModelProductHero
+        : isLifestyle
+          ? LifestyleProductHero
+          : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -121,9 +131,16 @@ export default async function ShopProductPage({
             imageUrl: v.imageUrl,
             inventory: v.inventory,
           })),
-          // Use Prisma stockTotal as the catch-all stockLeft. When variants
-          // exist, the hero prefers the selected variant's inventory.
-          stockLeft: product.hasVariants ? null : product.stockTotal,
+          // Use Prisma stockTotal as stockLeft. For dropshipping products
+          // (CJ / AliExpress) stockTotal often stays 0 because real stock
+          // lives on the supplier side — treat 0 as "stock unknown" (null)
+          // so the Add to Cart button stays enabled instead of locking
+          // the buyer out. Variants override this via their own inventory.
+          stockLeft: product.hasVariants
+            ? null
+            : product.stockTotal > 0
+              ? product.stockTotal
+              : null,
           // rating / reviewCount / soldCount intentionally omitted —
           // not in schema yet. Hero hides the meta row gracefully.
         }}
@@ -165,14 +182,19 @@ export default async function ShopProductPage({
       {related.length > 0 && (
         <section
           className={
-            isFB || isTrust || isLifestyle ? "space-y-6 py-8" : "space-y-3"
+            isFB || isTrust || isLifestyle
+              ? "space-y-6 py-8"
+              : isBM
+                ? "space-y-4 py-6"
+                : "space-y-3"
           }
         >
           {/* Section eyebrow + heading. Trust adds a heritage caps
               eyebrow above the serif headline; FB renders a serif
-              headline only; lifestyle adds an optimistic sage caps
-              tagline above the geometric sans headline; default keeps
-              its compact sans label. */}
+              headline only; business-model uses a tight-caps utility
+              label; lifestyle adds an optimistic sage caps tagline
+              above the geometric sans headline; default keeps its
+              compact sans label. */}
           {isTrust && (
             <p
               className="text-xs uppercase"
@@ -183,6 +205,17 @@ export default async function ShopProductPage({
               }}
             >
               From the Collection
+            </p>
+          )}
+          {isBM && (
+            <p
+              className="text-xs font-semibold uppercase"
+              style={{
+                color: 'var(--shop-primary)',
+                letterSpacing: '0.12em',
+              }}
+            >
+              Related deals
             </p>
           )}
           {isLifestyle && (
@@ -201,7 +234,9 @@ export default async function ShopProductPage({
             className={
               isFB || isTrust || isLifestyle
                 ? "text-3xl sm:text-4xl"
-                : "text-lg font-semibold"
+                : isBM
+                  ? "text-xl sm:text-2xl"
+                  : "text-lg font-semibold"
             }
             style={{
               color: 'var(--shop-ink)',
@@ -232,9 +267,11 @@ export default async function ShopProductPage({
               ? 'You may also love'
               : isTrust
                 ? 'You may also like'
-                : isLifestyle
-                  ? 'You may also love'
-                  : 'สินค้าที่เกี่ยวข้อง'}
+                : isBM
+                  ? 'ดีลใกล้เคียง'
+                  : isLifestyle
+                    ? 'You may also love'
+                    : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={

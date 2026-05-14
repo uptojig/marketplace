@@ -22,12 +22,17 @@ import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { TrustCategoryGrid } from "@/components/storefront/themes/trust/TrustCategoryGrid";
+import { BusinessModelCategoryGrid } from "@/components/storefront/themes/business-model/BusinessModelCategoryGrid";
 import { LifestyleCategoryGrid } from "@/components/storefront/themes/lifestyle/LifestyleCategoryGrid";
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const BM_MONO_FONT =
+  'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace';
 
 const LIFESTYLE_DISPLAY_FONT =
   'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
@@ -78,12 +83,14 @@ export default async function CategoryIndexPage({
   if (!store) notFound();
 
   // Per-family branching. Trust gets the squared TrustCategoryGrid
-  // with heritage SKU + serif titles + gold-rule frame. Lifestyle
-  // gets the warm catalog LifestyleCategoryGrid with rounded-3xl
-  // cards, tag chips, optimistic taglines, and a sage squiggle
-  // divider. FB and the default continue to render the ProductCard
-  // markup below (FB's theme-fashion-beauty cascade promotes that
-  // grid into 4/5 portrait via the data-fb-promote-portrait CSS hook).
+  // with heritage SKU + serif titles + gold-rule frame. Business-model
+  // renders the dense rectangular deal-card grid with amber discount
+  // stickers + mono prices + savings chips. Lifestyle gets the warm
+  // catalog LifestyleCategoryGrid with rounded-3xl cards, tag chips,
+  // optimistic taglines, and a sage squiggle divider. FB and the
+  // default continue to render the ProductCard markup below (FB's
+  // theme-fashion-beauty cascade promotes that grid into 4/5 portrait
+  // via the data-fb-promote-portrait CSS hook).
   const isFB = isFashionBeautyStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
@@ -92,7 +99,11 @@ export default async function CategoryIndexPage({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
-  const isLifestyle = !isFB && !isTrust && isLifestyleStore({
+  const isBM = !isFB && !isTrust && isBusinessModelStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isLifestyle = !isFB && !isTrust && !isBM && isLifestyleStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -182,6 +193,17 @@ export default async function CategoryIndexPage({
                 Maison · The Collection
               </p>
             )}
+            {isBM && (
+              <p
+                className="mb-2 text-xs font-semibold uppercase"
+                style={{
+                  color: "var(--shop-primary)",
+                  letterSpacing: "0.12em",
+                }}
+              >
+                Deal Dashboard · ดีลทั้งหมด
+              </p>
+            )}
             {isLifestyle && (
               <p
                 className="mb-2 text-xs uppercase"
@@ -215,9 +237,11 @@ export default async function CategoryIndexPage({
             >
               {isTrust
                 ? "The Collection"
-                : isLifestyle
-                  ? "All the good stuff"
-                  : "สินค้าทั้งหมด"}
+                : isBM
+                  ? "Catalog & Deals"
+                  : isLifestyle
+                    ? "All the good stuff"
+                    : "สินค้าทั้งหมด"}
             </h1>
           </div>
           <div className="flex items-center gap-4">
@@ -348,6 +372,24 @@ export default async function CategoryIndexPage({
                         compareAtPriceTHB: p.compareAtPriceTHB
                           ? Number(p.compareAtPriceTHB)
                           : null,
+                      }))}
+                    />
+                  ) : isBM ? (
+                    <BusinessModelCategoryGrid
+                      storeSlug={store.slug}
+                      products={pageProducts.map((p) => ({
+                        id: p.id,
+                        title: p.titleTh ?? p.title,
+                        imageUrl: p.imageUrl,
+                        priceTHB: Number(p.priceTHB),
+                        compareAtPriceTHB: p.compareAtPriceTHB
+                          ? Number(p.compareAtPriceTHB)
+                          : null,
+                        // stockLeft drives the amber low-stock chip
+                        // on the card. Only pass when variants are
+                        // absent — variant-heavy products handle
+                        // stock on the PDP.
+                        stockLeft: p.hasVariants ? null : p.stockTotal,
                       }))}
                     />
                   ) : isLifestyle ? (

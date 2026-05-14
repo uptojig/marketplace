@@ -34,6 +34,12 @@ import {
   isTrustStore,
 } from "@/lib/landing/trust";
 import {
+  BUSINESS_MODEL_BODY_CLASS,
+  BUSINESS_MODEL_TOKENS,
+  businessModelCssVars,
+  isBusinessModelStore,
+} from "@/lib/landing/business-model";
+import {
   LIFESTYLE_BODY_CLASS,
   LIFESTYLE_TOKENS,
   lifestyleCssVars,
@@ -184,15 +190,25 @@ export default async function ShopLayout({
   const trustVars = isTrust ? trustCssVars() : {};
   const trustClass = isTrust ? TRUST_BODY_CLASS : "";
 
+  // Business-model family (DESIGN-B sibling). Targets the deal /
+  // wholesale templates (wholesale-b2b, flash-deal, subscription).
+  // Stacked alongside FB + trust so we never break their cascades:
+  // FB and trust are checked first; this only activates when neither
+  // matched. The detection set is disjoint by template group so a
+  // single store can only ever land in one family. Reads from
+  // lib/landing/business-model.ts — same shape as the trust module.
+  const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const bmVars = isBusinessModel ? businessModelCssVars() : {};
+  const bmClass = isBusinessModel ? BUSINESS_MODEL_BODY_CLASS : "";
+
   // Lifestyle family (warm catalog / outdoorsy). Stacked AFTER trust
-  // in the chain so trust + FB win if a store somehow matched two —
-  // template→group is disjoint in practice so this is belt-and-braces.
-  // Reads from lib/landing/lifestyle.ts. Note the negation guards: we
-  // explicitly check !isFB && !isTrust here, plus the layout doesn't
-  // yet need to negate electronics-tech / specialty because those
-  // families aren't wired into this dispatcher today — they'll add
-  // their own guards in PR-43/PR-44 when they land.
-  const isLifestyle = !isFB && !isTrust && isLifestyleStore({
+  // and business-model in the chain — template→group is disjoint in
+  // practice so this is belt-and-braces. Reads from
+  // lib/landing/lifestyle.ts.
+  const isLifestyle = !isFB && !isTrust && !isBusinessModel && isLifestyleStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -201,37 +217,40 @@ export default async function ShopLayout({
 
   // Convenience aliases — the layout's three render paths all want
   // "give me the active family's class + vars" without recomputing.
-  // FB takes precedence by virtue of being checked first above.
-  const familyClass = [fbClass, trustClass, lifestyleClass]
+  // FB takes precedence by virtue of being checked first above; trust
+  // is next, business-model, then lifestyle.
+  const familyClass = [fbClass, trustClass, bmClass, lifestyleClass]
     .filter(Boolean)
     .join(" ");
   // Merge order matters — earlier checks win because their vars
-  // shadow later ones. FB → trust → lifestyle: only one is non-empty
-  // in practice (disjoint detection) but the merge order ensures a
-  // deterministic precedence if two ever overlap.
-  const familyVars = { ...lifestyleVars, ...trustVars, ...fbVars };
+  // shadow later ones. FB → trust → business-model → lifestyle.
+  const familyVars = { ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
   // Active family's accent — used by ShopHeader / ShopFooter to
   // paint chrome links + glyph fills. FB pink stays as it was; trust
-  // borrows the gold for accents (the charcoal primary stays in CTAs);
-  // lifestyle uses sage so chrome glyphs read outdoorsy.
+  // borrows the gold for accents; business-model uses amber; lifestyle
+  // uses sage so chrome glyphs read outdoorsy.
   const familyAccent = isFB
     ? "#f43f5e"
     : isTrust
       ? TRUST_TOKENS.colors.accent
-      : isLifestyle
-        ? LIFESTYLE_TOKENS.colors.accent
-        : null;
+      : isBusinessModel
+        ? BUSINESS_MODEL_TOKENS.colors.accent
+        : isLifestyle
+          ? LIFESTYLE_TOKENS.colors.accent
+          : null;
   // Button shape pinned per-family — FB pills, trust squared,
-  // lifestyle pill (rectangular pill via globals.css rounded-full
-  // on primary CTAs). Falls through to the per-template default
-  // when none applies.
+  // business-model squared (utility / rectangular), lifestyle pill
+  // (rectangular pill via globals.css rounded-full on primary CTAs).
+  // Falls through to the per-template default when none applies.
   const familyButtonShape: "pill" | "square" | null = isFB
     ? "pill"
     : isTrust
       ? "square"
-      : isLifestyle
-        ? "pill"
-        : null;
+      : isBusinessModel
+        ? "square"
+        : isLifestyle
+          ? "pill"
+          : null;
 
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality
