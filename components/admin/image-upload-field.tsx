@@ -12,7 +12,7 @@
  *                   returned blob URL back into the same field.
  *
  * Live preview renders below at the configured aspect ratio. Errors
- * (size limit, content-type, BLOB_READ_WRITE_TOKEN missing) surface
+ * (size limit, content-type, SPACES_* env not configured) surface
  * inline so the operator knows which step failed.
  */
 

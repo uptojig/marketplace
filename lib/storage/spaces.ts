@@ -8,9 +8,9 @@
  *   SPACES_KEY       — access key id
  *   SPACES_SECRET    — secret access key
  *
- * Server-side `uploadBuffer` PUTs through the Vercel function so the
- * browser never needs Spaces CORS configured. For very large files
- * use `presignUpload` instead and let the browser PUT directly.
+ * Server-side `uploadBuffer` PUTs through the Next.js API route so
+ * the browser never needs Spaces CORS configured. For very large
+ * files use `presignUpload` instead and let the browser PUT directly.
  */
 
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
