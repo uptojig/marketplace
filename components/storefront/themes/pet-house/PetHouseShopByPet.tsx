@@ -55,7 +55,21 @@ async function fetchPetCounts(storeId: string) {
 }
 
 export async function PetHouseShopByPet({ storeId, storeSlug }: Props) {
-  const { cats, dogs } = await fetchPetCounts(storeId);
+  const { cats, dogs, fallback } = await fetchPetCounts(storeId);
+
+  // When products aren't tagged with cat/dog keywords (fallback mode)
+  // the ?cat=cats|dogs filter would land on an empty grid. Drop the
+  // filter in that case so the card still leads somewhere useful —
+  // the full catalog where the buyer can browse what's actually in
+  // stock. Same when one bucket matched zero on its own.
+  const catsHref =
+    fallback || cats === 0
+      ? `/stores/${storeSlug}/category`
+      : `/stores/${storeSlug}/category?cat=cats`;
+  const dogsHref =
+    fallback || dogs === 0
+      ? `/stores/${storeSlug}/category`
+      : `/stores/${storeSlug}/category?cat=dogs`;
 
   return (
     <section className="px-6 sm:px-8 py-9" style={{ background: '#FAF7F4' }}>
@@ -97,7 +111,7 @@ export async function PetHouseShopByPet({ storeId, storeSlug }: Props) {
         <div className="grid gap-3.5 md:grid-cols-2">
           {/* Cats card */}
           <Link
-            href={`/stores/${storeSlug}/category?cat=cats`}
+            href={catsHref}
             className="relative block overflow-hidden transition hover:shadow"
             style={{
               borderRadius: '12px',
@@ -264,7 +278,7 @@ export async function PetHouseShopByPet({ storeId, storeSlug }: Props) {
 
           {/* Dogs card */}
           <Link
-            href={`/stores/${storeSlug}/category?cat=dogs`}
+            href={dogsHref}
             className="relative block overflow-hidden transition hover:shadow"
             style={{
               borderRadius: '12px',

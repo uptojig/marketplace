@@ -5,10 +5,11 @@
  * PUT it to DigitalOcean Spaces (S3-compatible) → return the public
  * URL → the form writes that URL into store.logoUrl / store.bannerUrl.
  *
- * Required env: SPACES_ENDPOINT, SPACES_REGION, SPACES_BUCKET,
- * SPACES_KEY, SPACES_SECRET. Without them we 503 with a helpful
- * message so the form renders an inline error rather than uploading
- * silently into the void.
+ * Required env (set in `.env` next to docker-compose.yml, then
+ * `docker compose up -d` to restart): SPACES_ENDPOINT, SPACES_REGION,
+ * SPACES_BUCKET, SPACES_KEY, SPACES_SECRET. Without them we 503 with
+ * a helpful message so the form renders an inline error rather than
+ * uploading silently into the void.
  *
  * Auth: requires ADMIN role OR the caller to be a store owner. The
  * uploaded URL is public regardless of who uploaded it (Spaces ACL
@@ -67,7 +68,7 @@ export async function POST(req: Request) {
       {
         error: "spaces_not_configured",
         detail:
-          "SPACES_ENDPOINT / SPACES_BUCKET / SPACES_KEY / SPACES_SECRET are not set. Add them in Vercel project env vars.",
+          "SPACES_ENDPOINT / SPACES_BUCKET / SPACES_KEY / SPACES_SECRET are not set. Add them to .env (next to docker-compose.yml) then `docker compose up -d` to restart.",
       },
       { status: 503 },
     );

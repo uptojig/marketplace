@@ -46,6 +46,19 @@ export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const path = url.pathname;
 
+  // On a shop droplet, buyer auth paths must render the per-store
+  // signin/signup — not the central seller-signin that lives in
+  // PASSTHROUGH_PREFIXES below. NextAuth's default unauthenticated
+  // redirect (`signIn: "/signin"`) otherwise lands buyers on the
+  // basketplace-branded seller page even while their address bar
+  // still shows the shop's own domain.
+  const shopSlug = process.env.SHOP_SLUG;
+  if (shopSlug && (path === "/signin" || path === "/signup")) {
+    const target = url.clone();
+    target.pathname = `/stores/${shopSlug}${path}`;
+    return NextResponse.rewrite(target);
+  }
+
   // Skip framework / API / already-namespaced routes
   if (PASSTHROUGH_PREFIXES.some((p) => path === p || path.startsWith(p))) {
     // Inject the request URL as a header so server layouts/components
@@ -69,7 +82,6 @@ export async function middleware(req: NextRequest) {
   // straight to that store — no host-based routing or DB lookup needed.
   // This is the right behavior whether the request came in via the
   // platform subdomain or via the vendor's custom domain.
-  const shopSlug = process.env.SHOP_SLUG;
   if (shopSlug) {
     const target = url.clone();
     target.pathname = `/stores/${shopSlug}${path === "/" ? "" : path}`;
