@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Map, MessageCircleMore, Lock } from "lucide-react";
+import { Map } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatStoreAddressLines } from "@/lib/format/storeAddress";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@/components/shop/StoreSocialIcons";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
+import { ContactForm } from "./contact-form";
 
 export const dynamic = "force-dynamic";
 
@@ -100,28 +101,10 @@ export default async function StoreContactPage({
       </div>
 
       <div className="grid gap-5 md:grid-cols-[1fr,360px]">
-        {/* Left: message empty-state (signed-out) */}
-        <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-xl border p-8 text-center" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.06]"
-          >
-            <MessageCircleMore className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 text-gray-400" />
-          </div>
-          <div className="relative space-y-5">
-            <p className="text-sm" style={{ color: 'var(--shop-ink-muted)' }}>
-              เข้าสู่ระบบเพื่อส่งข้อความถึงร้านค้า
-            </p>
-            <Link
-              href={`/stores/${params.slug}/signin?callbackUrl=${encodeURIComponent(`/stores/${params.slug}/contact`)}`}
-              className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
-              style={{ backgroundColor: "var(--shop-primary)" }}
-            >
-              <Lock className="h-4 w-4" />
-              เข้าสู่ระบบ
-            </Link>
-          </div>
-        </div>
+        {/* Left: contact form — guest-friendly, no signin required.
+            Submissions POST to /api/stores/[slug]/contact which emails
+            the store's contactEmail via Resend. */}
+        <ContactForm storeSlug={params.slug} storeName={store.name} />
 
         {/* Right: store info card */}
         <aside className="space-y-6 rounded-xl border p-6" style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}>
