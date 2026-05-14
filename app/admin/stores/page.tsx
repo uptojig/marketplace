@@ -63,9 +63,24 @@ export default async function AdminStoresPage({
   // categorized / low-image. Fan-out is bounded (<= 200 stores per
   // the take above) and each snapshot is three count() queries, so
   // we accept the parallelism rather than wiring a custom join.
+  //
+  // DEFENSIVE: a single bad row (e.g. a galleryUrls column stored as
+  // a malformed Json shape) would otherwise reject the whole
+  // Promise.all and crash the page — fall back to `null` per-store
+  // so the rest of the table still renders.
   const qualityById = new Map(
     await Promise.all(
-      stores.map(async (s) => [s.id, await getStoreQualitySnapshot(s.id)] as const),
+      stores.map(async (s) => {
+        try {
+          return [s.id, await getStoreQualitySnapshot(s.id)] as const;
+        } catch (err) {
+          console.error(
+            `[admin/stores] quality snapshot failed for ${s.slug}:`,
+            err instanceof Error ? err.message : err,
+          );
+          return [s.id, null] as const;
+        }
+      }),
     ),
   );
 
