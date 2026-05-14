@@ -159,6 +159,10 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
           [data-tech-glow] selector wraps this in a drop-shadow
           stack so the glow follows transparent edges. */}
       <div data-tech-glow="true">
+        {/* Square aspect wrapper for catalog consistency; object-contain
+            so devices / boxes / accessories of every native ratio show
+            uncropped. Letterboxing fills with --shop-muted, which on
+            tech themes is a near-black so the product still pops. */}
         <div
           className="overflow-hidden rounded-md border bg-white"
           style={{ borderColor: 'var(--shop-border)' }}
@@ -171,7 +175,7 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
               src={images[idx]}
               alt={product.title}
               fill
-              className="object-cover"
+              className="object-contain"
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
@@ -590,7 +594,7 @@ function InfoColumn({
           Qty
         </span>
         <div
-          className="inline-flex items-center rounded-md border bg-white"
+          className="inline-flex h-9 items-center overflow-hidden rounded-md border bg-white"
           style={{ borderColor: 'var(--shop-border)' }}
         >
           <Button
@@ -605,17 +609,19 @@ function InfoColumn({
           </Button>
           <input
             type="number"
+            inputMode="numeric"
             value={qty}
             data-tech-mono="true"
             onChange={(e) =>
               setQty(Math.max(1, parseInt(e.target.value, 10) || 1))
             }
-            className="h-9 w-12 border-x bg-transparent text-center text-sm focus:outline-none"
+            className="h-9 w-12 border-x bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             style={{
               borderColor: 'var(--shop-border)',
               fontFamily: TECH_MONO_FONT,
               fontWeight: 600,
             }}
+            aria-label="Qty"
           />
           <Button
             type="button"

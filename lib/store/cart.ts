@@ -37,8 +37,8 @@ interface CartState {
   lines: CartLineDisplay[];
 
   add: (line: Omit<CartLineDisplay, "qty">, qty?: number) => void;
-  setQty: (productId: string, qty: number) => void;
-  remove: (productId: string) => void;
+  setQty: (productId: string, qty: number, storeSlug?: string) => void;
+  remove: (productId: string, storeSlug?: string) => void;
 
   /** Drop all lines belonging to one store (e.g. after that store's
    *  checkout completes). */
@@ -80,19 +80,28 @@ export const useCart = create<CartState>()(
           set({ lines: [...get().lines, { ...line, qty }] });
         }
       },
-      setQty: (productId, qty) => {
+      setQty: (productId, qty, storeSlug) => {
+        // Match (productId, storeSlug) when slug provided so per-store
+        // cart isolation holds for the same product carried by two
+        // different stores. Fall back to productId-only when slug isn't
+        // passed (legacy callers / admin debug surfaces).
+        const matches = (l: CartLineDisplay) =>
+          l.productId === productId &&
+          (storeSlug === undefined || l.storeSlug === storeSlug);
         if (qty <= 0) {
-          set({ lines: get().lines.filter((l) => l.productId !== productId) });
+          set({ lines: get().lines.filter((l) => !matches(l)) });
           return;
         }
         set({
-          lines: get().lines.map((l) =>
-            l.productId === productId ? { ...l, qty } : l,
-          ),
+          lines: get().lines.map((l) => (matches(l) ? { ...l, qty } : l)),
         });
       },
-      remove: (productId) =>
-        set({ lines: get().lines.filter((l) => l.productId !== productId) }),
+      remove: (productId, storeSlug) => {
+        const matches = (l: CartLineDisplay) =>
+          l.productId === productId &&
+          (storeSlug === undefined || l.storeSlug === storeSlug);
+        set({ lines: get().lines.filter((l) => !matches(l)) });
+      },
       clearStore: (storeSlug) =>
         set({ lines: get().lines.filter((l) => l.storeSlug !== storeSlug) }),
       clear: () => set({ lines: [] }),

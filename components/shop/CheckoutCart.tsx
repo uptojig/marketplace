@@ -60,7 +60,9 @@ export function CheckoutCart({
                 <div className="inline-flex h-7 items-center rounded-md border text-sm">
                   <button
                     type="button"
-                    onClick={() => setQty(l.productId, l.qty - 1)}
+                    onClick={() =>
+                      setQty(l.productId, l.qty - 1, l.storeSlug)
+                    }
                     className="px-2"
                   >
                     −
@@ -68,7 +70,9 @@ export function CheckoutCart({
                   <span className="w-8 border-x px-2 text-center">{l.qty}</span>
                   <button
                     type="button"
-                    onClick={() => setQty(l.productId, l.qty + 1)}
+                    onClick={() =>
+                      setQty(l.productId, l.qty + 1, l.storeSlug)
+                    }
                     className="px-2"
                   >
                     +
@@ -83,7 +87,7 @@ export function CheckoutCart({
           {editable && (
             <button
               type="button"
-              onClick={() => remove(l.productId)}
+              onClick={() => remove(l.productId, l.storeSlug)}
               className="text-muted-foreground hover:text-destructive"
               aria-label="Remove"
             >

@@ -16,9 +16,14 @@ import { formatTHB } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 /**
- * /order-success?orderId=… — post-payment confirmation matching the
- * TUI Plus order-confirmation pattern. Big check + "ขอบคุณ" + order
- * number + items + summary + tracking CTA + LINE follow.
+ * /order-success?orderId=… — legacy post-payment confirmation page.
+ *
+ * Phase-1B introduces /stores/[slug]/checkout/success as the canonical
+ * per-store success path so buyers stay inside the storefront chrome
+ * (header/footer + theme cascade) after paying. To keep older callers
+ * (e.g. /mock-payment-gate redirect) working we now bounce single-
+ * store orders to the per-store path. Multi-store orders fall back to
+ * the centralized layout below.
  *
  * Security: requires session matching order.userId. Returns 404 for
  * non-owners (same shape whether order is missing or just isn't
@@ -75,6 +80,16 @@ export default async function OrderSuccess({
     singleStore && order.items[0]?.product.store?.name
       ? order.items[0].product.store.name
       : null;
+
+  // Phase-1B: when the order lives entirely inside one store, bounce
+  // to the per-store success page so the storefront chrome + theme
+  // cascade survives. The legacy marketplace-level layout below is
+  // only rendered for multi-store carts (rare today).
+  if (singleStore) {
+    redirect(
+      `/stores/${singleStore}/checkout/success?orderId=${encodeURIComponent(orderId)}`,
+    );
+  }
 
   // Estimated delivery — naive 1-3 business days for now (TODO real
   // ETA from shipping carrier API).
@@ -185,12 +200,16 @@ export default async function OrderSuccess({
         </section>
 
         {/* ── Primary actions ──────────────────────────────────── */}
+        {/* This block only renders for multi-store orders (rare); the
+            single-store path redirects to /stores/[slug]/checkout/success.
+            There's no central /orders/[id] route, so the primary CTA
+            here just bounces back to the marketplace home. */}
         <div className="mt-10 grid sm:grid-cols-2 gap-3">
           <Link
-            href={`/orders/${order.id}`}
+            href="/"
             className="inline-flex items-center justify-center gap-2 rounded-md bg-stone-900 px-5 py-3 text-sm font-semibold text-white hover:bg-stone-800 transition-colors"
           >
-            ติดตามสถานะคำสั่งซื้อ
+            กลับสู่หน้าแรก
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link

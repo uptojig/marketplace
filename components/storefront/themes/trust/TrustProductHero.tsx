@@ -148,7 +148,10 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
   return (
     <div className="lg:sticky lg:top-6 lg:self-start">
       {/* Gold-rule frame — image bleeds edge-to-edge inside (no
-          inner mat). Square aspect (vs FB's 4/5 portrait). */}
+          inner mat). Square aspect wrapper keeps the layout stable
+          while object-contain preserves the natural ratio of the
+          product photograph (luxury / artisanal goods are routinely
+          shot non-square — we should not crop them). */}
       <div
         data-trust-frame="true"
         className="rounded-sm border bg-white"
@@ -162,7 +165,7 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
             src={images[idx]}
             alt={product.title}
             fill
-            className="object-cover"
+            className="object-contain"
             priority
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
@@ -445,7 +448,7 @@ function InfoColumn({
           จำนวน
         </span>
         <div
-          className="inline-flex items-center rounded-sm border bg-white"
+          className="inline-flex h-9 items-center overflow-hidden rounded-sm border bg-white"
           style={{ borderColor: 'var(--shop-border)' }}
         >
           <Button
@@ -460,10 +463,12 @@ function InfoColumn({
           </Button>
           <input
             type="number"
+            inputMode="numeric"
             value={qty}
             onChange={(e) => setQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-            className="h-9 w-12 border-x bg-transparent text-center focus:outline-none"
+            className="h-9 w-12 border-x bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             style={{ borderColor: 'var(--shop-border)' }}
+            aria-label="จำนวน"
           />
           <Button
             type="button"

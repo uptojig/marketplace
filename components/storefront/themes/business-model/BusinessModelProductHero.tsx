@@ -195,6 +195,10 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
         className="relative overflow-hidden rounded-md border bg-white"
         style={{ borderColor: 'var(--shop-border)' }}
       >
+        {/* Square aspect wrapper for layout consistency; object-contain
+            so the product photo isn't cropped at its natural ratio
+            (BM stores often sell mixed-aspect SKUs — kits, bundles,
+            boxed goods). bg-[var(--shop-muted)] handles letterbox. */}
         <AspectRatio
           ratio={1}
           className="overflow-hidden bg-[var(--shop-muted)]"
@@ -203,7 +207,7 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
             src={images[idx]}
             alt={product.title}
             fill
-            className="object-cover"
+            className="object-contain"
             priority
             sizes="(max-width: 1024px) 100vw, 55vw"
           />
@@ -698,7 +702,7 @@ function InfoColumn({
           จำนวน
         </span>
         <div
-          className="inline-flex items-center rounded-md border bg-white"
+          className="inline-flex h-9 items-center overflow-hidden rounded-md border bg-white"
           style={{ borderColor: 'var(--shop-border)' }}
         >
           <Button
@@ -713,15 +717,17 @@ function InfoColumn({
           </Button>
           <input
             type="number"
+            inputMode="numeric"
             value={qty}
             onChange={(e) => setQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
             data-bm-mono="true"
-            className="h-9 w-14 border-x bg-transparent text-center font-bold focus:outline-none"
+            className="h-9 w-14 border-x bg-transparent text-center font-bold focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             style={{
               borderColor: 'var(--shop-border)',
               fontFamily: BM_MONO_FONT,
               fontVariantNumeric: 'tabular-nums',
             }}
+            aria-label="จำนวน"
           />
           <Button
             type="button"

@@ -333,7 +333,7 @@ function InfoColumn({
           จำนวน
         </span>
         <div
-          className="inline-flex items-center rounded-full border bg-white"
+          className="inline-flex h-9 items-center overflow-hidden rounded-full border bg-white"
           style={{ borderColor: 'var(--shop-border)' }}
         >
           <Button
@@ -342,16 +342,18 @@ function InfoColumn({
             size="icon"
             onClick={() => setQty(Math.max(1, qty - 1))}
             disabled={qty <= 1}
-            className="h-9 w-9 rounded-l-full rounded-r-none hover:bg-[var(--shop-muted)]"
+            className="h-9 w-9 rounded-none hover:bg-[var(--shop-muted)]"
           >
             <Minus className="h-3.5 w-3.5" />
           </Button>
           <input
             type="number"
+            inputMode="numeric"
             value={qty}
             onChange={(e) => setQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-            className="h-9 w-12 border-x bg-transparent text-center focus:outline-none"
+            className="h-9 w-12 border-x bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             style={{ borderColor: 'var(--shop-border)' }}
+            aria-label="จำนวน"
           />
           <Button
             type="button"
@@ -359,7 +361,7 @@ function InfoColumn({
             size="icon"
             onClick={() => setQty(qty + 1)}
             disabled={stockLeft != null && qty >= stockLeft}
-            className="h-9 w-9 rounded-r-full rounded-l-none hover:bg-[var(--shop-muted)]"
+            className="h-9 w-9 rounded-none hover:bg-[var(--shop-muted)]"
           >
             <Plus className="h-3.5 w-3.5" />
           </Button>

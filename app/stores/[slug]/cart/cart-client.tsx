@@ -389,7 +389,11 @@ export function StoreCartClient({
                         : undefined
                     }
                   >
-                    {/* Image */}
+                    {/* Image — object-contain so the natural product
+                        ratio is preserved (matches PDP hero behaviour
+                        introduced in the bug-fix pass). Falls back to
+                        the shop-muted / white background for letterbox
+                        space so it doesn't read as broken. */}
                     <Link
                       href={`/stores/${store.slug}/products/${l.productId}`}
                       className={
@@ -408,7 +412,7 @@ export function StoreCartClient({
                         <img
                           src={l.imageUrl}
                           alt={l.title}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-contain"
                           referrerPolicy="no-referrer"
                         />
                       ) : null}
@@ -464,14 +468,21 @@ export function StoreCartClient({
                       </div>
 
                       <div className="mt-3 sm:mt-4 flex items-end justify-between">
-                        {/* Quantity stepper — scaffold-style icon buttons */}
+                        {/* Quantity stepper — scaffold-style icon buttons.
+                            Browser-native number arrows are hidden via
+                            [appearance:textfield] + inputMode="numeric"
+                            so the custom +/- buttons aren't visually
+                            doubled. Per-store cart isolation: scope the
+                            mutation to (productId, store.slug). */}
                         <div
-                          className="inline-flex items-center rounded-md border"
+                          className="inline-flex h-9 items-center overflow-hidden rounded-md border"
                           style={{ borderColor: "var(--shop-border)" }}
                         >
                           <button
                             type="button"
-                            onClick={() => setQty(l.productId, l.qty - 1)}
+                            onClick={() =>
+                              setQty(l.productId, l.qty - 1, store.slug)
+                            }
                             disabled={l.qty <= 1}
                             aria-label="ลด"
                             className="inline-flex h-9 w-9 items-center justify-center text-sm disabled:opacity-40"
@@ -481,6 +492,7 @@ export function StoreCartClient({
                           </button>
                           <input
                             type="number"
+                            inputMode="numeric"
                             min={1}
                             value={l.qty}
                             onChange={(e) =>
@@ -490,9 +502,10 @@ export function StoreCartClient({
                                   1,
                                   parseInt(e.target.value, 10) || 1,
                                 ),
+                                store.slug,
                               )
                             }
-                            className="w-12 bg-transparent py-1.5 text-center text-sm focus:outline-none"
+                            className="h-9 w-12 bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                             style={{
                               color: "var(--shop-ink)",
                               borderLeft: "1px solid var(--shop-border)",
@@ -502,7 +515,9 @@ export function StoreCartClient({
                           />
                           <button
                             type="button"
-                            onClick={() => setQty(l.productId, l.qty + 1)}
+                            onClick={() =>
+                              setQty(l.productId, l.qty + 1, store.slug)
+                            }
                             aria-label="เพิ่ม"
                             className="inline-flex h-9 w-9 items-center justify-center text-sm"
                             style={{ color: "var(--shop-ink)" }}
@@ -514,7 +529,7 @@ export function StoreCartClient({
                         {/* Remove */}
                         <button
                           type="button"
-                          onClick={() => remove(l.productId)}
+                          onClick={() => remove(l.productId, store.slug)}
                           className="inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
                           style={{ color: "var(--shop-ink-muted)" }}
                           aria-label={`ลบ ${l.title}`}

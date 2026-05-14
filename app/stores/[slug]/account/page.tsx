@@ -488,7 +488,9 @@ export default async function AccountDashboard({
                       : "ยอด Anypay"
               }
               value="฿0"
-              href={`${base}/wallet`}
+              /* Wallet view doesn't exist yet (Phase 1D) — bounce back
+                 to the account home rather than 404. */
+              href={`${base}`}
               muted
               isTrust={isTrust}
               isLifestyle={isLifestyle}
@@ -506,7 +508,9 @@ export default async function AccountDashboard({
                       : "รายการโปรด"
               }
               value="0"
-              href={`${base}/favorites`}
+              /* No per-account favorites view yet — point at the
+                 existing per-store wishlist page. */
+              href={`/stores/${slug}/wishlist`}
               muted
               isTrust={isTrust}
               isLifestyle={isLifestyle}

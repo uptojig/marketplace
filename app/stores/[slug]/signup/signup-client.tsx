@@ -481,11 +481,17 @@ export function StoreSignUpClient({
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             การสมัครสมาชิกถือว่าคุณยอมรับ{' '}
-            <Link href="/help/terms" className="underline">
+            <Link
+              href={`/stores/${storeSlug}/help/terms`}
+              className="underline"
+            >
               ข้อกำหนด
             </Link>{' '}
             และ{' '}
-            <Link href="/help/privacy" className="underline">
+            <Link
+              href={`/stores/${storeSlug}/help/privacy`}
+              className="underline"
+            >
               นโยบายความเป็นส่วนตัว
             </Link>
           </p>

@@ -32,11 +32,13 @@ export default function MyCouponsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold lg:text-2xl">คูปองของฉัน</h1>
         <Button asChild variant="outline" size="sm">
-          {/* TODO(phase-4): /coupons is currently a single global public
-              page (PR #28). Per Shopify-like architecture, each store
-              should have its own coupon claim page at
-              /stores/[slug]/coupons. Switch this href when that moves. */}
-          <Link href="/coupons">
+          {/* /coupons is currently a single global public page (PR #28)
+              that was removed during per-store migration. Until the
+              per-store coupon claim page lands at
+              /stores/[slug]/coupons, bounce shoppers back to the store
+              home so they can browse products that may carry coupon
+              banners. */}
+          <Link href={slug ? `/stores/${slug}` : '/'}>
             <Ticket className="mr-1 h-4 w-4" /> หาคูปองเพิ่ม
           </Link>
         </Button>
