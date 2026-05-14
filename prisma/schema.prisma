@@ -804,3 +804,55 @@ model ProvisioningJob {
   @@index([status, scheduledFor])
   @@index([type, status])
 }
+
+// =====================================================================
+// ImportJob — supplier-product import workflow. One job per
+// admin/vendor batch (CJ + AliExpress fetches). Items snapshot the
+// IP-check + translation pipeline output so the operator can review
+// before committing them to Product.
+// =====================================================================
+model ImportJob {
+  id           String          @id @default(cuid())
+  storeId      String
+  userId       String
+  source       String          // 'cj' | 'aliexpress'
+  status       String          @default("REVIEW") // 'REVIEW' | 'COMMITTED' | 'CANCELLED'
+  // Summary counts mirrored from items for quick listing.
+  totalCount   Int             @default(0)
+  acceptedCount Int            @default(0)
+  flaggedCount Int             @default(0)
+  rejectedCount Int            @default(0)
+  // Reason → count map; kept as JSON since the reason set evolves
+  // alongside the IP rules in lib/import-pipeline/ip-filter.ts.
+  rejectionBreakdown Json      @default("{}")
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  items ImportJobItem[]
+
+  @@index([storeId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model ImportJobItem {
+  id              String   @id @default(cuid())
+  jobId           String
+  externalId      String
+  status          String   // 'accepted' | 'flagged' | 'rejected'
+  title           String
+  titleTh         String?
+  primaryImage    String
+  costTHB         Decimal? @db.Decimal(12, 2)
+  priceTHB        Decimal? @db.Decimal(12, 2)
+  rejectionReason String?
+  flaggedCategory String?
+  translated      Json?
+  // Set after the operator commits this item — id of the Product row.
+  productId       String?
+  createdAt       DateTime @default(now())
+
+  job ImportJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([externalId])
+}

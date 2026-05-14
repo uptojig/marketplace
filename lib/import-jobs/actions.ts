@@ -65,10 +65,7 @@ export interface ImportJobResult {
   }>;
 }
 
-// In-memory store for demo. Replace with import_jobs DB table.
-const jobStore = new Map<string, ImportJobResult>();
-
-export async function createImportJob(input: CreateImportJobInput): Promise<ImportJobResult> {
+export async function createImportJob(input: CreateImportJobInput & { storeId?: string }): Promise<ImportJobResult> {
   const session = await requireSession();
   const client = getSupplierClient(input.source);
 
@@ -81,41 +78,108 @@ export async function createImportJob(input: CreateImportJobInput): Promise<Impo
   // 2. Run pipeline (IP filter + translation)
   const { results, summary } = await processBatch(validProducts);
 
-  // 3. Build job result
-  const jobId = `imp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const items = results.map((r, i) => {
-    const sp = validProducts[i];
-    return {
-      id: `${jobId}_${i}`,
-      externalId: r.externalId,
-      status: r.status,
-      title: sp.title,
-      titleTh: r.translated?.title.th,
-      primaryImage: sp.primaryImage,
-      costTHB: r.translated?.costTHB,
-      priceTHB: r.translated?.priceTHB,
-      rejectionReason: r.rejectionReason,
-      flaggedCategory: r.ipCheck.category,
-      translated: r.translated,
-    };
+  // 3. Persist job + items in one transaction
+  const job = await prisma.$transaction(async (tx) => {
+    const row = await tx.importJob.create({
+      data: {
+        storeId: input.storeId ?? "",
+        userId: session.userId,
+        source: input.source,
+        status: "REVIEW",
+        totalCount: summary.total,
+        acceptedCount: summary.accepted,
+        flaggedCount: summary.flagged,
+        rejectedCount: summary.rejected,
+        rejectionBreakdown: summary.rejectionBreakdown as Prisma.InputJsonValue,
+      },
+    });
+
+    if (results.length > 0) {
+      await tx.importJobItem.createMany({
+        data: results.map((r, i) => {
+          const sp = validProducts[i];
+          return {
+            jobId: row.id,
+            externalId: r.externalId,
+            status: r.status,
+            title: sp.title,
+            titleTh: r.translated?.title.th ?? null,
+            primaryImage: sp.primaryImage,
+            costTHB: r.translated?.costTHB
+              ? new Prisma.Decimal(r.translated.costTHB)
+              : null,
+            priceTHB: r.translated?.priceTHB
+              ? new Prisma.Decimal(r.translated.priceTHB)
+              : null,
+            rejectionReason: r.rejectionReason ?? null,
+            flaggedCategory: r.ipCheck.category ?? null,
+            translated:
+              (r.translated as Prisma.InputJsonValue | undefined) ?? Prisma.JsonNull,
+          };
+        }),
+      });
+    }
+
+    return row;
   });
 
-  const job: ImportJobResult = {
-    jobId,
+  const persistedItems = await prisma.importJobItem.findMany({
+    where: { jobId: job.id },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const out: ImportJobResult = {
+    jobId: job.id,
     summary,
-    items,
+    items: persistedItems.map((i) => ({
+      id: i.id,
+      externalId: i.externalId,
+      status: i.status as "accepted" | "flagged" | "rejected",
+      title: i.title,
+      titleTh: i.titleTh ?? undefined,
+      primaryImage: i.primaryImage,
+      costTHB: i.costTHB ? Number(i.costTHB) : undefined,
+      priceTHB: i.priceTHB ? Number(i.priceTHB) : undefined,
+      rejectionReason: i.rejectionReason ?? undefined,
+      flaggedCategory: i.flaggedCategory ?? undefined,
+      translated: i.translated ?? undefined,
+    })),
   };
 
-  // TODO: persist to DB import_jobs + import_job_items
-  jobStore.set(jobId, job);
-
-  revalidatePath('/seller/import');
-  return job;
+  revalidatePath("/seller/import");
+  return out;
 }
 
 export async function getImportJob(jobId: string): Promise<ImportJobResult | null> {
-  // TODO: query DB
-  return jobStore.get(jobId) ?? null;
+  const row = await prisma.importJob.findUnique({
+    where: { id: jobId },
+    include: { items: { orderBy: { createdAt: "asc" } } },
+  });
+  if (!row) return null;
+  return {
+    jobId: row.id,
+    summary: {
+      total: row.totalCount,
+      accepted: row.acceptedCount,
+      flagged: row.flaggedCount,
+      rejected: row.rejectedCount,
+      rejectionBreakdown:
+        (row.rejectionBreakdown as Record<string, number> | null) ?? {},
+    },
+    items: row.items.map((i) => ({
+      id: i.id,
+      externalId: i.externalId,
+      status: i.status as "accepted" | "flagged" | "rejected",
+      title: i.title,
+      titleTh: i.titleTh ?? undefined,
+      primaryImage: i.primaryImage,
+      costTHB: i.costTHB ? Number(i.costTHB) : undefined,
+      priceTHB: i.priceTHB ? Number(i.priceTHB) : undefined,
+      rejectionReason: i.rejectionReason ?? undefined,
+      flaggedCategory: i.flaggedCategory ?? undefined,
+      translated: i.translated ?? undefined,
+    })),
+  };
 }
 
 export interface ConfirmImportInput {
@@ -130,11 +194,11 @@ export async function confirmImport(input: ConfirmImportInput): Promise<{
   error?: string;
 }> {
   await requireSession();
-  const job = jobStore.get(input.jobId);
-  if (!job) return { ok: false, importedCount: 0, error: 'job_not_found' };
+  const job = await getImportJob(input.jobId);
+  if (!job) return { ok: false, importedCount: 0, error: "job_not_found" };
 
   const itemsToImport = job.items.filter(
-    (i) => input.itemIds.includes(i.id) && i.status !== 'rejected' && i.translated,
+    (i) => input.itemIds.includes(i.id) && i.status !== "rejected" && i.translated,
   );
 
   if (itemsToImport.length === 0) return { ok: false, importedCount: 0, error: 'no_valid_items' };
@@ -155,7 +219,7 @@ export async function confirmImport(input: ConfirmImportInput): Promise<{
       const thumbnailUrl = images[0]?.url ?? item.primaryImage;
       const categorySlugs = [t.categorySlug as string].filter(Boolean);
 
-      await prisma.product.create({
+      const created = await prisma.product.create({
         data: {
           storeId: input.storeId,
           title,
@@ -171,11 +235,26 @@ export async function confirmImport(input: ConfirmImportInput): Promise<{
           categorySlugs: categorySlugs as Prisma.InputJsonValue,
           active: true,
         },
+        select: { id: true },
+      });
+      // Link the job item back to the Product so the operator can
+      // trace a committed item to the live catalog row.
+      await prisma.importJobItem.update({
+        where: { id: item.id },
+        data: { productId: created.id },
       });
       importedCount++;
     } catch (err) {
       console.error("[import] failed to insert", item.externalId, err);
     }
+  }
+
+  // Flip the job's status once anything was committed; idempotent.
+  if (importedCount > 0) {
+    await prisma.importJob.update({
+      where: { id: input.jobId },
+      data: { status: "COMMITTED" },
+    });
   }
 
   revalidatePath("/seller/products");
