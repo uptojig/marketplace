@@ -31,11 +31,11 @@ export interface LifestyleCheckoutHeaderProps {
 }
 
 export function LifestyleCheckoutHeader({ step }: LifestyleCheckoutHeaderProps) {
-  const title = step === 1 ? 'Where to send it' : 'Almost there!';
+  const title = step === 1 ? 'ส่งไปที่ไหนดี' : 'ใกล้เสร็จแล้ว!';
   const sub =
     step === 1
-      ? 'Tell us where to drop it off.'
-      : "Take a peek and we'll send it on its way.";
+      ? 'บอกเราหน่อยว่าจะให้ส่งไปที่ไหน'
+      : 'ตรวจดูอีกครั้ง แล้วเราจะจัดส่งให้เลย';
 
   return (
     <div style={{ background: 'var(--shop-bg)' }}>
@@ -45,7 +45,7 @@ export function LifestyleCheckoutHeader({ step }: LifestyleCheckoutHeaderProps) 
             className="text-xs font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--shop-accent)' }}
           >
-            Step {step} of 2
+            ขั้นที่ {step} จาก 2
           </p>
           <h1
             className="mt-3 text-4xl sm:text-5xl md:text-6xl"

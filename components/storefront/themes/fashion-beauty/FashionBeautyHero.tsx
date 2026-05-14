@@ -27,10 +27,10 @@ const FB_DISPLAY_FONT =
 /** Pick a season label by month — keeps the eyebrow editorial. */
 function currentSeasonLabel(): string {
   const m = new Date().getMonth() + 1; // 1..12
-  if (m === 12 || m <= 2) return 'Winter';
-  if (m <= 5) return 'Spring';
-  if (m <= 8) return 'Summer';
-  return 'Autumn';
+  if (m === 12 || m <= 2) return 'ฤดูหนาว';
+  if (m <= 5) return 'ฤดูใบไม้ผลิ';
+  if (m <= 8) return 'ฤดูร้อน';
+  return 'ฤดูใบไม้ร่วง';
 }
 
 export interface FashionBeautyHeroProps {
@@ -59,7 +59,7 @@ export function FashionBeautyHero({
               className="text-[11px] uppercase tracking-[0.28em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              The {season} Edit · Curated for you
+              คอลเลกชัน{season} · คัดสรรเพื่อคุณ
             </p>
 
             <h1
@@ -88,8 +88,8 @@ export function FashionBeautyHero({
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              Discover pieces selected by our team — every season,
-              hand-picked with intention.
+              ค้นพบชิ้นงานที่ทีมงานคัดสรรเอง — ทุกฤดูกาล
+              ด้วยความตั้งใจในทุกชิ้น
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-5">
@@ -98,7 +98,7 @@ export function FashionBeautyHero({
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                 style={{ background: 'var(--shop-primary)' }}
               >
-                Shop the edit
+                ช้อปคอลเลกชัน
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
@@ -111,7 +111,7 @@ export function FashionBeautyHero({
                   paddingBottom: '2px',
                 }}
               >
-                Read our story
+                อ่านเรื่องราวของเรา
               </Link>
             </div>
           </div>
@@ -129,7 +129,7 @@ export function FashionBeautyHero({
               {bannerUrl ? (
                 <Image
                   src={bannerUrl}
-                  alt={`${storeName} — editorial cover`}
+                  alt={`${storeName} — ปกคอลเลกชัน`}
                   fill
                   priority
                   sizes="(max-width: 768px) 100vw, 45vw"
@@ -143,7 +143,7 @@ export function FashionBeautyHero({
                     className="text-[11px] uppercase tracking-[0.28em]"
                     style={{ color: 'var(--shop-ink-muted)' }}
                   >
-                    Cover · {season} {new Date().getFullYear()}
+                    ปก · {season} {new Date().getFullYear()}
                   </p>
                   <p
                     className="mt-4 text-3xl italic sm:text-4xl"
@@ -168,7 +168,7 @@ export function FashionBeautyHero({
                       color: 'var(--shop-ink-muted)',
                     }}
                   >
-                    The {season} lookbook
+                    ลุคบุ๊ก{season}
                   </p>
                 </div>
               )}

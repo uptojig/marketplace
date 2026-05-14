@@ -69,7 +69,7 @@ export function ElectronicsTechBrandStory({
               lineHeight: 1.15,
             }}
           >
-            Engineered for {storeName}
+            ออกแบบโดย {storeName}
           </h2>
           <div
             aria-hidden
@@ -99,7 +99,7 @@ export function ElectronicsTechBrandStory({
             fontWeight: 600,
           }}
         >
-          View catalog →
+          ดูแคตตาล็อก →
         </Link>
       </div>
 
@@ -119,7 +119,7 @@ export function ElectronicsTechBrandStory({
               fontWeight: 600,
             }}
           >
-            Warranty
+            การรับประกัน
           </dt>
           <dd
             data-tech-mono="true"
@@ -132,7 +132,7 @@ export function ElectronicsTechBrandStory({
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            12 months
+            12 เดือน
           </dd>
         </div>
         <div>
@@ -146,7 +146,7 @@ export function ElectronicsTechBrandStory({
               fontWeight: 600,
             }}
           >
-            Stock
+            สต็อก
           </dt>
           <dd
             data-tech-mono="true"
@@ -159,7 +159,7 @@ export function ElectronicsTechBrandStory({
               textTransform: 'uppercase',
             }}
           >
-            In stock
+            มีสินค้า
           </dd>
         </div>
         <div>
@@ -173,7 +173,7 @@ export function ElectronicsTechBrandStory({
               fontWeight: 600,
             }}
           >
-            Lead time
+            ระยะเวลาผลิต
           </dt>
           <dd
             data-tech-mono="true"
@@ -186,7 +186,7 @@ export function ElectronicsTechBrandStory({
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            1–3 days
+            1–3 วัน
           </dd>
         </div>
       </dl>

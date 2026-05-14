@@ -76,7 +76,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to the studio
+            กลับสตูดิโอ
           </Link>
           <p
             className="mt-6 text-2xl"
@@ -85,7 +85,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
               color: 'var(--shop-accent)',
             }}
           >
-            the maker&rsquo;s basket
+            ตะกร้าของช่างฝีมือ
           </p>
           <h1
             className="mt-1 text-4xl sm:text-5xl"
@@ -97,15 +97,15 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
               lineHeight: 1.05,
             }}
           >
-            Your collection
+            คอลเลกชันของคุณ
           </h1>
           <p
             className="mt-3 max-w-xl text-base"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             {lines.length === 0
-              ? `A few pieces from ${store.name} are waiting for you.`
-              : `${itemCount.toLocaleString()} piece${itemCount === 1 ? '' : 's'} selected — review your collection before each one is wrapped by hand.`}
+              ? `งานบางชิ้นจาก ${store.name} กำลังรอคุณอยู่`
+              : `เลือกไว้ ${itemCount.toLocaleString()} ชิ้น — ตรวจคอลเลกชันก่อนแต่ละชิ้นจะถูกห่อด้วยมือ`}
           </p>
         </header>
 
@@ -155,7 +155,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
                           color: 'var(--shop-accent)',
                         }}
                       >
-                        Made by {store.name}
+                        ทำโดย {store.name}
                       </span>
                       <Link
                         href={`/stores/${store.slug}/products/${l.productId}`}
@@ -234,7 +234,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
                         }}
                         aria-label={`ลบ ${l.title}`}
                       >
-                        set aside
+                        วางไว้ก่อน
                       </button>
                     </div>
                   </div>
@@ -260,7 +260,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
                   className="text-[11px] uppercase tracking-[0.28em]"
                   style={{ color: 'var(--shop-ink-muted)' }}
                 >
-                  Summary
+                  สรุป
                 </p>
                 <div className="mt-1 flex items-baseline justify-between gap-3">
                   <h3
@@ -272,9 +272,9 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
                       letterSpacing: '-0.005em',
                     }}
                   >
-                    Your order
+                    คำสั่งซื้อของคุณ
                   </h3>
-                  <SpecialtyStamp tone="primary">Hand-wrapped</SpecialtyStamp>
+                  <SpecialtyStamp tone="primary">ห่อด้วยมือ</SpecialtyStamp>
                 </div>
 
                 <div
@@ -285,13 +285,13 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
 
                 <dl className="mt-6 space-y-3.5 text-sm">
                   <div className="flex items-center justify-between">
-                    <dt style={{ color: 'var(--shop-ink-muted)' }}>Subtotal</dt>
+                    <dt style={{ color: 'var(--shop-ink-muted)' }}>ยอดรวมย่อย</dt>
                     <dd className="font-medium" style={{ color: 'var(--shop-ink)' }}>
                       {formatTHB(subtotal)}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between">
-                    <dt style={{ color: 'var(--shop-ink-muted)' }}>Shipping</dt>
+                    <dt style={{ color: 'var(--shop-ink-muted)' }}>ค่าจัดส่ง</dt>
                     <dd
                       className="font-medium"
                       style={{
@@ -299,7 +299,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
                           shipping === 0 ? 'var(--shop-primary)' : 'var(--shop-ink)',
                       }}
                     >
-                      {shipping === 0 ? 'On the maker' : formatTHB(shipping)}
+                      {shipping === 0 ? 'ช่างฝีมือออกให้' : formatTHB(shipping)}
                     </dd>
                   </div>
                   <div
@@ -314,7 +314,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 500,
                       }}
                     >
-                      Total
+                      ยอดรวม
                     </dt>
                     <dd
                       className="text-2xl font-semibold"
@@ -330,7 +330,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
                   className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-md text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                   style={{ background: 'var(--shop-primary)' }}
                 >
-                  Proceed to checkout
+                  ไปชำระเงิน
                 </Link>
 
                 <p
@@ -338,7 +338,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
                   style={{ color: 'var(--shop-ink-muted)' }}
                 >
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  Secure checkout · protected by Basketplace
+                  ชำระเงินปลอดภัย · คุ้มครองโดย Basketplace
                 </p>
 
                 <p
@@ -349,7 +349,7 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
                     color: 'var(--shop-accent)',
                   }}
                 >
-                  thank you for supporting makers.
+                  ขอบคุณที่สนับสนุนช่างฝีมือ
                 </p>
               </div>
 
@@ -360,11 +360,11 @@ export function SpecialtyCartPage({ store }: { store: StoreLite }) {
               >
                 <li className="flex items-center gap-2">
                   <Hammer className="h-4 w-4" style={{ color: 'var(--shop-primary)' }} />
-                  Made in 5-7 days · by hand · from one studio
+                  ใช้เวลา 5-7 วัน · ทำด้วยมือ · จากสตูดิโอเดียว
                 </li>
                 <li className="flex items-center gap-2">
                   <Leaf className="h-4 w-4" style={{ color: 'var(--shop-primary)' }} />
-                  Wrapped in recycled kraft paper · no plastic
+                  ห่อด้วยกระดาษคราฟท์รีไซเคิล · ไม่ใช้พลาสติก
                 </li>
               </ul>
             </aside>
@@ -390,7 +390,7 @@ function SpecialtyEmptyCart({ storeSlug }: { storeSlug: string }) {
             color: 'var(--shop-accent)',
           }}
         >
-          empty basket
+          ตะกร้าว่างเปล่า
         </span>
       </div>
       <p
@@ -400,7 +400,7 @@ function SpecialtyEmptyCart({ storeSlug }: { storeSlug: string }) {
           color: 'var(--shop-accent)',
         }}
       >
-        nothing here yet
+        ยังไม่มีอะไรที่นี่
       </p>
       <h2
         className="mt-1 text-3xl sm:text-4xl"
@@ -411,20 +411,20 @@ function SpecialtyEmptyCart({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '-0.005em',
         }}
       >
-        Your collection is empty
+        คอลเลกชันของคุณยังว่าง
       </h2>
       <p
         className="mx-auto mt-4 max-w-md text-base"
         style={{ color: 'var(--shop-ink-muted)' }}
       >
-        Each piece is made by hand — start exploring the studio to add a few favourites.
+        แต่ละชิ้นทำด้วยมือ — เริ่มสำรวจสตูดิโอเพื่อเก็บงานที่ชอบไว้ในตะกร้า
       </p>
       <Link
         href={`/stores/${storeSlug}/category`}
         className="mt-8 inline-flex h-12 items-center justify-center rounded-md px-10 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
         style={{ background: 'var(--shop-primary)' }}
       >
-        Browse the studio
+        ดูสตูดิโอ
       </Link>
     </div>
   );

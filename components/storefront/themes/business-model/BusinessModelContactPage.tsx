@@ -50,10 +50,10 @@ export interface BusinessModelContactPageProps {
 }
 
 const TIER_BENEFITS: Array<{ icon: typeof TrendingDown; label: string; value: string }> = [
-  { icon: TrendingDown, label: 'Volume discount', value: 'Up to -20%' },
-  { icon: Package, label: 'MOQ', value: '1 unit' },
-  { icon: Timer, label: 'Lead time', value: '1-3 biz days' },
-  { icon: Briefcase, label: 'Payment terms', value: 'Net-30 on approval' },
+  { icon: TrendingDown, label: 'ส่วนลดจากปริมาณ', value: 'สูงสุด -20%' },
+  { icon: Package, label: 'MOQ', value: '1 ชิ้น' },
+  { icon: Timer, label: 'ระยะเวลาผลิต', value: '1-3 วันทำการ' },
+  { icon: Briefcase, label: 'เงื่อนไขการชำระเงิน', value: 'เครดิต 30 วัน (รอการอนุมัติ)' },
 ];
 
 export function BusinessModelContactPage({
@@ -81,7 +81,7 @@ export function BusinessModelContactPage({
           style={{ color: 'var(--shop-ink-muted)' }}
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          Back to {storeName}
+          กลับไปที่ {storeName}
         </Link>
 
         {/* B2B hero — caps eyebrow + bold sans h1 + ledger sub-copy */}
@@ -90,7 +90,7 @@ export function BusinessModelContactPage({
             className="text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Wholesale account · B2B
+            บัญชีขายส่ง · B2B
           </p>
           <h1
             className="mt-1 text-3xl sm:text-4xl"
@@ -101,14 +101,14 @@ export function BusinessModelContactPage({
               lineHeight: 1.05,
             }}
           >
-            Talk to sales
+            ติดต่อฝ่ายขาย
           </h1>
           <p
             className="mt-3 max-w-xl text-sm sm:text-base"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             {tagline ||
-              `Send a quote request, ask about lead times, or open a wholesale account with ${storeName}. We reply within 4 business hours.`}
+              `ส่งคำขอใบเสนอราคา สอบถามระยะเวลาผลิต หรือเปิดบัญชีขายส่งกับ ${storeName} เราตอบกลับภายใน 4 ชั่วโมงทำการ`}
           </p>
 
           {/* Status chip strip — feels like a dashboard SLA badge */}
@@ -126,9 +126,9 @@ export function BusinessModelContactPage({
                 style={{ background: 'var(--shop-savings, #10b981)' }}
                 aria-hidden
               />
-              <span className="uppercase tracking-[0.12em]">Status</span>
+              <span className="uppercase tracking-[0.12em]">สถานะ</span>
               <span style={{ color: 'var(--shop-savings, #10b981)' }}>
-                Online
+                ออนไลน์
               </span>
             </span>
             <span
@@ -167,7 +167,7 @@ export function BusinessModelContactPage({
               className="text-[11px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              New inquiry
+              คำถามใหม่
             </p>
             <p
               data-bm-mono="true"
@@ -206,7 +206,7 @@ export function BusinessModelContactPage({
                   letterSpacing: '0.12em',
                 }}
               >
-                Wholesale account
+                บัญชีขายส่ง
               </h2>
             </div>
             <span
@@ -218,7 +218,7 @@ export function BusinessModelContactPage({
                 letterSpacing: '0.06em',
               }}
             >
-              Free to apply
+              สมัครฟรี
             </span>
           </div>
 
@@ -288,7 +288,7 @@ export function BusinessModelContactPage({
                 letterSpacing: '0.12em',
               }}
             >
-              Office · Direct contact
+              สำนักงาน · ติดต่อโดยตรง
             </h2>
           </div>
 
@@ -319,7 +319,7 @@ export function BusinessModelContactPage({
                   className="mt-1.5 text-sm"
                   style={{ color: 'var(--shop-ink-muted)' }}
                 >
-                  Address pending.
+                  ยังไม่ระบุที่อยู่
                 </p>
               )}
             </div>
@@ -369,7 +369,7 @@ export function BusinessModelContactPage({
             className="text-[11px] font-semibold uppercase tracking-[0.12em] hover:underline"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            ← Back to catalog
+            ← กลับไปที่แคตตาล็อก
           </Link>
         </div>
       </main>

@@ -74,7 +74,7 @@ export function SpecialtyOrderSuccessPage({
         {/* Workshop-letter thank-you hero */}
         <header className="text-center">
           <div className="flex justify-center">
-            <SpecialtyStamp tone="primary">Order Stamped</SpecialtyStamp>
+            <SpecialtyStamp tone="primary">ประทับคำสั่งซื้อแล้ว</SpecialtyStamp>
           </div>
           <p
             className="mt-6 text-2xl"
@@ -83,7 +83,7 @@ export function SpecialtyOrderSuccessPage({
               color: 'var(--shop-accent)',
             }}
           >
-            thank you, friend
+            ขอบคุณนะ
           </p>
           <h1
             className="mt-1 text-3xl sm:text-5xl"
@@ -95,7 +95,7 @@ export function SpecialtyOrderSuccessPage({
               lineHeight: 1.1,
             }}
           >
-            Thank you for supporting handcrafted goods
+            ขอบคุณที่สนับสนุนงานทำมือ
           </h1>
           <div
             aria-hidden
@@ -106,14 +106,14 @@ export function SpecialtyOrderSuccessPage({
             className="mx-auto mt-6 max-w-xl text-base leading-relaxed"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Your order is on the workbench and {storeName} is preparing it by hand
+            คำสั่งซื้อของคุณอยู่บนโต๊ะงานแล้ว และ {storeName} กำลังเตรียมด้วยมือ
             {buyerEmail ? (
               <>
-                . A confirmation has been sent to{' '}
-                <span style={{ color: 'var(--shop-ink)' }}>{buyerEmail}</span>.
+                {' '}อีเมลยืนยันถูกส่งไปที่{' '}
+                <span style={{ color: 'var(--shop-ink)' }}>{buyerEmail}</span> แล้ว
               </>
             ) : (
-              '.'
+              ''
             )}
           </p>
 
@@ -127,7 +127,7 @@ export function SpecialtyOrderSuccessPage({
               className="text-[11px] uppercase tracking-[0.22em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Receipt
+              ใบเสร็จ
             </span>
             <span
               className="text-base font-semibold"
@@ -146,7 +146,7 @@ export function SpecialtyOrderSuccessPage({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            arriving between{' '}
+            จัดส่งระหว่าง{' '}
             <span style={{ color: 'var(--shop-ink)' }}>{etaRange}</span>
           </p>
           <p
@@ -156,7 +156,7 @@ export function SpecialtyOrderSuccessPage({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            status ·{' '}
+            สถานะ ·{' '}
             <span style={{ color: 'var(--shop-ink)' }}>{statusLabel}</span>
           </p>
         </header>
@@ -170,7 +170,7 @@ export function SpecialtyOrderSuccessPage({
               color: 'var(--shop-accent)',
             }}
           >
-            on the workbench
+            บนโต๊ะงาน
           </p>
           <h2
             className="mt-1 text-2xl sm:text-3xl"
@@ -180,7 +180,7 @@ export function SpecialtyOrderSuccessPage({
               fontWeight: 500,
             }}
           >
-            {items.length} piece{items.length === 1 ? '' : 's'} in the making
+            กำลังทำ {items.length} ชิ้น
           </h2>
 
           <ul className="mt-6 space-y-4">
@@ -218,7 +218,7 @@ export function SpecialtyOrderSuccessPage({
                       color: 'var(--shop-accent)',
                     }}
                   >
-                    Made by {storeName}
+                    ทำโดย {storeName}
                   </span>
                   <p
                     className="line-clamp-2 text-base"
@@ -235,7 +235,7 @@ export function SpecialtyOrderSuccessPage({
                     className="mt-1 text-sm"
                     style={{ color: 'var(--shop-ink-muted)' }}
                   >
-                    Quantity {it.qty}
+                    จำนวน {it.qty}
                   </p>
                 </div>
                 <p
@@ -260,7 +260,7 @@ export function SpecialtyOrderSuccessPage({
                 fontWeight: 500,
               }}
             >
-              Total
+              ยอดรวม
             </span>
             <span
               className="text-2xl font-semibold"
@@ -278,7 +278,7 @@ export function SpecialtyOrderSuccessPage({
             className="inline-flex h-12 items-center justify-center gap-2 rounded-md text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
             style={{ background: 'var(--shop-primary)' }}
           >
-            Track your order
+            ติดตามชิ้นงาน
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
@@ -289,7 +289,7 @@ export function SpecialtyOrderSuccessPage({
               color: 'var(--shop-ink)',
             }}
           >
-            Back to the studio
+            กลับสตูดิโอ
           </Link>
         </div>
 
@@ -312,13 +312,13 @@ export function SpecialtyOrderSuccessPage({
                 fontWeight: 500,
               }}
             >
-              Stay close to the studio
+              อยู่ใกล้สตูดิโอ
             </p>
             <p
               className="mt-1 text-sm"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Add {storeName} on LINE for shaping updates and a peek at the next batch.
+              เพิ่ม {storeName} บน LINE เพื่ออัปเดตการทำงานและดูสินค้าชุดถัดไป
             </p>
           </div>
           <a
@@ -328,7 +328,7 @@ export function SpecialtyOrderSuccessPage({
             className="inline-flex h-9 items-center justify-center rounded-md px-4 text-xs font-semibold text-white shadow-sm transition hover:opacity-90"
             style={{ background: 'var(--shop-primary)' }}
           >
-            Add LINE
+            เพิ่ม LINE
           </a>
         </div>
 
@@ -341,17 +341,17 @@ export function SpecialtyOrderSuccessPage({
               color: 'var(--shop-accent)',
             }}
           >
-            p.s. each piece ships within 5-7 days — made by hand.
+            ป.ล. แต่ละชิ้นจัดส่งใน 5-7 วัน — ทำด้วยมือ
           </p>
           <p
             className="text-xs"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Full order reference · <span className="font-mono">{fullId}</span>
+            หมายเลขคำสั่งซื้อเต็ม · <span className="font-mono">{fullId}</span>
           </p>
           {paymentStatusLabel && (
             <p className="text-xs" style={{ color: 'var(--shop-ink-muted)' }}>
-              Payment · {paymentStatusLabel}
+              การชำระเงิน · {paymentStatusLabel}
             </p>
           )}
         </div>

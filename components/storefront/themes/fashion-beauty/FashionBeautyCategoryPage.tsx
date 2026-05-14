@@ -44,9 +44,9 @@ export interface FashionBeautyCategoryPageProps {
 }
 
 const SORT_OPTIONS: Array<{ key: string; label: string }> = [
-  { key: 'newest', label: 'Newest' },
-  { key: 'price-asc', label: 'Lowest price' },
-  { key: 'price-desc', label: 'Highest price' },
+  { key: 'newest', label: 'มาใหม่' },
+  { key: 'price-asc', label: 'ราคาต่ำสุด' },
+  { key: 'price-desc', label: 'ราคาสูงสุด' },
 ];
 
 export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps) {
@@ -77,13 +77,13 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to the boutique
+            กลับสู่บูทีค
           </Link>
           <p
             className="mt-6 text-[11px] uppercase tracking-[0.28em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            The Edit · Season Collection
+            คอลเลกชัน · ประจำฤดูกาล
           </p>
           <div className="mt-2 flex flex-col items-baseline justify-between gap-3 sm:flex-row">
             <h1
@@ -96,7 +96,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
                 lineHeight: 1.05,
               }}
             >
-              All pieces
+              สินค้าทั้งหมด
             </h1>
             <span
               className="text-sm italic"
@@ -105,7 +105,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              {filteredCount.toLocaleString()} piece{filteredCount === 1 ? '' : 's'} from {storeName}
+              {filteredCount.toLocaleString()} ชิ้นจาก {storeName}
             </span>
           </div>
         </header>
@@ -121,7 +121,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
               className="text-[11px] uppercase tracking-[0.22em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Filter
+              กรอง
             </span>
             <Link
               href={buildUrl()}
@@ -137,7 +137,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
                   selectedCats.length === 0 ? '#ffffff' : 'var(--shop-ink-muted)',
               }}
             >
-              All
+              ทั้งหมด
             </Link>
             {categoryNames.map((name) => {
               const active = selectedCats.includes(name);
@@ -176,7 +176,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
                     : 'var(--shop-ink-muted)',
                 }}
               >
-                Other ({uncatCount})
+                อื่นๆ ({uncatCount})
               </Link>
             )}
           </div>
@@ -187,7 +187,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
               className="text-[11px] uppercase tracking-[0.22em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Sort
+              เรียงตาม
             </span>
             {SORT_OPTIONS.map((opt) => {
               const active = sortKey === opt.key;
@@ -221,7 +221,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
           <nav
             className="mt-16 flex items-center justify-center gap-6 border-t pt-6"
             style={{ borderColor: 'var(--shop-accent)' }}
-            aria-label="Pagination"
+            aria-label="แบ่งหน้า"
           >
             {currentPage > 1 ? (
               <Link
@@ -233,7 +233,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
                 }}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous page
+                หน้าก่อนหน้า
               </Link>
             ) : (
               <span
@@ -241,7 +241,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
                 style={{ fontFamily: FB_DISPLAY_FONT, color: 'var(--shop-ink-muted)' }}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous page
+                หน้าก่อนหน้า
               </span>
             )}
             <span
@@ -251,7 +251,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              Page <span style={{ color: 'var(--shop-ink)' }}>{currentPage}</span> of{' '}
+              หน้า <span style={{ color: 'var(--shop-ink)' }}>{currentPage}</span> จาก{' '}
               {totalPages}
             </span>
             {currentPage < totalPages ? (
@@ -263,7 +263,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
                   color: 'var(--shop-ink)',
                 }}
               >
-                Next page
+                หน้าถัดไป
                 <ChevronRight className="h-4 w-4" />
               </Link>
             ) : (
@@ -271,7 +271,7 @@ export function FashionBeautyCategoryPage(props: FashionBeautyCategoryPageProps)
                 className="inline-flex items-center gap-2 text-sm italic opacity-40"
                 style={{ fontFamily: FB_DISPLAY_FONT, color: 'var(--shop-ink-muted)' }}
               >
-                Next page
+                หน้าถัดไป
                 <ChevronRight className="h-4 w-4" />
               </span>
             )}
@@ -301,7 +301,7 @@ function FashionBeautyEmptyCatalog({
           fontWeight: 500,
         }}
       >
-        Nothing here just yet
+        ยังไม่มีสินค้าในขณะนี้
       </h2>
       <p
         className="mt-3 text-sm italic"
@@ -311,8 +311,8 @@ function FashionBeautyEmptyCatalog({
         }}
       >
         {hasFilters
-          ? 'Try clearing your filters to see the full collection.'
-          : 'Our curators are styling the next drop — check back soon.'}
+          ? 'ลองล้างตัวกรองเพื่อดูคอลเลกชันทั้งหมด'
+          : 'ทีมงานกำลังคัดสรรคอลเลกชันถัดไป — แวะมาใหม่เร็วๆ นี้'}
       </p>
       {hasFilters ? (
         <Link
@@ -320,7 +320,7 @@ function FashionBeautyEmptyCatalog({
           className="mt-6 inline-flex h-10 items-center justify-center rounded-full px-7 text-sm font-semibold text-white transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Clear filters
+          ล้างตัวกรอง
         </Link>
       ) : (
         <Link
@@ -328,7 +328,7 @@ function FashionBeautyEmptyCatalog({
           className="mt-6 inline-flex h-10 items-center justify-center rounded-full px-7 text-sm font-semibold text-white transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Back to boutique
+          กลับสู่บูทีค
         </Link>
       )}
     </div>

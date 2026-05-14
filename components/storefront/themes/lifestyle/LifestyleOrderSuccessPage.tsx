@@ -108,7 +108,7 @@ export function LifestyleOrderSuccessPage({
             className="mt-6 text-xs font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--shop-accent)' }}
           >
-            Order placed
+            สั่งซื้อสำเร็จ
           </p>
           <h1
             className="mt-3 text-4xl sm:text-5xl md:text-6xl"
@@ -120,27 +120,25 @@ export function LifestyleOrderSuccessPage({
               lineHeight: 1.05,
             }}
           >
-            We&rsquo;ve got your order!
+            ได้รับคำสั่งซื้อแล้ว!
           </h1>
           <p
             className="mx-auto mt-5 max-w-xl text-base leading-relaxed"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Thanks for shopping with {storeName}. Our team is packing it up with
-            care
+            ขอบคุณที่เลือกซื้อกับ {storeName} ทีมงานของเรากำลังจัดของให้อย่างตั้งใจ
             {buyerEmail ? (
               <>
-                . A confirmation is on its way to{' '}
+                {' '}อีเมลยืนยันกำลังส่งไปที่{' '}
                 <span
                   className="font-semibold"
                   style={{ color: 'var(--shop-ink)' }}
                 >
                   {buyerEmail}
                 </span>
-                .
               </>
             ) : (
-              '.'
+              ''
             )}
           </p>
 
@@ -156,7 +154,7 @@ export function LifestyleOrderSuccessPage({
               className="text-xs font-semibold uppercase tracking-[0.18em]"
               style={{ color: 'var(--shop-accent)' }}
             >
-              Order
+              คำสั่งซื้อ
             </span>
             <span
               className="text-base font-semibold"
@@ -183,7 +181,7 @@ export function LifestyleOrderSuccessPage({
                 className="h-3.5 w-3.5"
                 style={{ color: 'var(--shop-accent)' }}
               />
-              Arriving {etaRange}
+              ถึงประมาณ {etaRange}
             </span>
             <span
               className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold shadow-sm"
@@ -204,7 +202,7 @@ export function LifestyleOrderSuccessPage({
             className="text-xs font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--shop-accent)' }}
           >
-            Your order
+            คำสั่งซื้อของคุณ
           </p>
           <h2
             className="mt-2 text-2xl sm:text-3xl"
@@ -215,7 +213,7 @@ export function LifestyleOrderSuccessPage({
               letterSpacing: '-0.01em',
             }}
           >
-            {items.length} good thing{items.length === 1 ? '' : 's'} on the way
+            ของดีๆ {items.length} ชิ้น กำลังจะถึงคุณ
           </h2>
 
           <ul className="mt-6 space-y-4">
@@ -259,7 +257,7 @@ export function LifestyleOrderSuccessPage({
                     className="mt-1 text-xs font-semibold"
                     style={{ color: 'var(--shop-ink-muted)' }}
                   >
-                    Qty {it.qty}
+                    จำนวน {it.qty}
                   </p>
                 </div>
                 <p
@@ -287,7 +285,7 @@ export function LifestyleOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              Total
+              ยอดสุทธิ
             </span>
             <span
               className="text-2xl font-semibold sm:text-3xl"
@@ -308,7 +306,7 @@ export function LifestyleOrderSuccessPage({
             className="inline-flex h-12 items-center justify-center gap-2 rounded-full text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
             style={{ background: 'var(--shop-primary)' }}
           >
-            Track order
+            ติดตามคำสั่งซื้อ
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
@@ -319,7 +317,7 @@ export function LifestyleOrderSuccessPage({
               color: 'var(--shop-ink)',
             }}
           >
-            Keep shopping
+            เลือกซื้อต่อ
           </Link>
         </div>
 
@@ -345,14 +343,13 @@ export function LifestyleOrderSuccessPage({
                 fontWeight: 600,
               }}
             >
-              Stay close
+              ติดตามใกล้ๆ
             </p>
             <p
               className="mt-1 text-sm"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Add {storeName} on LINE for shipping updates and a peek at what&rsquo;s
-              new in the catalog.
+              เพิ่ม {storeName} บน LINE เพื่อรับข่าวการจัดส่งและของใหม่ในแคตตาล็อก
             </p>
           </div>
           <a
@@ -362,7 +359,7 @@ export function LifestyleOrderSuccessPage({
             className="inline-flex h-9 items-center justify-center rounded-full px-4 text-xs font-semibold text-white shadow-sm transition hover:opacity-90"
             style={{ background: 'var(--shop-primary)' }}
           >
-            Add LINE
+            เพิ่ม LINE
           </a>
         </div>
 
@@ -371,9 +368,9 @@ export function LifestyleOrderSuccessPage({
           style={{ color: 'var(--shop-ink-muted)' }}
         >
           <p>
-            Order reference · <span className="font-mono">{fullId}</span>
+            หมายเลขอ้างอิง · <span className="font-mono">{fullId}</span>
           </p>
-          {paymentStatusLabel && <p>Payment · {paymentStatusLabel}</p>}
+          {paymentStatusLabel && <p>การชำระเงิน · {paymentStatusLabel}</p>}
         </div>
       </main>
     </div>

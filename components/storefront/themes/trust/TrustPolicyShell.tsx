@@ -42,7 +42,7 @@ export interface TrustPolicyShellProps {
 export function TrustPolicyShell({
   slug,
   title,
-  eyebrow = 'MAISON · CUSTOMER CARE',
+  eyebrow = 'เมซอน · ศูนย์ดูแลลูกค้า',
   children,
 }: TrustPolicyShellProps) {
   return (
@@ -140,7 +140,7 @@ export function TrustPolicyShell({
               fontWeight: 600,
             }}
           >
-            Return to the Maison
+            กลับสู่เมซอน
           </Link>
         </div>
       </main>
@@ -160,23 +160,23 @@ export function trustPolicyHeading(
 ): { eyebrow: string; title: string } {
   switch (pageSlug) {
     case 'shipping':
-      return { eyebrow: 'MAISON · DELIVERY', title: 'SHIPPING POLICY' };
+      return { eyebrow: 'เมซอน · การจัดส่ง', title: 'นโยบายการจัดส่ง' };
     case 'returns':
-      return { eyebrow: 'MAISON · POLICY', title: 'RETURNS' };
+      return { eyebrow: 'เมซอน · นโยบาย', title: 'การคืน/เปลี่ยนสินค้า' };
     case 'faq':
-      return { eyebrow: 'MAISON · INQUIRIES', title: 'FAQ' };
+      return { eyebrow: 'เมซอน · คำถาม', title: 'คำถามที่พบบ่อย' };
     case 'privacy':
-      return { eyebrow: 'MAISON · POLICY', title: 'PRIVACY POLICY' };
+      return { eyebrow: 'เมซอน · นโยบาย', title: 'นโยบายความเป็นส่วนตัว' };
     case 'terms':
-      return { eyebrow: 'MAISON · POLICY', title: 'TERMS OF SERVICE' };
+      return { eyebrow: 'เมซอน · นโยบาย', title: 'ข้อกำหนดการใช้บริการ' };
     case 'about':
-      return { eyebrow: 'MAISON · OUR HOUSE', title: 'ABOUT' };
+      return { eyebrow: 'เมซอน · เกี่ยวกับเรา', title: 'เกี่ยวกับเรา' };
     case 'help':
-      return { eyebrow: 'MAISON · CONCIERGE', title: 'HELP' };
+      return { eyebrow: 'เมซอน · ศูนย์ช่วยเหลือ', title: 'ศูนย์ช่วยเหลือ' };
     default:
       return {
-        eyebrow: 'MAISON · CUSTOMER CARE',
-        title: fallbackTitle.toUpperCase(),
+        eyebrow: 'เมซอน · ศูนย์ดูแลลูกค้า',
+        title: fallbackTitle,
       };
   }
 }

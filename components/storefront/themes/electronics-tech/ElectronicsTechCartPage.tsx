@@ -115,7 +115,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
             }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Continue shopping
+            เลือกซื้อต่อ
           </Link>
           <p
             data-tech-mono="true"
@@ -128,7 +128,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
               fontWeight: 600,
             }}
           >
-            CART · {pad2(itemCount)} ITEMS
+            ตะกร้า · {pad2(itemCount)} ชิ้น
           </p>
           <h1
             className="mt-3 text-3xl sm:text-4xl"
@@ -140,7 +140,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
               lineHeight: 1.1,
             }}
           >
-            Your cart
+            ตะกร้าสินค้า
           </h1>
         </header>
 
@@ -173,7 +173,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                     fontWeight: 600,
                   }}
                 >
-                  Item
+                  สินค้า
                 </span>
                 <span
                   data-tech-mono="true"
@@ -185,7 +185,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                     fontWeight: 600,
                   }}
                 >
-                  Description
+                  รายละเอียด
                 </span>
                 <span
                   data-tech-mono="true"
@@ -197,7 +197,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                     fontWeight: 600,
                   }}
                 >
-                  Qty
+                  จำนวน
                 </span>
                 <span
                   data-tech-mono="true"
@@ -209,7 +209,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                     fontWeight: 600,
                   }}
                 >
-                  Total
+                  รวม
                 </span>
                 <span aria-hidden />
               </div>
@@ -274,7 +274,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                         style={{ letterSpacing: '0.12em' }}
                       >
                         <CheckCircle2 className="h-2.5 w-2.5" />
-                        In stock
+                        มีสินค้า
                       </span>
                       <span
                         data-tech-mono="true"
@@ -286,7 +286,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                           fontWeight: 600,
                         }}
                       >
-                        Unit · {formatTHB(l.priceTHB)}
+                        ราคา/ชิ้น · {formatTHB(l.priceTHB)}
                       </span>
                     </div>
                   </div>
@@ -382,7 +382,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 600,
                       }}
                     >
-                      Line total
+                      ยอดรวมต่อรายการ
                     </span>
                     <div className="flex items-center gap-3">
                       <span
@@ -428,11 +428,11 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                       fontWeight: 600,
                     }}
                   >
-                    ADD{' '}
+                    เพิ่มอีก{' '}
                     <span style={{ color: 'var(--shop-primary)' }}>
                       {formatTHB(remainingForFreeShipping)}
                     </span>{' '}
-                    TO UNLOCK FREE SHIPPING
+                    เพื่อรับส่งฟรี
                   </p>
                 </div>
               )}
@@ -461,7 +461,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                     fontWeight: 600,
                   }}
                 >
-                  Order Summary
+                  สรุปคำสั่งซื้อ
                 </p>
                 <h3
                   className="mt-1 text-xl"
@@ -472,7 +472,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                     letterSpacing: '-0.01em',
                   }}
                 >
-                  Checkout total
+                  ยอดชำระทั้งหมด
                 </h3>
 
                 <dl className="mt-5 space-y-3 text-sm">
@@ -487,7 +487,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 600,
                       }}
                     >
-                      Subtotal
+                      ยอดรวมสินค้า
                     </dt>
                     <dd
                       data-tech-mono="true"
@@ -514,7 +514,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 600,
                       }}
                     >
-                      Shipping
+                      ค่าจัดส่ง
                     </dt>
                     <dd
                       data-tech-mono="true"
@@ -528,7 +528,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                         textTransform: shipping === 0 ? 'uppercase' : undefined,
                       }}
                     >
-                      {shipping === 0 ? 'FREE' : formatTHB(shipping)}
+                      {shipping === 0 ? 'ฟรี' : formatTHB(shipping)}
                     </dd>
                   </div>
                   <div
@@ -545,7 +545,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                         fontWeight: 700,
                       }}
                     >
-                      Total
+                      ยอดรวม
                     </dt>
                     <dd
                       data-tech-mono="true"
@@ -572,7 +572,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                     letterSpacing: '0.08em',
                   }}
                 >
-                  Proceed to checkout
+                  ดำเนินการชำระเงิน
                 </Link>
 
                 <p
@@ -586,7 +586,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                   }}
                 >
                   <ShieldCheck className="h-3 w-3" />
-                  Secure · 256-bit SSL
+                  ปลอดภัย · 256-bit SSL
                 </p>
               </div>
 
@@ -606,7 +606,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                   }}
                 >
                   <Truck className="h-3.5 w-3.5" />
-                  Free shipping over {formatTHB(FREE_SHIPPING_THRESHOLD)}
+                  ส่งฟรีเมื่อซื้อครบ {formatTHB(FREE_SHIPPING_THRESHOLD)}
                 </li>
                 <li
                   data-tech-mono="true"
@@ -619,7 +619,7 @@ export function ElectronicsTechCartPage({ store }: { store: StoreLite }) {
                   }}
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
-                  7-day return policy
+                  คืนสินค้าได้ภายใน 7 วัน
                 </li>
               </ul>
             </aside>
@@ -647,7 +647,7 @@ function ElectronicsTechEmptyCart({ storeSlug }: { storeSlug: string }) {
             fontWeight: 600,
           }}
         >
-          0 items
+0 ชิ้น
         </span>
       </div>
       <p
@@ -660,7 +660,7 @@ function ElectronicsTechEmptyCart({ storeSlug }: { storeSlug: string }) {
           fontWeight: 600,
         }}
       >
-        CART EMPTY
+        ตะกร้าว่าง
       </p>
       <h2
         className="mt-2 text-3xl sm:text-4xl"
@@ -671,7 +671,7 @@ function ElectronicsTechEmptyCart({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '-0.015em',
         }}
       >
-        Nothing in the cart yet
+        ยังไม่มีสินค้าในตะกร้า
       </h2>
       <p
         className="mt-3 text-sm"
@@ -680,7 +680,7 @@ function ElectronicsTechEmptyCart({ storeSlug }: { storeSlug: string }) {
           fontFamily: TECH_DISPLAY_FONT,
         }}
       >
-        Browse the catalog to add your first device.
+        เลือกดูแคตตาล็อกเพื่อเพิ่มสินค้าชิ้นแรกของคุณ
       </p>
       <Link
         href={`/stores/${storeSlug}/category`}
@@ -691,7 +691,7 @@ function ElectronicsTechEmptyCart({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '0.08em',
         }}
       >
-        Browse catalog
+        ดูแคตตาล็อก
       </Link>
     </div>
   );

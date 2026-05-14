@@ -59,7 +59,7 @@ export function TrustBrandStory({
             fontWeight: 600,
           }}
         >
-          Maison · {storeName}
+          เมซอน · {storeName}
         </p>
         <h2
           className="mt-3 text-3xl sm:text-4xl"
@@ -71,7 +71,7 @@ export function TrustBrandStory({
             lineHeight: 1.15,
           }}
         >
-          From the House of {storeName}
+          จากเมซอน {storeName}
         </h2>
         <div
           aria-hidden
@@ -98,7 +98,7 @@ export function TrustBrandStory({
           letterSpacing: '0.28em',
         }}
       >
-        Visit the Maison
+        เยี่ยมชมเมซอน
       </Link>
     </section>
   );

@@ -50,9 +50,9 @@ export interface ElectronicsTechCategoryPageProps {
 }
 
 const SORT_OPTIONS: Array<{ key: string; label: string }> = [
-  { key: 'newest', label: 'Newest' },
-  { key: 'price-asc', label: 'Price · Low to High' },
-  { key: 'price-desc', label: 'Price · High to Low' },
+  { key: 'newest', label: 'ใหม่ล่าสุด' },
+  { key: 'price-asc', label: 'ราคา · ต่ำ → สูง' },
+  { key: 'price-desc', label: 'ราคา · สูง → ต่ำ' },
 ];
 
 /** Two-digit zero-pad used by "PAGE 01 / 12" mono pagination pill. */
@@ -96,7 +96,7 @@ export function ElectronicsTechCategoryPage(
             }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to store
+            กลับไปยังร้านค้า
           </Link>
           <p
             data-tech-mono="true"
@@ -108,7 +108,7 @@ export function ElectronicsTechCategoryPage(
               fontWeight: 600,
             }}
           >
-            CATALOG · ALL PRODUCTS
+            แคตตาล็อกสินค้า · ทั้งหมด
           </p>
           <div className="mt-2 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-baseline">
             <h1
@@ -121,7 +121,7 @@ export function ElectronicsTechCategoryPage(
                 lineHeight: 1.1,
               }}
             >
-              {storeName} Catalog
+              แคตตาล็อก {storeName}
             </h1>
             <span
               data-tech-mono="true"
@@ -134,7 +134,7 @@ export function ElectronicsTechCategoryPage(
                 fontWeight: 600,
               }}
             >
-              {filteredCount.toLocaleString()} RESULTS
+              {filteredCount.toLocaleString()} รายการ
             </span>
           </div>
         </header>
@@ -157,7 +157,7 @@ export function ElectronicsTechCategoryPage(
                   fontWeight: 700,
                 }}
               >
-                Filter
+                ตัวกรอง
               </p>
               <div
                 aria-hidden
@@ -175,7 +175,7 @@ export function ElectronicsTechCategoryPage(
                   fontWeight: 600,
                 }}
               >
-                Category
+                หมวดหมู่
               </p>
 
               <ul className="mt-2 space-y-1">
@@ -195,7 +195,7 @@ export function ElectronicsTechCategoryPage(
                   >
                     <span className="flex items-center gap-2">
                       <CompareCheckbox checked={selectedCats.length === 0} />
-                      All
+                      ทั้งหมด
                     </span>
                     <span
                       data-tech-mono="true"
@@ -267,7 +267,7 @@ export function ElectronicsTechCategoryPage(
                         <CompareCheckbox
                           checked={selectedCats.includes('uncategorized')}
                         />
-                        Other
+                        อื่นๆ
                       </span>
                       <span
                         data-tech-mono="true"
@@ -298,7 +298,7 @@ export function ElectronicsTechCategoryPage(
                     fontWeight: 600,
                   }}
                 >
-                  Clear filters
+                  ล้างตัวกรอง
                 </Link>
               )}
             </div>
@@ -321,7 +321,7 @@ export function ElectronicsTechCategoryPage(
                   fontWeight: 600,
                 }}
               >
-                Showing {pageProducts.length} of {filteredCount.toLocaleString()}
+                แสดง {pageProducts.length} จาก {filteredCount.toLocaleString()}
               </span>
               <label className="inline-flex items-center gap-2">
                 <span
@@ -334,7 +334,7 @@ export function ElectronicsTechCategoryPage(
                     fontWeight: 600,
                   }}
                 >
-                  Sort By
+                  เรียงโดย
                 </span>
                 <select
                   defaultValue={sortKey}
@@ -425,7 +425,7 @@ export function ElectronicsTechCategoryPage(
                     fontVariantNumeric: 'tabular-nums',
                   }}
                 >
-                  PAGE {pad2(currentPage)} / {pad2(totalPages)}
+                  หน้า {pad2(currentPage)} / {pad2(totalPages)}
                 </span>
                 {currentPage < totalPages ? (
                   <Link
@@ -510,7 +510,7 @@ function ElectronicsTechEmptyCatalog({
           fontWeight: 600,
         }}
       >
-        NO RESULTS · 0 ITEMS
+        ไม่พบสินค้า · 0 รายการ
       </p>
       <h2
         className="mt-2 text-2xl"
@@ -521,7 +521,7 @@ function ElectronicsTechEmptyCatalog({
           letterSpacing: '-0.01em',
         }}
       >
-        Nothing matches your filter
+        ไม่มีสินค้าตรงกับตัวกรองของคุณ
       </h2>
       <p
         className="mt-2 text-sm"
@@ -531,8 +531,8 @@ function ElectronicsTechEmptyCatalog({
         }}
       >
         {hasFilters
-          ? 'Try clearing your filters to see the full catalog.'
-          : 'New stock is on the way — check back soon.'}
+          ? 'ลองล้างตัวกรองเพื่อดูแคตตาล็อกทั้งหมด'
+          : 'สินค้าใหม่กำลังเข้ามา — โปรดกลับมาเร็วๆ นี้'}
       </p>
       {hasFilters ? (
         <Link
@@ -544,7 +544,7 @@ function ElectronicsTechEmptyCatalog({
             letterSpacing: '0.08em',
           }}
         >
-          Clear filters
+          ล้างตัวกรอง
         </Link>
       ) : (
         <Link
@@ -556,7 +556,7 @@ function ElectronicsTechEmptyCatalog({
             letterSpacing: '0.08em',
           }}
         >
-          Back to store
+          กลับไปยังร้านค้า
         </Link>
       )}
     </div>

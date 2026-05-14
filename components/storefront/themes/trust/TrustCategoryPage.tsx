@@ -47,9 +47,9 @@ export interface TrustCategoryPageProps {
 }
 
 const SORT_OPTIONS: Array<{ key: string; label: string }> = [
-  { key: 'newest', label: 'Latest' },
-  { key: 'price-asc', label: 'Price ascending' },
-  { key: 'price-desc', label: 'Price descending' },
+  { key: 'newest', label: 'ล่าสุด' },
+  { key: 'price-asc', label: 'ราคาน้อยไปมาก' },
+  { key: 'price-desc', label: 'ราคามากไปน้อย' },
 ];
 
 export function TrustCategoryPage(props: TrustCategoryPageProps) {
@@ -84,7 +84,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
             }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Return to the Maison
+            กลับสู่เมซอน
           </Link>
 
           <p
@@ -95,7 +95,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
               fontWeight: 600,
             }}
           >
-            Maison · The Collection
+            เมซอน · คอลเลกชัน
           </p>
 
           {/* Title cartouche — squared frame, gold trim. */}
@@ -113,7 +113,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
                 lineHeight: 1.05,
               }}
             >
-              The Complete Collection
+              คอลเลกชันทั้งหมด
             </h1>
           </div>
 
@@ -125,7 +125,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
               fontWeight: 600,
             }}
           >
-            {filteredCount.toLocaleString()} piece{filteredCount === 1 ? '' : 's'} ·{' '}
+            {filteredCount.toLocaleString()} ชิ้น ·{' '}
             <span style={{ color: 'var(--shop-ink)' }}>{storeName}</span>
           </p>
         </header>
@@ -146,7 +146,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
                 fontWeight: 600,
               }}
             >
-              Filter
+              กรอง
             </span>
             <Link
               href={buildUrl()}
@@ -164,7 +164,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
                 fontWeight: 600,
               }}
             >
-              All
+              ทั้งหมด
             </Link>
             {categoryNames.map((name) => {
               const active = selectedCats.includes(name);
@@ -206,7 +206,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
                   fontWeight: 600,
                 }}
               >
-                Other
+                อื่น ๆ
                 <span className="ml-2 font-mono text-[10px] opacity-70">
                   {uncatCount}
                 </span>
@@ -224,7 +224,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
                 fontWeight: 600,
               }}
             >
-              Sort
+              จัดเรียง
             </span>
             {SORT_OPTIONS.map((opt, i) => {
               const active = sortKey === opt.key;
@@ -288,7 +288,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
                 }}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                ก่อนหน้า
               </Link>
             ) : (
               <span
@@ -300,7 +300,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
                 }}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                ก่อนหน้า
               </span>
             )}
 
@@ -348,7 +348,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
                   fontWeight: 600,
                 }}
               >
-                Next
+                ถัดไป
                 <ChevronRight className="h-4 w-4" />
               </Link>
             ) : (
@@ -360,7 +360,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
                   fontWeight: 600,
                 }}
               >
-                Next
+                ถัดไป
                 <ChevronRight className="h-4 w-4" />
               </span>
             )}
@@ -408,7 +408,7 @@ function TrustEmptyCatalog({
           fontWeight: 600,
         }}
       >
-        Maison · No Pieces Found
+        เมซอน · ไม่พบสินค้า
       </p>
       <h2
         className="mt-3 text-3xl"
@@ -419,7 +419,7 @@ function TrustEmptyCatalog({
           letterSpacing: '-0.01em',
         }}
       >
-        The catalogue is silent
+        ยังไม่มีสินค้าในคอลเลกชัน
       </h2>
       <div
         aria-hidden
@@ -435,8 +435,8 @@ function TrustEmptyCatalog({
         }}
       >
         {hasFilters
-          ? 'No pieces match the current selection. Clear the filters to view the full collection.'
-          : 'The atelier is preparing the next collection. Please return shortly.'}
+          ? 'ไม่มีสินค้าตรงกับการเลือกปัจจุบัน ล้างตัวกรองเพื่อดูคอลเลกชันทั้งหมด'
+          : 'อาตเลียร์กำลังเตรียมคอลเลกชันถัดไป กรุณากลับมาในเร็ว ๆ นี้'}
       </p>
       {hasFilters ? (
         <Link
@@ -447,7 +447,7 @@ function TrustEmptyCatalog({
             letterSpacing: '0.28em',
           }}
         >
-          Clear Filters
+          ล้างตัวกรอง
         </Link>
       ) : (
         <Link
@@ -458,7 +458,7 @@ function TrustEmptyCatalog({
             letterSpacing: '0.28em',
           }}
         >
-          Return to the Maison
+          กลับสู่เมซอน
         </Link>
       )}
     </div>

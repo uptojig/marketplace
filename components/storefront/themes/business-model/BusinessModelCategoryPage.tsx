@@ -53,9 +53,9 @@ export interface BusinessModelCategoryPageProps {
 }
 
 const SORT_OPTIONS: Array<{ key: string; label: string }> = [
-  { key: 'newest', label: 'Newest' },
-  { key: 'price-asc', label: 'Price ↑' },
-  { key: 'price-desc', label: 'Price ↓' },
+  { key: 'newest', label: 'ใหม่ล่าสุด' },
+  { key: 'price-asc', label: 'ราคา ↑' },
+  { key: 'price-desc', label: 'ราคา ↓' },
 ];
 
 /**
@@ -111,13 +111,13 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to {storeName}
+            กลับไปที่ {storeName}
           </Link>
           <p
             className="mt-5 text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Deal dashboard · Bulk catalog
+            ดีลทั้งหมด · แคตตาล็อก
           </p>
           <div className="mt-1 flex flex-wrap items-baseline justify-between gap-3">
             <h1
@@ -129,7 +129,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                 lineHeight: 1.05,
               }}
             >
-              All SKUs
+              SKU ทั้งหมด
             </h1>
             <span
               className="inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs font-semibold"
@@ -138,7 +138,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              <span className="uppercase tracking-[0.12em]">SKUs</span>
+              <span className="uppercase tracking-[0.12em]">SKU</span>
               <span
                 data-bm-mono="true"
                 style={{
@@ -153,7 +153,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
               <span aria-hidden style={{ color: 'var(--shop-border)' }}>
                 ·
               </span>
-              <span className="uppercase tracking-[0.12em]">On sale</span>
+              <span className="uppercase tracking-[0.12em]">ลดราคา</span>
               <span
                 data-bm-mono="true"
                 style={{
@@ -177,7 +177,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
         >
           <Timer className="h-4 w-4 shrink-0" />
           <span className="font-bold uppercase tracking-[0.12em]">
-            Daily deals refresh in
+            ดีลรายวันรีเซ็ตใน
           </span>
           <span
             data-bm-mono="true"
@@ -191,7 +191,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
             {countdown}
           </span>
           <span className="hidden text-xs opacity-90 sm:inline">
-            · refreshed daily at midnight ICT
+            · รีเซ็ตทุกเที่ยงคืน (ICT)
           </span>
         </div>
 
@@ -210,7 +210,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
               }}
             >
               <Filter className="h-3.5 w-3.5" />
-              Filter
+              กรอง
             </span>
             <Link
               href={buildUrl()}
@@ -226,7 +226,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                   selectedCats.length === 0 ? '#ffffff' : 'var(--shop-ink)',
               }}
             >
-              All
+              ทั้งหมด
               <span
                 data-bm-mono="true"
                 className="ml-1.5 text-[10px]"
@@ -285,7 +285,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                     : 'var(--shop-ink)',
                 }}
               >
-                Other
+                อื่นๆ
                 <span
                   data-bm-mono="true"
                   className="ml-1.5 text-[10px]"
@@ -311,7 +311,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                   letterSpacing: '0.12em',
                 }}
               >
-                Sort
+                เรียง
               </span>
               {SORT_OPTIONS.map((opt) => {
                 const active = sortKey === opt.key;
@@ -340,7 +340,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                 letterSpacing: '0.12em',
               }}
             >
-              Showing{' '}
+              แสดง{' '}
               <span
                 data-bm-mono="true"
                 className="font-bold"
@@ -352,7 +352,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
               >
                 {filteredCount.toLocaleString()}
               </span>{' '}
-              rows
+              รายการ
             </span>
           </div>
         </div>
@@ -376,7 +376,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
               background: 'var(--shop-muted)',
               borderColor: 'var(--shop-border)',
             }}
-            aria-label="Pagination"
+            aria-label="หน้า"
           >
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
               <span
@@ -386,7 +386,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                   letterSpacing: '0.12em',
                 }}
               >
-                Page{' '}
+                หน้า{' '}
                 <span
                   data-bm-mono="true"
                   className="font-bold"
@@ -398,7 +398,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                 >
                   {currentPage}
                 </span>{' '}
-                of{' '}
+                จาก{' '}
                 <span
                   data-bm-mono="true"
                   className="font-bold"
@@ -423,7 +423,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                     }}
                   >
                     <ChevronLeft className="h-3.5 w-3.5" />
-                    Prev
+                    ก่อนหน้า
                   </Link>
                 ) : (
                   <span
@@ -434,7 +434,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                     }}
                   >
                     <ChevronLeft className="h-3.5 w-3.5" />
-                    Prev
+                    ก่อนหน้า
                   </span>
                 )}
 
@@ -445,7 +445,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                     style={{ background: 'var(--shop-primary)' }}
                   >
                     <TrendingDown className="h-3.5 w-3.5" />
-                    Load more deals
+                    โหลดดีลเพิ่ม
                   </Link>
                 ) : (
                   <span
@@ -455,7 +455,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                       color: 'var(--shop-ink-muted)',
                     }}
                   >
-                    Last page
+                    หน้าสุดท้าย
                   </span>
                 )}
               </div>
@@ -498,7 +498,7 @@ function BusinessModelEmptyCatalog({
           letterSpacing: '0.12em',
         }}
       >
-        No rows match
+        ไม่มีรายการที่ตรงกัน
       </p>
       <h2
         className="mt-2 text-2xl"
@@ -508,15 +508,15 @@ function BusinessModelEmptyCatalog({
           letterSpacing: '-0.015em',
         }}
       >
-        No SKUs found
+        ไม่พบ SKU
       </h2>
       <p
         className="mx-auto mt-3 max-w-sm text-sm"
         style={{ color: 'var(--shop-ink-muted)' }}
       >
         {hasFilters
-          ? 'Clear active filters to see the full catalog.'
-          : 'New stock is being loaded — check back shortly.'}
+          ? 'ล้างตัวกรองเพื่อดูแคตตาล็อกทั้งหมด'
+          : 'กำลังโหลดสินค้าใหม่ — โปรดกลับมาภายหลัง'}
       </p>
       {hasFilters ? (
         <Link
@@ -524,7 +524,7 @@ function BusinessModelEmptyCatalog({
           className="mt-6 inline-flex h-11 items-center justify-center rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Clear filters
+          ล้างตัวกรอง
         </Link>
       ) : (
         <Link
@@ -532,7 +532,7 @@ function BusinessModelEmptyCatalog({
           className="mt-6 inline-flex h-11 items-center justify-center rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Back to store
+          กลับไปที่ร้าน
         </Link>
       )}
     </div>

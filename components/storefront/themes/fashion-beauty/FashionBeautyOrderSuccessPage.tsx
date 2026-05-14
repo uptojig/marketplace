@@ -67,7 +67,7 @@ export function FashionBeautyOrderSuccessPage({
             className="text-[11px] uppercase tracking-[0.28em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Order placed
+            สั่งซื้อสำเร็จ
           </p>
           <h1
             className="mt-3 text-5xl sm:text-7xl"
@@ -79,7 +79,7 @@ export function FashionBeautyOrderSuccessPage({
               lineHeight: 1.05,
             }}
           >
-            Thank you
+            ขอบคุณ
           </h1>
           <div
             aria-hidden
@@ -93,14 +93,15 @@ export function FashionBeautyOrderSuccessPage({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            We&rsquo;ve received your order and our team is preparing it with care
+            เราได้รับคำสั่งซื้อแล้ว ทีมงานกำลังเตรียมสินค้าด้วยความใส่ใจ
             {buyerEmail ? (
               <>
-                . A confirmation has been sent to{' '}
-                <span style={{ color: 'var(--shop-ink)' }}>{buyerEmail}</span>.
+                {' '}
+                อีเมลยืนยันถูกส่งไปยัง{' '}
+                <span style={{ color: 'var(--shop-ink)' }}>{buyerEmail}</span> เรียบร้อยแล้ว
               </>
             ) : (
-              '.'
+              ''
             )}
           </p>
 
@@ -116,7 +117,7 @@ export function FashionBeautyOrderSuccessPage({
               className="text-[11px] uppercase tracking-[0.22em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Order
+              คำสั่งซื้อ
             </span>
             <span
               className="text-base font-semibold"
@@ -135,7 +136,7 @@ export function FashionBeautyOrderSuccessPage({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            Arriving between <span style={{ color: 'var(--shop-ink)' }}>{etaRange}</span>
+            จัดส่งถึงระหว่าง <span style={{ color: 'var(--shop-ink)' }}>{etaRange}</span>
           </p>
           <p
             className="mt-1 text-sm italic"
@@ -144,7 +145,7 @@ export function FashionBeautyOrderSuccessPage({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            Status · <span style={{ color: 'var(--shop-ink)' }}>{statusLabel}</span>
+            สถานะ · <span style={{ color: 'var(--shop-ink)' }}>{statusLabel}</span>
           </p>
         </header>
 
@@ -154,7 +155,7 @@ export function FashionBeautyOrderSuccessPage({
             className="text-[11px] uppercase tracking-[0.28em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Your pieces
+            สินค้าของคุณ
           </p>
           <h2
             className="mt-2 text-3xl"
@@ -164,7 +165,7 @@ export function FashionBeautyOrderSuccessPage({
               fontWeight: 500,
             }}
           >
-            {items.length} piece{items.length === 1 ? '' : 's'} on the way
+            {items.length} ชิ้นกำลังเดินทาง
           </h2>
 
           <ul className="mt-6 space-y-4">
@@ -211,7 +212,7 @@ export function FashionBeautyOrderSuccessPage({
                       color: 'var(--shop-ink-muted)',
                     }}
                   >
-                    Quantity {it.qty}
+                    จำนวน {it.qty}
                   </p>
                 </div>
                 <p
@@ -236,7 +237,7 @@ export function FashionBeautyOrderSuccessPage({
                 fontWeight: 500,
               }}
             >
-              Total
+              ยอดรวม
             </span>
             <span
               className="text-2xl font-semibold"
@@ -254,7 +255,7 @@ export function FashionBeautyOrderSuccessPage({
             className="inline-flex h-12 items-center justify-center gap-2 rounded-full text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
             style={{ background: 'var(--shop-primary)' }}
           >
-            Track your order
+            ติดตามคำสั่งซื้อ
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
@@ -265,7 +266,7 @@ export function FashionBeautyOrderSuccessPage({
               color: 'var(--shop-ink)',
             }}
           >
-            Continue browsing
+            เลือกซื้อต่อ
           </Link>
         </div>
 
@@ -290,7 +291,7 @@ export function FashionBeautyOrderSuccessPage({
                 fontWeight: 500,
               }}
             >
-              Stay in the loop
+              อย่าพลาดข่าวสาร
             </p>
             <p
               className="mt-1 text-sm italic"
@@ -299,7 +300,7 @@ export function FashionBeautyOrderSuccessPage({
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              Add {storeName} on LINE for shipping updates and a peek at the next drop.
+              เพิ่ม {storeName} เป็นเพื่อนบน LINE เพื่อรับอัปเดตการจัดส่งและคอลเลกชันใหม่ก่อนใคร
             </p>
           </div>
           <a
@@ -309,7 +310,7 @@ export function FashionBeautyOrderSuccessPage({
             className="inline-flex h-9 items-center justify-center rounded-full px-4 text-xs font-semibold text-white shadow-sm transition hover:opacity-90"
             style={{ background: 'var(--shop-primary)' }}
           >
-            Add LINE
+            เพิ่ม LINE
           </a>
         </div>
 
@@ -321,10 +322,10 @@ export function FashionBeautyOrderSuccessPage({
           }}
         >
           <p>
-            Full order reference · <span className="font-mono">{fullId}</span>
+            หมายเลขคำสั่งซื้อเต็ม · <span className="font-mono">{fullId}</span>
           </p>
           {paymentStatusLabel && (
-            <p>Payment · {paymentStatusLabel}</p>
+            <p>การชำระเงิน · {paymentStatusLabel}</p>
           )}
         </div>
       </main>

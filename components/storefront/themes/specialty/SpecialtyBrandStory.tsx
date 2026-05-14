@@ -53,7 +53,7 @@ export function SpecialtyBrandStory({
           color: 'var(--shop-accent)',
         }}
       >
-        the maker · {storeName}
+        ช่างฝีมือ · {storeName}
       </p>
       <h2
         className="mt-1 text-3xl sm:text-4xl"
@@ -65,7 +65,7 @@ export function SpecialtyBrandStory({
           lineHeight: 1.15,
         }}
       >
-        A note from the maker
+        จดหมายจากช่างฝีมือ
       </h2>
       <div
         aria-hidden
@@ -104,7 +104,7 @@ export function SpecialtyBrandStory({
               color: 'var(--shop-accent)',
             }}
           >
-            — with care
+            — ด้วยใจ
           </p>
         </div>
       </div>

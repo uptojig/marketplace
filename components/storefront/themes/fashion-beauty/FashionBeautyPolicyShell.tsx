@@ -36,7 +36,7 @@ export interface FashionBeautyPolicyShellProps {
 export function FashionBeautyPolicyShell({
   slug,
   title,
-  eyebrow = 'Customer care',
+  eyebrow = 'บริการลูกค้า',
   children,
 }: FashionBeautyPolicyShellProps) {
   return (
@@ -128,7 +128,7 @@ export function FashionBeautyPolicyShell({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            ← Back to the boutique
+            ← กลับสู่บูทีค
           </Link>
         </div>
       </main>
@@ -139,7 +139,7 @@ export function FashionBeautyPolicyShell({
 /**
  * Map a policy page slug to a tuned eyebrow + title pair so each of
  * the 5 pages reads as part of the editorial system instead of all
- * sharing "Customer care · {English page name}".
+ * sharing "บริการลูกค้า · {Thai page name}".
  */
 export function fashionBeautyPolicyHeading(
   pageSlug: string,
@@ -147,20 +147,20 @@ export function fashionBeautyPolicyHeading(
 ): { eyebrow: string; title: string } {
   switch (pageSlug) {
     case 'shipping':
-      return { eyebrow: 'Customer care', title: 'How we ship' };
+      return { eyebrow: 'บริการลูกค้า', title: 'การจัดส่ง' };
     case 'returns':
-      return { eyebrow: 'Customer care', title: 'Returns & exchanges' };
+      return { eyebrow: 'บริการลูกค้า', title: 'การคืน/เปลี่ยนสินค้า' };
     case 'faq':
-      return { eyebrow: 'A few questions', title: 'Frequently asked' };
+      return { eyebrow: 'คำถามจากคุณ', title: 'คำถามที่พบบ่อย' };
     case 'privacy':
-      return { eyebrow: 'Customer care', title: 'Privacy policy' };
+      return { eyebrow: 'บริการลูกค้า', title: 'นโยบายความเป็นส่วนตัว' };
     case 'terms':
-      return { eyebrow: 'Customer care', title: 'Terms of service' };
+      return { eyebrow: 'บริการลูกค้า', title: 'ข้อกำหนดการใช้งาน' };
     case 'about':
-      return { eyebrow: 'About', title: 'Our story' };
+      return { eyebrow: 'เกี่ยวกับเรา', title: 'เรื่องราวของเรา' };
     case 'help':
-      return { eyebrow: 'Customer care', title: 'How can we help?' };
+      return { eyebrow: 'บริการลูกค้า', title: 'เราช่วยอะไรคุณได้บ้าง' };
     default:
-      return { eyebrow: 'Customer care', title: fallbackTitle };
+      return { eyebrow: 'บริการลูกค้า', title: fallbackTitle };
   }
 }

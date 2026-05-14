@@ -297,7 +297,7 @@ function InfoColumn({
         <div className="flex flex-wrap items-center gap-2">
           {product.badges.includes('hot') && (
             <Badge className="rounded-sm bg-[var(--shop-primary)] text-white hover:bg-[var(--shop-primary)]">
-              BESTSELLER
+              ขายดี
             </Badge>
           )}
           {product.badges.includes('new') && (
@@ -306,7 +306,7 @@ function InfoColumn({
               className="rounded-sm border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              NEW ARRIVAL
+              ของใหม่
             </Badge>
           )}
           {product.badges.includes('limited') && (
@@ -315,7 +315,7 @@ function InfoColumn({
               className="rounded-sm border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              LIMITED EDITION
+              รุ่นพิเศษ
             </Badge>
           )}
           {product.badges.includes('official') && (
@@ -324,7 +324,7 @@ function InfoColumn({
               className="rounded-sm border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-ink)' }}
             >
-              OFFICIAL
+              ของแท้
             </Badge>
           )}
         </div>
@@ -344,14 +344,14 @@ function InfoColumn({
             <>
               <span>·</span>
               <Link href="#reviews" className="hover:underline">
-                {product.reviewCount.toLocaleString()} reviews
+                {product.reviewCount.toLocaleString()} รีวิว
               </Link>
             </>
           )}
           {product.soldCount != null && (
             <>
               <span>·</span>
-              <span>{product.soldCount.toLocaleString()} sold</span>
+              <span>ขายแล้ว {product.soldCount.toLocaleString()} ชิ้น</span>
             </>
           )}
         </div>

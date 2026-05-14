@@ -75,7 +75,7 @@ export function ElectronicsTechContactPage({
             }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to store
+            กลับไปยังร้านค้า
           </Link>
           <p
             data-tech-mono="true"
@@ -87,7 +87,7 @@ export function ElectronicsTechContactPage({
               fontWeight: 600,
             }}
           >
-            TECHNICAL SUPPORT · CONTACT
+            ฝ่ายสนับสนุนทางเทคนิค · ติดต่อ
           </p>
           <h1
             className="mt-2 text-3xl sm:text-4xl"
@@ -99,7 +99,7 @@ export function ElectronicsTechContactPage({
               lineHeight: 1.1,
             }}
           >
-            Get in touch
+            ติดต่อเรา
           </h1>
           <p
             className="mt-3 max-w-2xl text-base"
@@ -109,7 +109,7 @@ export function ElectronicsTechContactPage({
             }}
           >
             {tagline ||
-              `Questions about specs, warranty, or compatibility? The ${storeName} support team replies within one business day.`}
+              `มีคำถามเกี่ยวกับสเปก การรับประกัน หรือความเข้ากันได้? ทีมสนับสนุน ${storeName} จะตอบกลับภายใน 1 วันทำการ`}
           </p>
 
           {/* Mono SLA strip */}
@@ -125,7 +125,7 @@ export function ElectronicsTechContactPage({
                 fontWeight: 600,
               }}
             >
-              RESPONSE · WITHIN 1 BUSINESS DAY
+              ตอบกลับ · ภายใน 1 วันทำการ
             </span>
             <span
               data-tech-mono="true"
@@ -138,7 +138,7 @@ export function ElectronicsTechContactPage({
                 fontWeight: 600,
               }}
             >
-              CHANNELS · EMAIL · LINE · PHONE
+              ช่องทาง · อีเมล · LINE · โทรศัพท์
             </span>
           </div>
         </header>
@@ -160,7 +160,7 @@ export function ElectronicsTechContactPage({
                 fontWeight: 600,
               }}
             >
-              Submit Ticket
+              ส่งคำขอบริการ
             </p>
             <h2
               className="mt-1 text-xl"
@@ -171,7 +171,7 @@ export function ElectronicsTechContactPage({
                 letterSpacing: '-0.01em',
               }}
             >
-              Send us a message
+              ส่งข้อความถึงเรา
             </h2>
             <div
               aria-hidden
@@ -202,7 +202,7 @@ export function ElectronicsTechContactPage({
                     fontWeight: 700,
                   }}
                 >
-                  Service Desk
+                  ศูนย์บริการ
                 </p>
               </div>
               <h2
@@ -234,7 +234,7 @@ export function ElectronicsTechContactPage({
                     fontWeight: 600,
                   }}
                 >
-                  Hours
+                  เวลาทำการ
                 </p>
                 <p
                   className="mt-1 text-sm"
@@ -244,7 +244,7 @@ export function ElectronicsTechContactPage({
                     fontWeight: 600,
                   }}
                 >
-                  Mon — Fri · 09:00 — 18:00 ICT
+                  จ. — ศ. · 09:00 — 18:00 น.
                 </p>
               </div>
 
@@ -259,7 +259,7 @@ export function ElectronicsTechContactPage({
                     fontWeight: 600,
                   }}
                 >
-                  Direct Channels
+                  ช่องทางติดต่อโดยตรง
                 </p>
                 <div className="mt-1.5">
                   <StoreContactRows store={store} />
@@ -281,7 +281,7 @@ export function ElectronicsTechContactPage({
                       fontWeight: 600,
                     }}
                   >
-                    Follow
+                    ติดตาม
                   </p>
                   <StoreSocialIcons store={store} />
                 </div>
@@ -308,7 +308,7 @@ export function ElectronicsTechContactPage({
                     fontWeight: 700,
                   }}
                 >
-                  Warehouse Address
+                  ที่อยู่คลังสินค้า
                 </p>
               </div>
               <div

@@ -70,7 +70,7 @@ export function SpecialtyContactPage({
               color: 'var(--shop-accent)',
             }}
           >
-            send a letter
+            ส่งจดหมาย
           </p>
           <h1
             className="mt-1 text-4xl sm:text-5xl"
@@ -82,7 +82,7 @@ export function SpecialtyContactPage({
               lineHeight: 1.05,
             }}
           >
-            Say hello to the maker
+            ทักทายช่างฝีมือ
           </h1>
           <div
             aria-hidden
@@ -94,7 +94,7 @@ export function SpecialtyContactPage({
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             {tagline ||
-              `Whether you have a question about a piece, want to commission something, or just want to say hi — we read every letter. ${storeName} writes back by hand.`}
+              `ไม่ว่าจะมีคำถามเกี่ยวกับงาน อยากสั่งทำพิเศษ หรือแค่อยากทักทาย — เราอ่านทุกจดหมาย ${storeName} จะเขียนตอบกลับด้วยมือ`}
           </p>
         </header>
 
@@ -122,7 +122,7 @@ export function SpecialtyContactPage({
                 color: 'var(--shop-accent)',
               }}
             >
-              visit the studio
+              เยี่ยมชมสตูดิโอ
             </p>
           </div>
           <h2
@@ -133,7 +133,7 @@ export function SpecialtyContactPage({
               fontWeight: 500,
             }}
           >
-            Where {storeName} works
+            ที่ {storeName} ทำงาน
           </h2>
 
           <div className="mt-6 grid gap-6 sm:grid-cols-2">
@@ -145,7 +145,7 @@ export function SpecialtyContactPage({
                   color: 'var(--shop-accent)',
                 }}
               >
-                the address
+                ที่อยู่
               </p>
               {addressLines.length > 0 ? (
                 <div
@@ -161,7 +161,7 @@ export function SpecialtyContactPage({
                   className="mt-2 text-sm"
                   style={{ color: 'var(--shop-ink-muted)' }}
                 >
-                  Address will appear soon.
+                  ที่อยู่จะปรากฏเร็วๆ นี้
                 </p>
               )}
             </div>
@@ -174,7 +174,7 @@ export function SpecialtyContactPage({
                   color: 'var(--shop-accent)',
                 }}
               >
-                write to us
+                เขียนถึงเรา
               </p>
               <div className="mt-2">
                 <StoreContactRows store={store} />
@@ -194,7 +194,7 @@ export function SpecialtyContactPage({
                   color: 'var(--shop-accent)',
                 }}
               >
-                follow the studio
+                ติดตามสตูดิโอ
               </p>
               <StoreSocialIcons store={store} />
             </div>
@@ -210,7 +210,7 @@ export function SpecialtyContactPage({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            ← back to the studio
+            ← กลับสตูดิโอ
           </Link>
         </div>
       </main>
