@@ -27,6 +27,21 @@ import {
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Coerce a Prisma JSON column to a string→string record, dropping any
+ * non-string values. Used for `Product.materials` because the column
+ * is Json? at the schema layer.
+ */
+function coerceMaterials(raw: unknown): Record<string, string> | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof v === "string" && v.trim().length > 0) out[k] = v.trim();
+    else if (typeof v === "number" || typeof v === "boolean") out[k] = String(v);
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 export default async function ShopProductPage({
   params,
 }: {
@@ -152,6 +167,13 @@ export default async function ShopProductPage({
           variants: product.variants.map((v) => ({
             id: v.id,
             attributes: v.attributes as Record<string, string>,
+            // Split-axis variant labels — populated from CJ via
+            // lib/suppliers/cj/adapter.fetchVariants. The default
+            // ProductDetailHero picker renders Color + Size + Material
+            // as separate rows when all variants carry the labels.
+            colorLabel: v.colorLabel,
+            sizeLabel: v.sizeLabel,
+            materialLabel: v.materialLabel,
             priceTHB: Number(v.priceTHB),
             imageUrl: v.imageUrl,
             inventory: v.inventory,
@@ -166,6 +188,9 @@ export default async function ShopProductPage({
             : product.stockTotal > 0
               ? product.stockTotal
               : null,
+          // CJ promo video — surfaced as a "ดูวิดีโอ" link under the
+          // gallery (no inline embed, see hero comment for rationale).
+          videoUrl: product.videoUrl,
           // rating / reviewCount / soldCount intentionally omitted —
           // not in schema yet. Hero hides the meta row gracefully.
         }}
@@ -181,10 +206,23 @@ export default async function ShopProductPage({
         product={{
           description: cleanDescription(product.descriptionTh ?? product.description),
           // No structured attributes column yet; pass an empty object
-          // so the Specifications tab shows the "ยังไม่มีข้อมูลจำเพาะ"
-          // placeholder rather than dying.
+          // so the Specifications tab merges only with `materials` (CJ's
+          // explicit spec sheet) when it has content.
           // TODO(specs): wire Prisma `Product.attributes` Json blob once it lands.
           attributes: {},
+          // Rich CJ fields (PR ⟪cj-rich-product-data⟫) — bullet list
+          // under the description tab + spec table under the
+          // specifications tab. Both are nullable JSON columns so we
+          // defensively coerce here.
+          keyAttributes: Array.isArray(product.keyAttributes)
+            ? (product.keyAttributes as unknown[]).filter(
+                (x): x is string => typeof x === 'string' && x.trim().length > 0,
+              )
+            : undefined,
+          materials:
+            product.materials && typeof product.materials === 'object' && !Array.isArray(product.materials)
+              ? coerceMaterials(product.materials)
+              : undefined,
         }}
         store={{ slug: product.store.slug, name: product.store.name }}
       />
