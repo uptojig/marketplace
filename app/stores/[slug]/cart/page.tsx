@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { StoreCartClient } from "./cart-client";
 
 export const dynamic = "force-dynamic";
@@ -39,12 +40,21 @@ export default async function StoreCartPage({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
+  // business-model — disjoint from FB + trust by template group, so
+  // the cascading `!isFB && !isTrust` is belt-and-braces. Tells the
+  // cart client to switch to the dashboard table layout with mono
+  // totals + volume-discount banner + rectangular red CTA.
+  const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
 
   return (
     <StoreCartClient
       store={store}
       isFashionBeauty={isFB}
       isTrust={isTrust}
+      isBusinessModel={isBusinessModel}
     />
   );
 }
