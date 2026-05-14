@@ -1,24 +1,38 @@
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
 import { ExternalLink } from "lucide-react";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StoreSettingsForm } from "@/components/dashboard/store-settings-form";
+import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 
 export const dynamic = "force-dynamic";
 
-export default async function StoreSettingsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) redirect("/signin");
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: { store: true },
+export default async function StoreSettingsPage({
+  searchParams,
+}: {
+  searchParams?: { storeSlug?: string };
+}) {
+  const { store, userId } = await resolveDashboardStore({
+    requestedSlug: searchParams?.storeSlug,
   });
 
-  if (!user?.store) redirect("/");
-
-  const { store } = user;
+  // The "owner login email" displayed on the settings form is the
+  // STORE OWNER's email — for admin-edits this is the underlying
+  // shop owner, NOT the admin. Pull it directly from the store row's
+  // owner relation rather than the resolved-userId so the displayed
+  // identity matches the actual owner.
+  const owner = await prisma.user.findUnique({
+    where: { id: store.ownerId },
+    select: { email: true },
+  });
+  // Fall back to the signed-in user's email if for some reason the
+  // owner row is missing — shouldn't happen given the FK, but keeps
+  // the UI from breaking.
+  const ownerLoginEmail =
+    owner?.email ??
+    (await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    }))?.email ??
+    "";
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -60,7 +74,7 @@ export default async function StoreSettingsPage() {
           address: store.platformEmail,
           verified: store.platformEmailVerified,
         }}
-        ownerLoginEmail={user.email}
+        ownerLoginEmail={ownerLoginEmail}
       />
     </div>
   );

@@ -1,31 +1,29 @@
 import Link from "next/link";
-import { redirect, notFound } from "next/navigation";
-import { getServerSession } from "next-auth";
+import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   ProductForm,
   type ProductFormValues,
   type VariantValues,
 } from "@/components/dashboard/product-form";
+import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams?: { storeSlug?: string };
 }) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email)
-    redirect(`/signin?next=/dashboard/store/products/${params.id}`);
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: { store: true },
+  // Multi-store resolution. The route still carries productId via
+  // [id] — we preserve that flow and only change *which store* we
+  // verify ownership against.
+  const { store } = await resolveDashboardStore({
+    requestedSlug: searchParams?.storeSlug,
   });
-  if (!user?.store) redirect("/");
 
   const product = await prisma.product.findUnique({
     where: { id: params.id },
@@ -33,8 +31,10 @@ export default async function EditProductPage({
   });
 
   // 404 (not 403) on cross-store access — same response shape whether
-  // the product is missing or just isn't ours.
-  if (!product || product.storeId !== user.store.id) notFound();
+  // the product is missing or just isn't ours. Admins viewing another
+  // store via the picker have already been resolved to that store
+  // above, so the comparison still succeeds for the admin-edit case.
+  if (!product || product.storeId !== store.id) notFound();
 
   const galleryUrls = Array.isArray(product.galleryUrls)
     ? (product.galleryUrls as string[]).filter(
@@ -72,11 +72,18 @@ export default async function EditProductPage({
     variants,
   };
 
+  // Slug suffix to preserve the active-store selection across nav
+  // links (back button + "ดูในหน้าร้าน" doesn't need it because
+  // it points to the public storefront, but the back link does).
+  const slugSuffix = searchParams?.storeSlug
+    ? `?storeSlug=${encodeURIComponent(searchParams.storeSlug)}`
+    : "";
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <Link
-          href="/dashboard/store/products"
+          href={`/dashboard/store/products${slugSuffix}`}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -92,7 +99,7 @@ export default async function EditProductPage({
             </p>
           </div>
           <a
-            href={`/stores/${user.store.slug}/products/${product.id}`}
+            href={`/stores/${store.slug}/products/${product.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm hover:bg-accent"

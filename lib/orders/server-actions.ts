@@ -5,8 +5,10 @@
 // All actions in this file run with the same authorization shape:
 //   1. Resolve session → bail if not signed in.
 //   2. Load the target order WITH its store relation so we can compare
-//      `session.user.id === order.store.ownerId`. Any miss is a hard
-//      reject (don't leak existence — same surface as forbidden).
+//      `session.user.id === order.store.ownerId`, OR allow the action
+//      when the signed-in user has role=ADMIN (platform admin can act
+//      across stores via the dashboard's store picker). Any miss is a
+//      hard reject (don't leak existence — same surface as forbidden).
 //   3. Validate the requested status transition server-side. The UI
 //      hides illegal CTAs, but a determined vendor (or replayed
 //      request) must still be blocked here.
@@ -17,7 +19,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus, type Role } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -59,10 +61,19 @@ const CANCEL_FROM: OrderStatus[] = [
  * Authorize the current session against the target order and return
  * a minimal record the caller can act on. Throws on any failure so
  * server actions stay terse.
+ *
+ * Two valid identities can mutate an order:
+ *   • The store owner (existing case).
+ *   • A platform ADMIN (new — admins use the dashboard store-picker
+ *     to act on any store and need to be able to fulfil/cancel from
+ *     there).
  */
 async function authorizeVendorForOrder(orderId: string) {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string } | undefined)?.id;
+  const sessionUser = session?.user as
+    | { id?: string; role?: Role }
+    | undefined;
+  const userId = sessionUser?.id;
   if (!userId) {
     throw new Error("unauthorized");
   }
@@ -74,7 +85,23 @@ async function authorizeVendorForOrder(orderId: string) {
     },
   });
   if (!order) throw new Error("not_found");
-  if (!order.store || order.store.ownerId !== userId) {
+  if (!order.store) throw new Error("not_found");
+
+  const isOwner = order.store.ownerId === userId;
+  // JWT may be stale (admin role granted after sign-in). Re-check
+  // the role from the DB only when the session doesn't already
+  // claim ADMIN — covers the "promoted while signed in" edge case
+  // without paying a query for every owner-action call.
+  let isAdmin = sessionUser?.role === "ADMIN";
+  if (!isOwner && !isAdmin) {
+    const me = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+    isAdmin = me?.role === "ADMIN";
+  }
+
+  if (!isOwner && !isAdmin) {
     // Same 404-equivalent shape whether the order is missing OR owned
     // by a different vendor. The action callers map this back to a
     // generic "ไม่พบคำสั่งซื้อ" toast.

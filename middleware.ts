@@ -48,6 +48,19 @@ export async function middleware(req: NextRequest) {
 
   // Skip framework / API / already-namespaced routes
   if (PASSTHROUGH_PREFIXES.some((p) => path === p || path.startsWith(p))) {
+    // Inject the request URL as a header so server layouts/components
+    // can read the current pathname + search string. Next.js doesn't
+    // expose `searchParams` to layouts (only pages); we use this on
+    // the dashboard layout to know which store the picker should
+    // highlight + which store's pending-order count to render in the
+    // sidebar badge. Scoped to /dashboard to avoid widening cache
+    // surface elsewhere.
+    if (path.startsWith("/dashboard")) {
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set("x-pathname", path);
+      requestHeaders.set("x-search", url.search);
+      return NextResponse.next({ request: { headers: requestHeaders } });
+    }
     return NextResponse.next();
   }
 
