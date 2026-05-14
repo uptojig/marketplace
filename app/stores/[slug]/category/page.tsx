@@ -25,11 +25,17 @@ import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { TrustCategoryGrid } from "@/components/storefront/themes/trust/TrustCategoryGrid";
 import { BusinessModelCategoryGrid } from "@/components/storefront/themes/business-model/BusinessModelCategoryGrid";
 import { LifestyleCategoryGrid } from "@/components/storefront/themes/lifestyle/LifestyleCategoryGrid";
 import { ElectronicsTechCategoryGrid } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCategoryGrid";
 import { FashionBeautyCategoryPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyCategoryPage";
+import { TrustCategoryPage } from "@/components/storefront/themes/trust/TrustCategoryPage";
+import { BusinessModelCategoryPage } from "@/components/storefront/themes/business-model/BusinessModelCategoryPage";
+import { LifestyleCategoryPage } from "@/components/storefront/themes/lifestyle/LifestyleCategoryPage";
+import { ElectronicsTechCategoryPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCategoryPage";
+import { SpecialtyCategoryPage } from "@/components/storefront/themes/specialty/SpecialtyCategoryPage";
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
@@ -232,39 +238,59 @@ export default async function CategoryIndexPage({
     return `/stores/${store.slug}/category${qs ? `?${qs}` : ""}`;
   };
 
-  // FB stores render a fully bespoke editorial catalog: top spread
-  // hero / horizontal filter chips (no sidebar) / serif-italic sort
-  // pills / italic-serif pagination. Other families continue to use
-  // the TUI Plus sidebar layout below with their own bespoke product
-  // grids (Trust/BM/Lifestyle/ET) until those promote to full-page
-  // bespoke in later phases of the 6×8=48 build-out.
+  // Each design family now has a fully bespoke catalog page with a
+  // structurally distinct layout (filter placement, hero treatment,
+  // pagination style, etc.). Build the shared product props once and
+  // pass them through. Stores not matching any family fall through to
+  // the legacy TUI Plus sidebar layout below for graceful degradation.
+  const sharedCategoryProps = {
+    storeSlug: store.slug,
+    storeName: store.name,
+    totalCount: store.products.length,
+    pageProducts: pageProducts.map((p) => ({
+      id: p.id,
+      title: p.titleTh ?? p.title,
+      imageUrl: p.imageUrl,
+      priceTHB: Number(p.priceTHB),
+      compareAtPriceTHB: p.compareAtPriceTHB
+        ? Number(p.compareAtPriceTHB)
+        : null,
+    })),
+    categoryNames,
+    categoryCounts,
+    uncatCount,
+    selectedCats,
+    sortKey,
+    currentPage,
+    totalPages,
+    buildUrl,
+    buildSortUrl,
+    filteredCount: totalCount,
+  };
+
   if (isFB) {
-    return (
-      <FashionBeautyCategoryPage
-        storeSlug={store.slug}
-        storeName={store.name}
-        totalCount={store.products.length}
-        pageProducts={pageProducts.map((p) => ({
-          id: p.id,
-          title: p.titleTh ?? p.title,
-          imageUrl: p.imageUrl,
-          priceTHB: Number(p.priceTHB),
-          compareAtPriceTHB: p.compareAtPriceTHB
-            ? Number(p.compareAtPriceTHB)
-            : null,
-        }))}
-        categoryNames={categoryNames}
-        categoryCounts={categoryCounts}
-        uncatCount={uncatCount}
-        selectedCats={selectedCats}
-        sortKey={sortKey}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        buildUrl={buildUrl}
-        buildSortUrl={buildSortUrl}
-        filteredCount={totalCount}
-      />
-    );
+    return <FashionBeautyCategoryPage {...sharedCategoryProps} />;
+  }
+  if (isTrust) {
+    return <TrustCategoryPage {...sharedCategoryProps} />;
+  }
+  if (isBM) {
+    return <BusinessModelCategoryPage {...sharedCategoryProps} />;
+  }
+  if (isLifestyle) {
+    return <LifestyleCategoryPage {...sharedCategoryProps} />;
+  }
+  if (isElectronicsTech) {
+    return <ElectronicsTechCategoryPage {...sharedCategoryProps} />;
+  }
+  const isSpecialty =
+    !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech &&
+    isSpecialtyStore({
+      templateId: store.templateId,
+      landingThemeVariant: store.landingThemeVariant,
+    });
+  if (isSpecialty) {
+    return <SpecialtyCategoryPage {...sharedCategoryProps} />;
   }
 
   return (

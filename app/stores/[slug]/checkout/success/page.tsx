@@ -36,6 +36,11 @@ import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { SpecialtyStamp } from "@/components/storefront/themes/specialty/SpecialtyDivider";
 import { FashionBeautyOrderSuccessPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyOrderSuccessPage";
+import { TrustOrderSuccessPage } from "@/components/storefront/themes/trust/TrustOrderSuccessPage";
+import { BusinessModelOrderSuccessPage } from "@/components/storefront/themes/business-model/BusinessModelOrderSuccessPage";
+import { LifestyleOrderSuccessPage } from "@/components/storefront/themes/lifestyle/LifestyleOrderSuccessPage";
+import { ElectronicsTechOrderSuccessPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechOrderSuccessPage";
+import { SpecialtyOrderSuccessPage } from "@/components/storefront/themes/specialty/SpecialtyOrderSuccessPage";
 
 export const dynamic = "force-dynamic";
 
@@ -177,30 +182,42 @@ export default async function StoreOrderSuccess({
   const shortCode = order.id.slice(-8).toUpperCase();
   const storeName = order.store?.name ?? params.slug;
 
-  // FB stores render a fully bespoke editorial thank-you page. Other
-  // families fall through to the existing JSX below with their own
-  // family-aware branching until they're promoted in later phases.
+  // Each design family now has a fully bespoke order-success page.
+  const sharedSuccessProps = {
+    slug: params.slug,
+    storeName,
+    shortCode,
+    fullId: order.id,
+    buyerEmail: me.email ?? null,
+    totalTHB: Number(order.totalTHB),
+    items: order.items.map((it) => ({
+      id: it.id,
+      title: it.product.titleTh ?? it.product.title,
+      imageUrl: it.product.imageUrl,
+      qty: it.qty,
+      lineTotalTHB: Number(it.unitPriceTHB) * it.qty,
+    })),
+    etaRange: `${fmt(eta1)} – ${fmt(eta3)}`,
+    statusLabel: translateStatus(order.status),
+    paymentStatusLabel: order.payment ? translateStatus(order.payment.status) : null,
+  };
   if (isFB) {
-    return (
-      <FashionBeautyOrderSuccessPage
-        slug={params.slug}
-        storeName={storeName}
-        shortCode={shortCode}
-        fullId={order.id}
-        buyerEmail={me.email ?? null}
-        totalTHB={Number(order.totalTHB)}
-        items={order.items.map((it) => ({
-          id: it.id,
-          title: it.product.titleTh ?? it.product.title,
-          imageUrl: it.product.imageUrl,
-          qty: it.qty,
-          lineTotalTHB: Number(it.unitPriceTHB) * it.qty,
-        }))}
-        etaRange={`${fmt(eta1)} – ${fmt(eta3)}`}
-        statusLabel={translateStatus(order.status)}
-        paymentStatusLabel={order.payment ? translateStatus(order.payment.status) : null}
-      />
-    );
+    return <FashionBeautyOrderSuccessPage {...sharedSuccessProps} />;
+  }
+  if (isTrust) {
+    return <TrustOrderSuccessPage {...sharedSuccessProps} />;
+  }
+  if (isBM) {
+    return <BusinessModelOrderSuccessPage {...sharedSuccessProps} />;
+  }
+  if (isLifestyle) {
+    return <LifestyleOrderSuccessPage {...sharedSuccessProps} />;
+  }
+  if (isElectronicsTech) {
+    return <ElectronicsTechOrderSuccessPage {...sharedSuccessProps} />;
+  }
+  if (isSpecialty) {
+    return <SpecialtyOrderSuccessPage {...sharedSuccessProps} />;
   }
 
   return (

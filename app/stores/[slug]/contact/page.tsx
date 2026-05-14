@@ -11,7 +11,17 @@ import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 import { ContactForm } from "./contact-form";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
+import { isLifestyleStore } from "@/lib/landing/lifestyle";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { FashionBeautyContactPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyContactPage";
+import { TrustContactPage } from "@/components/storefront/themes/trust/TrustContactPage";
+import { BusinessModelContactPage } from "@/components/storefront/themes/business-model/BusinessModelContactPage";
+import { LifestyleContactPage } from "@/components/storefront/themes/lifestyle/LifestyleContactPage";
+import { ElectronicsTechContactPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechContactPage";
+import { SpecialtyContactPage } from "@/components/storefront/themes/specialty/SpecialtyContactPage";
 
 export const dynamic = "force-dynamic";
 
@@ -95,23 +105,32 @@ export default async function StoreContactPage({
     !!store.websiteUrl ||
     !!store.lineId;
 
-  // FB stores render a bespoke editorial contact page (top essay +
-  // form below + stationery-card store info). Other families fall
-  // through to the generic 2-column layout for now.
-  const isFB = isFashionBeautyStore({
-    templateId: store.templateId,
-    landingThemeVariant: store.landingThemeVariant,
-  });
-  if (isFB) {
-    return (
-      <FashionBeautyContactPage
-        slug={params.slug}
-        storeName={store.name}
-        tagline={store.tagline}
-        store={store}
-        addressLines={addressLines}
-      />
-    );
+  // Each design family now has a fully bespoke contact page.
+  const familyKey = { templateId: store.templateId, landingThemeVariant: store.landingThemeVariant };
+  const sharedContactProps = {
+    slug: params.slug,
+    storeName: store.name,
+    tagline: store.tagline,
+    store,
+    addressLines,
+  };
+  if (isFashionBeautyStore(familyKey)) {
+    return <FashionBeautyContactPage {...sharedContactProps} />;
+  }
+  if (isTrustStore(familyKey)) {
+    return <TrustContactPage {...sharedContactProps} />;
+  }
+  if (isBusinessModelStore(familyKey)) {
+    return <BusinessModelContactPage {...sharedContactProps} />;
+  }
+  if (isLifestyleStore(familyKey)) {
+    return <LifestyleContactPage {...sharedContactProps} />;
+  }
+  if (isElectronicsTechStore(familyKey)) {
+    return <ElectronicsTechContactPage {...sharedContactProps} />;
+  }
+  if (isSpecialtyStore(familyKey)) {
+    return <SpecialtyContactPage {...sharedContactProps} />;
   }
 
   return (
