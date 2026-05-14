@@ -24,6 +24,7 @@ import {
 import { isFashionBeautyStore } from '@/lib/landing/fashion-beauty';
 import { isTrustStore } from '@/lib/landing/trust';
 import { isBusinessModelStore } from '@/lib/landing/business-model';
+import { isLifestyleStore } from '@/lib/landing/lifestyle';
 
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
@@ -33,6 +34,9 @@ const TRUST_DISPLAY_FONT =
 
 const BM_MONO_FONT =
   'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace';
+
+const LIFESTYLE_DISPLAY_FONT =
+  'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
 
 export const dynamic = 'force-dynamic';
 
@@ -100,6 +104,12 @@ export default async function AccountDashboard({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  const isLifestyle = !isFB && !isTrust && !isBM && store
+    ? isLifestyleStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   const recentOrders = toOrderViews(recentOrdersRaw);
   const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
@@ -139,14 +149,21 @@ export default async function AccountDashboard({
               ? "flex items-center gap-4 rounded-sm border bg-white p-6 shadow-sm"
               : isBM
                 ? "flex items-center gap-4 rounded-md border bg-white p-5 shadow-sm"
-                : "flex items-center gap-4 p-4"
+                : isLifestyle
+                  ? "flex items-center gap-4 rounded-3xl border p-6 shadow-sm"
+                  : "flex items-center gap-4 p-4"
         }
         style={
           isTrust
             ? { borderColor: "var(--shop-accent)" }
             : isBM
               ? { borderColor: "var(--shop-border)" }
-              : undefined
+              : isLifestyle
+                ? {
+                    background: "var(--shop-muted)",
+                    borderColor: "var(--shop-border)",
+                  }
+                : undefined
         }
       >
         <Avatar
@@ -157,13 +174,21 @@ export default async function AccountDashboard({
                 ? "h-16 w-16 rounded-sm"
                 : isBM
                   ? "h-14 w-14 rounded-md"
-                  : "h-14 w-14"
+                  : isLifestyle
+                    ? "h-16 w-16 rounded-2xl"
+                    : "h-14 w-14"
           }
         >
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
           <AvatarFallback
             className={
-              isTrust ? "rounded-sm" : isBM ? "rounded-md" : undefined
+              isTrust
+                ? "rounded-sm"
+                : isBM
+                  ? "rounded-md"
+                  : isLifestyle
+                    ? "rounded-2xl"
+                    : undefined
             }
           >
             {initials}
@@ -201,6 +226,19 @@ export default async function AccountDashboard({
               B2B Account · Tier {bmTier}
             </p>
           )}
+          {isLifestyle && (
+            <p
+              className="text-xs uppercase inline-flex items-center gap-1.5"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.18em',
+                fontWeight: 600,
+              }}
+            >
+              <span aria-hidden role="img">👋</span>
+              Welcome back
+            </p>
+          )}
           <h1
             className={
               isFB
@@ -209,7 +247,9 @@ export default async function AccountDashboard({
                   ? "text-3xl"
                   : isBM
                     ? "text-2xl font-bold"
-                    : "text-lg font-semibold"
+                    : isLifestyle
+                      ? "text-3xl"
+                      : "text-lg font-semibold"
             }
             style={
               isFB
@@ -232,7 +272,14 @@ export default async function AccountDashboard({
                         color: 'var(--shop-ink)',
                         letterSpacing: '-0.015em',
                       }
-                    : undefined
+                    : isLifestyle
+                      ? {
+                          fontFamily: LIFESTYLE_DISPLAY_FONT,
+                          fontWeight: 700,
+                          color: 'var(--shop-ink)',
+                          letterSpacing: '-0.01em',
+                        }
+                      : undefined
             }
           >
             {isFB
@@ -241,7 +288,9 @@ export default async function AccountDashboard({
                 ? `Welcome back, ${displayName}`
                 : isBM
                   ? `Welcome back, ${displayName}`
-                  : `สวัสดี, ${displayName}`}
+                  : isLifestyle
+                    ? `Hey ${displayName}!`
+                    : `สวัสดี, ${displayName}`}
           </h1>
           {isTrust && (
             <div
@@ -250,7 +299,7 @@ export default async function AccountDashboard({
               style={{ background: 'var(--shop-accent)' }}
             />
           )}
-          {user?.createdAt && !isTrust && (
+          {user?.createdAt && !isTrust && !isLifestyle && (
             <p className="text-xs text-muted-foreground">
               สมาชิกตั้งแต่{" "}
               {user.createdAt.toLocaleDateString("th-TH", {
@@ -265,6 +314,18 @@ export default async function AccountDashboard({
               style={{ color: 'var(--shop-ink-muted)' }}
             >
               สมาชิกตั้งแต่{" "}
+              {user.createdAt.toLocaleDateString("th-TH", {
+                year: "numeric",
+                month: "long",
+              })}
+            </p>
+          )}
+          {user?.createdAt && isLifestyle && (
+            <p
+              className="mt-2 text-xs"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              เป็นสมาชิกตั้งแต่{" "}
               {user.createdAt.toLocaleDateString("th-TH", {
                 year: "numeric",
                 month: "long",
@@ -315,33 +376,61 @@ export default async function AccountDashboard({
           <>
             <StatCard
               icon={Package}
-              label={isTrust ? "Active orders" : "คำสั่งซื้อที่ใช้งาน"}
+              label={
+                isTrust
+                  ? "Active orders"
+                  : isLifestyle
+                    ? "Active orders"
+                    : "คำสั่งซื้อที่ใช้งาน"
+              }
               value={activeOrders.toString()}
               href={`${base}/orders`}
               isTrust={isTrust}
+              isLifestyle={isLifestyle}
             />
             <StatCard
               icon={MapPin}
-              label={isTrust ? "Saved addresses" : "ที่อยู่บันทึกไว้"}
+              label={
+                isTrust
+                  ? "Saved addresses"
+                  : isLifestyle
+                    ? "Addresses"
+                    : "ที่อยู่บันทึกไว้"
+              }
               value={addressCount.toString()}
               href={`${base}/addresses`}
               isTrust={isTrust}
+              isLifestyle={isLifestyle}
             />
             <StatCard
               icon={Wallet}
-              label={isTrust ? "Wallet balance" : "ยอด Anypay"}
+              label={
+                isTrust
+                  ? "Wallet balance"
+                  : isLifestyle
+                    ? "Wallet"
+                    : "ยอด Anypay"
+              }
               value="฿0"
               href={`${base}/wallet`}
               muted
               isTrust={isTrust}
+              isLifestyle={isLifestyle}
             />
             <StatCard
               icon={Heart}
-              label={isTrust ? "Favorites" : "รายการโปรด"}
+              label={
+                isTrust
+                  ? "Favorites"
+                  : isLifestyle
+                    ? "Favorites"
+                    : "รายการโปรด"
+              }
               value="0"
               href={`${base}/favorites`}
               muted
               isTrust={isTrust}
+              isLifestyle={isLifestyle}
             />
           </>
         )}
@@ -351,7 +440,7 @@ export default async function AccountDashboard({
         <div className="mb-3 flex items-baseline justify-between">
           <h2
             className={
-              isFB || isTrust ? "text-2xl" : "font-semibold"
+              isFB || isTrust || isLifestyle ? "text-2xl" : "font-semibold"
             }
             style={
               isFB
@@ -366,14 +455,22 @@ export default async function AccountDashboard({
                       fontWeight: 600,
                       color: 'var(--shop-ink)',
                     }
-                  : undefined
+                  : isLifestyle
+                    ? {
+                        fontFamily: LIFESTYLE_DISPLAY_FONT,
+                        fontWeight: 700,
+                        color: 'var(--shop-ink)',
+                      }
+                    : undefined
             }
           >
             {isFB
               ? "Recent orders"
               : isTrust
                 ? "Recent orders"
-                : "คำสั่งซื้อล่าสุด"}
+                : isLifestyle
+                  ? "Recent orders"
+                  : "คำสั่งซื้อล่าสุด"}
           </h2>
           <Link
             href={`${base}/orders`}
@@ -383,7 +480,9 @@ export default async function AccountDashboard({
                 ? 'var(--shop-primary)'
                 : isTrust
                   ? 'var(--shop-accent)'
-                  : undefined,
+                  : isLifestyle
+                    ? 'var(--shop-primary)'
+                    : undefined,
             }}
           >
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
@@ -473,6 +572,7 @@ function StatCard({
   muted = false,
   isTrust = false,
   isBM = false,
+  isLifestyle = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -481,6 +581,7 @@ function StatCard({
   muted?: boolean;
   isTrust?: boolean;
   isBM?: boolean;
+  isLifestyle?: boolean;
 }) {
   return (
     <Link href={href}>
@@ -490,7 +591,9 @@ function StatCard({
             ? "rounded-sm p-4 transition hover:shadow-md"
             : isBM
               ? "rounded-md p-4 transition hover:shadow-md"
-              : "p-3 transition hover:shadow-md"
+              : isLifestyle
+                ? "rounded-3xl p-4 transition hover:shadow-md"
+                : "p-3 transition hover:shadow-md"
         }
         style={
           isTrust
@@ -500,7 +603,12 @@ function StatCard({
                   borderColor: "var(--shop-border)",
                   background: "#fafafa",
                 }
-              : undefined
+              : isLifestyle
+                ? {
+                    borderColor: "var(--shop-border)",
+                    background: "var(--shop-card)",
+                  }
+                : undefined
         }
       >
         <div className="flex items-center gap-3">
@@ -510,7 +618,9 @@ function StatCard({
                 ? "rounded-sm border bg-[var(--shop-muted)] p-2"
                 : isBM
                   ? "rounded-md border bg-white p-2"
-                  : "rounded-md bg-primary/10 p-2 text-primary"
+                  : isLifestyle
+                    ? "rounded-full p-2 text-white"
+                    : "rounded-md bg-primary/10 p-2 text-primary"
             }
             style={
               isTrust
@@ -523,7 +633,12 @@ function StatCard({
                       borderColor: "var(--shop-border)",
                       color: "var(--shop-primary)",
                     }
-                  : undefined
+                  : isLifestyle
+                    ? {
+                        background: "var(--shop-accent)",
+                        color: "#ffffff",
+                      }
+                    : undefined
             }
           >
             <Icon className="h-4 w-4" />
@@ -535,7 +650,9 @@ function StatCard({
                   ? "text-[10px] uppercase"
                   : isBM
                     ? "text-[10px] font-semibold uppercase"
-                    : "text-xs text-muted-foreground"
+                    : isLifestyle
+                      ? "text-[10px] uppercase"
+                      : "text-xs text-muted-foreground"
               }
               style={
                 isTrust
@@ -549,7 +666,13 @@ function StatCard({
                         color: "var(--shop-ink-muted)",
                         letterSpacing: "0.12em",
                       }
-                    : undefined
+                    : isLifestyle
+                      ? {
+                          color: "var(--shop-ink-muted)",
+                          letterSpacing: "0.18em",
+                          fontWeight: 600,
+                        }
+                      : undefined
               }
             >
               {label}
@@ -561,7 +684,9 @@ function StatCard({
                   ? `text-xl ${muted ? "text-muted-foreground" : ""}`
                   : isBM
                     ? `text-lg font-bold ${muted ? "text-muted-foreground" : ""}`
-                    : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
+                    : isLifestyle
+                      ? `text-xl ${muted ? "text-muted-foreground" : ""}`
+                      : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
               }
               style={
                 isTrust && !muted
@@ -580,7 +705,14 @@ function StatCard({
                         fontWeight: 700,
                         letterSpacing: "-0.01em",
                       }
-                    : undefined
+                    : isLifestyle && !muted
+                      ? {
+                          color: "var(--shop-ink)",
+                          fontFamily:
+                            'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
+                          fontWeight: 700,
+                        }
+                      : undefined
               }
             >
               {value}

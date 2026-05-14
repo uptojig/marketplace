@@ -9,9 +9,11 @@ import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
 import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
+import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
+import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
@@ -54,8 +56,11 @@ export default async function ShopProductPage({
   // (in practice the template→group mapping is disjoint, but the
   // explicit precedence keeps things safe). trust (classic /
   // official-brand / premium-luxury) renders the squared heritage
-  // hero; FB renders the editorial portrait; everything else
-  // renders the default hero untouched.
+  // hero; FB renders the editorial portrait; business-model
+  // (wholesale-b2b / flash-deal / subscription) renders the
+  // rectangular deal-dashboard hero; lifestyle (home-living /
+  // sport-active / kids-toys) renders the warm catalog hero;
+  // everything else renders the default hero untouched.
   const isFB = isFashionBeautyStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
@@ -64,10 +69,11 @@ export default async function ShopProductPage({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
-  // business-model (wholesale-b2b / flash-deal / subscription) — only
-  // checked when FB + trust both miss, so the disjoint template→group
-  // mapping stays safe. Renders the rectangular deal-dashboard hero.
   const isBM = !isFB && !isTrust && isBusinessModelStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const isLifestyle = !isFB && !isTrust && !isBM && isLifestyleStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
@@ -77,7 +83,9 @@ export default async function ShopProductPage({
       ? TrustProductHero
       : isBM
         ? BusinessModelProductHero
-        : ProductDetailHero;
+        : isLifestyle
+          ? LifestyleProductHero
+          : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -174,13 +182,19 @@ export default async function ShopProductPage({
       {related.length > 0 && (
         <section
           className={
-            isFB || isTrust ? "space-y-6 py-8" : isBM ? "space-y-4 py-6" : "space-y-3"
+            isFB || isTrust || isLifestyle
+              ? "space-y-6 py-8"
+              : isBM
+                ? "space-y-4 py-6"
+                : "space-y-3"
           }
         >
           {/* Section eyebrow + heading. Trust adds a heritage caps
               eyebrow above the serif headline; FB renders a serif
               headline only; business-model uses a tight-caps utility
-              label; default keeps its compact sans label. */}
+              label; lifestyle adds an optimistic sage caps tagline
+              above the geometric sans headline; default keeps its
+              compact sans label. */}
           {isTrust && (
             <p
               className="text-xs uppercase"
@@ -204,9 +218,21 @@ export default async function ShopProductPage({
               Related deals
             </p>
           )}
+          {isLifestyle && (
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.18em',
+                fontWeight: 600,
+              }}
+            >
+              More from the basket
+            </p>
+          )}
           <h2
             className={
-              isFB || isTrust
+              isFB || isTrust || isLifestyle
                 ? "text-3xl sm:text-4xl"
                 : isBM
                   ? "text-xl sm:text-2xl"
@@ -227,7 +253,14 @@ export default async function ShopProductPage({
                       fontWeight: 600,
                       letterSpacing: '-0.01em',
                     }
-                  : {}),
+                  : isLifestyle
+                    ? {
+                        fontFamily:
+                          'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
+                        fontWeight: 600,
+                        letterSpacing: '-0.01em',
+                      }
+                    : {}),
             }}
           >
             {isFB
@@ -236,7 +269,9 @@ export default async function ShopProductPage({
                 ? 'You may also like'
                 : isBM
                   ? 'ดีลใกล้เคียง'
-                  : 'สินค้าที่เกี่ยวข้อง'}
+                  : isLifestyle
+                    ? 'You may also love'
+                    : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={
@@ -244,7 +279,9 @@ export default async function ShopProductPage({
                 ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
                 : isTrust
                   ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
-                  : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
+                  : isLifestyle
+                    ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-3"
+                    : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
             }
           >
             {related.map((r) => (
@@ -252,30 +289,35 @@ export default async function ShopProductPage({
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
                 className={
-                  isFB || isTrust
+                  isFB || isTrust || isLifestyle
                     ? "group block"
                     : "group overflow-hidden rounded-lg border"
                 }
                 style={
-                  isFB || isTrust
+                  isFB || isTrust || isLifestyle
                     ? undefined
                     : { background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }
                 }
               >
                 <div
+                  data-lifestyle-frame={isLifestyle ? 'true' : undefined}
                   className={
                     isFB
                       ? "overflow-hidden rounded-2xl border bg-white p-2 shadow-sm"
                       : isTrust
                         ? "overflow-hidden rounded-sm border bg-white"
-                        : "aspect-square overflow-hidden"
+                        : isLifestyle
+                          ? "overflow-hidden rounded-3xl bg-white"
+                          : "aspect-square overflow-hidden"
                   }
                   style={{
                     ...(isFB
                       ? { borderColor: 'var(--shop-border)' }
                       : isTrust
                         ? { borderColor: 'var(--shop-accent)' }
-                        : { backgroundColor: 'var(--shop-bg)' }),
+                        : isLifestyle
+                          ? {}
+                          : { backgroundColor: 'var(--shop-bg)' }),
                   }}
                 >
                   {r.imageUrl && (
@@ -285,14 +327,18 @@ export default async function ShopProductPage({
                           ? "relative overflow-hidden rounded-xl"
                           : isTrust
                             ? "relative overflow-hidden"
-                            : "h-full w-full"
+                            : isLifestyle
+                              ? "relative overflow-hidden"
+                              : "h-full w-full"
                       }
                       style={
                         isFB
                           ? { aspectRatio: '4 / 5', backgroundColor: 'var(--shop-muted)' }
                           : isTrust
                             ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
-                            : undefined
+                            : isLifestyle
+                              ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
+                              : undefined
                       }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -304,7 +350,9 @@ export default async function ShopProductPage({
                             ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                             : isTrust
                               ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                              : "h-full w-full object-cover transition group-hover:scale-105"
+                              : isLifestyle
+                                ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                                : "h-full w-full object-cover transition group-hover:scale-105"
                         }
                       />
                     </div>
@@ -316,7 +364,9 @@ export default async function ShopProductPage({
                       ? "px-1 pt-3"
                       : isTrust
                         ? "px-1 pt-4"
-                        : "p-3"
+                        : isLifestyle
+                          ? "px-1 pt-4"
+                          : "p-3"
                   }
                 >
                   <div
@@ -325,7 +375,9 @@ export default async function ShopProductPage({
                         ? "line-clamp-2 text-sm"
                         : isTrust
                           ? "line-clamp-2 text-sm leading-tight"
-                          : "line-clamp-2 text-sm font-medium"
+                          : isLifestyle
+                            ? "line-clamp-2 text-base leading-tight"
+                            : "line-clamp-2 text-sm font-medium"
                     }
                     style={{
                       color: 'var(--shop-ink, #1c1917)',
@@ -335,7 +387,13 @@ export default async function ShopProductPage({
                               'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
                             fontWeight: 600,
                           }
-                        : {}),
+                        : isLifestyle
+                          ? {
+                              fontFamily:
+                                'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
+                              fontWeight: 600,
+                            }
+                          : {}),
                     }}
                   >
                     {r.titleTh ?? r.title}
@@ -344,6 +402,12 @@ export default async function ShopProductPage({
                     className="mt-1 text-sm font-semibold"
                     style={{
                       color: isTrust ? 'var(--shop-ink)' : 'var(--shop-primary)',
+                      ...(isLifestyle
+                        ? {
+                            fontFamily:
+                              'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
+                          }
+                        : {}),
                     }}
                   >
                     ฿ {Number(r.priceTHB).toLocaleString("th-TH")}

@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
+import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { StoreSignUpClient } from "./signup-client";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,12 @@ export default async function StoreSignUpPage({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  const isLifestyle = !isFB && !isTrust && !isBusinessModel && store
+    ? isLifestyleStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   return (
     <StoreSignUpClient
@@ -68,6 +75,7 @@ export default async function StoreSignUpPage({
       isFashionBeauty={isFB}
       isTrust={isTrust}
       isBusinessModel={isBusinessModel}
+      isLifestyle={isLifestyle}
       defaultCallback={`/stores/${params.slug}/account`}
     />
   );
