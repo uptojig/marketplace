@@ -86,29 +86,36 @@
   --font-sans: var(--font-prompt), var(--font-google-sans),
     var(--font-noto-thai), system-ui, sans-serif;
 
-  /* shadcn HSL color bridge. Each token reads its hue/sat/light
-     from a CSS var defined in :root/.dark — that's what lets the
+  /* shadcn color bridge. Each --color-* token reads its underlying
+     --xxx var defined in :root / .dark — that's what lets the
      shadcn theme tokens (foreground, primary, muted, ring, etc.)
-     swap between light + dark via the `class="dark"` toggle. */
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
+     swap between light + dark via the `class="dark"` toggle.
+     The underlying vars use `oklch(...)` directly (modern colour
+     space + alpha-channel support), so we pass them through with
+     `var()` rather than the legacy `hsl(var(...))` wrap that v3
+     shadcn used. The old wrap silently produced invalid CSS like
+     `hsl(oklch(1 0 0))` and rendered every popover / dialog /
+     button background transparent — see commit history for the
+     bug repro screenshots. */
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
   /* Sidebar tokens — wired so dashboard chrome (sidebar-shell-style
      blocks) gets bg-sidebar / text-sidebar-foreground utilities.
@@ -161,7 +168,7 @@
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: oklch(0.985 0 0);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
     --ring: oklch(0.708 0 0);
