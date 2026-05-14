@@ -31,6 +31,8 @@ import {
 } from "@/components/storefront/templates/registry";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { PetHouseHomepage } from "@/components/storefront/themes/pet-house/PetHouseHomepage";
+import { isCaseStudioStore } from "@/lib/landing/case-studio";
+import { CaseStudioHomepage } from "@/components/storefront/themes/case-studio/CaseStudioHomepage";
 
 export const dynamic = "force-dynamic";
 
@@ -182,6 +184,16 @@ export default async function StorePage({
   // sub-page.
   if (isPetHouseStore(baseStore)) {
     return <PetHouseHomepage store={baseStore} />;
+  }
+
+  // ── case-studio custom homepage (casethep) ──────────────────
+  // Bespoke landing for the phone-case store. Same gate pattern as
+  // pet-house above: matches by slug, templateId, OR
+  // landingThemeVariant so an operator can later opt sibling phone-
+  // case stores into the same homepage without code changes.
+  // Renders inside the shared ShopHeader / ShopFooter chrome.
+  if (isCaseStudioStore(baseStore)) {
+    return <CaseStudioHomepage store={baseStore} />;
   }
 
   // ── New scaffold-based template (vendor wizard v2) ──────────
