@@ -28,6 +28,7 @@ function formatFollowers(n: number): string {
 }
 
 function StandardHeader({ store }: { store: Store }) {
+  const hasLogo = !!store.branding.logoUrl;
   return (
     <div className="relative -mt-8 flex items-end gap-3 px-4">
       <Avatar className="h-16 w-16 border-4 border-background shadow-sm">
@@ -35,7 +36,9 @@ function StandardHeader({ store }: { store: Store }) {
         <AvatarFallback>{store.name.slice(0, 2)}</AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0 pb-1">
-        <h1 className="text-lg font-semibold truncate">{store.name}</h1>
+        {!hasLogo && (
+          <h1 className="text-lg font-semibold truncate">{store.name}</h1>
+        )}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -51,15 +54,19 @@ function StandardHeader({ store }: { store: Store }) {
 }
 
 function CompactHeader({ store }: { store: Store }) {
+  const hasLogo = !!store.branding.logoUrl;
   return (
     <div className="flex items-center gap-2 border-b px-4 py-3">
       <Avatar className="h-8 w-8">
         <AvatarImage src={store.branding.logoUrl} alt={store.name} />
         <AvatarFallback className="text-xs">{store.name.slice(0, 2)}</AvatarFallback>
       </Avatar>
-      <div className="flex-1 min-w-0">
-        <div className="truncate text-sm font-medium">{store.name}</div>
-      </div>
+      {!hasLogo && (
+        <div className="flex-1 min-w-0">
+          <div className="truncate text-sm font-medium">{store.name}</div>
+        </div>
+      )}
+      {hasLogo && <div className="flex-1 min-w-0" />}
       <div className="inline-flex items-center gap-1 text-xs text-muted-foreground">
         <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
         {store.rating.toFixed(1)}
@@ -69,6 +76,7 @@ function CompactHeader({ store }: { store: Store }) {
 }
 
 function WithBadgeHeader({ store, badgeType }: { store: Store; badgeType?: string }) {
+  const hasLogo = !!store.branding.logoUrl;
   return (
     <div className="relative -mt-8 flex items-end gap-3 px-4">
       <Avatar className="h-16 w-16 rounded-lg border-4 border-background shadow-sm">
@@ -77,7 +85,9 @@ function WithBadgeHeader({ store, badgeType }: { store: Store; badgeType?: strin
       </Avatar>
       <div className="flex-1 min-w-0 pb-1">
         <div className="flex items-center gap-2">
-          <h1 className="truncate text-lg font-semibold">{store.name}</h1>
+          {!hasLogo && (
+            <h1 className="truncate text-lg font-semibold">{store.name}</h1>
+          )}
           {badgeType === 'official' && (
             <Badge className="bg-blue-600 hover:bg-blue-700">Official</Badge>
           )}
@@ -114,7 +124,9 @@ function WithPortraitHeader({ store }: { store: Store }) {
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <h1 className="truncate text-base font-semibold">{store.name}</h1>
+        {!store.branding.portraitUrl && (
+          <h1 className="truncate text-base font-semibold">{store.name}</h1>
+        )}
         {store.description && (
           <p className="line-clamp-1 text-xs text-muted-foreground">{store.description}</p>
         )}

@@ -3,37 +3,24 @@
 /**
  * ProductDetailTabs — Description / Specifications / Reviews / Shipping.
  *
- * Sits below the <ProductDetailHero> on the product detail page. Replaces
- * the inline Description / Specifications sections from the scaffold port
- * (components/store-blocks/product-detail-block.tsx) with a proper Tabs UI
- * + Reviews and Shipping placeholders matching the user's design ref.
- *
- * Data sources:
- *  - Description: Prisma `Product.descriptionTh ?? Product.description`,
- *    cleaned upstream by `lib/format/cleanDescription`.
- *  - Specifications: future Prisma `Product.attributes` Json blob, until
- *    then we surface whatever the caller passes (or hide the tab content).
- *  - Reviews: placeholder. No Review model yet.
- *    TODO(reviews): swap placeholder for a real list once the Review
- *    model lands. Likely a server component fed by a paginated query.
- *  - Shipping: static copy + the store's display name so users know who
- *    ships the order. The shipping cadence ("ส่งทุกวันจันทร์-ศุกร์") is a
- *    Basketplace-wide default; per-store overrides can be added later via
- *    Store.shippingNote or similar.
- *    TODO(shipping): per-store override copy once the schema gains a
- *    `shippingPolicy` / `shippingNote` field on Store.
+ * Tabs are conditional: any tab whose data source is empty is removed
+ * entirely (no "ยังไม่มีข้อมูล" stubs visible to the buyer). Description
+ * always shows (with a contact-store fallback when empty). Shipping
+ * always shows (static + store name). Specifications + Reviews appear
+ * only when there's real data to render.
  */
 
+import Link from 'next/link';
 import { MessageSquare, Truck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export interface ProductDetailTabsProduct {
   description: string;
-  /** Free-form key/value spec sheet (e.g. {"Material": "Cotton"}). */
   attributes: Record<string, string>;
 }
 
 export interface ProductDetailTabsStore {
+  slug: string;
   name: string;
 }
 
@@ -45,46 +32,58 @@ export function ProductDetailTabs({
   store: ProductDetailTabsStore;
 }) {
   const hasSpecs = Object.keys(product.attributes).length > 0;
+  const hasDescription = product.description.trim().length > 0;
+  // Reviews data isn't wired yet anywhere — keep the tab hidden until
+  // the Review model lands and a real query feeds it.
+  const hasReviews = false;
+
+  const triggerClass =
+    'data-active:border-primary data-active:text-foreground rounded-none border-b-2 border-transparent px-4 pb-2 text-sm';
 
   return (
     <Tabs defaultValue="description" className="w-full">
       <TabsList className="h-10 w-full justify-start gap-2 overflow-x-auto rounded-none border-b bg-transparent p-0">
-        <TabsTrigger
-          value="description"
-          className="data-active:border-primary data-active:text-foreground rounded-none border-b-2 border-transparent px-4 pb-2 text-sm"
-        >
+        <TabsTrigger value="description" className={triggerClass}>
           รายละเอียด
         </TabsTrigger>
-        <TabsTrigger
-          value="specifications"
-          className="data-active:border-primary data-active:text-foreground rounded-none border-b-2 border-transparent px-4 pb-2 text-sm"
-        >
-          ข้อมูลจำเพาะ
-        </TabsTrigger>
-        <TabsTrigger
-          value="reviews"
-          className="data-active:border-primary data-active:text-foreground rounded-none border-b-2 border-transparent px-4 pb-2 text-sm"
-        >
-          รีวิว
-        </TabsTrigger>
-        <TabsTrigger
-          value="shipping"
-          className="data-active:border-primary data-active:text-foreground rounded-none border-b-2 border-transparent px-4 pb-2 text-sm"
-        >
+        {hasSpecs && (
+          <TabsTrigger value="specifications" className={triggerClass}>
+            ข้อมูลจำเพาะ
+          </TabsTrigger>
+        )}
+        {hasReviews && (
+          <TabsTrigger value="reviews" className={triggerClass}>
+            รีวิว
+          </TabsTrigger>
+        )}
+        <TabsTrigger value="shipping" className={triggerClass}>
           การจัดส่ง
         </TabsTrigger>
       </TabsList>
 
       <TabsContent value="description" className="pt-4">
         <div className="prose prose-sm max-w-none">
-          <p className="whitespace-pre-line text-sm text-muted-foreground">
-            {product.description.trim() || 'ไม่มีรายละเอียดสินค้า'}
-          </p>
+          {hasDescription ? (
+            <p className="whitespace-pre-line text-sm text-muted-foreground">
+              {product.description.trim()}
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              ทางร้านยังไม่ได้ใส่รายละเอียดสินค้านี้ — สอบถามข้อมูลเพิ่มเติมได้ที่{' '}
+              <Link
+                href={`/stores/${store.slug}/contact`}
+                className="font-medium underline"
+                style={{ color: 'var(--shop-primary)' }}
+              >
+                หน้าติดต่อร้าน
+              </Link>
+            </p>
+          )}
         </div>
       </TabsContent>
 
-      <TabsContent value="specifications" className="pt-4">
-        {hasSpecs ? (
+      {hasSpecs && (
+        <TabsContent value="specifications" className="pt-4">
           <table className="w-full text-sm">
             <tbody className="divide-y">
               {Object.entries(product.attributes).map(([k, v]) => (
@@ -95,20 +94,20 @@ export function ProductDetailTabs({
               ))}
             </tbody>
           </table>
-        ) : (
-          <p className="text-sm text-muted-foreground">ยังไม่มีข้อมูลจำเพาะ</p>
-        )}
-      </TabsContent>
+        </TabsContent>
+      )}
 
-      <TabsContent value="reviews" className="pt-4">
-        <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
-          <MessageSquare className="h-8 w-8 text-muted-foreground" />
-          <p className="text-sm font-medium">ยังไม่มี reviews</p>
-          <p className="text-xs text-muted-foreground">
-            เป็นคนแรกที่รีวิวสินค้านี้หลังการสั่งซื้อ
-          </p>
-        </div>
-      </TabsContent>
+      {hasReviews && (
+        <TabsContent value="reviews" className="pt-4">
+          <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+            <MessageSquare className="h-8 w-8 text-muted-foreground" />
+            <p className="text-sm font-medium">ยังไม่มี reviews</p>
+            <p className="text-xs text-muted-foreground">
+              เป็นคนแรกที่รีวิวสินค้านี้หลังการสั่งซื้อ
+            </p>
+          </div>
+        </TabsContent>
+      )}
 
       <TabsContent value="shipping" className="pt-4">
         <div className="space-y-3 text-sm">
