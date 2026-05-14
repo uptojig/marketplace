@@ -41,6 +41,11 @@ interface CjProduct {
   imageUrl: string | null;
 }
 
+interface CjCategory {
+  id: string;
+  name: string;
+}
+
 const STARTER_PACK_TARGETS = {
   "10": 10,
   "20": 20,
@@ -74,6 +79,9 @@ export function PhaseProducts({ state, onChange }: Props) {
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<CjCategory[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const initialLoaded = useRef(false);
 
   const selectedIds = new Set(
@@ -84,7 +92,12 @@ export function PhaseProducts({ state, onChange }: Props) {
       ? STARTER_PACK_TARGETS[state.products.starterPack]
       : 20;
 
-  async function loadPage(reset: boolean, currentSearch: string, p: number) {
+  async function loadPage(
+    reset: boolean,
+    currentSearch: string,
+    p: number,
+    categoryOverride?: string | null,
+  ) {
     setLoading(true);
     setErr(null);
     try {
@@ -93,6 +106,11 @@ export function PhaseProducts({ state, onChange }: Props) {
         pageSize: String(PAGE_SIZE),
       });
       if (currentSearch) params.set("search", currentSearch);
+      // `categoryOverride === undefined` → use whatever's in state. Pass
+      // explicit `null` to clear the filter for the "ทั้งหมด" chip.
+      const effectiveCategory =
+        categoryOverride === undefined ? categoryId : categoryOverride;
+      if (effectiveCategory) params.set("category", effectiveCategory);
       const res = await fetch(`/api/wizard/cj-products?${params}`);
       const data = (await res.json().catch(() => null)) as {
         items?: CjProduct[];
@@ -121,6 +139,39 @@ export function PhaseProducts({ state, onChange }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Categories load once on mount — list is stable, and the
+  // `/api/wizard/cj-categories` route is itself revalidated hourly.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/wizard/cj-categories`);
+        const data = (await res.json().catch(() => null)) as {
+          items?: CjCategory[];
+        } | null;
+        if (!cancelled && res.ok && data?.items) {
+          setCategories(data.items);
+        }
+      } catch {
+        // Swallow — category filter is optional. Chip row simply
+        // collapses to just the "ทั้งหมด" chip on failure.
+      } finally {
+        if (!cancelled) setCategoriesLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function selectCategory(nextId: string | null) {
+    if (nextId === categoryId) return;
+    setCategoryId(nextId);
+    setItems([]);
+    setPage(1);
+    void loadPage(true, search, 1, nextId);
+  }
+
   function toggle(p: CjProduct) {
     const has = selectedIds.has(p.externalProductId);
     const next = has
@@ -143,6 +194,9 @@ export function PhaseProducts({ state, onChange }: Props) {
   }
 
   const overTarget = selectedIds.size > target;
+  const activeCategoryName = categoryId
+    ? categories.find((c) => c.id === categoryId)?.name ?? null
+    : null;
 
   return (
     <div className="space-y-5">
@@ -186,6 +240,51 @@ export function PhaseProducts({ state, onChange }: Props) {
         })}
       </div>
 
+      {/* Category chip row */}
+      <div className="-mx-1 overflow-x-auto">
+        <div className="flex min-w-max items-center gap-2 px-1 pb-1">
+          {categoriesLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={`cat-sk-${i}`}
+                className="h-7 w-20 animate-pulse rounded-full bg-zinc-100"
+              />
+            ))
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => selectCategory(null)}
+                className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition ${
+                  categoryId === null
+                    ? "border-zinc-900 bg-zinc-900 text-white"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400"
+                }`}
+              >
+                ทั้งหมด
+              </button>
+              {categories.map((c) => {
+                const active = categoryId === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => selectCategory(c.id)}
+                    className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition ${
+                      active
+                        ? "border-zinc-900 bg-zinc-900 text-white"
+                        : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400"
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                );
+              })}
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Search bar */}
       <form onSubmit={submitSearch} className="flex gap-2">
         <input
@@ -214,9 +313,16 @@ export function PhaseProducts({ state, onChange }: Props) {
               : "border-emerald-200 bg-emerald-50 text-emerald-800"
         }`}
       >
-        <span>
-          เลือกแล้ว <strong>{selectedIds.size}</strong> / {target} ชิ้น
-          {overTarget && " (เกินเป้าหมายเล็กน้อย — ใช้เวลา import นานขึ้น)"}
+        <span className="flex flex-wrap items-center gap-2">
+          <span>
+            เลือกแล้ว <strong>{selectedIds.size}</strong> / {target} ชิ้น
+            {overTarget && " (เกินเป้าหมายเล็กน้อย — ใช้เวลา import นานขึ้น)"}
+          </span>
+          {activeCategoryName && (
+            <span className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-medium text-zinc-700">
+              หมวด: {activeCategoryName}
+            </span>
+          )}
         </span>
         {selectedIds.size > 0 && (
           <button

@@ -13,6 +13,7 @@ import { PhaseIdentity } from "./phase-identity";
 import { PhaseLaunch } from "./phase-launch";
 import { PhaseLayout } from "./phase-layout";
 import { PhaseProducts } from "./phase-products";
+import { SubmitOverlay } from "./submit-overlay";
 
 type WizardProps = {
   onSubmit?: (state: WizardState) => Promise<void>;
@@ -113,6 +114,10 @@ export function Wizard({ onSubmit }: WizardProps) {
           <LivePreview state={state} />
         </section>
       </div>
+
+      {pending && state.phase === 5 && (
+        <SubmitOverlay selectedCount={state.products.selectedProducts.length} />
+      )}
     </div>
   );
 }

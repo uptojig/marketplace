@@ -28,7 +28,7 @@
  */
 
 import { useState } from "react";
-import type { Template, TemplateId } from "@/lib/store/wizard-data";
+import type { Behavior, Template, TemplateId } from "@/lib/store/wizard-data";
 
 export type PageKey =
   | "home"
@@ -424,6 +424,7 @@ export function PageMockup({
   const t = FAMILY_THEMES[family];
   const eyebrow = familyEyebrow(family, page);
   const title = familyTitle(family, page, displayName);
+  const behavior: Behavior = template?.behavior ?? {};
   const headingFont =
     t.heading === "serif" ? t.serif : t.heading === "mono" ? t.mono : t.sans;
 
@@ -439,11 +440,11 @@ export function PageMockup({
 
   switch (page) {
     case "home":
-      return shell(<HomeMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
+      return shell(<HomeMock t={t} family={family} behavior={behavior} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
     case "category":
-      return shell(<CategoryMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
+      return shell(<CategoryMock t={t} family={family} behavior={behavior} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
     case "pdp":
-      return shell(<PdpMock t={t} family={family} eyebrow={eyebrow} headingFont={headingFont} />);
+      return shell(<PdpMock t={t} family={family} behavior={behavior} eyebrow={eyebrow} headingFont={headingFont} />);
     case "cart":
       return shell(<CartMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
     case "checkout":
@@ -596,21 +597,26 @@ function PriceLine({ t, family }: { t: FamilyTheme; family: Family }) {
 function HomeMock({
   t,
   family,
+  behavior,
   eyebrow,
   title,
   headingFont,
 }: {
   t: FamilyTheme;
   family: Family;
+  behavior: Behavior;
   eyebrow: string;
   title: string;
   headingFont: string;
 }) {
+  // Reusable swatch palette (rose/yellow/sky/green/pink) for the swatch-row cue.
+  const swatchColors = ["#fb7185", "#fbbf24", "#7dd3fc", "#86efac", "#f9a8d4"];
+
   return (
     <div className="px-4 py-4 space-y-3">
       {/* Hero band */}
       <div
-        className="px-3 py-3"
+        className="relative px-3 py-3"
         style={{
           background:
             family === "fashion-beauty"
@@ -644,7 +650,7 @@ function HomeMock({
         {family === "trust" && (
           <div className="mt-1.5 h-px w-8" style={{ background: t.accent }} />
         )}
-        {family === "business-model" && (
+        {family === "business-model" && !behavior.countdownBanner && (
           <div className="mt-2 inline-flex items-center gap-1 rounded bg-white/20 px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ fontFamily: t.mono }}>
             FLASH · 02:34:17
           </div>
@@ -654,36 +660,266 @@ function HomeMock({
             made by hand, sold with care
           </p>
         )}
+        {/* behavior: liveBlock — red LIVE badge top-right */}
+        {behavior.liveBlock && (
+          <div
+            className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[9px] font-bold text-white"
+            style={{ fontFamily: t.mono }}
+          >
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-white" />
+            LIVE
+          </div>
+        )}
       </div>
 
-      {/* Section eyebrow + grid */}
-      <div className="space-y-1.5">
-        <Eyebrow t={t} family={family}>
-          {family === "fashion-beauty" ? "Most loved" :
-           family === "trust" ? "FROM THE COLLECTION" :
-           family === "business-model" ? "TODAY'S DEALS" :
-           family === "lifestyle" ? "Loved by everyone" :
-           family === "electronics-tech" ? "PRODUCT INDEX · LATEST" :
-           family === "specialty" ? "from the atelier" :
-           "Featured"}
-        </Eyebrow>
-        <div className="grid grid-cols-3 gap-1.5">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="space-y-0.5">
-              <Tile t={t} ratio={family === "fashion-beauty" ? "4/5" : "1/1"} />
-              <p className="line-clamp-1 text-[10px]" style={{ color: t.ink, fontFamily: family === "specialty" ? t.serif : undefined }}>
-                Product {i + 1}
-              </p>
-              <PriceLine t={t} family={family} />
-            </div>
+      {/* behavior: countdownBanner — red urgency stripe under hero */}
+      {behavior.countdownBanner && (
+        <div
+          className="flex items-center justify-center gap-1 rounded px-2 py-1 text-[10px] font-bold text-white"
+          style={{
+            background: family === "business-model" ? t.primary : "#dc2626",
+            borderRadius: radiusPx(t.radius, "sm"),
+            fontFamily: t.mono,
+          }}
+        >
+          <span>⏰</span>
+          <span>02:34:17</span>
+          <span style={{ opacity: 0.85 }}>· FLASH ENDS SOON</span>
+        </div>
+      )}
+
+      {/* behavior: swatchRow — 5 color circles */}
+      {behavior.swatchRow && (
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px]" style={{ color: t.inkMuted, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+            Shades
+          </span>
+          {swatchColors.map((c) => (
+            <span
+              key={c}
+              className="inline-block h-4 w-4 rounded-full border"
+              style={{ background: c, borderColor: t.border }}
+            />
           ))}
         </div>
-      </div>
+      )}
+
+      {/* behavior: replayCarousel — horizontal scroll strip of replay thumbs */}
+      {behavior.replayCarousel && (
+        <div className="space-y-1">
+          <Eyebrow t={t} family={family}>REPLAYS</Eyebrow>
+          <div className="flex gap-1.5 overflow-x-hidden">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="relative shrink-0"
+                style={{
+                  width: 56,
+                  aspectRatio: "9/16",
+                  background: `linear-gradient(135deg, ${t.primary} 0%, ${t.accent} 100%)`,
+                  borderRadius: radiusPx(t.radius, "sm"),
+                }}
+              >
+                <span
+                  className="absolute inset-0 flex items-center justify-center text-[14px] text-white"
+                  style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
+                >
+                  ▶
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* behavior: storyBlock — italic story panel */}
+      {behavior.storyBlock && (
+        <div
+          className="px-3 py-2"
+          style={{
+            background: t.surface,
+            border: `1px solid ${t.border}`,
+            borderLeft: `2px solid ${t.accent}`,
+            borderRadius: radiusPx(t.radius, "md"),
+          }}
+        >
+          <p
+            className="text-[10px] italic"
+            style={{ color: t.ink, fontFamily: t.serif, lineHeight: 1.4 }}
+          >
+            &ldquo;A small studio with a big love for the craft — every piece tells a story.&rdquo;
+          </p>
+        </div>
+      )}
+
+      {/* behavior: compareBlock — 3-up comparison cards */}
+      {behavior.compareBlock && (
+        <div className="space-y-1">
+          <Eyebrow t={t} family={family}>COMPARE</Eyebrow>
+          <div className="grid grid-cols-3 gap-1.5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="p-1.5"
+                style={{
+                  background: t.surface,
+                  border: `1px solid ${t.border}`,
+                  borderRadius: radiusPx(t.radius, "sm"),
+                }}
+              >
+                <div
+                  style={{
+                    aspectRatio: "1/1",
+                    background: t.bg,
+                    border: `1px solid ${t.border}`,
+                    borderRadius: radiusPx(t.radius, "sm"),
+                  }}
+                />
+                <p
+                  className="mt-1 text-[8px]"
+                  style={{ color: t.inkMuted, fontFamily: t.mono }}
+                >
+                  Model {String.fromCharCode(65 + i)}
+                </p>
+                <p
+                  className="text-[9px] font-semibold"
+                  style={{ color: t.primary, fontFamily: t.mono }}
+                >
+                  ฿{(i + 1) * 990}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Section eyebrow + grid (suppress if singleProductMode swaps it for a hero) */}
+      {behavior.singleProductMode ? (
+        <div className="space-y-1.5">
+          <Eyebrow t={t} family={family}>FEATURED PRODUCT</Eyebrow>
+          <div
+            className="p-2"
+            style={{
+              background: t.surface,
+              border: `1px solid ${t.border}`,
+              borderRadius: radiusPx(t.radius, "md"),
+            }}
+          >
+            <Tile t={t} ratio="4/3" />
+            <p
+              className="mt-1.5 text-[11px] font-semibold"
+              style={{ color: t.ink, fontFamily: headingFont }}
+            >
+              The Hero Product
+            </p>
+            <p
+              className="text-[10px]"
+              style={{ color: t.inkMuted }}
+            >
+              One product. Done right.
+            </p>
+            <div className="mt-1 flex items-center justify-between">
+              <p
+                className="text-[12px] font-bold"
+                style={{ color: t.primary, fontFamily: t.mono }}
+              >
+                ฿ 2,490
+              </p>
+              <div
+                className="rounded px-2.5 py-1 text-[10px] font-semibold text-white"
+                style={{ background: t.primary, borderRadius: radiusPx(t.radius, "lg") }}
+              >
+                ซื้อเลย
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <Eyebrow t={t} family={family}>
+            {behavior.videoFirstGrid ? "TRENDING VIDEOS" :
+             behavior.sceneCards ? "Scenes for your space" :
+             family === "fashion-beauty" ? "Most loved" :
+             family === "trust" ? "FROM THE COLLECTION" :
+             family === "business-model" ? "TODAY'S DEALS" :
+             family === "lifestyle" ? "Loved by everyone" :
+             family === "electronics-tech" ? "PRODUCT INDEX · LATEST" :
+             family === "specialty" ? "from the atelier" :
+             "Featured"}
+          </Eyebrow>
+          <div className="grid grid-cols-3 gap-1.5">
+            {Array.from({ length: 3 }).map((_, i) => {
+              // behavior: videoFirstGrid — gradient tiles representing videos
+              if (behavior.videoFirstGrid) {
+                return (
+                  <div key={i} className="space-y-0.5">
+                    <div
+                      className="relative"
+                      style={{
+                        aspectRatio: "9/16",
+                        background: `linear-gradient(135deg, #a855f7 0%, #ec4899 100%)`,
+                        borderRadius: radiusPx(t.radius, "md"),
+                      }}
+                    >
+                      <span
+                        className="absolute inset-0 flex items-center justify-center text-[16px] text-white"
+                        style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
+                      >
+                        ▶
+                      </span>
+                    </div>
+                    <p
+                      className="line-clamp-1 text-[10px]"
+                      style={{ color: t.ink }}
+                    >
+                      @creator{i + 1}
+                    </p>
+                  </div>
+                );
+              }
+              // behavior: sceneCards — lifestyle imagery tiles
+              if (behavior.sceneCards) {
+                const sceneBgs = [
+                  `linear-gradient(135deg, ${t.accent} 0%, #d4b896 100%)`,
+                  `linear-gradient(135deg, #b8a48a 0%, ${t.primary} 100%)`,
+                  `linear-gradient(135deg, #c9b896 0%, ${t.accent} 100%)`,
+                ];
+                return (
+                  <div key={i} className="space-y-0.5">
+                    <div
+                      style={{
+                        aspectRatio: "4/3",
+                        background: sceneBgs[i],
+                        borderRadius: radiusPx(t.radius, "md"),
+                      }}
+                    />
+                    <p
+                      className="line-clamp-1 text-[10px]"
+                      style={{ color: t.ink }}
+                    >
+                      Living scene {i + 1}
+                    </p>
+                  </div>
+                );
+              }
+              return (
+                <div key={i} className="space-y-0.5">
+                  <Tile t={t} ratio={family === "fashion-beauty" ? "4/5" : "1/1"} />
+                  <p className="line-clamp-1 text-[10px]" style={{ color: t.ink, fontFamily: family === "specialty" ? t.serif : undefined }}>
+                    Product {i + 1}
+                  </p>
+                  <PriceLine t={t} family={family} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function CategoryMock({ t, family, eyebrow, title, headingFont }: { t: FamilyTheme; family: Family; eyebrow: string; title: string; headingFont: string }) {
+function CategoryMock({ t, family, behavior: _behavior, eyebrow, title, headingFont }: { t: FamilyTheme; family: Family; behavior: Behavior; eyebrow: string; title: string; headingFont: string }) {
   const isFB = family === "fashion-beauty";
   const isLifestyle = family === "lifestyle";
   return (
@@ -737,10 +973,11 @@ function CategoryMock({ t, family, eyebrow, title, headingFont }: { t: FamilyThe
   );
 }
 
-function PdpMock({ t, family, eyebrow, headingFont }: { t: FamilyTheme; family: Family; eyebrow: string; headingFont: string }) {
+function PdpMock({ t, family, behavior, eyebrow, headingFont }: { t: FamilyTheme; family: Family; behavior: Behavior; eyebrow: string; headingFont: string }) {
   const isFB = family === "fashion-beauty";
+  const isMono = family === "business-model" || family === "electronics-tech";
   return (
-    <div className="px-4 py-4 space-y-3">
+    <div className="relative px-4 py-4 space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <Tile t={t} ratio={isFB ? "4/5" : "1/1"} />
         <div className="space-y-1.5">
@@ -748,14 +985,95 @@ function PdpMock({ t, family, eyebrow, headingFont }: { t: FamilyTheme; family: 
           <Heading t={t} family={family} font={headingFont} className="text-base leading-tight">
             Featured product
           </Heading>
-          <p className="text-[14px] font-bold" style={{ color: t.primary, fontFamily: family === "business-model" || family === "electronics-tech" ? t.mono : undefined }}>
+
+          {/* behavior: moqVisible — MOQ pill above price */}
+          {behavior.moqVisible && (
+            <div
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold"
+              style={{
+                background: t.surface,
+                border: `1px solid ${t.accent}`,
+                color: t.accent,
+                fontFamily: t.mono,
+              }}
+            >
+              ขั้นต่ำ 12 ชิ้น
+            </div>
+          )}
+
+          <p className="text-[14px] font-bold" style={{ color: t.primary, fontFamily: isMono ? t.mono : undefined }}>
             ฿ 1,290
           </p>
+
+          {/* behavior: pricingTiers — 3-row tier table */}
+          {behavior.pricingTiers && (
+            <div
+              className="overflow-hidden"
+              style={{
+                border: `1px solid ${t.border}`,
+                borderRadius: radiusPx(t.radius, "sm"),
+                fontFamily: t.mono,
+              }}
+            >
+              <div
+                className="grid grid-cols-3 px-1.5 py-1 text-[8px] font-semibold"
+                style={{ background: t.surface, color: t.inkMuted, borderBottom: `1px solid ${t.border}` }}
+              >
+                <span>Qty</span>
+                <span>Unit</span>
+                <span>Save</span>
+              </div>
+              {[
+                { q: "12+", u: "฿ 1,190", s: "8%" },
+                { q: "50+", u: "฿ 1,090", s: "16%" },
+                { q: "100+", u: "฿ 990", s: "23%" },
+              ].map((row, i) => (
+                <div
+                  key={row.q}
+                  className="grid grid-cols-3 px-1.5 py-1 text-[9px]"
+                  style={{
+                    color: t.ink,
+                    borderTop: i === 0 ? "none" : `1px solid ${t.border}`,
+                  }}
+                >
+                  <span>{row.q}</span>
+                  <span>{row.u}</span>
+                  <span style={{ color: t.accent }}>{row.s}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex gap-1">
             {["S", "M", "L"].map((s) => (
               <span key={s} className="rounded-full border px-2 py-0.5 text-[9px]" style={{ borderColor: t.border, color: t.inkMuted }}>{s}</span>
             ))}
           </div>
+
+          {/* behavior: compareBlock — compare row */}
+          {behavior.compareBlock && (
+            <div className="flex items-center justify-between gap-1 pt-1">
+              <label className="flex items-center gap-1 text-[9px]" style={{ color: t.inkMuted }}>
+                <span
+                  className="inline-block h-2.5 w-2.5 border"
+                  style={{ borderColor: t.inkMuted, borderRadius: 2 }}
+                />
+                เปรียบเทียบสินค้า
+              </label>
+              <span
+                className="rounded-full px-1.5 py-0.5 text-[8px] font-semibold"
+                style={{
+                  background: t.surface,
+                  border: `1px solid ${t.border}`,
+                  color: t.primary,
+                  fontFamily: t.mono,
+                }}
+              >
+                Compare 0 ชิ้น
+              </span>
+            </div>
+          )}
+
           <div className="rounded px-2 py-1.5 text-center text-[10px] font-semibold text-white" style={{ background: t.primary, borderRadius: radiusPx(t.radius, "lg") }}>
             ซื้อเลย
           </div>
@@ -771,6 +1089,35 @@ function PdpMock({ t, family, eyebrow, headingFont }: { t: FamilyTheme; family: 
           Curated pieces from a small studio in Bangkok.
         </p>
       </div>
+
+      {/* behavior: stickyCTA — sticky bottom bar showing buy-now button */}
+      {behavior.stickyCTA === "buy-now" && (
+        <div
+          className="flex items-center justify-between gap-2 px-2 py-1.5"
+          style={{
+            background: t.surface,
+            borderTop: `1px solid ${t.border}`,
+            boxShadow: "0 -2px 8px rgba(0,0,0,0.04)",
+            margin: "8px -16px -16px -16px",
+          }}
+        >
+          <div>
+            <p className="text-[9px]" style={{ color: t.inkMuted }}>ราคา</p>
+            <p
+              className="text-[11px] font-bold"
+              style={{ color: t.primary, fontFamily: isMono ? t.mono : undefined }}
+            >
+              ฿ 1,290
+            </p>
+          </div>
+          <div
+            className="flex-1 rounded px-3 py-1.5 text-center text-[10px] font-semibold text-white"
+            style={{ background: t.primary, borderRadius: radiusPx(t.radius, "lg") }}
+          >
+            ซื้อเลย
+          </div>
+        </div>
+      )}
     </div>
   );
 }

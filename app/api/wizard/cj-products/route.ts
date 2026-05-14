@@ -39,6 +39,7 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   const search = url.searchParams.get("search")?.trim() || undefined;
+  const category = url.searchParams.get("category")?.trim() || undefined;
   const pageRaw = parseInt(url.searchParams.get("page") ?? "1", 10);
   const pageSizeRaw = parseInt(
     url.searchParams.get("pageSize") ?? String(DEFAULT_PAGE_SIZE),
@@ -55,6 +56,7 @@ export async function GET(req: Request) {
       page,
       pageSize,
       search,
+      category,
     });
     return NextResponse.json({
       items: result.items.map((p) => ({
