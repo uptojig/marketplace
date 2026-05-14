@@ -60,8 +60,9 @@ export default async function AccountDashboard({
         store: { slug },
       },
     }),
-    // TODO(phase-1c): scope by Address.storeId once the migration lands.
-    prisma.address.count({ where: { userId } }),
+    // Phase 1C: per-store address book. Filter by storeId so the
+    // dashboard count matches the addresses page rendering.
+    prisma.address.count({ where: { userId, store: { slug } } }),
   ]);
 
   const recentOrders = toOrderViews(recentOrdersRaw);

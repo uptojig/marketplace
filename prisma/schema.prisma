@@ -186,6 +186,7 @@ model Store {
   categories           Category[]
   items                OrderItem[]
   orders               Order[]
+  addresses            Address[]
   identityVerification IdentityVerification?
   deployment           ShopDeployment?
 
@@ -348,6 +349,11 @@ model ProductVariant {
 model Address {
   id            String  @id @default(cuid())
   userId        String
+  // Phase 1C: per-store address book. A buyer's saved addresses at
+  // store A are scoped (userId, storeId)-tuple; they cannot see or
+  // mutate them from store B. Aligns with Q1=A architecture decision
+  // (each store owns its own customers + addresses, Shopify-style).
+  storeId       String
   recipientName String
   phone         String
   line1         String
@@ -359,14 +365,16 @@ model Address {
   country       String  @default("TH")
   // User-supplied tag ("home" | "office" | etc.) for picker UX.
   label         String?
-  // Exactly one address per user should have isDefault=true; the
-  // checkout default-picker reads this. App-layer invariant, not DB.
+  // Exactly one address per (user, store) tuple should have isDefault=true;
+  // the checkout default-picker reads this. App-layer invariant, not DB.
   isDefault     Boolean @default(false)
   createdAt     DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  // Composite index — every read now filters by (userId, storeId).
+  @@index([userId, storeId])
 }
 
 enum OrderStatus {
