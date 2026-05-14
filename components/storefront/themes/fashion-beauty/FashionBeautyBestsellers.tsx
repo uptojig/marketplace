@@ -71,7 +71,7 @@ export async function FashionBeautyBestsellers({ storeId, storeSlug }: Props) {
               className="text-[11px] uppercase tracking-[0.28em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Most loved · Bestsellers this season
+              ขายดี · ยอดนิยมประจำฤดูกาล
             </p>
             <h2
               className="mt-2 text-4xl sm:text-5xl"
@@ -83,7 +83,7 @@ export async function FashionBeautyBestsellers({ storeId, storeSlug }: Props) {
                 lineHeight: 1.05,
               }}
             >
-              Loved this season
+              ยอดนิยมประจำฤดูกาล
             </h2>
             <div
               aria-hidden
@@ -99,7 +99,7 @@ export async function FashionBeautyBestsellers({ storeId, storeSlug }: Props) {
               color: 'var(--shop-ink)',
             }}
           >
-            View all pieces &rarr;
+            ดูสินค้าทั้งหมด &rarr;
           </Link>
         </header>
 

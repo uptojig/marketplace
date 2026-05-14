@@ -340,7 +340,7 @@ export function ElectronicsTechContactPage({
                     fontWeight: 600,
                   }}
                 >
-                  Address pending
+                  ยังไม่ระบุที่อยู่
                 </p>
               )}
             </div>

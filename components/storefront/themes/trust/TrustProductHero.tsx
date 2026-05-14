@@ -383,7 +383,7 @@ function InfoColumn({
                   color: 'var(--shop-accent)',
                 }}
               >
-                Save {discount}%
+                ลด {discount}%
               </span>
             </>
           )}
@@ -570,7 +570,7 @@ function InfoColumn({
             className="uppercase"
             style={{ letterSpacing: '0.18em', fontWeight: 600 }}
           >
-            MADE IN
+            ผลิตที่
           </div>
           <div
             className="mt-1 text-sm"
@@ -580,7 +580,7 @@ function InfoColumn({
               fontWeight: 500,
             }}
           >
-            Thailand
+            ประเทศไทย
           </div>
         </div>
         <div>
@@ -588,7 +588,7 @@ function InfoColumn({
             className="uppercase"
             style={{ letterSpacing: '0.18em', fontWeight: 600 }}
           >
-            HOUSE
+            เมซอน
           </div>
           <div
             className="mt-1 text-sm"
@@ -598,7 +598,7 @@ function InfoColumn({
               fontWeight: 500,
             }}
           >
-            Est. {estYear}
+            ก่อตั้ง {estYear}
           </div>
         </div>
       </div>
@@ -635,7 +635,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Maison · Heritage House
+              เมซอน · บ้านมรดก
             </div>
           </div>
           <Button
@@ -671,7 +671,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Complimentary Shipping
+              จัดส่งฟรี
             </div>
             <div className="text-sm">ส่งฟรีเมื่อสั่ง ฿990 ขึ้นไป</div>
           </div>
@@ -690,7 +690,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Buyer Protection
+              คุ้มครองผู้ซื้อ
             </div>
             <div className="text-sm">คุ้มครองผู้ซื้อโดย Basketplace</div>
           </div>
@@ -709,7 +709,7 @@ function InfoColumn({
                 fontWeight: 600,
               }}
             >
-              Authenticity Guaranteed
+              รับประกันของแท้
             </div>
             <div className="text-sm">ของแท้ทุกชิ้น รับประกันโดยร้าน</div>
           </div>

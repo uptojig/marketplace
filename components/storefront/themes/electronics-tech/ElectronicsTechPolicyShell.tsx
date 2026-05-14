@@ -45,7 +45,7 @@ export interface ElectronicsTechPolicyShellProps {
 export function ElectronicsTechPolicyShell({
   slug,
   title,
-  eyebrow = 'TECHNICAL SUPPORT',
+  eyebrow = 'ฝ่ายสนับสนุนทางเทคนิค',
   children,
 }: ElectronicsTechPolicyShellProps) {
   return (
@@ -167,7 +167,7 @@ export function ElectronicsTechPolicyShell({
               fontWeight: 600,
             }}
           >
-            ← Back to product index
+            ← กลับไปยังหน้าสินค้า
           </Link>
         </div>
       </main>
@@ -190,20 +190,20 @@ export function electronicsTechPolicyHeading(
 ): { eyebrow: string; title: string } {
   switch (pageSlug) {
     case 'shipping':
-      return { eyebrow: 'DOC.SHIP-001', title: 'Shipping & delivery' };
+      return { eyebrow: 'DOC.SHIP-001', title: 'การจัดส่ง' };
     case 'returns':
-      return { eyebrow: 'DOC.RTN-001', title: 'Returns & RMA' };
+      return { eyebrow: 'DOC.RTN-001', title: 'การคืนสินค้า & RMA' };
     case 'faq':
-      return { eyebrow: 'DOC.FAQ-001', title: 'FAQ — Frequently Asked' };
+      return { eyebrow: 'DOC.FAQ-001', title: 'คำถามที่พบบ่อย' };
     case 'privacy':
-      return { eyebrow: 'DOC.PRV-001', title: 'Privacy policy' };
+      return { eyebrow: 'DOC.PRV-001', title: 'นโยบายความเป็นส่วนตัว' };
     case 'terms':
-      return { eyebrow: 'DOC.TOS-001', title: 'Terms of service' };
+      return { eyebrow: 'DOC.TOS-001', title: 'ข้อกำหนดการให้บริการ' };
     case 'about':
-      return { eyebrow: 'ABOUT', title: 'About us' };
+      return { eyebrow: 'เกี่ยวกับเรา', title: 'เกี่ยวกับเรา' };
     case 'help':
-      return { eyebrow: 'DOC.HLP-001', title: 'Help center' };
+      return { eyebrow: 'DOC.HLP-001', title: 'ศูนย์ช่วยเหลือ' };
     default:
-      return { eyebrow: 'TECHNICAL SUPPORT', title: fallbackTitle };
+      return { eyebrow: 'ฝ่ายสนับสนุนทางเทคนิค', title: fallbackTitle };
   }
 }

@@ -140,13 +140,13 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
             so it reads as a museum-style index tag. */}
         <div className="mt-2 flex items-center justify-between px-1">
           <SpecialtyHandLabel size="xs">
-            {`Lot of ${product.stockLeft != null ? Math.max(1, product.stockLeft) : 1}`}
+            {`ล็อต ${product.stockLeft != null ? Math.max(1, product.stockLeft) : 1} ชิ้น`}
           </SpecialtyHandLabel>
           <span
             className="text-[10px] uppercase tracking-[0.18em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            archive · {String(product.id).slice(0, 6).toUpperCase()}
+            คลัง · {String(product.id).slice(0, 6).toUpperCase()}
           </span>
         </div>
       </div>
@@ -241,7 +241,7 @@ function InfoColumn({
       {/* Italic-handwritten eyebrow — reads as "handmade by [maker]".
           Distinct from FB's uppercase letter-spaced caption. */}
       <SpecialtyHandLabel size="md">
-        handmade by {store.name}
+        งานทำมือโดย {store.name}
       </SpecialtyHandLabel>
 
       <h1
@@ -260,16 +260,16 @@ function InfoColumn({
           rotation + dashed border comes from the data-attribute in
           globals.css so we don't fight the Badge primitive. */}
       <div className="flex flex-wrap items-center gap-3">
-        {oneOfAKind && <SpecialtyStamp tone="primary">One-of-a-kind</SpecialtyStamp>}
+        {oneOfAKind && <SpecialtyStamp tone="primary">ชิ้นเดียวในโลก</SpecialtyStamp>}
         {product.badges.includes('limited') && (
-          <SpecialtyStamp tone="accent">Limited Edition</SpecialtyStamp>
+          <SpecialtyStamp tone="accent">รุ่นจำกัด</SpecialtyStamp>
         )}
         {product.badges.includes('new') && (
-          <SpecialtyStamp tone="ink">New In</SpecialtyStamp>
+          <SpecialtyStamp tone="ink">มาใหม่</SpecialtyStamp>
         )}
         {product.badges.includes('official') && (
           <Badge variant="outline" className="rounded-md">
-            Official Maker
+            ช่างฝีมือทางการ
           </Badge>
         )}
       </div>
@@ -288,14 +288,14 @@ function InfoColumn({
             <>
               <span>·</span>
               <Link href="#reviews" className="hover:underline">
-                {product.reviewCount.toLocaleString()} reviews
+                {product.reviewCount.toLocaleString()} รีวิว
               </Link>
             </>
           )}
           {product.soldCount != null && (
             <>
               <span>·</span>
-              <span>{product.soldCount.toLocaleString()} sold</span>
+              <span>ขายแล้ว {product.soldCount.toLocaleString()}</span>
             </>
           )}
         </div>
@@ -478,7 +478,7 @@ function InfoColumn({
               {store.name}
             </div>
             <SpecialtyHandLabel size="xs" className="block">
-              Est. crafted-to-order
+              สร้างตามคำสั่ง
             </SpecialtyHandLabel>
           </div>
           <Button variant="outline" size="sm" asChild className="rounded-md">
@@ -498,7 +498,7 @@ function InfoColumn({
       >
         <li className="flex items-center gap-2">
           <Truck className="h-4 w-4" />
-          <span>ส่งภายใน 5-7 วัน (made-to-order)</span>
+          <span>ส่งภายใน 5-7 วัน (ทำตามสั่ง)</span>
         </li>
         <li className="flex items-center gap-2">
           <ShieldCheck className="h-4 w-4" />
@@ -506,7 +506,7 @@ function InfoColumn({
         </li>
       </ul>
       <SpecialtyHandLabel size="xs" className="block text-center">
-        each piece is made by hand · thank you for supporting makers
+        แต่ละชิ้นทำด้วยมือ · ขอบคุณที่สนับสนุนช่างฝีมือ
       </SpecialtyHandLabel>
     </div>
   );

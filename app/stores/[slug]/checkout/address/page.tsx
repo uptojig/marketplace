@@ -37,7 +37,7 @@ function FashionBeautyHeader() {
           className="text-[11px] uppercase tracking-[0.28em]"
           style={{ color: "var(--shop-ink-muted)" }}
         >
-          Checkout · Step 1 of 2
+          ชำระเงิน · ขั้นตอนที่ 1 จาก 2
         </p>
         <h1
           className="mt-3 text-4xl sm:text-5xl"
@@ -49,7 +49,7 @@ function FashionBeautyHeader() {
             lineHeight: 1.05,
           }}
         >
-          Where to send it
+          จัดส่งไปที่ไหน
         </h1>
         <div
           aria-hidden
@@ -63,7 +63,7 @@ function FashionBeautyHeader() {
             color: "var(--shop-ink-muted)",
           }}
         >
-          Add your shipping details — we&rsquo;ll wrap it carefully and send it on its way.
+          กรอกข้อมูลการจัดส่ง — เราจะห่ออย่างพิถีพิถันและส่งให้คุณ
         </p>
       </header>
     </div>

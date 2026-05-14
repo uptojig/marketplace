@@ -118,7 +118,7 @@ export function SpecialtyBrandStory({
             color: 'var(--shop-ink)',
           }}
         >
-          Visit the studio
+          เยี่ยมชมสตูดิโอ
         </Link>
       </div>
     </section>

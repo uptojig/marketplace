@@ -36,7 +36,7 @@ export interface BusinessModelPolicyShellProps {
   slug: string;
   title: string;
   /** Optional small caps eyebrow above the title. Defaults to
-   *  "DEAL DASHBOARD" so policy pages share a voice with the rest
+   *  "ดีลที่กำลังจะหมดเวลา" so policy pages share a voice with the rest
    *  of the BM family. */
   eyebrow?: string;
   children: ReactNode;
@@ -45,7 +45,7 @@ export interface BusinessModelPolicyShellProps {
 export function BusinessModelPolicyShell({
   slug,
   title,
-  eyebrow = 'DEAL DASHBOARD',
+  eyebrow = 'ดีลที่กำลังจะหมดเวลา',
   children,
 }: BusinessModelPolicyShellProps) {
   return (
@@ -158,7 +158,7 @@ export function BusinessModelPolicyShell({
               letterSpacing: '0.12em',
             }}
           >
-            ← Back to dashboard
+            ← กลับไปที่แดชบอร์ด
           </Link>
         </div>
       </main>
@@ -181,20 +181,20 @@ export function businessModelPolicyHeading(
 ): { eyebrow: string; title: string } {
   switch (pageSlug) {
     case 'shipping':
-      return { eyebrow: 'DEAL DASHBOARD · SHIPPING', title: 'Shipping & Delivery' };
+      return { eyebrow: 'ดีลที่กำลังจะหมดเวลา · การจัดส่ง', title: 'การจัดส่ง' };
     case 'returns':
-      return { eyebrow: 'DEAL DASHBOARD · RETURNS', title: 'Returns & Refunds' };
+      return { eyebrow: 'ดีลที่กำลังจะหมดเวลา · การคืนสินค้า', title: 'การคืนสินค้าและคืนเงิน' };
     case 'faq':
-      return { eyebrow: 'DEAL DASHBOARD · SUPPORT', title: 'Frequently Asked Questions' };
+      return { eyebrow: 'ดีลที่กำลังจะหมดเวลา · ความช่วยเหลือ', title: 'คำถามที่พบบ่อย' };
     case 'privacy':
-      return { eyebrow: 'PRIVACY', title: 'Privacy Policy' };
+      return { eyebrow: 'ความเป็นส่วนตัว', title: 'นโยบายความเป็นส่วนตัว' };
     case 'terms':
-      return { eyebrow: 'TERMS', title: 'Terms of Service' };
+      return { eyebrow: 'ข้อกำหนด', title: 'ข้อกำหนดและเงื่อนไข' };
     case 'about':
-      return { eyebrow: 'ABOUT', title: 'About Our Wholesale' };
+      return { eyebrow: 'เกี่ยวกับเรา', title: 'เกี่ยวกับธุรกิจขายส่งของเรา' };
     case 'help':
-      return { eyebrow: 'HELP CENTER', title: 'How can we assist?' };
+      return { eyebrow: 'ศูนย์ช่วยเหลือ', title: 'เราจะช่วยคุณได้อย่างไร?' };
     default:
-      return { eyebrow: 'DEAL DASHBOARD', title: fallbackTitle };
+      return { eyebrow: 'ดีลที่กำลังจะหมดเวลา', title: fallbackTitle };
   }
 }

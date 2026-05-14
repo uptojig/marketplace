@@ -76,7 +76,7 @@ export function TrustHero({ storeSlug, storeName, bannerUrl }: TrustHeroProps) {
               fontWeight: 600,
             }}
           >
-            Maison · {storeName}
+            เมซอน · {storeName}
           </p>
 
           {/* Title cartouche — gold-hairline framed when centered to
@@ -136,7 +136,7 @@ export function TrustHero({ storeSlug, storeName, bannerUrl }: TrustHeroProps) {
               lineHeight: 1.55,
             }}
           >
-            An atelier of considered objects since {year}.
+            อาตเลียร์ที่คัดสรรสินค้าด้วยความพิถีพิถัน ตั้งแต่ปี {year}
           </p>
 
           {/* CTA row — charcoal fill, rounded-sm, caps letterspaced.
@@ -154,7 +154,7 @@ export function TrustHero({ storeSlug, storeName, bannerUrl }: TrustHeroProps) {
                 letterSpacing: '0.28em',
               }}
             >
-              Browse the Collection
+              ดูคอลเลกชัน
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
 
@@ -171,7 +171,7 @@ export function TrustHero({ storeSlug, storeName, bannerUrl }: TrustHeroProps) {
                 borderBottom: '1px solid var(--shop-accent)',
               }}
             >
-              View Latest Arrivals
+              ชมสินค้ามาใหม่
             </Link>
           </div>
         </div>
@@ -218,8 +218,8 @@ export function TrustHero({ storeSlug, storeName, bannerUrl }: TrustHeroProps) {
                   letterSpacing: '0.22em',
                 }}
               >
-                <span>Est. {year}</span>
-                <span>The Maison</span>
+                <span>ก่อตั้ง {year}</span>
+                <span>เมซอน</span>
               </p>
             </div>
           </div>

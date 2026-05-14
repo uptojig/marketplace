@@ -79,7 +79,7 @@ export async function TrustCollectionShowcase({ storeId, storeSlug }: Props) {
                 fontWeight: 600,
               }}
             >
-              From the Maison Collection
+              จากคอลเลกชันเมซอน
             </p>
             <h2
               id="trust-collection-heading"
@@ -92,7 +92,7 @@ export async function TrustCollectionShowcase({ storeId, storeSlug }: Props) {
                 lineHeight: 1.1,
               }}
             >
-              Latest acquisitions
+              สินค้ามาใหม่ล่าสุด
             </h2>
             <div
               aria-hidden
@@ -112,7 +112,7 @@ export async function TrustCollectionShowcase({ storeId, storeSlug }: Props) {
               borderBottom: '1px solid var(--shop-accent)',
             }}
           >
-            View the Entire Collection
+            ดูคอลเลกชันทั้งหมด
             <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </header>
@@ -172,7 +172,7 @@ export async function TrustCollectionShowcase({ storeId, storeSlug }: Props) {
                             letterSpacing: '0.22em',
                           }}
                         >
-                          SAVE {discount}%
+                          ลด {discount}%
                         </span>
                       )}
                     </div>
@@ -246,7 +246,7 @@ function TrustShowcaseEmpty({ storeSlug }: { storeSlug: string }) {
           fontWeight: 600,
         }}
       >
-        Maison · Awaiting Pieces
+        เมซอน · รอการคัดสรร
       </p>
       <h3
         className="mt-3 text-2xl sm:text-3xl"
@@ -257,7 +257,7 @@ function TrustShowcaseEmpty({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '-0.01em',
         }}
       >
-        The collection is being curated
+        คอลเลกชันกำลังถูกคัดสรร
       </h3>
       <div
         aria-hidden

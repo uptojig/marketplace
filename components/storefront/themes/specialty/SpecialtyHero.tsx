@@ -65,7 +65,7 @@ export function SpecialtyHero({
               color: 'var(--shop-accent)',
             }}
           >
-            the studio · {storeName}
+            สตูดิโอ · {storeName}
           </p>
           <h1
             className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-3 text-4xl sm:text-5xl lg:text-6xl"
@@ -77,9 +77,9 @@ export function SpecialtyHero({
               lineHeight: 1.05,
             }}
           >
-            <span>Made by hand · sold with care</span>
+            <span>ทำด้วยมือ ส่งด้วยใจ</span>
             <SpecialtyStamp tone="primary" className="translate-y-[-2px]">
-              Stamped
+              ประทับแล้ว
             </SpecialtyStamp>
           </h1>
           <p
@@ -89,7 +89,7 @@ export function SpecialtyHero({
               color: 'var(--shop-ink-muted)',
             }}
           >
-            every piece tells the story of the maker who shaped it
+            ทุกชิ้นเล่าเรื่องของช่างฝีมือผู้สร้างสรรค์
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-5">
@@ -98,7 +98,7 @@ export function SpecialtyHero({
               className="inline-flex h-12 items-center justify-center gap-2 rounded-md px-7 text-sm font-semibold text-white transition hover:opacity-90"
               style={{ background: 'var(--shop-primary)' }}
             >
-              Visit the studio
+              เยี่ยมชมสตูดิโอ
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
@@ -109,7 +109,7 @@ export function SpecialtyHero({
                 color: 'var(--shop-accent)',
               }}
             >
-              read our story
+              อ่านเรื่องราวของเรา
             </Link>
           </div>
         </div>
@@ -131,7 +131,7 @@ export function SpecialtyHero({
             {bannerUrl ? (
               <Image
                 src={bannerUrl}
-                alt={`${storeName} studio`}
+                alt={`สตูดิโอ ${storeName}`}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 45vw"
@@ -149,7 +149,7 @@ export function SpecialtyHero({
                     color: 'var(--shop-ink-muted)',
                   }}
                 >
-                  from the bench
+                  จากโต๊ะงาน
                 </span>
               </div>
             )}
@@ -161,7 +161,7 @@ export function SpecialtyHero({
               color: 'var(--shop-accent)',
             }}
           >
-            est. with care · {storeName}
+            สร้างด้วยใจ · {storeName}
           </p>
         </div>
       </div>

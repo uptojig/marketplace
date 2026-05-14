@@ -465,7 +465,7 @@ export function BusinessModelOrderSuccessPage({
 
             {inferredSavings > 0 && (
               <div className="flex items-center justify-between">
-                <dt style={{ color: 'var(--shop-ink-muted)' }}>Volume savings</dt>
+                <dt style={{ color: 'var(--shop-ink-muted)' }}>ส่วนลดจากปริมาณ</dt>
                 <dd
                   data-bm-mono="true"
                   className="font-bold"
@@ -482,7 +482,7 @@ export function BusinessModelOrderSuccessPage({
 
             {inferredShipping > 0 && (
               <div className="flex items-center justify-between">
-                <dt style={{ color: 'var(--shop-ink-muted)' }}>Shipping</dt>
+                <dt style={{ color: 'var(--shop-ink-muted)' }}>ค่าจัดส่ง</dt>
                 <dd
                   data-bm-mono="true"
                   className="font-bold"
@@ -508,7 +508,7 @@ export function BusinessModelOrderSuccessPage({
                   letterSpacing: '0.12em',
                 }}
               >
-                Total paid
+                ยอดที่ชำระ
               </dt>
               <dd
                 data-bm-mono="true"
@@ -534,7 +534,7 @@ export function BusinessModelOrderSuccessPage({
             style={{ background: 'var(--shop-primary)' }}
           >
             <Truck className="h-4 w-4" />
-            Track order
+            ติดตามคำสั่งซื้อ
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
@@ -546,7 +546,7 @@ export function BusinessModelOrderSuccessPage({
             }}
           >
             <RotateCcw className="h-4 w-4" />
-            Reorder
+            สั่งซื้อใหม่
           </Link>
         </div>
 
@@ -570,13 +570,13 @@ export function BusinessModelOrderSuccessPage({
                 letterSpacing: '0.12em',
               }}
             >
-              Notifications
+              การแจ้งเตือน
             </p>
             <p
               className="text-sm font-semibold"
               style={{ color: 'var(--shop-ink)' }}
             >
-              Get shipping updates from {storeName} on LINE
+              รับการแจ้งเตือนสถานะการจัดส่งจาก {storeName} ผ่าน LINE
             </p>
           </div>
           <a
@@ -586,7 +586,7 @@ export function BusinessModelOrderSuccessPage({
             className="inline-flex h-9 items-center justify-center rounded-md px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
             style={{ background: 'var(--shop-primary)' }}
           >
-            Add LINE
+            เพิ่ม LINE
           </a>
         </div>
 
@@ -599,7 +599,7 @@ export function BusinessModelOrderSuccessPage({
           }}
         >
           <span>
-            Ref ·{' '}
+            อ้างอิง ·{' '}
             <span
               data-bm-mono="true"
               style={{
@@ -613,7 +613,7 @@ export function BusinessModelOrderSuccessPage({
           </span>
           {paymentStatusLabel && (
             <span>
-              Payment ·{' '}
+              การชำระเงิน ·{' '}
               <span style={{ color: 'var(--shop-ink)' }}>{paymentStatusLabel}</span>
             </span>
           )}
