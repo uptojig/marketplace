@@ -14,6 +14,7 @@ import {
   type SupplierCategory,
   type TrackingResult,
 } from "../types";
+import { extractAllImages } from "./extract-images";
 
 const CJ_BASE = process.env.CJ_API_BASE ?? "https://developers.cjdropshipping.com/api2.0/v1";
 
@@ -139,6 +140,171 @@ function pickFirstImage(raw: unknown): string | undefined {
   return undefined;
 }
 
+// ──────────────────────────────────────────────────────────────
+// CJ raw-payload extractors — pure functions, no I/O. The exports
+// below are reused by the admin backfill action so it can work
+// straight from a cached `externalPayload` without re-hitting CJ.
+// ──────────────────────────────────────────────────────────────
+
+/** Parse a weight string like "150g" / "1.2kg" / "150" → integer grams. */
+export function parseWeightGrams(raw: unknown): number | undefined {
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    return raw > 0 ? Math.round(raw) : undefined;
+  }
+  if (typeof raw !== "string") return undefined;
+  const s = raw.trim().toLowerCase();
+  if (!s) return undefined;
+  const match = s.match(/([\d]+(?:\.[\d]+)?)\s*(kg|g)?/);
+  if (!match) return undefined;
+  const value = parseFloat(match[1]);
+  if (!Number.isFinite(value) || value <= 0) return undefined;
+  const unit = match[2] ?? "g";
+  const grams = unit === "kg" ? Math.round(value * 1000) : Math.round(value);
+  return grams > 0 ? grams : undefined;
+}
+
+/** Pull an origin country (ISO-2 if extractable) from common CJ keys. */
+export function extractOriginCountry(raw: Record<string, unknown>): string | undefined {
+  const candidates = [raw.originCountry, raw.productOrigin, raw.origin, raw.countryOfOrigin];
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim()) {
+      const trimmed = c.trim();
+      // Many CJ rows hand back already-uppercased ISO-2 codes; some come
+      // back as "China"/"CN/China". Keep the input close to source —
+      // downstream renderers can map if they care.
+      return trimmed.length <= 3 ? trimmed.toUpperCase() : trimmed;
+    }
+  }
+  return undefined;
+}
+
+/** Extract bulleted feature highlights from CJ `productKeyAttribute`. */
+export function extractKeyAttributes(raw: Record<string, unknown>): string[] | undefined {
+  const candidate = raw.productKeyAttribute ?? raw.keyAttributes ?? raw.productKeyAttributes;
+  if (!candidate) return undefined;
+  if (Array.isArray(candidate)) {
+    const list = candidate
+      .map((x) => (typeof x === "string" ? x.trim() : null))
+      .filter((x): x is string => !!x && x.length > 0);
+    return list.length > 0 ? list : undefined;
+  }
+  if (typeof candidate === "string") {
+    const trimmed = candidate.trim();
+    if (!trimmed) return undefined;
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          const list = parsed
+            .map((x) => (typeof x === "string" ? x.trim() : null))
+            .filter((x): x is string => !!x && x.length > 0);
+          return list.length > 0 ? list : undefined;
+        }
+      } catch {
+        // fall through
+      }
+    }
+    // semicolon/comma-joined fallback
+    const split = trimmed
+      .split(/[;\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return split.length > 0 ? split : undefined;
+  }
+  return undefined;
+}
+
+/** Extract spec key/value pairs from CJ `productMaterials` / `productProperties`. */
+export function extractMaterials(
+  raw: Record<string, unknown>,
+): Record<string, string> | undefined {
+  // CJ ships these as either an object map, an array of {key,value}
+  // tuples, or an HTML/string blob. We tolerate all three.
+  const candidates = [
+    raw.productMaterials,
+    raw.materials,
+    raw.productProperties,
+    raw.productProperty,
+  ];
+  for (const c of candidates) {
+    if (!c) continue;
+    if (Array.isArray(c)) {
+      const out: Record<string, string> = {};
+      for (const entry of c) {
+        if (!entry || typeof entry !== "object") continue;
+        const e = entry as Record<string, unknown>;
+        const k = typeof e.key === "string" ? e.key : typeof e.name === "string" ? e.name : null;
+        const v =
+          typeof e.value === "string"
+            ? e.value
+            : typeof e.val === "string"
+              ? e.val
+              : typeof e.propertyValue === "string"
+                ? e.propertyValue
+                : null;
+        if (k && v) out[k.trim()] = v.trim();
+      }
+      if (Object.keys(out).length > 0) return out;
+      continue;
+    }
+    if (typeof c === "object") {
+      const out: Record<string, string> = {};
+      for (const [k, v] of Object.entries(c as Record<string, unknown>)) {
+        if (typeof v === "string" && v.trim()) {
+          out[k] = v.trim();
+        } else if (typeof v === "number" || typeof v === "boolean") {
+          out[k] = String(v);
+        }
+      }
+      if (Object.keys(out).length > 0) return out;
+    }
+  }
+  return undefined;
+}
+
+/** Pull a video URL from CJ `videoUrl` / `productVideoUrl` / `productVideo`. */
+export function extractVideoUrl(raw: Record<string, unknown>): string | undefined {
+  const candidates = [raw.videoUrl, raw.productVideoUrl, raw.productVideo];
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim().startsWith("http")) {
+      return c.trim();
+    }
+  }
+  return undefined;
+}
+
+/** Pull the HS / customs code from CJ `hsCode` / `customsCode`. */
+export function extractHsCode(raw: Record<string, unknown>): string | undefined {
+  const candidates = [raw.hsCode, raw.customsCode, raw.hscode];
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim()) return c.trim();
+  }
+  return undefined;
+}
+
+/**
+ * Best-effort split of a CJ variant's display key into discrete
+ * (color, size, material) labels. CJ formats vary by category:
+ *   - "Red-M"         → ["Red", "M"]
+ *   - "Red/M/Cotton"  → ["Red", "M", "Cotton"]
+ *   - "Red, M"        → ["Red", "M"]
+ *
+ * We avoid heuristics — caller assigns positionally (1st part to
+ * color, 2nd to size, 3rd to material) and lets explicit
+ * raw.color / raw.size / raw.material override when present.
+ */
+export function parseVariantKey(key: string | undefined | null): string[] {
+  if (!key || typeof key !== "string") return [];
+  return key
+    .split(/[-/,]| - | \/ /)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function pickString(v: unknown): string | undefined {
+  return typeof v === "string" && v.trim().length > 0 ? v.trim() : undefined;
+}
+
 async function cjFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = await getAccessToken();
   const res = await fetch(`${CJ_BASE}${path}`, {
@@ -173,22 +339,52 @@ export const cjAdapter: SupplierAdapter = {
         sellPrice: string;
         productImage: string | string[];
         productImageSet?: string[] | string;
+        productImageList?: string[] | string;
         description?: string;
         productWeight?: string;
         categoryName?: string;
+        // Rich-metadata fields (parsed defensively — CJ exposes
+        // different subsets per category and version).
+        productKeyAttribute?: string | string[];
+        productMaterials?: unknown;
+        productProperties?: unknown;
+        videoUrl?: string;
+        productVideoUrl?: string;
+        hsCode?: string;
+        customsCode?: string;
+        originCountry?: string;
+        productOrigin?: string;
+        [k: string]: unknown;
       };
     }>(`/product/query?pid=${encodeURIComponent(externalId)}`);
     if (!data.data) throw new Error(`CJ product ${externalId} not found`);
-    const sellPrice = String(data.data.sellPrice ?? "0");
+    const raw = data.data;
+    const sellPrice = String(raw.sellPrice ?? "0");
     const usd = parseFloat(sellPrice.split("--")[0].trim()) || 0;
     const fx = parseFloat(process.env.CJ_USD_THB ?? "36");
+
+    // Cover image: first entry of productImage (`pickFirstImage` keeps
+    // its single-URL guarantee for the Product.imageUrl column).
+    const cover = pickFirstImage(raw.productImage);
+    // Full gallery (cover stripped) so downstream callers can render
+    // unique thumbnails without duplicating the hero shot.
+    const allImages = extractAllImages(raw);
+    const galleryUrls = cover ? allImages.filter((u) => u !== cover) : allImages;
+
     return {
-      externalProductId: data.data.pid,
-      title: data.data.productNameEn || data.data.productName || externalId,
-      description: data.data.description,
+      externalProductId: raw.pid,
+      title: raw.productNameEn || raw.productName || externalId,
+      description: raw.description,
       priceTHB: Math.round(usd * fx),
-      imageUrl: pickFirstImage(data.data.productImage),
-      raw: data.data,
+      imageUrl: cover,
+      galleryUrls: galleryUrls.length > 0 ? galleryUrls : undefined,
+      weightGrams: parseWeightGrams(raw.productWeight),
+      originCountry: extractOriginCountry(raw as Record<string, unknown>),
+      keyAttributes: extractKeyAttributes(raw as Record<string, unknown>),
+      materials: extractMaterials(raw as Record<string, unknown>),
+      videoUrl: extractVideoUrl(raw as Record<string, unknown>),
+      hsCode: extractHsCode(raw as Record<string, unknown>),
+      raw,
     };
   },
 
@@ -202,6 +398,12 @@ export const cjAdapter: SupplierAdapter = {
         variantImage?: string;
         variantSellPrice?: string | number;
         inventoryNum?: number;
+        // Some CJ categories expose explicit attribute axes alongside
+        // the joined variantKey — prefer these when present.
+        color?: string;
+        size?: string;
+        material?: string;
+        [k: string]: unknown;
       }>;
     }>(`/product/variant/query?pid=${encodeURIComponent(externalProductId)}`);
 
@@ -212,17 +414,33 @@ export const cjAdapter: SupplierAdapter = {
       const usdRaw = String(v.variantSellPrice ?? "0");
       const usd = parseFloat(usdRaw.split("--")[0].trim()) || 0;
 
+      // Prefer explicit axis fields. Fall back to splitting variantKey
+      // positionally (color / size / material). variantNameEn is only
+      // used when neither variantKey nor explicit fields exist.
+      const parts = parseVariantKey(v.variantKey);
+      const colorLabel = pickString(v.color) ?? parts[0];
+      const sizeLabel = pickString(v.size) ?? parts[1];
+      const materialLabel = pickString(v.material) ?? parts[2];
+
+      // Build the `attributes` map so legacy callers + existing rows
+      // continue to work. Schema: { Color, Size, Material } when split
+      // succeeds; falls back to { Variant: "<key>" } otherwise.
       const attributes: Record<string, string> = {};
-      if (v.variantKey) {
-        attributes["Variant"] = v.variantKey;
-      } else if (v.variantNameEn) {
-        attributes["Variant"] = v.variantNameEn;
+      if (colorLabel) attributes.Color = colorLabel;
+      if (sizeLabel) attributes.Size = sizeLabel;
+      if (materialLabel) attributes.Material = materialLabel;
+      if (Object.keys(attributes).length === 0) {
+        if (v.variantKey) attributes.Variant = v.variantKey;
+        else if (v.variantNameEn) attributes.Variant = v.variantNameEn;
       }
 
       return {
         externalVariantId: String(v.vid),
         sku: v.variantSku ?? undefined,
         attributes,
+        colorLabel,
+        sizeLabel,
+        materialLabel,
         priceTHB: Math.round(usd * fx),
         imageUrl: v.variantImage,
         inventory: typeof v.inventoryNum === "number" ? v.inventoryNum : undefined,

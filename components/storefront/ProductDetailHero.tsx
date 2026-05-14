@@ -34,7 +34,7 @@ import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Check, Minus, Plus, RotateCcw, ShieldCheck, Star, Truck } from 'lucide-react';
+import { Check, Minus, PlayCircle, Plus, RotateCcw, ShieldCheck, Star, Truck } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +49,15 @@ import { WishlistButton } from '@/components/storefront/Wishlist';
 export interface ProductDetailHeroVariant {
   id: string;
   attributes: Record<string, string>;
+  /**
+   * Split-out attribute labels (CJ rich-product fields). When all
+   * variants for a product carry colorLabel + sizeLabel, the picker
+   * renders Color and Size as separate UI rows. Else it falls back to
+   * the legacy flat-chip layout that reads `attributes`.
+   */
+  colorLabel?: string | null;
+  sizeLabel?: string | null;
+  materialLabel?: string | null;
   priceTHB: number;
   imageUrl: string | null;
   inventory: number | null;
@@ -68,6 +77,13 @@ export interface ProductDetailHeroProduct {
   variants: ProductDetailHeroVariant[];
   /** Total stock across the product (or selected variant). null = untracked. */
   stockLeft: number | null;
+  /**
+   * Supplier-hosted promo video URL (CJ `videoUrl` / `productVideoUrl`).
+   * Surfaced as a small "ดูวิดีโอ" link under the gallery. We deliberately
+   * do NOT auto-embed — many CJ video URLs are hosted on third-party
+   * domains we'd need a frame-src CSP allowlist for.
+   */
+  videoUrl?: string | null;
   /** Optional — none of these are in Prisma yet; skipped if missing. */
   rating?: number;
   reviewCount?: number;
@@ -93,6 +109,33 @@ function cartHref(slug: string): string {
 
 function variantLabel(attrs: Record<string, string>): string {
   return Object.values(attrs).join(' / ');
+}
+
+// True iff every variant carries the same split-axis labels — that's
+// the gating condition for rendering a per-axis picker. We require it
+// to hold for *all* variants because a partial set would leave some
+// rows un-pickable.
+function variantsHaveSplitAxes(
+  variants: ProductDetailHeroVariant[],
+  axis: 'colorLabel' | 'sizeLabel' | 'materialLabel',
+): boolean {
+  return variants.length > 0 && variants.every((v) => !!v[axis]);
+}
+
+function uniqueAxisValues(
+  variants: ProductDetailHeroVariant[],
+  axis: 'colorLabel' | 'sizeLabel' | 'materialLabel',
+): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const v of variants) {
+    const value = v[axis];
+    if (value && !seen.has(value)) {
+      seen.add(value);
+      out.push(value);
+    }
+  }
+  return out;
 }
 
 export function ProductDetailHero({
@@ -173,6 +216,19 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
             </button>
           ))}
         </div>
+      )}
+      {product.videoUrl && (
+        // Deliberately just a link — see ProductDetailHeroProduct.videoUrl
+        // comment for the no-embed rationale (CSP). Opens in a new tab.
+        <a
+          href={product.videoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          <PlayCircle className="h-4 w-4" />
+          ดูวิดีโอ
+        </a>
       )}
     </div>
   );
@@ -295,36 +351,12 @@ function InfoColumn({
       </div>
 
       {product.variants.length > 0 && (
-        <div>
-          <div className="mb-2 text-sm font-medium">
-            ตัวเลือก:{' '}
-            <span className="text-muted-foreground">
-              {selectedVariant ? variantLabel(selectedVariant.attributes) : '—'}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {product.variants.map((v) => {
-              const available = v.inventory == null || v.inventory > 0;
-              return (
-                <button
-                  key={v.id}
-                  type="button"
-                  onClick={() => available && setVariantId(v.id)}
-                  disabled={!available}
-                  className={cn(
-                    'rounded-md border px-3 py-1.5 text-sm transition',
-                    variantId === v.id
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-input hover:border-primary',
-                    !available && 'cursor-not-allowed line-through opacity-50',
-                  )}
-                >
-                  {variantLabel(v.attributes)}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <VariantPicker
+          variants={product.variants}
+          selectedVariantId={variantId}
+          onSelect={setVariantId}
+          selectedVariant={selectedVariant}
+        />
       )}
 
       <div className="flex flex-wrap items-center gap-3">
@@ -451,6 +483,174 @@ function InfoColumn({
           <RotateCcw className="h-4 w-4 text-muted-foreground" />
           <span>คืนสินค้าได้ภายใน 7 วัน</span>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * VariantPicker — renders either a per-axis (Color + Size + Material)
+ * picker when every variant carries the split-out labels, or falls
+ * back to the legacy flat-chip layout that reads `attributes`.
+ *
+ * When split-axis is active, picking e.g. "Red" auto-snaps to the
+ * first variant matching the current Size selection (or the first
+ * Red variant if no size is selected yet). This is good-enough UX
+ * for CJ's typical Color×Size matrix without over-engineering a full
+ * matrix-aware picker.
+ */
+function VariantPicker({
+  variants,
+  selectedVariantId,
+  selectedVariant,
+  onSelect,
+}: {
+  variants: ProductDetailHeroVariant[];
+  selectedVariantId: string | null;
+  selectedVariant: ProductDetailHeroVariant | null;
+  onSelect: (id: string) => void;
+}) {
+  const hasColor = variantsHaveSplitAxes(variants, 'colorLabel');
+  const hasSize = variantsHaveSplitAxes(variants, 'sizeLabel');
+  const hasMaterial = variantsHaveSplitAxes(variants, 'materialLabel');
+  // Need at least two real axes to justify the split layout — a
+  // single Color row would just be cosmetically identical to the
+  // flat chip row but with an extra eyebrow label.
+  const useSplit = [hasColor, hasSize, hasMaterial].filter(Boolean).length >= 2;
+
+  if (!useSplit) {
+    return (
+      <div>
+        <div className="mb-2 text-sm font-medium">
+          ตัวเลือก:{' '}
+          <span className="text-muted-foreground">
+            {selectedVariant ? variantLabel(selectedVariant.attributes) : '—'}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {variants.map((v) => {
+            const available = v.inventory == null || v.inventory > 0;
+            return (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => available && onSelect(v.id)}
+                disabled={!available}
+                className={cn(
+                  'rounded-md border px-3 py-1.5 text-sm transition',
+                  selectedVariantId === v.id
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-input hover:border-primary',
+                  !available && 'cursor-not-allowed line-through opacity-50',
+                )}
+              >
+                {variantLabel(v.attributes)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  const colors = hasColor ? uniqueAxisValues(variants, 'colorLabel') : [];
+  const sizes = hasSize ? uniqueAxisValues(variants, 'sizeLabel') : [];
+  const materials = hasMaterial ? uniqueAxisValues(variants, 'materialLabel') : [];
+
+  function pickAxis(axis: 'colorLabel' | 'sizeLabel' | 'materialLabel', value: string) {
+    // Build a partial preference set from the currently-selected
+    // variant + the new axis click, then find the closest variant.
+    const preferred: Partial<Record<typeof axis, string>> & Record<string, string | undefined> = {
+      colorLabel: selectedVariant?.colorLabel ?? undefined,
+      sizeLabel: selectedVariant?.sizeLabel ?? undefined,
+      materialLabel: selectedVariant?.materialLabel ?? undefined,
+    };
+    preferred[axis] = value;
+
+    // Score each variant by how many preferred axes it matches; pick
+    // the highest-scoring (and prefer in-stock when tied).
+    let best: ProductDetailHeroVariant | null = null;
+    let bestScore = -1;
+    for (const v of variants) {
+      let score = 0;
+      if (preferred.colorLabel && v.colorLabel === preferred.colorLabel) score += 1;
+      if (preferred.sizeLabel && v.sizeLabel === preferred.sizeLabel) score += 1;
+      if (preferred.materialLabel && v.materialLabel === preferred.materialLabel) score += 1;
+      // Required: the axis the user just clicked must match.
+      if (v[axis] !== value) continue;
+      const inStock = v.inventory == null || v.inventory > 0;
+      const adjScore = score + (inStock ? 0.1 : 0);
+      if (adjScore > bestScore) {
+        best = v;
+        bestScore = adjScore;
+      }
+    }
+    if (best) onSelect(best.id);
+  }
+
+  return (
+    <div className="space-y-4">
+      {hasColor && (
+        <AxisRow
+          label="สี"
+          values={colors}
+          selected={selectedVariant?.colorLabel ?? null}
+          onPick={(v) => pickAxis('colorLabel', v)}
+        />
+      )}
+      {hasSize && (
+        <AxisRow
+          label="ขนาด"
+          values={sizes}
+          selected={selectedVariant?.sizeLabel ?? null}
+          onPick={(v) => pickAxis('sizeLabel', v)}
+        />
+      )}
+      {hasMaterial && (
+        <AxisRow
+          label="วัสดุ"
+          values={materials}
+          selected={selectedVariant?.materialLabel ?? null}
+          onPick={(v) => pickAxis('materialLabel', v)}
+        />
+      )}
+    </div>
+  );
+}
+
+function AxisRow({
+  label,
+  values,
+  selected,
+  onPick,
+}: {
+  label: string;
+  values: string[];
+  selected: string | null;
+  onPick: (value: string) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-2 text-sm font-medium">
+        {label}:{' '}
+        <span className="text-muted-foreground">{selected ?? '—'}</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {values.map((v) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => onPick(v)}
+            className={cn(
+              'rounded-md border px-3 py-1.5 text-sm transition',
+              selected === v
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-input hover:border-primary',
+            )}
+          >
+            {v}
+          </button>
+        ))}
       </div>
     </div>
   );

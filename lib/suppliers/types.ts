@@ -6,6 +6,20 @@ export interface NormalizedProduct {
   description?: string;
   priceTHB: number;
   imageUrl?: string;
+  /** Secondary gallery images (cover excluded). Empty for legacy callers. */
+  galleryUrls?: string[];
+  /** Product weight in grams (parsed from supplier-string like "150g"). */
+  weightGrams?: number;
+  /** Origin country — ISO-2 (`"CN"`) when extractable, else raw label. */
+  originCountry?: string;
+  /** Feature bullets from supplier (CJ `productKeyAttribute`). */
+  keyAttributes?: string[];
+  /** Spec key/value pairs (CJ `productMaterials` / `productProperties`). */
+  materials?: Record<string, string>;
+  /** Supplier-hosted promo video URL (CJ `videoUrl` / `productVideoUrl`). */
+  videoUrl?: string;
+  /** HS / customs code (CJ `hsCode` / `customsCode`). */
+  hsCode?: string;
   raw: unknown;
 }
 
@@ -72,6 +86,16 @@ export interface NormalizedVariant {
   externalVariantId: string;
   sku?: string;
   attributes: Record<string, string>;
+  /**
+   * Split-out attribute labels — populated when the supplier exposes
+   * them as discrete fields OR when `variantKey` is parseable. The
+   * picker UI uses these to render per-axis rows (Color / Size /
+   * Material) instead of a single chip per variant. `attributes` still
+   * carries the same data for back-compat.
+   */
+  colorLabel?: string;
+  sizeLabel?: string;
+  materialLabel?: string;
   priceTHB: number;
   imageUrl?: string;
   inventory?: number;
