@@ -825,17 +825,28 @@ model ProvisioningJob {
 // where multiple operators share an inbox via the dashboard picker —
 // it audits WHO marked the row read, not just when.
 model ContactMessage {
-  id        String    @id @default(cuid())
-  storeId   String
-  name      String
-  email     String?
-  phone     String?
-  message   String    @db.Text
+  id          String    @id @default(cuid())
+  storeId     String
+  name        String
+  email       String?
+  phone       String?
+  message     String    @db.Text
   // Null = unread; populated = read at this timestamp.
-  readAt    DateTime?
+  readAt      DateTime?
   // Audit who marked it read (for the multi-vendor case).
-  readById  String?
-  createdAt DateTime  @default(now())
+  readById    String?
+  // Reply audit. Set together by lib/admin/contact-messages.ts
+  // replyToMessage when the vendor sends an email reply via Resend.
+  // The DB row is the source of truth — we persist BEFORE sendEmail
+  // so a Resend failure still surfaces in the inbox transcript and
+  // the vendor can retry.
+  repliedAt   DateTime?
+  repliedById String?
+  // Snapshot of the reply body the vendor sent. Lets the inbox
+  // detail page render a read-only transcript without round-tripping
+  // to Resend, and keeps an audit trail of what was sent.
+  replyBody   String?   @db.Text
+  createdAt   DateTime  @default(now())
 
   store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 

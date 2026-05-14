@@ -80,6 +80,7 @@ export default async function AdminMessagesPage({
         phone: true,
         message: true,
         readAt: true,
+        repliedAt: true,
         createdAt: true,
         store: { select: { slug: true, name: true } },
       },
@@ -167,6 +168,7 @@ export default async function AdminMessagesPage({
             <TableBody>
               {messages.map((msg) => {
                 const isUnread = msg.readAt === null;
+                const isReplied = msg.repliedAt !== null;
                 const contact = msg.email ?? msg.phone ?? null;
                 // Deep-link straight into the vendor-side detail
                 // page with the store picker pinned to this row's
@@ -245,7 +247,11 @@ export default async function AdminMessagesPage({
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                      {isUnread ? (
+                      {isReplied ? (
+                        <Badge className="bg-green-600 text-white hover:bg-green-600/90">
+                          อ่าน + ตอบแล้ว
+                        </Badge>
+                      ) : isUnread ? (
                         <Badge variant="default">ยังไม่อ่าน</Badge>
                       ) : (
                         <Badge variant="outline">อ่านแล้ว</Badge>

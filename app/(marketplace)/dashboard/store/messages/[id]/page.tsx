@@ -1,9 +1,11 @@
 // Vendor-side contact-message detail — /dashboard/store/messages/[id].
 //
-// Shows the full message body + visitor info + "Mark as read" toggle.
-// Reply is intentionally external (mailto: / tel: links in the
-// "ติดต่อกลับ" card) — the dashboard doesn't host an internal
-// thread/composer; the vendor's email client owns the conversation.
+// Shows the full message body + visitor info + "Mark as read" toggle
+// + an INLINE Resend-powered reply composer. The mailto/tel quick-
+// links remain for the rare case where the vendor wants to use their
+// own mail client, but the primary reply path is the in-dashboard
+// composer (components/dashboard/message-reply-form.tsx) backed by
+// the replyToMessage server action.
 //
 // Authorization (multi-store):
 //   1. resolveDashboardStore({ requestedSlug }) — picks the active
@@ -23,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MarkReadToggle } from "@/components/dashboard/message-actions";
+import { MessageReplyForm } from "@/components/dashboard/message-reply-form";
 import { prisma } from "@/lib/prisma";
 import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 
@@ -55,6 +58,7 @@ export default async function VendorMessageDetailPage({
   if (msg.storeId !== store.id) notFound();
 
   const isUnread = msg.readAt === null;
+  const isReplied = msg.repliedAt !== null;
 
   // Preserve the active store across the back-link.
   const slugSuffix = sp.storeSlug
@@ -94,7 +98,11 @@ export default async function VendorMessageDetailPage({
             })}
           </p>
         </div>
-        {isUnread ? (
+        {isReplied ? (
+          <Badge className="bg-green-600 text-white hover:bg-green-600/90">
+            อ่าน + ตอบแล้ว
+          </Badge>
+        ) : isUnread ? (
           <Badge variant="default">ยังไม่อ่าน</Badge>
         ) : (
           <Badge variant="outline">อ่านแล้ว</Badge>
@@ -113,6 +121,23 @@ export default async function VendorMessageDetailPage({
           </p>
         </div>
       </Card>
+
+      {/* Reply composer — primary reply path. The component handles
+          three states internally:
+            • no customer email → disabled hint with phone fallback
+            • not yet replied → empty composer
+            • already replied → transcript + "ตอบกลับเพิ่ม" trigger */}
+      <MessageReplyForm
+        messageId={msg.id}
+        customerEmail={msg.email}
+        customerName={msg.name}
+        customerPhone={msg.phone}
+        existingReply={
+          msg.repliedAt && msg.replyBody
+            ? { body: msg.replyBody, repliedAt: msg.repliedAt }
+            : null
+        }
+      />
 
       <div className="grid gap-3 lg:grid-cols-2">
         <Card className="p-4">
@@ -146,11 +171,11 @@ export default async function VendorMessageDetailPage({
         </Card>
 
         <Card className="p-4">
-          <h3 className="mb-2 text-sm font-semibold">ติดต่อกลับ</h3>
+          <h3 className="mb-2 text-sm font-semibold">ติดต่อกลับ (ทางอื่น)</h3>
           {mailtoHref || telHref ? (
             <>
               <p className="text-xs text-muted-foreground">
-                ตอบกลับลูกค้าโดยตรงทางอีเมลหรือโทรศัพท์
+                หากต้องการใช้แอปอีเมลของคุณเองหรือโทรหาลูกค้า
               </p>
               <Separator className="my-3" />
               <div className="flex flex-wrap gap-2">
