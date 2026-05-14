@@ -471,7 +471,7 @@ function InfoColumn({
             <>
               <span>·</span>
               <Link href="#reviews" className="hover:underline">
-                {product.reviewCount.toLocaleString()} reviews
+                {product.reviewCount.toLocaleString()} รีวิว
               </Link>
             </>
           )}
@@ -482,7 +482,7 @@ function InfoColumn({
                 data-bm-mono="true"
                 style={{ fontFamily: BM_MONO_FONT, fontVariantNumeric: 'tabular-nums' }}
               >
-                {product.soldCount.toLocaleString()} sold
+                ขายแล้ว {product.soldCount.toLocaleString()}
               </span>
             </>
           )}
@@ -533,7 +533,7 @@ function InfoColumn({
                 color: '#ffffff',
               }}
             >
-              SAVE {totalDiscount}%
+              ประหยัด {totalDiscount}%
             </span>
           )}
         </div>
@@ -570,7 +570,7 @@ function InfoColumn({
             letterSpacing: '0.12em',
           }}
         >
-          Volume pricing
+          ราคาตามปริมาณ
         </div>
         <div
           className="overflow-hidden rounded-md border"

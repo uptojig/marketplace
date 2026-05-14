@@ -234,7 +234,7 @@ export async function SpecialtyHandcrafted({
                         color: 'var(--shop-ink-muted)',
                       }}
                     >
-                      made by hand
+                      งานทำมือ
                     </p>
                   </div>
                 </Link>

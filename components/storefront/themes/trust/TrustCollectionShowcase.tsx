@@ -272,7 +272,7 @@ function TrustShowcaseEmpty({ storeSlug }: { storeSlug: string }) {
           fontWeight: 500,
         }}
       >
-        The atelier is preparing the next acquisitions. Please return shortly.
+        อาตเลียร์กำลังจัดเตรียมสินค้าใหม่ กรุณากลับมาในเร็ว ๆ นี้
       </p>
       <Link
         href={`/stores/${storeSlug}/category`}
@@ -282,7 +282,7 @@ function TrustShowcaseEmpty({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '0.28em',
         }}
       >
-        Visit the Maison
+        เยี่ยมชมเมซอน
       </Link>
     </div>
   );
