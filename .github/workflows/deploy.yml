@@ -36,13 +36,19 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DROPLET_SSH_KEY }}
 
-      - name: Add droplet to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts 2>/dev/null
-
       - name: Trigger deploy on droplet
         run: |
+          # No pre-keyscan — `StrictHostKeyChecking=accept-new` below
+          # writes the key on first connect. The earlier explicit
+          # `ssh-keyscan` step was failing with exit 1 from GitHub
+          # Actions runners (the runner egress IPs hit a TCP-level
+          # timeout reaching the droplet on port 22 within keyscan's
+          # 5s default), taking the whole workflow down even though
+          # the actual deploy ssh ran fine. We don't need the pre-scan
+          # anyway — accept-new handles the first connection.
+          mkdir -p ~/.ssh
           ssh -o StrictHostKeyChecking=accept-new \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              -o ConnectTimeout=30 \
               root@${{ secrets.DROPLET_IP }} \
               "/opt/marketplace/infra/setup/deploy.sh ${{ steps.branch.outputs.name }}"
