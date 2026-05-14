@@ -5,11 +5,21 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSpacesConfigured, uploadBuffer } from "@/lib/storage/spaces";
+import { enrichCJProduct } from "@/lib/suppliers/cj/enrich";
 import {
   getPalette,
   slugify,
   type WizardState,
 } from "@/lib/store/wizard-data";
+
+/** Hard cap on Phase 3 picks. CJ throttles ~1 req/sec, so 20 selected
+ *  → ~22s wizard submit. Anything bigger (e.g. the 50-pack) imports
+ *  the first 20 inline + the rest are queued for follow-up via the
+ *  /admin/stores enrichment chain. */
+const MAX_SYNC_IMPORT = 20;
+const CJ_RATE_LIMIT_MS = 1100;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 type CreateStoreResult =
   | { ok: true; slug: string; storeId: string; ownedBySession: boolean }
@@ -95,6 +105,86 @@ export async function createStoreFromWizard(
       addressLine1: nonEmpty(state.identity.contact.address),
     },
   });
+
+  // Phase 3 — import the products the merchant picked. Two-phase:
+  // (1) create lightweight Product stubs synchronously from the
+  //     selectedProducts payload (title / price / image already fetched
+  //     by the wizard's API route), so the dashboard never opens empty.
+  // (2) call enrichCJProduct() per row to fill in description, full
+  //     gallery, variants, materials, etc. Rate-limited to ~1 req/sec
+  //     because CJ throttles /product/query. Capped at 20 to keep
+  //     wizard submit under ~30s — anything beyond becomes a stub
+  //     that the operator enriches later via /admin/stores.
+  const picks = state.products.selectedProducts.slice(0, MAX_SYNC_IMPORT);
+  const stubBacklog = state.products.selectedProducts.slice(MAX_SYNC_IMPORT);
+
+  const stubProductIds: Array<{ id: string; externalProductId: string }> = [];
+  for (const p of picks) {
+    if (!p.externalProductId) continue;
+    try {
+      const created = await prisma.product.create({
+        data: {
+          storeId: store.id,
+          supplier: "CJ",
+          externalProductId: p.externalProductId,
+          title: p.title,
+          priceTHB: p.priceTHB,
+          imageUrl: p.imageUrl,
+          active: true,
+        },
+        select: { id: true, externalProductId: true },
+      });
+      stubProductIds.push({
+        id: created.id,
+        externalProductId: created.externalProductId!,
+      });
+    } catch (err) {
+      // Don't fail the whole wizard for one bad row — keep going.
+      console.error(
+        `[wizard] stub create failed for ${p.externalProductId}:`,
+        err instanceof Error ? err.message : err,
+      );
+    }
+  }
+
+  // Backlog: stubs only (no enrichment) so the operator can finish via
+  // /admin/stores. Same rate-limit isn't needed since we're not hitting
+  // CJ — just inserts.
+  for (const p of stubBacklog) {
+    if (!p.externalProductId) continue;
+    try {
+      await prisma.product.create({
+        data: {
+          storeId: store.id,
+          supplier: "CJ",
+          externalProductId: p.externalProductId,
+          title: p.title,
+          priceTHB: p.priceTHB,
+          imageUrl: p.imageUrl,
+          active: true,
+        },
+      });
+    } catch {
+      // ignore — same rationale as above
+    }
+  }
+
+  // Enrich the synchronous batch. Soft-fail per product so a single
+  // CJ outage doesn't kill the wizard submit.
+  for (let i = 0; i < stubProductIds.length; i += 1) {
+    const { id, externalProductId } = stubProductIds[i];
+    try {
+      await enrichCJProduct(id, externalProductId);
+    } catch (err) {
+      console.error(
+        `[wizard] enrich failed for ${externalProductId}:`,
+        err instanceof Error ? err.message : err,
+      );
+    }
+    if (i < stubProductIds.length - 1) {
+      await sleep(CJ_RATE_LIMIT_MS);
+    }
+  }
 
   return {
     ok: true,

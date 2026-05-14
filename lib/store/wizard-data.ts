@@ -372,7 +372,21 @@ export type WizardState = {
     templateId: TemplateId | null;
   };
   products: {
+    /** Legacy "shape of the bundle" hint — still drives the target
+     *  count copy in the UI, but actual import is now driven by the
+     *  selectedProducts list below. Kept for backwards compat with
+     *  stores saved as drafts before the picker landed. */
     starterPack: "10" | "20" | "50" | null;
+    /** Full CJ product snapshots the user picked in Phase 3.
+     *  createStoreFromWizard() seeds Product stub rows from these
+     *  (title/price/image) and then calls enrichCJProduct() per row
+     *  for full detail + variants + Thai translation. */
+    selectedProducts: Array<{
+      externalProductId: string;
+      title: string;
+      priceTHB: number;
+      imageUrl: string | null;
+    }>;
   };
   launch: {
     status: "draft" | "live";
@@ -404,6 +418,7 @@ export const INITIAL_STATE: WizardState = {
   },
   products: {
     starterPack: null,
+    selectedProducts: [],
   },
   launch: {
     status: "draft",
