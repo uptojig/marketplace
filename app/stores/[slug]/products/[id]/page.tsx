@@ -10,10 +10,12 @@ import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
 import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
+import { ElectronicsTechProductHero } from "@/components/storefront/themes/electronics-tech/ElectronicsTechProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
@@ -60,7 +62,9 @@ export default async function ShopProductPage({
   // (wholesale-b2b / flash-deal / subscription) renders the
   // rectangular deal-dashboard hero; lifestyle (home-living /
   // sport-active / kids-toys) renders the warm catalog hero;
-  // everything else renders the default hero untouched.
+  // electronics-tech (catalog-dense / tech-compare / single-product)
+  // renders the spec-sheet square hero; everything else renders the
+  // default hero untouched.
   const isFB = isFashionBeautyStore({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
@@ -77,6 +81,10 @@ export default async function ShopProductPage({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
+  const isElectronicsTech = !isFB && !isTrust && !isBM && !isLifestyle && isElectronicsTechStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
   const HeroComponent = isFB
     ? FashionBeautyProductHero
     : isTrust
@@ -85,7 +93,9 @@ export default async function ShopProductPage({
         ? BusinessModelProductHero
         : isLifestyle
           ? LifestyleProductHero
-          : ProductDetailHero;
+          : isElectronicsTech
+            ? ElectronicsTechProductHero
+            : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -182,7 +192,7 @@ export default async function ShopProductPage({
       {related.length > 0 && (
         <section
           className={
-            isFB || isTrust || isLifestyle
+            isFB || isTrust || isLifestyle || isElectronicsTech
               ? "space-y-6 py-8"
               : isBM
                 ? "space-y-4 py-6"
@@ -193,7 +203,8 @@ export default async function ShopProductPage({
               eyebrow above the serif headline; FB renders a serif
               headline only; business-model uses a tight-caps utility
               label; lifestyle adds an optimistic sage caps tagline
-              above the geometric sans headline; default keeps its
+              above the geometric sans headline; electronics-tech adds
+              a mono "Related products" eyebrow; default keeps its
               compact sans label. */}
           {isTrust && (
             <p
@@ -230,13 +241,30 @@ export default async function ShopProductPage({
               More from the basket
             </p>
           )}
+          {isElectronicsTech && (
+            <p
+              data-tech-mono="true"
+              className="text-[11px] uppercase"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                fontFamily:
+                  'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace',
+                letterSpacing: '0.16em',
+                fontWeight: 600,
+              }}
+            >
+              Related products
+            </p>
+          )}
           <h2
             className={
               isFB || isTrust || isLifestyle
                 ? "text-3xl sm:text-4xl"
                 : isBM
                   ? "text-xl sm:text-2xl"
-                  : "text-lg font-semibold"
+                  : isElectronicsTech
+                    ? "text-2xl sm:text-3xl"
+                    : "text-lg font-semibold"
             }
             style={{
               color: 'var(--shop-ink)',
@@ -260,7 +288,14 @@ export default async function ShopProductPage({
                         fontWeight: 600,
                         letterSpacing: '-0.01em',
                       }
-                    : {}),
+                    : isElectronicsTech
+                      ? {
+                          fontFamily:
+                            'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif',
+                          fontWeight: 700,
+                          letterSpacing: '-0.015em',
+                        }
+                      : {}),
             }}
           >
             {isFB
@@ -271,7 +306,9 @@ export default async function ShopProductPage({
                   ? 'ดีลใกล้เคียง'
                   : isLifestyle
                     ? 'You may also love'
-                    : 'สินค้าที่เกี่ยวข้อง'}
+                    : isElectronicsTech
+                      ? 'Compare similar products'
+                      : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={
@@ -281,7 +318,9 @@ export default async function ShopProductPage({
                   ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
                   : isLifestyle
                     ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-3"
-                    : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
+                    : isElectronicsTech
+                      ? "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
+                      : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
             }
           >
             {related.map((r) => (
@@ -289,12 +328,12 @@ export default async function ShopProductPage({
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
                 className={
-                  isFB || isTrust || isLifestyle
+                  isFB || isTrust || isLifestyle || isElectronicsTech
                     ? "group block"
                     : "group overflow-hidden rounded-lg border"
                 }
                 style={
-                  isFB || isTrust || isLifestyle
+                  isFB || isTrust || isLifestyle || isElectronicsTech
                     ? undefined
                     : { background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }
                 }
@@ -308,7 +347,9 @@ export default async function ShopProductPage({
                         ? "overflow-hidden rounded-sm border bg-white"
                         : isLifestyle
                           ? "overflow-hidden rounded-3xl bg-white"
-                          : "aspect-square overflow-hidden"
+                          : isElectronicsTech
+                            ? "overflow-hidden rounded-md border bg-white"
+                            : "aspect-square overflow-hidden"
                   }
                   style={{
                     ...(isFB
@@ -317,7 +358,9 @@ export default async function ShopProductPage({
                         ? { borderColor: 'var(--shop-accent)' }
                         : isLifestyle
                           ? {}
-                          : { backgroundColor: 'var(--shop-bg)' }),
+                          : isElectronicsTech
+                            ? { borderColor: 'var(--shop-border)' }
+                            : { backgroundColor: 'var(--shop-bg)' }),
                   }}
                 >
                   {r.imageUrl && (
@@ -329,7 +372,9 @@ export default async function ShopProductPage({
                             ? "relative overflow-hidden"
                             : isLifestyle
                               ? "relative overflow-hidden"
-                              : "h-full w-full"
+                              : isElectronicsTech
+                                ? "relative overflow-hidden"
+                                : "h-full w-full"
                       }
                       style={
                         isFB
@@ -338,7 +383,9 @@ export default async function ShopProductPage({
                             ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
                             : isLifestyle
                               ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
-                              : undefined
+                              : isElectronicsTech
+                                ? { aspectRatio: '1 / 1', backgroundColor: 'var(--shop-muted)' }
+                                : undefined
                       }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -352,7 +399,9 @@ export default async function ShopProductPage({
                               ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
                               : isLifestyle
                                 ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                                : "h-full w-full object-cover transition group-hover:scale-105"
+                                : isElectronicsTech
+                                  ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                  : "h-full w-full object-cover transition group-hover:scale-105"
                         }
                       />
                     </div>
@@ -366,7 +415,9 @@ export default async function ShopProductPage({
                         ? "px-1 pt-4"
                         : isLifestyle
                           ? "px-1 pt-4"
-                          : "p-3"
+                          : isElectronicsTech
+                            ? "px-1 pt-3"
+                            : "p-3"
                   }
                 >
                   <div
@@ -377,7 +428,9 @@ export default async function ShopProductPage({
                           ? "line-clamp-2 text-sm leading-tight"
                           : isLifestyle
                             ? "line-clamp-2 text-base leading-tight"
-                            : "line-clamp-2 text-sm font-medium"
+                            : isElectronicsTech
+                              ? "line-clamp-2 text-sm leading-tight"
+                              : "line-clamp-2 text-sm font-medium"
                     }
                     style={{
                       color: 'var(--shop-ink, #1c1917)',
@@ -393,13 +446,25 @@ export default async function ShopProductPage({
                                 'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
                               fontWeight: 600,
                             }
-                          : {}),
+                          : isElectronicsTech
+                            ? {
+                                fontFamily:
+                                  'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif',
+                                fontWeight: 600,
+                                letterSpacing: '-0.005em',
+                              }
+                            : {}),
                     }}
                   >
                     {r.titleTh ?? r.title}
                   </div>
                   <div
-                    className="mt-1 text-sm font-semibold"
+                    className={
+                      isElectronicsTech
+                        ? "mt-1 text-sm font-bold"
+                        : "mt-1 text-sm font-semibold"
+                    }
+                    data-tech-mono={isElectronicsTech ? 'true' : undefined}
                     style={{
                       color: isTrust ? 'var(--shop-ink)' : 'var(--shop-primary)',
                       ...(isLifestyle
@@ -407,7 +472,13 @@ export default async function ShopProductPage({
                             fontFamily:
                               'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
                           }
-                        : {}),
+                        : isElectronicsTech
+                          ? {
+                              fontFamily:
+                                'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace',
+                              letterSpacing: '-0.01em',
+                            }
+                          : {}),
                     }}
                   >
                     ฿ {Number(r.priceTHB).toLocaleString("th-TH")}

@@ -32,6 +32,7 @@ import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,12 @@ const BM_MONO_FONT =
 
 const LIFESTYLE_DISPLAY_FONT =
   'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
+
+const TECH_DISPLAY_FONT =
+  'var(--font-tech-display, "Inter Tight"), "Inter", "IBM Plex Sans Thai", system-ui, sans-serif';
+
+const TECH_MONO_FONT =
+  'var(--font-tech-mono, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Menlo, monospace';
 
 export default async function StoreOrderSuccess({
   params,
@@ -139,6 +146,12 @@ export default async function StoreOrderSuccess({
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;
+  const isElectronicsTech = !isFB && !isTrust && !isBM && !isLifestyle && order.store
+    ? isElectronicsTechStore({
+        templateId: order.store.templateId,
+        landingThemeVariant: order.store.landingThemeVariant,
+      })
+    : false;
 
   const today = new Date();
   const eta1 = new Date(today.getTime() + 1 * 86400000);
@@ -152,10 +165,11 @@ export default async function StoreOrderSuccess({
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
       <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-        {/* Hero — success state. Five flavors: default soft-rose, FB
+        {/* Hero — success state. Six flavors: default soft-rose, FB
             editorial italic, trust stamped heritage, business-model
             green-check + bold sans + mono order number, lifestyle
-            warm sage check ring with terracotta tick + squiggle. */}
+            warm sage check ring with terracotta tick + squiggle,
+            electronics-tech mono spec-sheet "ORDER #XXXX CONFIRMED". */}
         <div className="text-center">
           {/* Lifestyle adds a squiggle divider above the hero — soft
               catalog flourish. Pure decoration; sage SVG via globals.css */}
@@ -174,7 +188,9 @@ export default async function StoreOrderSuccess({
                   ? "inline-flex items-center justify-center w-20 h-20 rounded-md border mb-5"
                   : isLifestyle
                     ? "relative inline-flex items-center justify-center w-24 h-24 rounded-full mb-5"
-                    : "inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
+                    : isElectronicsTech
+                      ? "inline-flex items-center justify-center w-20 h-20 rounded-md border mb-5"
+                      : "inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
             }
             style={{
               background: isTrust
@@ -183,18 +199,28 @@ export default async function StoreOrderSuccess({
                   ? "color-mix(in srgb, var(--shop-savings, #10b981) 14%, transparent)"
                   : isLifestyle
                     ? "color-mix(in srgb, var(--shop-accent) 22%, transparent)"
-                    : "color-mix(in srgb, var(--shop-primary) 14%, transparent)",
+                    : isElectronicsTech
+                      ? "color-mix(in srgb, var(--shop-highlight, #34d399) 14%, transparent)"
+                      : "color-mix(in srgb, var(--shop-primary) 14%, transparent)",
               color: isTrust
                 ? "var(--shop-ink)"
                 : isBM
                   ? "var(--shop-savings, #10b981)"
                   : isLifestyle
                     ? "var(--shop-primary)"
-                    : "var(--shop-primary)",
+                    : isElectronicsTech
+                      ? "#047857"
+                      : "var(--shop-primary)",
               ...(isTrust ? { borderColor: "var(--shop-accent)" } : {}),
               ...(isBM ? { borderColor: "var(--shop-savings, #10b981)" } : {}),
               ...(isLifestyle
                 ? { boxShadow: `0 0 0 4px color-mix(in srgb, var(--shop-accent) 35%, transparent)` }
+                : {}),
+              ...(isElectronicsTech
+                ? {
+                    borderColor:
+                      "color-mix(in srgb, var(--shop-highlight, #34d399) 36%, transparent)",
+                  }
                 : {}),
             }}
           >
@@ -243,6 +269,20 @@ export default async function StoreOrderSuccess({
               All set
             </p>
           )}
+          {isElectronicsTech && (
+            <p
+              data-tech-mono="true"
+              className="text-[11px] uppercase"
+              style={{
+                color: "var(--shop-ink-muted)",
+                fontFamily: TECH_MONO_FONT,
+                letterSpacing: "0.16em",
+                fontWeight: 600,
+              }}
+            >
+              Order #{shortCode} Confirmed
+            </p>
+          )}
           <h1
             className={
               isFB
@@ -253,7 +293,9 @@ export default async function StoreOrderSuccess({
                     ? "mt-3 text-2xl sm:text-3xl font-bold tracking-tight"
                     : isLifestyle
                       ? "mt-3 text-4xl sm:text-5xl"
-                      : "text-3xl md:text-4xl font-bold tracking-tight"
+                      : isElectronicsTech
+                        ? "mt-3 text-3xl sm:text-4xl"
+                        : "text-3xl md:text-4xl font-bold tracking-tight"
             }
             style={{
               color: "var(--shop-ink)",
@@ -265,7 +307,9 @@ export default async function StoreOrderSuccess({
                     ? { fontWeight: 700, letterSpacing: '-0.015em' }
                     : isLifestyle
                       ? { fontFamily: LIFESTYLE_DISPLAY_FONT, fontWeight: 700, letterSpacing: '-0.01em' }
-                      : {}),
+                      : isElectronicsTech
+                        ? { fontFamily: TECH_DISPLAY_FONT, fontWeight: 700, letterSpacing: '-0.015em' }
+                        : {}),
             }}
           >
             {isFB
@@ -291,7 +335,9 @@ export default async function StoreOrderSuccess({
                   )
                   : isLifestyle
                     ? "We've got your order!"
-                    : "ขอบคุณสำหรับคำสั่งซื้อ"}
+                    : isElectronicsTech
+                      ? "Thanks — your order is in"
+                      : "ขอบคุณสำหรับคำสั่งซื้อ"}
           </h1>
           {isTrust && (
             <div
@@ -308,7 +354,9 @@ export default async function StoreOrderSuccess({
                   ? "mt-5 text-base"
                   : isLifestyle
                     ? "mt-4 text-base"
-                    : "mt-3 text-base"
+                    : isElectronicsTech
+                      ? "mt-4 text-base"
+                      : "mt-3 text-base"
             }
             style={{ color: "var(--shop-ink-muted)" }}
           >
@@ -330,7 +378,9 @@ export default async function StoreOrderSuccess({
                   ? "mt-7 inline-flex items-center gap-2 rounded-md border bg-white px-5 py-2.5 shadow-sm"
                   : isLifestyle
                     ? "mt-7 inline-flex items-center gap-2 rounded-full border bg-white px-5 py-2.5 shadow-sm"
-                    : "mt-7 inline-flex items-center gap-2 rounded-full border bg-white px-5 py-2.5 shadow-sm"
+                    : isElectronicsTech
+                      ? "mt-7 inline-flex items-center gap-2 rounded-md border bg-white px-5 py-2.5 shadow-sm"
+                      : "mt-7 inline-flex items-center gap-2 rounded-full border bg-white px-5 py-2.5 shadow-sm"
             }
             style={{
               borderColor: isTrust
@@ -339,15 +389,25 @@ export default async function StoreOrderSuccess({
                   ? "var(--shop-border)"
                   : isLifestyle
                     ? "var(--shop-accent)"
-                    : "var(--shop-border)",
+                    : isElectronicsTech
+                      ? "var(--shop-border)"
+                      : "var(--shop-border)",
             }}
           >
             <span
+              data-tech-mono={isElectronicsTech ? "true" : undefined}
               className="text-xs uppercase"
               style={{
                 color: "var(--shop-ink-muted)",
-                letterSpacing: isTrust ? "0.28em" : isBM ? "0.12em" : "0.18em",
-                fontWeight: isTrust || isBM || isLifestyle ? 600 : undefined,
+                letterSpacing: isTrust
+                  ? "0.28em"
+                  : isBM
+                    ? "0.12em"
+                    : isElectronicsTech
+                      ? "0.16em"
+                      : "0.18em",
+                fontWeight: isTrust || isBM || isLifestyle || isElectronicsTech ? 600 : undefined,
+                fontFamily: isElectronicsTech ? TECH_MONO_FONT : undefined,
               }}
             >
               {isTrust
@@ -356,19 +416,24 @@ export default async function StoreOrderSuccess({
                   ? "Order ID"
                   : isLifestyle
                     ? "Order"
-                    : "เลขที่คำสั่งซื้อ"}
+                    : isElectronicsTech
+                      ? "Order ID"
+                      : "เลขที่คำสั่งซื้อ"}
             </span>
             <span
               data-bm-mono={isBM ? "true" : undefined}
+              data-tech-mono={isElectronicsTech ? "true" : undefined}
               className="font-mono text-base font-bold"
               style={{
-                color: "var(--shop-ink)",
+                color: isElectronicsTech ? "var(--shop-primary)" : "var(--shop-ink)",
                 ...(isBM
                   ? {
                       fontFamily: BM_MONO_FONT,
                       fontVariantNumeric: "tabular-nums",
                     }
-                  : {}),
+                  : isElectronicsTech
+                    ? { fontFamily: TECH_MONO_FONT, letterSpacing: "-0.01em" }
+                    : {}),
               }}
             >
               {shortCode}
@@ -415,7 +480,9 @@ export default async function StoreOrderSuccess({
                     ? "text-xl"
                     : isLifestyle
                       ? "text-xl"
-                      : "text-base font-semibold"
+                      : isElectronicsTech
+                        ? "text-lg"
+                        : "text-base font-semibold"
               }
               style={{
                 color: "var(--shop-ink)",
@@ -425,10 +492,18 @@ export default async function StoreOrderSuccess({
                     ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600 }
                     : isLifestyle
                       ? { fontFamily: LIFESTYLE_DISPLAY_FONT, fontWeight: 700 }
-                      : {}),
+                      : isElectronicsTech
+                        ? {
+                            fontFamily: TECH_DISPLAY_FONT,
+                            fontWeight: 700,
+                            letterSpacing: "-0.015em",
+                          }
+                        : {}),
               }}
             >
-              สินค้าในคำสั่งซื้อ ({order.items.length} รายการ)
+              {isElectronicsTech
+                ? `Items (${order.items.length})`
+                : `สินค้าในคำสั่งซื้อ (${order.items.length} รายการ)`}
             </h2>
           </div>
           <ul className="divide-y" style={{ borderColor: "var(--shop-border)" }}>
@@ -507,7 +582,9 @@ export default async function StoreOrderSuccess({
                     ? "h-auto rounded-md py-3 text-sm font-bold uppercase tracking-[0.08em] text-white"
                     : isLifestyle
                       ? "h-auto rounded-full py-3 text-sm font-semibold text-white"
-                      : "h-auto py-3 text-sm font-semibold text-white"
+                      : isElectronicsTech
+                        ? "h-auto rounded-md py-3 text-sm font-bold text-white"
+                        : "h-auto py-3 text-sm font-semibold text-white"
             }
             style={{ background: "var(--shop-primary)" }}
           >
@@ -521,7 +598,9 @@ export default async function StoreOrderSuccess({
                   ? "Track order"
                   : isLifestyle
                     ? "Track order"
-                    : "ติดตามสถานะคำสั่งซื้อ"}
+                    : isElectronicsTech
+                      ? "Track shipment"
+                      : "ติดตามสถานะคำสั่งซื้อ"}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -537,7 +616,9 @@ export default async function StoreOrderSuccess({
                     ? "h-auto rounded-md border-[var(--shop-ink)] py-3 text-sm font-bold uppercase tracking-[0.08em]"
                     : isLifestyle
                       ? "h-auto rounded-full border-[var(--shop-ink)] py-3 text-sm font-semibold"
-                      : "h-auto py-3 text-sm font-semibold"
+                      : isElectronicsTech
+                        ? "h-auto rounded-md border-[var(--shop-primary)] py-3 text-sm font-semibold text-[var(--shop-primary)]"
+                        : "h-auto py-3 text-sm font-semibold"
             }
           >
             <Link href={isBM ? `/stores/${params.slug}/category` : `/stores/${params.slug}`}>
@@ -549,7 +630,9 @@ export default async function StoreOrderSuccess({
                     ? "Reorder"
                     : isLifestyle
                       ? "Keep shopping"
-                      : `กลับไป${storeName}`}
+                      : isElectronicsTech
+                        ? "Continue shopping"
+                        : `กลับไป${storeName}`}
             </Link>
           </Button>
         </div>

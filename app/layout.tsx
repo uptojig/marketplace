@@ -5,10 +5,11 @@ import {
   Prompt,
   IBM_Plex_Sans_Thai,
   Inter,
+  Inter_Tight,
+  JetBrains_Mono,
   Cormorant_Garamond,
   Playfair_Display,
   Outfit,
-  JetBrains_Mono,
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -108,6 +109,33 @@ const jetBrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+// Spec-sheet display sans for the electronics-tech design family
+// (templates: catalog-dense, tech-compare, single-product). Inter
+// Tight is Inter's tighter-tracking sibling — reads as authoritative
+// at heading sizes without veering into condensed-techy territory.
+// Loaded as a CSS variable so only stores in this family pick it up
+// (via .theme-electronics-tech in globals.css); the rest of the app
+// keeps its sans defaults at zero cost.
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-tech-display",
+  display: "swap",
+});
+
+// Mono companion for the electronics-tech family — surfaced on SKU
+// strings, spec-table values, prices, and model-number eyebrows.
+// JetBrains Mono is a developer-feel mono that pairs cleanly with
+// Inter Tight; loaded as a CSS variable so opting in is a simple
+// `font-family: var(--font-tech-mono)` (or className "font-mono"
+// inside the .theme-electronics-tech cascade).
+const jetBrainsMonoTech = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-tech-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Marketplace",
   description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
@@ -118,7 +146,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="th"
-      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, outfit.variable, jetBrainsMono.variable, "font-sans", inter.variable)}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, outfit.variable, jetBrainsMono.variable, interTight.variable, jetBrainsMonoTech.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>
