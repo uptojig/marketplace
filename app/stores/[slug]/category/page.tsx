@@ -294,39 +294,6 @@ export default async function CategoryIndexPage({
   if (isSpecialty) {
     return <SpecialtyCategoryPage {...sharedCategoryProps} />;
   }
-  if (isTrust) {
-    return <TrustCategoryPage {...sharedCategoryProps} />;
-  }
-  if (isBM) {
-    return <BusinessModelCategoryPage {...sharedCategoryProps} />;
-  }
-  if (isLifestyle) {
-    return <LifestyleCategoryPage {...sharedCategoryProps} />;
-  }
-  if (isElectronicsTech) {
-    return <ElectronicsTechCategoryPage {...sharedCategoryProps} />;
-  }
-  const isSpecialty =
-    !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech &&
-    isSpecialtyStore({
-      templateId: store.templateId,
-      landingThemeVariant: store.landingThemeVariant,
-    });
-  if (isSpecialty) {
-    return <SpecialtyCategoryPage {...sharedCategoryProps} />;
-  }
-
-  // Pet-house brand hero band — when fluffyhouse-style stores land on
-  // the catalog with one of the 4 Shop-by-Type pseudo-slugs active,
-  // surface the matching SVG icon + Thai name + result count above
-  // the breadcrumbs so the brand visual continuity from the homepage
-  // Shop-by-Type cards isn't broken at the click boundary. Renders
-  // nothing on non-pet-house stores or when no pet-* filter is active.
-  const showPetHouseHero = isPetHouseStore({
-    slug: store.slug,
-    templateId: store.templateId,
-    landingThemeVariant: store.landingThemeVariant,
-  });
 
   // Pet-house brand hero band — when fluffyhouse-style stores land on
   // the catalog with one of the 4 Shop-by-Type pseudo-slugs active,
