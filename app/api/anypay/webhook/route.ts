@@ -25,6 +25,7 @@ import {
   releaseInventory,
 } from "@/lib/inventory/actions";
 import { recordCouponUsage } from "@/lib/coupons/server";
+import { sendOrderPaidEmail } from "@/lib/transactional-email";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,11 @@ export async function POST(request: Request) {
       { status: 409 },
     );
   }
+
+  // Orders that transitioned to PAID inside the transaction — collected
+  // so we can fan out transactional emails AFTER commit (emails must
+  // never participate in / roll back the DB write).
+  const paidOrderIds: string[] = [];
 
   await prisma.$transaction(async (tx) => {
     await tx.paymentIntent.update({
@@ -119,6 +125,8 @@ export async function POST(request: Request) {
           where: { id: order.userId, firstPurchaseAt: null },
           data: { firstPurchaseAt: now },
         });
+
+        paidOrderIds.push(order.id);
       }
     } else if (
       targetStatus === PaymentIntentStatus.FAILED ||
@@ -143,6 +151,28 @@ export async function POST(request: Request) {
       }
     }
   });
+
+  // Buyer confirmation emails — best-effort, never blocks the response.
+  // sendOrderPaidEmail handles all error paths internally (including
+  // missing API key / dev-mode console fallback).
+  //
+  // Phase 2A hook: import { sendOrderShippedEmail } and call after
+  //   markOrderShipped() inside the vendor server action.
+  // Phase 2A hook: import { sendOrderDeliveredEmail } and call after
+  //   markOrderDelivered().
+  // Phase 3C hook: import { sendOrderRefundedEmail } and call after the
+  //   refund is recorded.
+  await Promise.all(
+    paidOrderIds.map((orderId) =>
+      sendOrderPaidEmail({ orderId }).catch((err) => {
+        // Defensive: sendOrderPaidEmail already never-throws, but a
+        // catch here keeps Promise.all resilient if that contract ever
+        // regresses.
+        console.warn("[anypay/webhook] email fanout failed:", err);
+        return { ok: false as const, reason: "email_fanout_threw" };
+      }),
+    ),
+  );
 
   return NextResponse.json({ ok: true });
 }

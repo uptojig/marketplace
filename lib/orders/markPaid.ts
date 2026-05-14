@@ -2,6 +2,7 @@ import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { placeExternalOrder } from "./automate";
 import { getNotifier } from "@/lib/notify";
+import { sendOrderPaidEmail } from "@/lib/transactional-email";
 
 export interface MarkPaidInput {
   orderId: string;
@@ -44,6 +45,19 @@ export async function markOrderPaid(input: MarkPaidInput): Promise<{ applied: bo
     await notifier.error("order.automate.failed", {
       orderId: input.orderId,
       message: err instanceof Error ? err.message : String(err),
+    });
+  }
+
+  // Buyer confirmation email. Never throws — failures are logged inside
+  // sendOrderPaidEmail and never roll back the PAID transition.
+  const emailResult = await sendOrderPaidEmail({ orderId: input.orderId });
+  if (!emailResult.ok) {
+    // Non-fatal: log but don't fail the order. (The notifier interface
+    // only exposes info/error — use info to avoid loud-paging on
+    // common dev-mode "no API key" skips.)
+    await notifier.info("order.paid.email_skipped", {
+      orderId: input.orderId,
+      reason: emailResult.reason,
     });
   }
 

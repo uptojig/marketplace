@@ -59,7 +59,17 @@ export default function CheckoutConfirmPage({
       return;
     }
     void (async () => {
-      const res = await fetch("/api/addresses");
+      // Phase 1C: scope by storeSlug so the confirm step looks up the
+      // selected address within THIS store's address book. Otherwise
+      // a buyer with the same id at another store could shadow the
+      // intended selection.
+      const res = await fetch(
+        `/api/addresses?storeSlug=${encodeURIComponent(params.slug)}`,
+      );
+      if (!res.ok) {
+        router.replace(`/stores/${params.slug}/checkout/address`);
+        return;
+      }
       const data = (await res.json()) as { addresses: Address[] };
       const found = data.addresses.find((a) => a.id === id) ?? data.addresses[0] ?? null;
       if (!found) {
@@ -68,7 +78,7 @@ export default function CheckoutConfirmPage({
       }
       setAddress(found);
     })();
-  }, [router]);
+  }, [router, params.slug]);
 
   const total = subtotal + shipping.priceTHB;
 
