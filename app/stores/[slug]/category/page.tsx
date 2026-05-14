@@ -20,6 +20,8 @@ import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import { RecentlyViewedRail } from "@/components/storefront/RecentlyViewed";
 import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
+import { isPetHouseStore } from "@/lib/landing/pet-house";
+import { PetHouseCategoryFilterHero } from "@/components/storefront/themes/pet-house/PetHouseCategoryFilterHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -293,8 +295,26 @@ export default async function CategoryIndexPage({
     return <SpecialtyCategoryPage {...sharedCategoryProps} />;
   }
 
+  // Pet-house brand hero band — when fluffyhouse-style stores land on
+  // the catalog with one of the 4 Shop-by-Type pseudo-slugs active,
+  // surface the matching SVG icon + Thai name + result count above
+  // the breadcrumbs so the brand visual continuity from the homepage
+  // Shop-by-Type cards isn't broken at the click boundary. Renders
+  // nothing on non-pet-house stores or when no pet-* filter is active.
+  const showPetHouseHero = isPetHouseStore({
+    slug: store.slug,
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
+      {showPetHouseHero && (
+        <PetHouseCategoryFilterHero
+          selectedCats={selectedCats}
+          filteredCount={totalCount}
+        />
+      )}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="pt-8 sm:pt-10">
           <Breadcrumbs
