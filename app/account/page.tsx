@@ -6,18 +6,27 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
-  getOrders,
-  mockUser,
   ORDER_STATUS_COLOR,
   ORDER_STATUS_LABEL,
+  mockUser,
 } from '@/lib/account/mock-data';
-import { getAddresses } from '@/lib/checkout/mock-data';
+import {
+  getCurrentUserProfile,
+  getUserOrdersForPage,
+  getUserAddresses,
+} from '@/lib/account/queries';
 
-export default function AccountDashboard() {
-  const user = mockUser;
-  const recentOrders = getOrders().slice(0, 3);
-  const addresses = getAddresses();
-  const activeOrders = getOrders().filter(
+export const dynamic = 'force-dynamic';
+
+export default async function AccountDashboard() {
+  const [profile, orders, addresses] = await Promise.all([
+    getCurrentUserProfile(),
+    getUserOrdersForPage(),
+    getUserAddresses(),
+  ]);
+  const user = profile ?? mockUser;
+  const recentOrders = orders.slice(0, 3);
+  const activeOrders = orders.filter(
     (o) => o.status === 'pending_payment' || o.status === 'paid' || o.status === 'shipping',
   ).length;
 

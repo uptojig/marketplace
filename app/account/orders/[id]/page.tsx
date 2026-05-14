@@ -9,25 +9,28 @@ import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import {
-  getOrderById,
   ORDER_STATUS_COLOR,
   ORDER_STATUS_LABEL,
   type OrderStatus,
 } from '@/lib/account/mock-data';
-import { getAddresses, paymentMethods } from '@/lib/checkout/mock-data';
+import { paymentMethods } from '@/lib/checkout/mock-data';
+import { getUserOrderById } from '@/lib/account/queries';
 
 interface OrderDetailProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
+
+export const dynamic = 'force-dynamic';
 
 const TIMELINE: OrderStatus[] = ['pending_payment', 'paid', 'shipping', 'delivered'];
 
 export default async function OrderDetailPage({ params }: OrderDetailProps) {
-  const { id } = await params;
-  const order = getOrderById(id);
+  const { id } = params;
+  const order = await getUserOrderById(id);
   if (!order) notFound();
 
-  const address = getAddresses().find((a) => a.id === order.addressId);
+  // address lookup still uses mock until Address.id is plumbed through Order.
+  const address = undefined as { fullName: string; phone: string; line1: string; line2?: string; subDistrict: string; district: string; province: string; postalCode: string } | undefined;
   const payment = paymentMethods.find((p) => p.id === order.paymentMethod);
   const activeIdx = TIMELINE.indexOf(order.status);
   const isTerminal = order.status === 'cancelled' || order.status === 'returned';
