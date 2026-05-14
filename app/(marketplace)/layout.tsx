@@ -1,11 +1,10 @@
 import Link from "next/link";
+import { CartIconButton } from "@/components/layout/cart-icon-button";
 
-// Cart + checkout no longer live at marketplace level — they're
-// per-store at /stores/[slug]/cart and /stores/[slug]/checkout/*.
-// The CartIndicator that used to sit in this nav linked to /cart
-// (now deleted), so we removed it. Customers see their cart only
-// inside the store context, which matches our "each store is its
-// own checkout" model.
+// Global cart now lives at /cart (vendor templates flow) and contains
+// items from any store the user has added from. Per-store checkout is
+// still reachable at /stores/[slug] but the multi-store cart icon in
+// the header is the canonical entry point.
 export default function MarketplaceLayout({
   children,
 }: {
@@ -25,9 +24,10 @@ export default function MarketplaceLayout({
             <Link href="/dashboard" className="hover:underline">
               จัดการร้าน
             </Link>
-            <Link href="/orders" className="hover:underline">
+            <Link href="/account/orders" className="hover:underline">
               ออเดอร์ของฉัน
             </Link>
+            <CartIconButton />
           </nav>
         </div>
       </header>
