@@ -84,9 +84,11 @@ export function ShopFooter({
                 {glyph}
               </span>
             )}
-            <span className="text-base font-extrabold tracking-tight text-[var(--shop-ink)]">
-              {store.name}
-            </span>
+            {!store.logoUrl && (
+              <span className="text-base font-extrabold tracking-tight text-[var(--shop-ink)]">
+                {store.name}
+              </span>
+            )}
           </div>
           {(store.description || store.tagline) && (
             <p className="text-sm text-[var(--shop-ink-muted)] max-w-sm">
