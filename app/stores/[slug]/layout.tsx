@@ -33,6 +33,12 @@ import {
   trustCssVars,
   isTrustStore,
 } from "@/lib/landing/trust";
+import {
+  LIFESTYLE_BODY_CLASS,
+  LIFESTYLE_TOKENS,
+  lifestyleCssVars,
+  isLifestyleStore,
+} from "@/lib/landing/lifestyle";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
@@ -178,26 +184,54 @@ export default async function ShopLayout({
   const trustVars = isTrust ? trustCssVars() : {};
   const trustClass = isTrust ? TRUST_BODY_CLASS : "";
 
+  // Lifestyle family (warm catalog / outdoorsy). Stacked AFTER trust
+  // in the chain so trust + FB win if a store somehow matched two —
+  // template→group is disjoint in practice so this is belt-and-braces.
+  // Reads from lib/landing/lifestyle.ts. Note the negation guards: we
+  // explicitly check !isFB && !isTrust here, plus the layout doesn't
+  // yet need to negate electronics-tech / specialty because those
+  // families aren't wired into this dispatcher today — they'll add
+  // their own guards in PR-43/PR-44 when they land.
+  const isLifestyle = !isFB && !isTrust && isLifestyleStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const lifestyleVars = isLifestyle ? lifestyleCssVars() : {};
+  const lifestyleClass = isLifestyle ? LIFESTYLE_BODY_CLASS : "";
+
   // Convenience aliases — the layout's three render paths all want
   // "give me the active family's class + vars" without recomputing.
   // FB takes precedence by virtue of being checked first above.
-  const familyClass = `${fbClass}${fbClass && trustClass ? " " : ""}${trustClass}`;
-  const familyVars = { ...trustVars, ...fbVars };
+  const familyClass = [fbClass, trustClass, lifestyleClass]
+    .filter(Boolean)
+    .join(" ");
+  // Merge order matters — earlier checks win because their vars
+  // shadow later ones. FB → trust → lifestyle: only one is non-empty
+  // in practice (disjoint detection) but the merge order ensures a
+  // deterministic precedence if two ever overlap.
+  const familyVars = { ...lifestyleVars, ...trustVars, ...fbVars };
   // Active family's accent — used by ShopHeader / ShopFooter to
   // paint chrome links + glyph fills. FB pink stays as it was; trust
-  // borrows the gold for accents (the charcoal primary stays in CTAs).
+  // borrows the gold for accents (the charcoal primary stays in CTAs);
+  // lifestyle uses sage so chrome glyphs read outdoorsy.
   const familyAccent = isFB
     ? "#f43f5e"
     : isTrust
       ? TRUST_TOKENS.colors.accent
-      : null;
-  // Button shape pinned per-family — FB pills, trust squared. Falls
-  // through to the per-template default when neither applies.
+      : isLifestyle
+        ? LIFESTYLE_TOKENS.colors.accent
+        : null;
+  // Button shape pinned per-family — FB pills, trust squared,
+  // lifestyle pill (rectangular pill via globals.css rounded-full
+  // on primary CTAs). Falls through to the per-template default
+  // when none applies.
   const familyButtonShape: "pill" | "square" | null = isFB
     ? "pill"
     : isTrust
       ? "square"
-      : null;
+      : isLifestyle
+        ? "pill"
+        : null;
 
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality

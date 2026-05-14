@@ -22,10 +22,15 @@ import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { TrustCategoryGrid } from "@/components/storefront/themes/trust/TrustCategoryGrid";
+import { LifestyleCategoryGrid } from "@/components/storefront/themes/lifestyle/LifestyleCategoryGrid";
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const LIFESTYLE_DISPLAY_FONT =
+  'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
 
 export const dynamic = "force-dynamic";
 
@@ -73,15 +78,21 @@ export default async function CategoryIndexPage({
   if (!store) notFound();
 
   // Per-family branching. Trust gets the squared TrustCategoryGrid
-  // with heritage SKU + serif titles + gold-rule frame. FB and the
-  // default continue to render the ProductCard markup below (FB's
-  // theme-fashion-beauty cascade promotes that grid into 4/5 portrait
-  // via the data-fb-promote-portrait CSS hook).
+  // with heritage SKU + serif titles + gold-rule frame. Lifestyle
+  // gets the warm catalog LifestyleCategoryGrid with rounded-3xl
+  // cards, tag chips, optimistic taglines, and a sage squiggle
+  // divider. FB and the default continue to render the ProductCard
+  // markup below (FB's theme-fashion-beauty cascade promotes that
+  // grid into 4/5 portrait via the data-fb-promote-portrait CSS hook).
   const isFB = isFashionBeautyStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isTrust = !isFB && isTrustStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isLifestyle = !isFB && !isTrust && isLifestyleStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -150,7 +161,13 @@ export default async function CategoryIndexPage({
         {/* ── Page header ──────────────────────────────────────── */}
         <div
           className="flex items-baseline justify-between border-b pb-6 pt-2"
-          style={{ borderColor: isTrust ? "var(--shop-accent)" : "var(--shop-border)" }}
+          style={{
+            borderColor: isTrust
+              ? "var(--shop-accent)"
+              : isLifestyle
+                ? "var(--shop-accent)"
+                : "var(--shop-border)",
+          }}
         >
           <div>
             {isTrust && (
@@ -165,6 +182,18 @@ export default async function CategoryIndexPage({
                 Maison · The Collection
               </p>
             )}
+            {isLifestyle && (
+              <p
+                className="mb-2 text-xs uppercase"
+                style={{
+                  color: "var(--shop-accent)",
+                  letterSpacing: "0.18em",
+                  fontWeight: 600,
+                }}
+              >
+                Shop the catalog
+              </p>
+            )}
             <h1
               className="text-3xl md:text-4xl tracking-tight"
               style={{
@@ -175,10 +204,20 @@ export default async function CategoryIndexPage({
                       fontWeight: 600,
                       letterSpacing: "-0.01em",
                     }
-                  : { fontWeight: 700 }),
+                  : isLifestyle
+                    ? {
+                        fontFamily: LIFESTYLE_DISPLAY_FONT,
+                        fontWeight: 600,
+                        letterSpacing: "-0.01em",
+                      }
+                    : { fontWeight: 700 }),
               }}
             >
-              {isTrust ? "The Collection" : "สินค้าทั้งหมด"}
+              {isTrust
+                ? "The Collection"
+                : isLifestyle
+                  ? "All the good stuff"
+                  : "สินค้าทั้งหมด"}
             </h1>
           </div>
           <div className="flex items-center gap-4">
@@ -309,6 +348,20 @@ export default async function CategoryIndexPage({
                         compareAtPriceTHB: p.compareAtPriceTHB
                           ? Number(p.compareAtPriceTHB)
                           : null,
+                      }))}
+                    />
+                  ) : isLifestyle ? (
+                    <LifestyleCategoryGrid
+                      storeSlug={store.slug}
+                      products={pageProducts.map((p) => ({
+                        id: p.id,
+                        title: p.titleTh ?? p.title,
+                        imageUrl: p.imageUrl,
+                        priceTHB: Number(p.priceTHB),
+                        compareAtPriceTHB: p.compareAtPriceTHB
+                          ? Number(p.compareAtPriceTHB)
+                          : null,
+                        categoryName: p.categoryName,
                       }))}
                     />
                   ) : (

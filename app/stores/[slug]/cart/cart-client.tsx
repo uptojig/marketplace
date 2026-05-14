@@ -55,6 +55,9 @@ const FB_DISPLAY_FONT =
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
 
+const LIFESTYLE_DISPLAY_FONT =
+  'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
+
 const FREE_SHIPPING_THRESHOLD = 990;
 const DEFAULT_SHIPPING = 50;
 
@@ -68,10 +71,12 @@ export function StoreCartClient({
   store,
   isFashionBeauty = false,
   isTrust = false,
+  isLifestyle = false,
 }: {
   store: StoreLite;
   isFashionBeauty?: boolean;
   isTrust?: boolean;
+  isLifestyle?: boolean;
 }) {
   const allLines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
@@ -121,9 +126,21 @@ export function StoreCartClient({
               Order Summary · Maison
             </p>
           )}
+          {isLifestyle && (
+            <p
+              className="mb-2 text-xs uppercase"
+              style={{
+                color: "var(--shop-accent)",
+                letterSpacing: "0.18em",
+                fontWeight: 600,
+              }}
+            >
+              Your basket
+            </p>
+          )}
           <h1
             className={
-              isFashionBeauty || isTrust
+              isFashionBeauty || isTrust || isLifestyle
                 ? "text-4xl md:text-5xl"
                 : "text-3xl md:text-4xl font-bold tracking-tight"
             }
@@ -133,20 +150,31 @@ export function StoreCartClient({
                 ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
                 : isTrust
                   ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600, letterSpacing: '-0.01em' }
-                  : {}),
+                  : isLifestyle
+                    ? { fontFamily: LIFESTYLE_DISPLAY_FONT, fontWeight: 700, letterSpacing: '-0.01em' }
+                    : {}),
             }}
           >
             {isFashionBeauty
               ? "Your Edit"
               : isTrust
                 ? "Your Order"
-                : "ตะกร้าของคุณ"}
+                : isLifestyle
+                  ? "Your basket"
+                  : "ตะกร้าของคุณ"}
           </h1>
           {isTrust && (
             <div
               aria-hidden
               className="mt-3 h-px w-16"
               style={{ background: "var(--shop-accent)" }}
+            />
+          )}
+          {isLifestyle && (
+            <div
+              aria-hidden
+              data-lifestyle-squiggle="true"
+              className="mt-3 w-24"
             />
           )}
           <p
@@ -168,6 +196,7 @@ export function StoreCartClient({
             storeSlug={store.slug}
             isFashionBeauty={isFashionBeauty}
             isTrust={isTrust}
+            isLifestyle={isLifestyle}
           />
         ) : (
           <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start">
@@ -181,16 +210,47 @@ export function StoreCartClient({
               </h2>
 
               <ul
-                className="border-t border-b divide-y"
-                style={{ borderColor: "var(--shop-border)" }}
+                className={
+                  isLifestyle
+                    ? "space-y-4"
+                    : "border-t border-b divide-y"
+                }
+                style={
+                  isLifestyle
+                    ? undefined
+                    : { borderColor: "var(--shop-border)" }
+                }
               >
                 {lines.map((l) => (
-                  <li key={l.productId} className="flex py-6 sm:py-8">
+                  <li
+                    key={l.productId}
+                    className={
+                      isLifestyle
+                        ? "flex p-5 rounded-3xl border"
+                        : "flex py-6 sm:py-8"
+                    }
+                    style={
+                      isLifestyle
+                        ? {
+                            background: "var(--shop-muted)",
+                            borderColor: "var(--shop-border)",
+                          }
+                        : undefined
+                    }
+                  >
                     {/* Image */}
                     <Link
                       href={`/stores/${store.slug}/products/${l.productId}`}
-                      className="shrink-0 h-24 w-24 sm:h-28 sm:w-28 rounded-md overflow-hidden"
-                      style={{ background: "var(--shop-bg)" }}
+                      className={
+                        isLifestyle
+                          ? "shrink-0 h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden bg-white"
+                          : "shrink-0 h-24 w-24 sm:h-28 sm:w-28 rounded-md overflow-hidden"
+                      }
+                      style={
+                        isLifestyle
+                          ? undefined
+                          : { background: "var(--shop-bg)" }
+                      }
                     >
                       {l.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -302,11 +362,17 @@ export function StoreCartClient({
                 className={
                   isTrust
                     ? "rounded-sm px-6 py-7 shadow-none"
-                    : "rounded-2xl px-6 py-7 shadow-none"
+                    : isLifestyle
+                      ? "rounded-3xl px-6 py-7 shadow-sm"
+                      : "rounded-2xl px-6 py-7 shadow-none"
                 }
                 style={{
-                  background: "var(--shop-card)",
-                  borderColor: isTrust ? "var(--shop-accent)" : "var(--shop-border)",
+                  background: isLifestyle
+                    ? "var(--shop-muted)"
+                    : "var(--shop-card)",
+                  borderColor: isTrust
+                    ? "var(--shop-accent)"
+                    : "var(--shop-border)",
                 }}
               >
                 {isTrust && (
@@ -321,18 +387,40 @@ export function StoreCartClient({
                     Summary
                   </p>
                 )}
+                {isLifestyle && (
+                  <p
+                    className="mb-2 text-xs uppercase"
+                    style={{
+                      color: "var(--shop-accent)",
+                      letterSpacing: "0.18em",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Almost there
+                  </p>
+                )}
                 <h3
                   className={
-                    isTrust ? "text-2xl mb-5" : "text-lg font-bold mb-5"
+                    isTrust
+                      ? "text-2xl mb-5"
+                      : isLifestyle
+                        ? "text-2xl mb-5"
+                        : "text-lg font-bold mb-5"
                   }
                   style={{
                     color: "var(--shop-ink)",
                     ...(isTrust
                       ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600 }
-                      : {}),
+                      : isLifestyle
+                        ? { fontFamily: LIFESTYLE_DISPLAY_FONT, fontWeight: 700 }
+                        : {}),
                   }}
                 >
-                  {isTrust ? "Order summary" : "สรุปคำสั่งซื้อ"}
+                  {isTrust
+                    ? "Order summary"
+                    : isLifestyle
+                      ? "Your order"
+                      : "สรุปคำสั่งซื้อ"}
                 </h3>
                 {isTrust && (
                   <div
@@ -430,12 +518,18 @@ export function StoreCartClient({
                   className={
                     isTrust
                       ? "mt-6 h-auto w-full rounded-sm py-3.5 px-4 text-base font-semibold uppercase tracking-[0.18em] text-white"
-                      : "mt-6 h-auto w-full rounded-md py-3.5 px-4 text-base font-semibold text-white"
+                      : isLifestyle
+                        ? "mt-6 h-auto w-full rounded-full py-3.5 px-4 text-base font-semibold text-white"
+                        : "mt-6 h-auto w-full rounded-md py-3.5 px-4 text-base font-semibold text-white"
                   }
                   style={{ background: "var(--shop-primary)" }}
                 >
                   <Link href={`/stores/${store.slug}/checkout/address`}>
-                    {isTrust ? "Proceed to checkout" : "ดำเนินการชำระเงิน"}
+                    {isTrust
+                      ? "Proceed to checkout"
+                      : isLifestyle
+                        ? "Check out"
+                        : "ดำเนินการชำระเงิน"}
                   </Link>
                 </Button>
 
@@ -531,17 +625,21 @@ function EmptyCart({
   storeSlug,
   isFashionBeauty = false,
   isTrust = false,
+  isLifestyle = false,
 }: {
   storeSlug: string;
   isFashionBeauty?: boolean;
   isTrust?: boolean;
+  isLifestyle?: boolean;
 }) {
   return (
     <Card
       className={
         isTrust
           ? "text-center py-24 rounded-sm border bg-transparent shadow-none"
-          : "text-center py-24 rounded-2xl border border-dashed bg-transparent shadow-none"
+          : isLifestyle
+            ? "text-center py-24 rounded-3xl border bg-[var(--shop-muted)] shadow-sm"
+            : "text-center py-24 rounded-2xl border border-dashed bg-transparent shadow-none"
       }
       style={{ borderColor: isTrust ? "var(--shop-accent)" : "var(--shop-border)" }}
     >
@@ -549,13 +647,21 @@ function EmptyCart({
         className={
           isTrust
             ? "inline-flex items-center justify-center w-16 h-16 rounded-sm mb-4 mx-auto border"
-            : "inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 mx-auto"
+            : isLifestyle
+              ? "inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 mx-auto bg-white"
+              : "inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 mx-auto"
         }
         style={{
           background: isTrust
             ? "var(--shop-muted)"
-            : "color-mix(in srgb, var(--shop-primary) 12%, transparent)",
-          color: isTrust ? "var(--shop-ink)" : "var(--shop-primary)",
+            : isLifestyle
+              ? "#ffffff"
+              : "color-mix(in srgb, var(--shop-primary) 12%, transparent)",
+          color: isTrust
+            ? "var(--shop-ink)"
+            : isLifestyle
+              ? "var(--shop-primary)"
+              : "var(--shop-primary)",
           ...(isTrust ? { borderColor: "var(--shop-accent)" } : {}),
         }}
       >
@@ -575,7 +681,7 @@ function EmptyCart({
       )}
       <p
         className={
-          isFashionBeauty || isTrust
+          isFashionBeauty || isTrust || isLifestyle
             ? "text-2xl mt-1"
             : "text-base font-medium"
         }
@@ -585,14 +691,18 @@ function EmptyCart({
             ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500 }
             : isTrust
               ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600 }
-              : {}),
+              : isLifestyle
+                ? { fontFamily: LIFESTYLE_DISPLAY_FONT, fontWeight: 700 }
+                : {}),
         }}
       >
         {isFashionBeauty
           ? "Your edit is empty"
           : isTrust
             ? "Your order is empty"
-            : "ตะกร้าของคุณยังว่างอยู่"}
+            : isLifestyle
+              ? "Your basket is empty"
+              : "ตะกร้าของคุณยังว่างอยู่"}
       </p>
       <p
         className={isFashionBeauty ? "text-sm mt-2 italic" : "text-sm mt-2"}
@@ -602,7 +712,9 @@ function EmptyCart({
           ? "Discover pieces curated for you"
           : isTrust
             ? "Begin building your collection"
-            : "เริ่มเลือกสินค้าที่คุณชอบ"}
+            : isLifestyle
+              ? "Find something you'll love"
+              : "เริ่มเลือกสินค้าที่คุณชอบ"}
       </p>
       <Button
         asChild
@@ -611,7 +723,9 @@ function EmptyCart({
             ? "mt-6 h-auto rounded-full px-8 py-2.5 text-sm font-medium text-white"
             : isTrust
               ? "mt-6 h-auto rounded-sm px-8 py-2.5 text-sm font-semibold uppercase tracking-[0.18em] text-white"
-              : "mt-6 h-auto rounded-md px-6 py-2.5 text-sm font-medium text-white"
+              : isLifestyle
+                ? "mt-6 h-auto rounded-full px-8 py-2.5 text-sm font-semibold text-white"
+                : "mt-6 h-auto rounded-md px-6 py-2.5 text-sm font-medium text-white"
         }
         style={{ background: "var(--shop-primary)" }}
       >
@@ -620,7 +734,9 @@ function EmptyCart({
             ? "Start shopping"
             : isTrust
               ? "Browse the collection"
-              : "เลือกซื้อสินค้า"}
+              : isLifestyle
+                ? "Keep shopping"
+                : "เลือกซื้อสินค้า"}
         </Link>
       </Button>
     </Card>

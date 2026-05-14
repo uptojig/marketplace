@@ -1459,6 +1459,84 @@
   border: 1px solid var(--shop-accent) !important;
 }
 
+/* ── Lifestyle design family (DESIGN-B sibling) ───────────────
+   Activated when app/stores/[slug]/layout.tsx adds the
+   `theme-lifestyle` class for stores whose templateId is in
+   { home-living, sport-active, kids-toys } OR whose
+   landingThemeVariant is "lifestyle" / "A" / "G".
+
+   Token mapping mirrors LIFESTYLE_TOKENS in
+   lib/landing/lifestyle.ts — keep them in sync.
+
+   Goal: every sub-page (cart / category / product / checkout /
+   account / signin / signup) inherits the same warm-cream-on-
+   terracotta palette + geometric sans display + rounded-3xl
+   cards without per-page rewrites. */
+.theme-lifestyle {
+  --shop-bg: #fefce8;          /* warm cream */
+  --shop-card: #ffffff;
+  --shop-primary: #ea580c;     /* terracotta — orange-600 fill CTAs */
+  --shop-accent: #84cc16;      /* sage — lime-500 icons / hairlines */
+  --shop-ink: #78350f;         /* deep umber — amber-900 */
+  --shop-ink-muted: #a8a29e;   /* stone-400 */
+  --shop-border: #f5e6d3;      /* soft brown hairline */
+  --shop-muted: #fef3c7;       /* peach — amber-100 secondary cards */
+}
+
+/* Headlines lift into the geometric humanist sans display face
+   (Outfit via --font-lifestyle-display, with Plus Jakarta + DM
+   Sans + Prompt fallback). Body stays sans by default; the
+   display IS sans so we keep the family unified, only weight +
+   tracking differ. */
+.theme-lifestyle h1,
+.theme-lifestyle h2,
+.theme-lifestyle h3 {
+  font-family: var(--font-lifestyle-display, "Outfit"),
+    "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif !important;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Primary CTAs round to a generous rectangular pill — friendly
+   catalog pill, not the tight FB full-circle. Scoped to the
+   terracotta-painted buttons so secondary outline CTAs keep
+   their existing radius. */
+.theme-lifestyle button[style*="--shop-primary"],
+.theme-lifestyle a[style*="--shop-primary"] {
+  border-radius: 9999px !important;
+}
+
+/* Promote card radius — rounded-2xl bumps up to rounded-3xl so
+   default-styled cards on untouched routes still feel airy and
+   catalog-friendly. Uses the same attribute-selector trick FB
+   uses to scope to bordered cards only. */
+.theme-lifestyle [class*="rounded-2xl"][class*="border"] {
+  border-radius: 1.5rem !important; /* rounded-3xl */
+  box-shadow: 0 1px 2px rgba(120, 53, 15, 0.04),
+    0 4px 16px rgba(120, 53, 15, 0.05) !important;
+}
+
+/* Lifestyle frame helper — soft natural drop shadow around
+   product imagery / hero cards. Caller adds
+   data-lifestyle-frame="true" on the wrapping element. */
+.theme-lifestyle [data-lifestyle-frame="true"] {
+  box-shadow: 0 2px 4px rgba(120, 53, 15, 0.06),
+    0 12px 32px rgba(120, 53, 15, 0.08) !important;
+}
+
+/* Lifestyle squiggle helper — hand-drawn divider between
+   sections. Renders as a 24px-tall SVG path-style flourish via
+   a CSS background-image. Caller adds data-lifestyle-squiggle.
+   The path is sage so it pairs with the accent color. */
+.theme-lifestyle [data-lifestyle-squiggle="true"] {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 24' fill='none' stroke='%2384cc16' stroke-width='2' stroke-linecap='round'><path d='M0 12 Q 12 2, 24 12 T 48 12 T 72 12 T 96 12 T 120 12 T 144 12 T 168 12 T 192 12 T 216 12 T 240 12'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  height: 24px;
+  width: 100%;
+}
+
 /* ─────────────────────────────────────────────────────────────
    Caselnw theme — applied via `theme-caselnw` class on the
    shop-page wrapper in app/stores/[slug]/layout.tsx whenever

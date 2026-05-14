@@ -7,6 +7,7 @@ import {
   Inter,
   Cormorant_Garamond,
   Playfair_Display,
+  Outfit,
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -79,6 +80,19 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+// Geometric humanist sans for the lifestyle design family
+// (templates: home-living, sport-active, kids-toys). Outfit is a
+// modern catalog face — friendly + grown-up, pairs cleanly with
+// Prompt for Thai glyphs. Loaded as a CSS variable so only stores
+// in this family pick it up (via .theme-lifestyle in globals.css);
+// the rest of the app keeps its DM Sans default at zero cost.
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-lifestyle-display",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Marketplace",
   description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
@@ -89,7 +103,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="th"
-      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, "font-sans", inter.variable)}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, outfit.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>

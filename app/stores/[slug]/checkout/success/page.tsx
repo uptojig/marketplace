@@ -30,6 +30,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isLifestyleStore } from "@/lib/landing/lifestyle";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,9 @@ const FB_DISPLAY_FONT =
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const LIFESTYLE_DISPLAY_FONT =
+  'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
 
 export default async function StoreOrderSuccess({
   params,
@@ -119,6 +123,12 @@ export default async function StoreOrderSuccess({
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;
+  const isLifestyle = !isFB && !isTrust && order.store
+    ? isLifestyleStore({
+        templateId: order.store.templateId,
+        landingThemeVariant: order.store.landingThemeVariant,
+      })
+    : false;
 
   const today = new Date();
   const eta1 = new Date(today.getTime() + 1 * 86400000);
@@ -132,21 +142,42 @@ export default async function StoreOrderSuccess({
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
       <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-        {/* Hero — success state. Three flavors: default soft-rose,
-            FB editorial italic, trust stamped heritage. */}
+        {/* Hero — success state. Four flavors: default soft-rose, FB
+            editorial italic, trust stamped heritage, lifestyle warm
+            sage check ring with terracotta tick + squiggle divider. */}
         <div className="text-center">
+          {/* Lifestyle adds a squiggle divider above the hero — soft
+              catalog flourish. Pure decoration; sage SVG via globals.css */}
+          {isLifestyle && (
+            <div
+              aria-hidden
+              data-lifestyle-squiggle="true"
+              className="mx-auto mb-6 w-32"
+            />
+          )}
           <div
             className={
               isTrust
                 ? "inline-flex items-center justify-center w-20 h-20 rounded-sm border mb-5"
-                : "inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
+                : isLifestyle
+                  ? "relative inline-flex items-center justify-center w-24 h-24 rounded-full mb-5"
+                  : "inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
             }
             style={{
               background: isTrust
                 ? "var(--shop-muted)"
-                : "color-mix(in srgb, var(--shop-primary) 14%, transparent)",
-              color: isTrust ? "var(--shop-ink)" : "var(--shop-primary)",
+                : isLifestyle
+                  ? "color-mix(in srgb, var(--shop-accent) 22%, transparent)"
+                  : "color-mix(in srgb, var(--shop-primary) 14%, transparent)",
+              color: isTrust
+                ? "var(--shop-ink)"
+                : isLifestyle
+                  ? "var(--shop-primary)"
+                  : "var(--shop-primary)",
               ...(isTrust ? { borderColor: "var(--shop-accent)" } : {}),
+              ...(isLifestyle
+                ? { boxShadow: `0 0 0 4px color-mix(in srgb, var(--shop-accent) 35%, transparent)` }
+                : {}),
             }}
           >
             <CheckCircle2 className="w-12 h-12" strokeWidth={2} />
@@ -171,13 +202,27 @@ export default async function StoreOrderSuccess({
               Order Confirmed
             </p>
           )}
+          {isLifestyle && (
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: "var(--shop-accent)",
+                letterSpacing: "0.18em",
+                fontWeight: 600,
+              }}
+            >
+              All set
+            </p>
+          )}
           <h1
             className={
               isFB
                 ? "mt-2 text-4xl sm:text-5xl"
                 : isTrust
                   ? "mt-3 text-4xl sm:text-5xl"
-                  : "text-3xl md:text-4xl font-bold tracking-tight"
+                  : isLifestyle
+                    ? "mt-3 text-4xl sm:text-5xl"
+                    : "text-3xl md:text-4xl font-bold tracking-tight"
             }
             style={{
               color: "var(--shop-ink)",
@@ -185,14 +230,18 @@ export default async function StoreOrderSuccess({
                 ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500, letterSpacing: '-0.005em' }
                 : isTrust
                   ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600, letterSpacing: '-0.01em' }
-                  : {}),
+                  : isLifestyle
+                    ? { fontFamily: LIFESTYLE_DISPLAY_FONT, fontWeight: 700, letterSpacing: '-0.01em' }
+                    : {}),
             }}
           >
             {isFB
               ? "Thank you"
               : isTrust
                 ? "Thank you for your order"
-                : "ขอบคุณสำหรับคำสั่งซื้อ"}
+                : isLifestyle
+                  ? "We've got your order!"
+                  : "ขอบคุณสำหรับคำสั่งซื้อ"}
           </h1>
           {isTrust && (
             <div
@@ -207,7 +256,9 @@ export default async function StoreOrderSuccess({
                 ? "mt-4 text-base italic"
                 : isTrust
                   ? "mt-5 text-base"
-                  : "mt-3 text-base"
+                  : isLifestyle
+                    ? "mt-4 text-base"
+                    : "mt-3 text-base"
             }
             style={{ color: "var(--shop-ink-muted)" }}
           >
@@ -225,19 +276,31 @@ export default async function StoreOrderSuccess({
             className={
               isTrust
                 ? "mt-7 inline-flex items-center gap-2 rounded-sm border bg-white px-5 py-2.5 shadow-sm"
-                : "mt-7 inline-flex items-center gap-2 rounded-full border bg-white px-5 py-2.5 shadow-sm"
+                : isLifestyle
+                  ? "mt-7 inline-flex items-center gap-2 rounded-full border bg-white px-5 py-2.5 shadow-sm"
+                  : "mt-7 inline-flex items-center gap-2 rounded-full border bg-white px-5 py-2.5 shadow-sm"
             }
-            style={{ borderColor: isTrust ? "var(--shop-accent)" : "var(--shop-border)" }}
+            style={{
+              borderColor: isTrust
+                ? "var(--shop-accent)"
+                : isLifestyle
+                  ? "var(--shop-accent)"
+                  : "var(--shop-border)",
+            }}
           >
             <span
               className="text-xs uppercase"
               style={{
                 color: "var(--shop-ink-muted)",
                 letterSpacing: isTrust ? "0.28em" : "0.18em",
-                fontWeight: isTrust ? 600 : undefined,
+                fontWeight: isTrust || isLifestyle ? 600 : undefined,
               }}
             >
-              {isTrust ? "Order No." : "เลขที่คำสั่งซื้อ"}
+              {isTrust
+                ? "Order No."
+                : isLifestyle
+                  ? "Order"
+                  : "เลขที่คำสั่งซื้อ"}
             </span>
             <span
               className="font-mono text-base font-bold"
@@ -265,10 +328,14 @@ export default async function StoreOrderSuccess({
 
         {/* Items */}
         <Card
-          className="mt-10 rounded-2xl border shadow-sm"
+          className={
+            isLifestyle
+              ? "mt-10 rounded-3xl border shadow-sm"
+              : "mt-10 rounded-2xl border shadow-sm"
+          }
           style={{
             borderColor: "var(--shop-border)",
-            background: "var(--shop-card)",
+            background: isLifestyle ? "var(--shop-muted)" : "var(--shop-card)",
           }}
         >
           <div
@@ -281,7 +348,9 @@ export default async function StoreOrderSuccess({
                   ? "text-xl"
                   : isTrust
                     ? "text-xl"
-                    : "text-base font-semibold"
+                    : isLifestyle
+                      ? "text-xl"
+                      : "text-base font-semibold"
               }
               style={{
                 color: "var(--shop-ink)",
@@ -289,7 +358,9 @@ export default async function StoreOrderSuccess({
                   ? { fontFamily: FB_DISPLAY_FONT, fontWeight: 500 }
                   : isTrust
                     ? { fontFamily: TRUST_DISPLAY_FONT, fontWeight: 600 }
-                    : {}),
+                    : isLifestyle
+                      ? { fontFamily: LIFESTYLE_DISPLAY_FONT, fontWeight: 700 }
+                      : {}),
               }}
             >
               สินค้าในคำสั่งซื้อ ({order.items.length} รายการ)
@@ -367,7 +438,9 @@ export default async function StoreOrderSuccess({
                 ? "h-auto rounded-full py-3 text-sm font-semibold text-white"
                 : isTrust
                   ? "h-auto rounded-sm py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
-                  : "h-auto py-3 text-sm font-semibold text-white"
+                  : isLifestyle
+                    ? "h-auto rounded-full py-3 text-sm font-semibold text-white"
+                    : "h-auto py-3 text-sm font-semibold text-white"
             }
             style={{ background: "var(--shop-primary)" }}
           >
@@ -375,7 +448,11 @@ export default async function StoreOrderSuccess({
               href={`/stores/${params.slug}/account/orders/${order.id}`}
               className="inline-flex items-center justify-center gap-2"
             >
-              {isTrust ? "Track order" : "ติดตามสถานะคำสั่งซื้อ"}
+              {isTrust
+                ? "Track order"
+                : isLifestyle
+                  ? "Track order"
+                  : "ติดตามสถานะคำสั่งซื้อ"}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -387,7 +464,9 @@ export default async function StoreOrderSuccess({
                 ? "h-auto rounded-full border-[var(--shop-ink)] py-3 text-sm font-semibold"
                 : isTrust
                   ? "h-auto rounded-sm border-[var(--shop-ink)] py-3 text-sm font-semibold uppercase tracking-[0.18em]"
-                  : "h-auto py-3 text-sm font-semibold"
+                  : isLifestyle
+                    ? "h-auto rounded-full border-[var(--shop-ink)] py-3 text-sm font-semibold"
+                    : "h-auto py-3 text-sm font-semibold"
             }
           >
             <Link href={`/stores/${params.slug}`}>
@@ -395,7 +474,9 @@ export default async function StoreOrderSuccess({
                 ? "Continue browsing"
                 : isTrust
                   ? "Back to store"
-                  : `กลับไป${storeName}`}
+                  : isLifestyle
+                    ? "Keep shopping"
+                    : `กลับไป${storeName}`}
             </Link>
           </Button>
         </div>

@@ -23,12 +23,16 @@ import {
 } from '@/lib/orders/status-ui';
 import { isFashionBeautyStore } from '@/lib/landing/fashion-beauty';
 import { isTrustStore } from '@/lib/landing/trust';
+import { isLifestyleStore } from '@/lib/landing/lifestyle';
 
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const LIFESTYLE_DISPLAY_FONT =
+  'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +91,12 @@ export default async function AccountDashboard({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  const isLifestyle = !isFB && !isTrust && store
+    ? isLifestyleStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   const recentOrders = toOrderViews(recentOrdersRaw);
   const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
@@ -106,10 +116,19 @@ export default async function AccountDashboard({
             ? "flex items-center gap-4 rounded-2xl border bg-white p-6 shadow-sm"
             : isTrust
               ? "flex items-center gap-4 rounded-sm border bg-white p-6 shadow-sm"
-              : "flex items-center gap-4 p-4"
+              : isLifestyle
+                ? "flex items-center gap-4 rounded-3xl border p-6 shadow-sm"
+                : "flex items-center gap-4 p-4"
         }
         style={
-          isTrust ? { borderColor: "var(--shop-accent)" } : undefined
+          isTrust
+            ? { borderColor: "var(--shop-accent)" }
+            : isLifestyle
+              ? {
+                  background: "var(--shop-muted)",
+                  borderColor: "var(--shop-border)",
+                }
+              : undefined
         }
       >
         <Avatar
@@ -118,11 +137,21 @@ export default async function AccountDashboard({
               ? "h-16 w-16"
               : isTrust
                 ? "h-16 w-16 rounded-sm"
-                : "h-14 w-14"
+                : isLifestyle
+                  ? "h-16 w-16 rounded-2xl"
+                  : "h-14 w-14"
           }
         >
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
-          <AvatarFallback className={isTrust ? "rounded-sm" : undefined}>
+          <AvatarFallback
+            className={
+              isTrust
+                ? "rounded-sm"
+                : isLifestyle
+                  ? "rounded-2xl"
+                  : undefined
+            }
+          >
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -147,13 +176,28 @@ export default async function AccountDashboard({
               Est. member since {memberYear}
             </p>
           )}
+          {isLifestyle && (
+            <p
+              className="text-xs uppercase inline-flex items-center gap-1.5"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.18em',
+                fontWeight: 600,
+              }}
+            >
+              <span aria-hidden role="img">👋</span>
+              Welcome back
+            </p>
+          )}
           <h1
             className={
               isFB
                 ? "text-3xl"
                 : isTrust
                   ? "text-3xl"
-                  : "text-lg font-semibold"
+                  : isLifestyle
+                    ? "text-3xl"
+                    : "text-lg font-semibold"
             }
             style={
               isFB
@@ -170,14 +214,23 @@ export default async function AccountDashboard({
                       color: 'var(--shop-ink)',
                       letterSpacing: '-0.01em',
                     }
-                  : undefined
+                  : isLifestyle
+                    ? {
+                        fontFamily: LIFESTYLE_DISPLAY_FONT,
+                        fontWeight: 700,
+                        color: 'var(--shop-ink)',
+                        letterSpacing: '-0.01em',
+                      }
+                    : undefined
             }
           >
             {isFB
               ? displayName
               : isTrust
                 ? `Welcome back, ${displayName}`
-                : `สวัสดี, ${displayName}`}
+                : isLifestyle
+                  ? `Hey ${displayName}!`
+                  : `สวัสดี, ${displayName}`}
           </h1>
           {isTrust && (
             <div
@@ -186,7 +239,7 @@ export default async function AccountDashboard({
               style={{ background: 'var(--shop-accent)' }}
             />
           )}
-          {user?.createdAt && !isTrust && (
+          {user?.createdAt && !isTrust && !isLifestyle && (
             <p className="text-xs text-muted-foreground">
               สมาชิกตั้งแต่{" "}
               {user.createdAt.toLocaleDateString("th-TH", {
@@ -207,39 +260,79 @@ export default async function AccountDashboard({
               })}
             </p>
           )}
+          {user?.createdAt && isLifestyle && (
+            <p
+              className="mt-2 text-xs"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              เป็นสมาชิกตั้งแต่{" "}
+              {user.createdAt.toLocaleDateString("th-TH", {
+                year: "numeric",
+                month: "long",
+              })}
+            </p>
+          )}
         </div>
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Package}
-          label={isTrust ? "Active orders" : "คำสั่งซื้อที่ใช้งาน"}
+          label={
+            isTrust
+              ? "Active orders"
+              : isLifestyle
+                ? "Active orders"
+                : "คำสั่งซื้อที่ใช้งาน"
+          }
           value={activeOrders.toString()}
           href={`${base}/orders`}
           isTrust={isTrust}
+          isLifestyle={isLifestyle}
         />
         <StatCard
           icon={MapPin}
-          label={isTrust ? "Saved addresses" : "ที่อยู่บันทึกไว้"}
+          label={
+            isTrust
+              ? "Saved addresses"
+              : isLifestyle
+                ? "Addresses"
+                : "ที่อยู่บันทึกไว้"
+          }
           value={addressCount.toString()}
           href={`${base}/addresses`}
           isTrust={isTrust}
+          isLifestyle={isLifestyle}
         />
         <StatCard
           icon={Wallet}
-          label={isTrust ? "Wallet balance" : "ยอด Anypay"}
+          label={
+            isTrust
+              ? "Wallet balance"
+              : isLifestyle
+                ? "Wallet"
+                : "ยอด Anypay"
+          }
           value="฿0"
           href={`${base}/wallet`}
           muted
           isTrust={isTrust}
+          isLifestyle={isLifestyle}
         />
         <StatCard
           icon={Heart}
-          label={isTrust ? "Favorites" : "รายการโปรด"}
+          label={
+            isTrust
+              ? "Favorites"
+              : isLifestyle
+                ? "Favorites"
+                : "รายการโปรด"
+          }
           value="0"
           href={`${base}/favorites`}
           muted
           isTrust={isTrust}
+          isLifestyle={isLifestyle}
         />
       </div>
 
@@ -247,7 +340,7 @@ export default async function AccountDashboard({
         <div className="mb-3 flex items-baseline justify-between">
           <h2
             className={
-              isFB || isTrust ? "text-2xl" : "font-semibold"
+              isFB || isTrust || isLifestyle ? "text-2xl" : "font-semibold"
             }
             style={
               isFB
@@ -262,14 +355,22 @@ export default async function AccountDashboard({
                       fontWeight: 600,
                       color: 'var(--shop-ink)',
                     }
-                  : undefined
+                  : isLifestyle
+                    ? {
+                        fontFamily: LIFESTYLE_DISPLAY_FONT,
+                        fontWeight: 700,
+                        color: 'var(--shop-ink)',
+                      }
+                    : undefined
             }
           >
             {isFB
               ? "Recent orders"
               : isTrust
                 ? "Recent orders"
-                : "คำสั่งซื้อล่าสุด"}
+                : isLifestyle
+                  ? "Recent orders"
+                  : "คำสั่งซื้อล่าสุด"}
           </h2>
           <Link
             href={`${base}/orders`}
@@ -279,7 +380,9 @@ export default async function AccountDashboard({
                 ? 'var(--shop-primary)'
                 : isTrust
                   ? 'var(--shop-accent)'
-                  : undefined,
+                  : isLifestyle
+                    ? 'var(--shop-primary)'
+                    : undefined,
             }}
           >
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
@@ -368,6 +471,7 @@ function StatCard({
   href,
   muted = false,
   isTrust = false,
+  isLifestyle = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -375,6 +479,7 @@ function StatCard({
   href: string;
   muted?: boolean;
   isTrust?: boolean;
+  isLifestyle?: boolean;
 }) {
   return (
     <Link href={href}>
@@ -382,10 +487,19 @@ function StatCard({
         className={
           isTrust
             ? "rounded-sm p-4 transition hover:shadow-md"
-            : "p-3 transition hover:shadow-md"
+            : isLifestyle
+              ? "rounded-3xl p-4 transition hover:shadow-md"
+              : "p-3 transition hover:shadow-md"
         }
         style={
-          isTrust ? { borderColor: "var(--shop-accent)" } : undefined
+          isTrust
+            ? { borderColor: "var(--shop-accent)" }
+            : isLifestyle
+              ? {
+                  borderColor: "var(--shop-border)",
+                  background: "var(--shop-card)",
+                }
+              : undefined
         }
       >
         <div className="flex items-center gap-3">
@@ -393,7 +507,9 @@ function StatCard({
             className={
               isTrust
                 ? "rounded-sm border bg-[var(--shop-muted)] p-2"
-                : "rounded-md bg-primary/10 p-2 text-primary"
+                : isLifestyle
+                  ? "rounded-full p-2 text-white"
+                  : "rounded-md bg-primary/10 p-2 text-primary"
             }
             style={
               isTrust
@@ -401,7 +517,12 @@ function StatCard({
                     borderColor: "var(--shop-accent)",
                     color: "var(--shop-ink)",
                   }
-                : undefined
+                : isLifestyle
+                  ? {
+                      background: "var(--shop-accent)",
+                      color: "#ffffff",
+                    }
+                  : undefined
             }
           >
             <Icon className="h-4 w-4" />
@@ -411,7 +532,9 @@ function StatCard({
               className={
                 isTrust
                   ? "text-[10px] uppercase"
-                  : "text-xs text-muted-foreground"
+                  : isLifestyle
+                    ? "text-[10px] uppercase"
+                    : "text-xs text-muted-foreground"
               }
               style={
                 isTrust
@@ -420,7 +543,13 @@ function StatCard({
                       letterSpacing: "0.22em",
                       fontWeight: 600,
                     }
-                  : undefined
+                  : isLifestyle
+                    ? {
+                        color: "var(--shop-ink-muted)",
+                        letterSpacing: "0.18em",
+                        fontWeight: 600,
+                      }
+                    : undefined
               }
             >
               {label}
@@ -429,7 +558,9 @@ function StatCard({
               className={
                 isTrust
                   ? `text-xl ${muted ? "text-muted-foreground" : ""}`
-                  : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
+                  : isLifestyle
+                    ? `text-xl ${muted ? "text-muted-foreground" : ""}`
+                    : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
               }
               style={
                 isTrust && !muted
@@ -439,7 +570,14 @@ function StatCard({
                         'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
                       fontWeight: 600,
                     }
-                  : undefined
+                  : isLifestyle && !muted
+                    ? {
+                        color: "var(--shop-ink)",
+                        fontFamily:
+                          'var(--font-lifestyle-display, "Outfit"), "Plus Jakarta Sans", "DM Sans", "Prompt", system-ui, sans-serif',
+                        fontWeight: 700,
+                      }
+                    : undefined
               }
             >
               {value}
