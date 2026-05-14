@@ -13,7 +13,7 @@
 // authorization + transition validity again — these buttons are just
 // the happy-path affordance.
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Truck, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,13 +47,40 @@ const CARRIERS: { value: ShippingCarrier; label: string }[] = [
   { value: "OTHER", label: "อื่นๆ" },
 ];
 
+// localStorage key for the vendor's last-used shipping carrier.
+// Stored as the raw enum string so a future ShippingCarrier addition
+// just needs the parse guard below extended. Per-browser, per-device
+// — not synced server-side because shipping habits are op-specific
+// and the persistence is just a nicety, not a source of truth.
+const CARRIER_PREF_KEY = "dashboard:lastShippingCarrier";
+
+function isCarrier(v: string | null): v is ShippingCarrier {
+  return v === "KERRY" || v === "FLASH" || v === "JNT" || v === "OTHER";
+}
+
 export function MarkShippedDialog({ orderId }: CommonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  // Default to KERRY on first paint so SSR-rendered output matches
+  // the initial client render; useEffect below promotes the stored
+  // preference once we're on the client.
   const [carrier, setCarrier] = useState<ShippingCarrier>("KERRY");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  // Hydrate stored carrier preference on mount. Wrapped in try/catch
+  // because localStorage can throw in private-browsing / Safari
+  // edge cases — a missing preference is fine, we just fall back to
+  // the KERRY default.
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(CARRIER_PREF_KEY);
+      if (isCarrier(stored)) setCarrier(stored);
+    } catch {
+      /* localStorage unavailable — keep default */
+    }
+  }, []);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -71,6 +98,14 @@ export function MarkShippedDialog({ orderId }: CommonProps) {
       if (!result.ok) {
         setError(translateError(result.error));
         return;
+      }
+      // Persist the carrier choice only on a SUCCESSFUL ship — keeps
+      // the preference aligned with what the vendor actually uses,
+      // not what they idly clicked through.
+      try {
+        window.localStorage.setItem(CARRIER_PREF_KEY, carrier);
+      } catch {
+        /* localStorage unavailable — preference doesn't persist */
       }
       setOpen(false);
       setTrackingNumber("");

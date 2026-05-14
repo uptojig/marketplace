@@ -29,10 +29,7 @@ export default async function VendorDashboard() {
       <div>
         <h1 className="text-2xl font-semibold">ภาพรวมร้านค้า</h1>
         <p className="text-sm text-muted-foreground">
-          Mode:{" "}
-          <span className="font-mono">
-            ANYPAY_MODE={process.env.ANYPAY_MODE ?? "mock"}
-          </span>
+          ยอดล่าสุด จำนวนสินค้า และสถานะการจัดส่ง
         </p>
       </div>
 
@@ -50,78 +47,82 @@ export default async function VendorDashboard() {
       </div>
 
       <section>
-        <h2 className="mb-3 text-base font-semibold">Recent AnyPay transactions</h2>
-        <div className="rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Order</th>
-                <th className="p-3 text-left">Provider</th>
-                <th className="p-3 text-left">Status</th>
-                <th className="p-3 text-left">Transaction</th>
-                <th className="p-3 text-right">Amount</th>
-                <th className="p-3 text-left">Paid at</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {recentPayments.map((p) => (
-                <tr key={p.id}>
-                  <td className="p-3 font-mono text-xs">{p.orderId.slice(0, 10)}…</td>
-                  <td className="p-3">{p.provider}</td>
-                  <td className="p-3">{p.status}</td>
-                  <td className="p-3 font-mono text-xs">{p.anypayTransactionId ?? "—"}</td>
-                  <td className="p-3 text-right">{formatTHB(Number(p.amountTHB))}</td>
-                  <td className="p-3">{p.paidAt ? p.paidAt.toLocaleString() : "—"}</td>
-                </tr>
-              ))}
-              {recentPayments.length === 0 && (
+        <h2 className="mb-3 text-base font-semibold">การชำระเงินล่าสุด</h2>
+        <div className="overflow-hidden rounded-lg border bg-white">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b bg-gray-50 text-left text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <td colSpan={6} className="p-6 text-center text-muted-foreground">
-                    No payments yet.
-                  </td>
+                  <th className="px-4 py-3">คำสั่งซื้อ</th>
+                  <th className="px-4 py-3">ช่องทาง</th>
+                  <th className="px-4 py-3">สถานะ</th>
+                  <th className="px-4 py-3">เลขอ้างอิง</th>
+                  <th className="px-4 py-3 text-right">ยอดชำระ</th>
+                  <th className="px-4 py-3">เวลาชำระ</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y">
+                {recentPayments.map((p) => (
+                  <tr key={p.id}>
+                    <td className="px-4 py-3 font-mono text-xs">{p.orderId.slice(0, 10)}…</td>
+                    <td className="px-4 py-3">{p.provider}</td>
+                    <td className="px-4 py-3">{p.status}</td>
+                    <td className="px-4 py-3 font-mono text-xs">{p.anypayTransactionId ?? "—"}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{formatTHB(Number(p.amountTHB))}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{p.paidAt ? p.paidAt.toLocaleString("th-TH") : "—"}</td>
+                  </tr>
+                ))}
+                {recentPayments.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                      ยังไม่มีการชำระเงิน
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
       <section>
-        <h2 className="mb-3 text-base font-semibold">Recent supplier shipments</h2>
-        <div className="rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 text-left">Order</th>
-                <th className="p-3 text-left">Store</th>
-                <th className="p-3 text-left">Product</th>
-                <th className="p-3 text-left">Supplier</th>
-                <th className="p-3 text-left">External order</th>
-                <th className="p-3 text-left">Status</th>
-                <th className="p-3 text-left">Tracking</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {recentItems.map((it) => (
-                <tr key={it.id}>
-                  <td className="p-3 font-mono text-xs">{it.orderId.slice(0, 8)}…</td>
-                  <td className="p-3">{it.store.name}</td>
-                  <td className="p-3">{it.product.title}</td>
-                  <td className="p-3">{it.supplier}</td>
-                  <td className="p-3 font-mono text-xs">{it.externalOrderId ?? "—"}</td>
-                  <td className="p-3">{it.supplierStatus ?? "—"}</td>
-                  <td className="p-3 font-mono text-xs">{it.externalTrackingNo ?? "—"}</td>
-                </tr>
-              ))}
-              {recentItems.length === 0 && (
+        <h2 className="mb-3 text-base font-semibold">สถานะการจัดส่งล่าสุด</h2>
+        <div className="overflow-hidden rounded-lg border bg-white">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b bg-gray-50 text-left text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <td colSpan={7} className="p-6 text-center text-muted-foreground">
-                    No order items yet.
-                  </td>
+                  <th className="px-4 py-3">คำสั่งซื้อ</th>
+                  <th className="px-4 py-3">ร้าน</th>
+                  <th className="px-4 py-3">สินค้า</th>
+                  <th className="px-4 py-3">ซัพพลายเออร์</th>
+                  <th className="px-4 py-3">เลขที่อ้างอิง</th>
+                  <th className="px-4 py-3">สถานะ</th>
+                  <th className="px-4 py-3">เลขพัสดุ</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y">
+                {recentItems.map((it) => (
+                  <tr key={it.id}>
+                    <td className="px-4 py-3 font-mono text-xs">{it.orderId.slice(0, 8)}…</td>
+                    <td className="px-4 py-3">{it.store.name}</td>
+                    <td className="px-4 py-3">{it.product.title}</td>
+                    <td className="px-4 py-3">{it.supplier}</td>
+                    <td className="px-4 py-3 font-mono text-xs">{it.externalOrderId ?? "—"}</td>
+                    <td className="px-4 py-3">{it.supplierStatus ?? "—"}</td>
+                    <td className="px-4 py-3 font-mono text-xs">{it.externalTrackingNo ?? "—"}</td>
+                  </tr>
+                ))}
+                {recentItems.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                      ยังไม่มีรายการจัดส่ง
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
     </div>

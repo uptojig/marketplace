@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Plus, Trash2, X, Wand2, Loader2 } from "lucide-react";
@@ -81,6 +81,30 @@ export function ProductForm({
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(
     null,
   );
+
+  // Dirty-form check — compares the working state against the initial
+  // defaults via structural equality. JSON.stringify is fine here
+  // because the shape is bounded (≤ 6 gallery URLs + a handful of
+  // variants) and the keys are stable across renders. Used to gate
+  // the beforeunload guard so vendors don't lose 5 minutes of edits
+  // to an accidental tab close / refresh / back-button. In-app
+  // navigation via <Link> is NOT caught by beforeunload — guarding
+  // that would need Next's experimental router events; the tab-
+  // close case is the most common data-loss vector and worth
+  // covering on its own.
+  const dirty = JSON.stringify(form) !== JSON.stringify(defaultValues);
+  useEffect(() => {
+    if (!dirty || saving || deleting) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      // Chrome requires returnValue assignment to show the prompt;
+      // the actual text is browser-controlled and can't be customised
+      // for security reasons.
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty, saving, deleting]);
 
   function update<K extends keyof ProductFormValues>(
     key: K,

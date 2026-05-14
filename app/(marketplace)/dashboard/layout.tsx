@@ -51,11 +51,13 @@ export default async function DashboardLayout({
 }) {
   // Pull the requested store slug out of the URL via the headers our
   // middleware sets. `x-search` is the raw "?storeSlug=foo&..." string;
-  // empty/missing means "use default owned store".
+  // empty/missing means "use default owned store". `x-pathname` is
+  // the request path — used below to highlight the active nav item.
   // headers() is synchronous in Next 14; switching to async-aware
   // shape will require revisiting on the Next 15 upgrade.
   const headerList = headers();
   const search = headerList.get("x-search") ?? "";
+  const pathname = headerList.get("x-pathname") ?? "/dashboard";
   const requestedSlug =
     new URLSearchParams(search).get("storeSlug") ?? undefined;
 
@@ -107,6 +109,7 @@ export default async function DashboardLayout({
           isAdmin={displayUser.role === "ADMIN"}
           pendingOrdersCount={pendingOrdersCount}
           unreadMessagesCount={unreadMessagesCount}
+          pathname={pathname}
         />
       </DashboardSidebarToggle>
 
@@ -146,6 +149,7 @@ function Sidebar({
   isAdmin,
   pendingOrdersCount,
   unreadMessagesCount,
+  pathname,
 }: {
   storeName: string;
   storeSlug: string | null;
@@ -155,6 +159,7 @@ function Sidebar({
   isAdmin: boolean;
   pendingOrdersCount: number;
   unreadMessagesCount: number;
+  pathname: string;
 }) {
   // Build a query string suffix to append to dashboard nav hrefs so
   // the picker selection survives page navigation. Empty when no
@@ -207,7 +212,12 @@ function Sidebar({
       {/* Nav groups */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 text-sm">
         <NavGroup label="หน้าหลัก">
-          <NavItem href="/dashboard" icon={<LayoutDashboard className="h-4 w-4" />}>
+          <NavItem
+            href="/dashboard"
+            icon={<LayoutDashboard className="h-4 w-4" />}
+            pathname={pathname}
+            exact
+          >
             ภาพรวม
           </NavItem>
         </NavGroup>
@@ -216,24 +226,28 @@ function Sidebar({
           <NavItem
             href={`/dashboard/store/products${suffix}`}
             icon={<Package className="h-4 w-4" />}
+            pathname={pathname}
           >
             สินค้าของร้าน
           </NavItem>
           <NavItem
             href={`/dashboard/store/categories${suffix}`}
             icon={<Tags className="h-4 w-4" />}
+            pathname={pathname}
           >
             หมวดหมู่
           </NavItem>
           <NavItem
             href="/dashboard/catalog"
             icon={<PlusSquare className="h-4 w-4" />}
+            pathname={pathname}
           >
             Browse catalog
           </NavItem>
           <NavItem
             href="/dashboard/products/import"
             icon={<PlusSquare className="h-4 w-4" />}
+            pathname={pathname}
           >
             นำเข้าจาก URL
           </NavItem>
@@ -244,6 +258,7 @@ function Sidebar({
             href={`/dashboard/store/orders${suffix}`}
             icon={<ShoppingBag className="h-4 w-4" />}
             badge={pendingOrdersCount}
+            pathname={pathname}
           >
             ออเดอร์
           </NavItem>
@@ -251,12 +266,14 @@ function Sidebar({
             href={`/dashboard/store/messages${suffix}`}
             icon={<Mail className="h-4 w-4" />}
             badge={unreadMessagesCount}
+            pathname={pathname}
           >
             ข้อความ
           </NavItem>
           <NavItem
             href={`/dashboard/store/settings${suffix}`}
             icon={<Settings className="h-4 w-4" />}
+            pathname={pathname}
           >
             ตั้งค่าร้าน
           </NavItem>
@@ -267,6 +284,7 @@ function Sidebar({
             <NavItem
               href="/admin"
               icon={<StoreIcon className="h-4 w-4" />}
+              pathname={pathname}
             >
               Admin console
             </NavItem>
@@ -329,6 +347,8 @@ function NavItem({
   icon,
   children,
   badge,
+  pathname,
+  exact,
 }: {
   href: string;
   icon: React.ReactNode;
@@ -337,12 +357,21 @@ function NavItem({
   // already skips the count query when there's no store so passing
   // 0/undefined here is the no-store default.
   badge?: number;
+  // Current request pathname, passed through from the server layout
+  // via the x-pathname header. Used to highlight the active item.
+  pathname: string;
+  // For overview ("/dashboard") only — without this every child
+  // /dashboard/* path would also light up the home item.
+  exact?: boolean;
 }) {
-  // Active highlighting is handled per-pathname client-side in a
-  // future iteration; for now every item renders neutral and the
-  // current page's content area gives the contextual cue. Keeps
-  // this component tree fully server-rendered.
-  //
+  // Strip the query-string off the link href before comparing — nav
+  // items append `?storeSlug=...` to preserve the picker selection so
+  // a substring match on the bare path is what we want.
+  const linkPath = href.split("?")[0]!;
+  const active = exact
+    ? pathname === linkPath
+    : pathname === linkPath || pathname.startsWith(`${linkPath}/`);
+
   // Badge a11y: the screen-reader label echoes the link's own text
   // (`children`) when it's a string so the reader announces e.g.
   // "ออเดอร์, ค้าง 3 รายการ" instead of a bare digit.
@@ -351,10 +380,18 @@ function NavItem({
     <li>
       <Link
         href={href}
-        className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition hover:opacity-100"
-        style={{ color: "var(--color-sidebar-foreground)" }}
+        aria-current={active ? "page" : undefined}
+        className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition ${
+          active ? "font-medium" : "hover:opacity-100"
+        }`}
+        style={{
+          color: active
+            ? "var(--color-sidebar-accent-foreground)"
+            : "var(--color-sidebar-foreground)",
+          background: active ? "var(--color-sidebar-accent)" : undefined,
+        }}
       >
-        <span className="opacity-70">{icon}</span>
+        <span className={active ? "opacity-100" : "opacity-70"}>{icon}</span>
         <span className="flex-1 truncate">{children}</span>
         {typeof badge === "number" && badge > 0 && (
           <span
@@ -395,7 +432,11 @@ function Topbar({
   isAdmin: boolean;
 }) {
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background px-4 sm:px-6 lg:px-8">
+    // pl-14 below md leaves space for the fixed mobile burger button
+    // (`fixed left-3 top-3 z-30`, 9*4 = 36px wide + 12px margin). On
+    // md+ the rail occupies the column to the left so the burger is
+    // hidden and the regular px-4/6/8 padding takes over.
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background pl-14 pr-3 sm:gap-3 sm:px-6 lg:px-8">
       <StorePicker
         currentStore={currentStore}
         availableStores={availableStores}
@@ -407,9 +448,14 @@ function Topbar({
           href={`/stores/${storeSlug}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent"
+          aria-label="ดูหน้าร้าน"
+          // Icon-only below sm, label+icon at sm+. Keeps the topbar
+          // from overflowing on 320–360px phones where the burger,
+          // StorePicker (180px min), and full-label CTA combined
+          // pushed the picker off-screen.
+          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-input bg-background px-2 text-sm font-medium hover:bg-accent sm:px-3"
         >
-          ดูหน้าร้าน
+          <span className="hidden sm:inline">ดูหน้าร้าน</span>
           <ExternalLink className="h-3.5 w-3.5" />
         </a>
       )}

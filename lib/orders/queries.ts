@@ -62,7 +62,15 @@ export async function getOrdersByCartId(cartId: string) {
 // vendor can fulfil + reach out without an extra round-trip.
 export async function getStoreOrders(
   storeId: string,
-  opts: { limit?: number; status?: OrderStatus; cursor?: string } = {},
+  opts: {
+    limit?: number;
+    status?: OrderStatus;
+    cursor?: string;
+    // Offset-based skip — used by the vendor inbox's page-N pagination.
+    // Ignored when `cursor` is set (cursor takes precedence; the two
+    // strategies are mutually exclusive).
+    skip?: number;
+  } = {},
 ) {
   return prisma.order.findMany({
     where: {
@@ -71,7 +79,11 @@ export async function getStoreOrders(
     },
     orderBy: { createdAt: "desc" },
     take: opts.limit ?? 50,
-    ...(opts.cursor ? { cursor: { id: opts.cursor }, skip: 1 } : {}),
+    ...(opts.cursor
+      ? { cursor: { id: opts.cursor }, skip: 1 }
+      : opts.skip
+        ? { skip: opts.skip }
+        : {}),
     include: {
       items: true,
       // store relation kept so vendor pages can reuse buyer-side

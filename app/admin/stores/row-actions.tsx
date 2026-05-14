@@ -189,19 +189,23 @@ export function StoreRowActions({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
+          {/* Plain <button> instead of the styled Button — the project's
+              Button component isn't wrapped in forwardRef, so Radix
+              Slot can't attach the trigger ref and a handful of pointer
+              events drop on the floor. Native <button> sidesteps that
+              entirely. */}
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
             aria-label={`เมนูการจัดการร้าน ${storeName}`}
-            className="h-8 w-8"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-stone-500 hover:bg-stone-100 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-300 disabled:pointer-events-none disabled:opacity-50"
+            disabled={approving || pending}
           >
             {approving || pending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <MoreHorizontal className="h-4 w-4" />
             )}
-          </Button>
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel className="truncate">

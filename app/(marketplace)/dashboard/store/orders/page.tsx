@@ -5,7 +5,9 @@
 // store; owners are scoped to their own. Status tabs (All / Paid /
 // Shipped / Delivered / Cancelled / Returned) are URL-search-param
 // driven so back/forward navigation and shared links pick up both
-// the right filter AND the right store.
+// the right filter AND the right store. Page-N pagination keeps
+// older orders reachable now that fast-moving stores routinely break
+// the previous 50-row cap.
 
 import Link from "next/link";
 import { Inbox } from "lucide-react";
@@ -20,15 +22,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DashboardTabs,
+  type DashboardTab,
+} from "@/components/dashboard/dashboard-tabs";
+import {
+  DashboardPagination,
+  parsePageParam,
+} from "@/components/dashboard/dashboard-pagination";
 import { getStoreOrders } from "@/lib/orders/queries";
 import {
   ORDER_STATUS_COLOR,
   ORDER_STATUS_LABEL,
 } from "@/lib/orders/status-ui";
 import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
-import { cn, formatTHB } from "@/lib/utils";
+import { formatTHB } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+
+const PAGE_SIZE = 50;
 
 // Vendor tab key set — a coarser grouping than the raw OrderStatus
 // enum that matches what sellers actually triage by. PENDING_PAYMENT
@@ -69,12 +81,12 @@ function parseTab(raw: string | string[] | undefined): VendorTabKey {
 export default async function VendorOrdersPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ tab?: string; storeSlug?: string }>;
+  searchParams?: Promise<{ tab?: string; storeSlug?: string; page?: string }>;
 }) {
   // Next 15's searchParams is a Promise; fall back to an empty object
   // typed as the same shape so older build runs still render during
   // incremental upgrades.
-  const sp: { tab?: string; storeSlug?: string } = searchParams
+  const sp: { tab?: string; storeSlug?: string; page?: string } = searchParams
     ? await searchParams
     : {};
 
@@ -84,22 +96,56 @@ export default async function VendorOrdersPage({
 
   const tab = parseTab(sp.tab);
   const tabDef = VENDOR_TABS.find((t) => t.key === tab) ?? VENDOR_TABS[0];
-
-  const orders = await getStoreOrders(store.id, {
-    limit: 50,
-    status: tabDef.status,
-  });
+  const page = parsePageParam(sp.page);
 
   // Tab counts — one extra query per tab would be excessive; instead
   // we fetch unscoped totals once (cheap because they're indexed on
-  // storeId+status) and use them only as a heuristic count.
+  // storeId+status) and re-use them as both tab badges AND the
+  // current-tab page total for pagination math.
   const statusCounts = await prisma_groupCounts(store.id);
+  const totalForTab =
+    tab === "all"
+      ? Object.values(statusCounts).reduce((a, b) => a + b, 0)
+      : (statusCounts[tabDef.status as OrderStatus] ?? 0);
+  const totalPages = Math.max(1, Math.ceil(totalForTab / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
 
-  // Preserve the active store across tab navigation. Empty when no
-  // explicit slug is needed (default owned store).
-  const slugQs = sp.storeSlug
-    ? `&storeSlug=${encodeURIComponent(sp.storeSlug)}`
-    : "";
+  const orders = await getStoreOrders(store.id, {
+    limit: PAGE_SIZE,
+    status: tabDef.status,
+    skip: (safePage - 1) * PAGE_SIZE,
+  });
+
+  // URL builder that preserves the storeSlug picker selection and any
+  // active filter — used by both tab chips and pagination links.
+  function buildHref({
+    tab: tabKey,
+    page: pageNum,
+  }: {
+    tab?: VendorTabKey;
+    page?: number;
+  } = {}) {
+    const params = new URLSearchParams();
+    if (tabKey && tabKey !== "all") params.set("tab", tabKey);
+    if (sp.storeSlug) params.set("storeSlug", sp.storeSlug);
+    if (pageNum && pageNum > 1) params.set("page", String(pageNum));
+    const qs = params.toString();
+    return qs ? `/dashboard/store/orders?${qs}` : "/dashboard/store/orders";
+  }
+
+  const dashboardTabs: ReadonlyArray<DashboardTab<VendorTabKey>> =
+    VENDOR_TABS.map((t) => ({
+      key: t.key,
+      label: t.label,
+      // Reset to page 1 when switching tabs — page numbers don't
+      // carry meaning across tabs (different counts, different rows).
+      href: buildHref({ tab: t.key }),
+      active: t.key === tab,
+      count:
+        t.key === "all"
+          ? Object.values(statusCounts).reduce((a, b) => a + b, 0)
+          : (statusCounts[t.status as OrderStatus] ?? 0),
+    }));
 
   return (
     <div className="space-y-6">
@@ -112,48 +158,7 @@ export default async function VendorOrdersPage({
         </div>
       </header>
 
-      <nav
-        aria-label="กรองตามสถานะ"
-        className="flex flex-wrap gap-2 border-b pb-px"
-      >
-        {VENDOR_TABS.map((t) => {
-          const isActive = t.key === tab;
-          const count =
-            t.key === "all"
-              ? Object.values(statusCounts).reduce((a, b) => a + b, 0)
-              : (statusCounts[t.status as OrderStatus] ?? 0);
-          const href =
-            t.key === "all"
-              ? sp.storeSlug
-                ? `/dashboard/store/orders?storeSlug=${encodeURIComponent(sp.storeSlug)}`
-                : "/dashboard/store/orders"
-              : `/dashboard/store/orders?tab=${t.key}${slugQs}`;
-          return (
-            <Link
-              key={t.key}
-              href={href}
-              className={cn(
-                "shrink-0 rounded-md border px-3 py-1.5 text-sm transition",
-                isActive
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-input bg-background hover:bg-accent",
-              )}
-            >
-              {t.label}
-              {count > 0 && (
-                <span
-                  className={cn(
-                    "ml-1.5 text-xs",
-                    isActive ? "opacity-80" : "text-muted-foreground",
-                  )}
-                >
-                  ({count})
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+      <DashboardTabs tabs={dashboardTabs} />
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center rounded-lg border-2 border-dashed bg-gray-50 px-6 py-16 text-center">
@@ -166,79 +171,89 @@ export default async function VendorOrdersPage({
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-white">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead>เลขคำสั่งซื้อ</TableHead>
-                <TableHead>ลูกค้า</TableHead>
-                <TableHead>วันที่</TableHead>
-                <TableHead className="text-center">รายการ</TableHead>
-                <TableHead className="text-right">ยอดรวม</TableHead>
-                <TableHead className="text-center">สถานะ</TableHead>
-                <TableHead className="text-right" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => {
-                const itemCount = order.items.reduce((s, i) => s + i.qty, 0);
-                const buyerLabel =
-                  order.user?.name?.trim() ||
-                  order.user?.email ||
-                  "ลูกค้า";
-                return (
-                  <TableRow key={order.id} className="align-top">
-                    <TableCell className="font-mono text-xs">
-                      {order.orderRef ?? order.id}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">{buyerLabel}</div>
-                      {order.user?.email && order.user.name && (
-                        <div className="text-xs text-muted-foreground">
-                          {order.user.email}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleDateString("th-TH", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </TableCell>
-                    <TableCell className="text-center text-sm">
-                      {itemCount}
-                    </TableCell>
-                    <TableCell className="text-right text-sm font-semibold">
-                      {formatTHB(Number(order.totalTHB))}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge
-                        className={ORDER_STATUS_COLOR[order.status]}
-                        variant="outline"
-                      >
-                        {ORDER_STATUS_LABEL[order.status]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm">
-                        <Link
-                          href={
-                            sp.storeSlug
-                              ? `/dashboard/store/orders/${order.orderRef ?? order.id}?storeSlug=${encodeURIComponent(sp.storeSlug)}`
-                              : `/dashboard/store/orders/${order.orderRef ?? order.id}`
-                          }
+        <>
+          <div className="overflow-hidden rounded-lg border bg-white">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead>เลขคำสั่งซื้อ</TableHead>
+                  <TableHead>ลูกค้า</TableHead>
+                  <TableHead>วันที่</TableHead>
+                  <TableHead className="text-center">รายการ</TableHead>
+                  <TableHead className="text-right">ยอดรวม</TableHead>
+                  <TableHead className="text-center">สถานะ</TableHead>
+                  <TableHead className="text-right" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => {
+                  const itemCount = order.items.reduce((s, i) => s + i.qty, 0);
+                  const buyerLabel =
+                    order.user?.name?.trim() ||
+                    order.user?.email ||
+                    "ลูกค้า";
+                  return (
+                    <TableRow key={order.id} className="align-top">
+                      <TableCell className="font-mono text-xs">
+                        {order.orderRef ?? order.id}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">{buyerLabel}</div>
+                        {order.user?.email && order.user.name && (
+                          <div className="text-xs text-muted-foreground">
+                            {order.user.email}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(order.createdAt).toLocaleDateString("th-TH", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </TableCell>
+                      <TableCell className="text-center text-sm">
+                        {itemCount}
+                      </TableCell>
+                      <TableCell className="text-right text-sm font-semibold">
+                        {formatTHB(Number(order.totalTHB))}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge
+                          className={ORDER_STATUS_COLOR[order.status]}
+                          variant="outline"
                         >
-                          ดูรายละเอียด
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                          {ORDER_STATUS_LABEL[order.status]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button asChild variant="outline" size="sm">
+                          <Link
+                            href={
+                              sp.storeSlug
+                                ? `/dashboard/store/orders/${order.orderRef ?? order.id}?storeSlug=${encodeURIComponent(sp.storeSlug)}`
+                                : `/dashboard/store/orders/${order.orderRef ?? order.id}`
+                            }
+                          >
+                            ดูรายละเอียด
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          <DashboardPagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            totalItems={totalForTab}
+            pageSize={PAGE_SIZE}
+            hrefFor={(p) => buildHref({ tab, page: p })}
+          />
+        </>
       )}
     </div>
   );

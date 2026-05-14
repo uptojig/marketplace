@@ -242,8 +242,22 @@ export function UrlPasteImport({ onSaved, storeIdOverride }: Props = {}) {
                         <input
                           type="number"
                           min={0}
+                          // 10M THB ceiling — well above any real
+                          // dropshipping SKU price; stops accidental
+                          // 8-digit fat-fingered values from passing
+                          // through to the API. Pair with min={0}
+                          // so the browser arrow controls + form
+                          // validation block negative input too.
+                          max={9_999_999}
+                          step="0.01"
                           value={r.priceTHB ?? 0}
-                          onChange={(e) => updatePrice(i, parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const raw = parseFloat(e.target.value);
+                            const clamped = Number.isFinite(raw)
+                              ? Math.max(0, Math.min(9_999_999, raw))
+                              : 0;
+                            updatePrice(i, clamped);
+                          }}
                           className="w-24 rounded border px-2 py-1 text-right text-sm"
                         />
                       ) : (
