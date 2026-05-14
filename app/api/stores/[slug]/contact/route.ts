@@ -1,7 +1,12 @@
 // POST /api/stores/[slug]/contact — guest-friendly contact form.
 //
-// Accepts a name + message (email/phone optional). Two side-effects,
-// in this order:
+// Accepts a name + email + message (phone optional). Email became
+// REQUIRED after the vendor reply flow shipped — it's now the primary
+// reply channel, so we hard-gate at the API. The DB column stays
+// nullable for backward-compat with any pre-existing rows / future
+// channels (e.g. SMS) that might not carry an email.
+//
+// Two side-effects, in this order:
 //   1. Persist a ContactMessage row — DB is the canonical inbox so
 //      the vendor can find every submission via /dashboard/store/messages
 //      regardless of whether email delivery worked.
@@ -21,13 +26,15 @@ import StoreContactEmail from "@/lib/transactional-email/templates/store-contact
 
 const bodySchema = z.object({
   name: z.string().trim().min(1, "กรุณากรอกชื่อ").max(120),
+  // Email is now required — vendors reply directly from the inbox
+  // via the Resend-powered reply form, and email is the only reliable
+  // reply channel for guests.
   email: z
     .string()
     .trim()
+    .min(1, "กรุณากรอกอีเมล")
     .max(160)
-    .email("อีเมลไม่ถูกต้อง")
-    .optional()
-    .or(z.literal("")),
+    .email("อีเมลไม่ถูกต้อง"),
   phone: z.string().trim().max(40).optional().or(z.literal("")),
   message: z.string().trim().min(1, "กรุณากรอกข้อความ").max(4000),
 });
@@ -66,7 +73,8 @@ export async function POST(
     data: {
       storeId: store.id,
       name: parsed.data.name,
-      email: parsed.data.email || null,
+      // Required at the API; column stays nullable for back-compat.
+      email: parsed.data.email,
       phone: parsed.data.phone || null,
       message: parsed.data.message,
     },
@@ -86,12 +94,12 @@ export async function POST(
 
   const result = await sendEmail({
     to: store.contactEmail,
-    replyTo: parsed.data.email || undefined,
+    replyTo: parsed.data.email,
     subject: `[${store.name}] ข้อความใหม่จากหน้าติดต่อ`,
     react: StoreContactEmail({
       storeName: store.name,
       visitorName: parsed.data.name,
-      visitorEmail: parsed.data.email || null,
+      visitorEmail: parsed.data.email,
       visitorPhone: parsed.data.phone || null,
       message: parsed.data.message,
     }),

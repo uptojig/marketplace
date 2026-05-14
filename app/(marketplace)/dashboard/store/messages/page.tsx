@@ -10,9 +10,10 @@
 // best-effort + secondary; the ContactMessage row IS the inbox.
 //
 // URL shape:
-//   /dashboard/store/messages              — all messages (default)
-//   /dashboard/store/messages?tab=unread   — readAt IS NULL only
-//   /dashboard/store/messages?tab=read     — readAt IS NOT NULL only
+//   /dashboard/store/messages               — all messages (default)
+//   /dashboard/store/messages?tab=unread    — readAt IS NULL only
+//   /dashboard/store/messages?tab=read      — readAt IS NOT NULL only
+//   /dashboard/store/messages?tab=replied   — repliedAt IS NOT NULL
 //   /dashboard/store/messages?storeSlug=foo — admin-picker target
 //
 // Sort order is always createdAt DESC — newest at the top, matching
@@ -36,17 +37,18 @@ import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-type MessagesTabKey = "all" | "unread" | "read";
+type MessagesTabKey = "all" | "unread" | "read" | "replied";
 
 const MESSAGES_TABS: { key: MessagesTabKey; label: string }[] = [
   { key: "all", label: "ทั้งหมด" },
   { key: "unread", label: "ยังไม่อ่าน" },
   { key: "read", label: "อ่านแล้ว" },
+  { key: "replied", label: "ตอบแล้ว" },
 ];
 
 function parseTab(raw: string | string[] | undefined): MessagesTabKey {
   const v = Array.isArray(raw) ? raw[0] : raw;
-  if (v === "unread" || v === "read") return v;
+  if (v === "unread" || v === "read" || v === "replied") return v;
   return "all";
 }
 
@@ -73,18 +75,22 @@ export default async function VendorMessagesPage({
 
   const tab = parseTab(sp.tab);
 
-  // readAt filter for the WHERE clause:
-  //   unread → readAt IS NULL
-  //   read   → readAt IS NOT NULL
-  //   all    → no filter
+  // Filter for the WHERE clause:
+  //   unread  → readAt IS NULL
+  //   read    → readAt IS NOT NULL
+  //   replied → repliedAt IS NOT NULL (subset of "read", since the
+  //             reply action stamps readAt as well)
+  //   all     → no filter
   const whereByTab =
     tab === "unread"
       ? { readAt: null }
       : tab === "read"
         ? { readAt: { not: null } }
-        : {};
+        : tab === "replied"
+          ? { repliedAt: { not: null } }
+          : {};
 
-  const [messages, unreadCount, readCount] = await Promise.all([
+  const [messages, unreadCount, readCount, repliedCount] = await Promise.all([
     prisma.contactMessage.findMany({
       where: { storeId: store.id, ...whereByTab },
       orderBy: { createdAt: "desc" },
@@ -95,6 +101,9 @@ export default async function VendorMessagesPage({
     }),
     prisma.contactMessage.count({
       where: { storeId: store.id, readAt: { not: null } },
+    }),
+    prisma.contactMessage.count({
+      where: { storeId: store.id, repliedAt: { not: null } },
     }),
   ]);
 
@@ -131,7 +140,9 @@ export default async function VendorMessagesPage({
               ? totalCount
               : t.key === "unread"
                 ? unreadCount
-                : readCount;
+                : t.key === "read"
+                  ? readCount
+                  : repliedCount;
           const href =
             t.key === "all"
               ? sp.storeSlug
@@ -173,7 +184,9 @@ export default async function VendorMessagesPage({
               ? "ไม่มีข้อความที่ยังไม่อ่าน"
               : tab === "read"
                 ? "ยังไม่มีข้อความที่อ่านแล้ว"
-                : "ยังไม่มีข้อความจากลูกค้า"}
+                : tab === "replied"
+                  ? "ยังไม่ได้ตอบกลับข้อความใด ๆ"
+                  : "ยังไม่มีข้อความจากลูกค้า"}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             เมื่อมีลูกค้าส่งข้อความผ่านหน้าติดต่อ ข้อความจะปรากฏที่นี่
@@ -194,6 +207,7 @@ export default async function VendorMessagesPage({
             <TableBody>
               {messages.map((msg) => {
                 const isUnread = msg.readAt === null;
+                const isReplied = msg.repliedAt !== null;
                 // Visible "from" is name + best contact channel —
                 // email preferred, then phone, then nothing if neither
                 // was provided.
@@ -249,7 +263,11 @@ export default async function VendorMessagesPage({
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                      {isUnread ? (
+                      {isReplied ? (
+                        <Badge className="bg-green-600 text-white hover:bg-green-600/90">
+                          อ่าน + ตอบแล้ว
+                        </Badge>
+                      ) : isUnread ? (
                         <Badge variant="default">ยังไม่อ่าน</Badge>
                       ) : (
                         <Badge variant="outline">อ่านแล้ว</Badge>

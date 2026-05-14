@@ -26,10 +26,30 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendEmail } from "@/lib/transactional-email/send";
+import ContactReplyEmail from "@/lib/transactional-email/templates/contact-reply";
 
 export interface ContactMessageActionResult {
   ok: boolean;
   error?: string;
+}
+
+/**
+ * Reply-action result. Distinguishes between:
+ *   • ok=true                         — DB write + email both succeeded
+ *   • ok=true, emailDelivered=false   — DB row recorded the attempt but
+ *                                       Resend rejected the send. The
+ *                                       form should surface the retry
+ *                                       affordance.
+ *   • ok=false, error                 — auth / validation / DB failure;
+ *                                       nothing was persisted.
+ */
+export interface ReplyMessageActionResult {
+  ok: boolean;
+  error?: string;
+  emailDelivered?: boolean;
+  /** Reason from sendEmail() — only set when emailDelivered is false. */
+  emailError?: string;
 }
 
 /**
@@ -161,4 +181,130 @@ export async function markMessageUnread(
 
   revalidateMessageRoutes(messageId);
   return { ok: true };
+}
+
+// Trim + length guard for the reply body. 4000 matches the contact
+// form's incoming message cap — vendors don't need a longer surface
+// than buyers in practice and we want to bound the DB column.
+const REPLY_BODY_MIN = 10;
+const REPLY_BODY_MAX = 4000;
+
+/**
+ * Send an email reply to a contact-form submission. The vendor types
+ * the body in /dashboard/store/messages/<id>; we render a React Email
+ * template + send via Resend.
+ *
+ * Ordering is critical:
+ *   1. Authorize (admin OR store owner).
+ *   2. Validate body (trim, min/max).
+ *   3. Persist replyAt/replyById/replyBody on the row FIRST.
+ *      The DB row is the source of truth — if Resend fails after
+ *      this, the vendor still sees their reply in the transcript and
+ *      can retry without retyping. Also stamp readAt if it wasn't
+ *      already set (replying implicitly acknowledges the message).
+ *   4. Render + send. Failures return ok:true + emailDelivered:false
+ *      so the UI can surface a retry affordance.
+ */
+export async function replyToMessage(
+  messageId: string,
+  body: string,
+): Promise<ReplyMessageActionResult> {
+  // 1. Authorize — same pattern as markMessageRead but load richer
+  // data so we can render the email template without a second fetch.
+  const session = await getServerSession(authOptions);
+  const sessionUser = session?.user;
+  const userId = sessionUser?.id;
+  if (!userId) return { ok: false, error: "unauthorized" };
+
+  const message = await prisma.contactMessage.findUnique({
+    where: { id: messageId },
+    select: {
+      id: true,
+      storeId: true,
+      readAt: true,
+      name: true,
+      email: true,
+      message: true,
+      store: {
+        select: {
+          id: true,
+          ownerId: true,
+          slug: true,
+          name: true,
+          contactEmail: true,
+        },
+      },
+    },
+  });
+  if (!message || !message.store) return { ok: false, error: "forbidden" };
+
+  const isOwner = message.store.ownerId === userId;
+  let isAdmin = sessionUser?.role === "ADMIN";
+  if (!isOwner && !isAdmin) {
+    const me = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+    isAdmin = me?.role === "ADMIN";
+  }
+  if (!isOwner && !isAdmin) return { ok: false, error: "forbidden" };
+
+  // 2. Validate body. Reject early if there's no email column to
+  // reply TO — the UI hides the form in this case but a stale page
+  // could still POST.
+  if (!message.email) return { ok: false, error: "no_reply_email" };
+
+  const trimmed = body.trim();
+  if (trimmed.length < REPLY_BODY_MIN) {
+    return { ok: false, error: "body_too_short" };
+  }
+  if (trimmed.length > REPLY_BODY_MAX) {
+    return { ok: false, error: "body_too_long" };
+  }
+
+  // 3. Persist FIRST. Stamp readAt as well if the row wasn't
+  // already acknowledged — replying is implicit acknowledgment, no
+  // reason to leave the row in "unread" state after a reply.
+  const now = new Date();
+  await prisma.contactMessage.update({
+    where: { id: messageId },
+    data: {
+      repliedAt: now,
+      repliedById: userId,
+      replyBody: trimmed,
+      readAt: message.readAt ?? now,
+      readById: message.readAt ? undefined : userId,
+    },
+  });
+
+  // 4. Render + send. The vendor's contactEmail (when set) becomes
+  // both the From identity (so the buyer sees the store's address,
+  // not the platform default) and the Reply-To header. When unset
+  // we fall back to sendEmail's default From.
+  const result = await sendEmail({
+    to: message.email,
+    from: message.store.contactEmail || undefined,
+    replyTo: message.store.contactEmail || undefined,
+    subject: `Re: ข้อความที่คุณส่งถึง ${message.store.name}`,
+    react: ContactReplyEmail({
+      storeName: message.store.name,
+      replyBody: trimmed,
+      originalMessage: message.message,
+      visitorName: message.name,
+      storeContactEmail: message.store.contactEmail,
+    }),
+  });
+
+  revalidateMessageRoutes(messageId);
+
+  if (!result.ok) {
+    console.warn(
+      `[contact-reply] sendEmail failed for message ${messageId}: ${result.reason}`,
+    );
+    // DB row already records the attempt — let the UI surface a
+    // retry button without losing the typed body.
+    return { ok: true, emailDelivered: false, emailError: result.reason };
+  }
+
+  return { ok: true, emailDelivered: true };
 }
