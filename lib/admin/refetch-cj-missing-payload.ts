@@ -27,6 +27,7 @@
  *   - Store owners can refetch THEIR OWN store.
  */
 
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -82,11 +83,21 @@ export async function refetchCJMissingPayloadForStore(
     return { storeId, scanned: 0, refetched: 0, skipped: [], error: "forbidden" };
   }
 
+  // Prisma's Json column has two distinct "null" states:
+  //   - Prisma.DbNull  → column is NULL in Postgres
+  //   - Prisma.JsonNull → column contains the JSON literal `null`
+  // The image-backfill skip uses a JS `!externalPayload` truthy check,
+  // which catches both. The prior query here only matched DbNull so
+  // products stored as JsonNull slipped through and the operator saw
+  // "scanned 0". OR both states explicitly.
   const products = await prisma.product.findMany({
     where: {
       storeId,
       supplier: "CJ",
-      externalPayload: { equals: null as never },
+      OR: [
+        { externalPayload: { equals: Prisma.DbNull } },
+        { externalPayload: { equals: Prisma.JsonNull } },
+      ],
     },
     select: { id: true, externalProductId: true },
   });
