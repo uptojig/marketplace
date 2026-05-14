@@ -18,6 +18,8 @@ import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isPetHouseStore } from "@/lib/landing/pet-house";
+import { PetHouseProductPage } from "@/components/storefront/themes/pet-house/PetHouseProductPage";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
@@ -74,6 +76,32 @@ export default async function ShopProductPage({
     take: 6,
     orderBy: { createdAt: "desc" },
   });
+
+  // ── pet-house custom PDP (fluffyhouse) ──────────────────────
+  // Bespoke product detail layout for the pet-supplies store. Gated by
+  // the same `isPetHouseStore()` detection used for the homepage — slug
+  // match for fluffyhouse, with templateId / landingThemeVariant escape
+  // hatches so an operator can later attach this PDP to a sibling pet
+  // store. Renders inside the shared ShopHeader / ShopFooter chrome
+  // that `app/stores/[slug]/layout.tsx` already wraps around every
+  // store sub-page. Early-return is placed BEFORE the existing
+  // HeroComponent ternary chain so it short-circuits the default flow
+  // for matching stores only — non-pet-house stores stay on the
+  // unchanged FB/trust/BM/lifestyle/ET/specialty/default cascade.
+  if (
+    isPetHouseStore({
+      slug: product.store.slug,
+      templateId: product.store.templateId,
+      landingThemeVariant: product.store.landingThemeVariant,
+    })
+  ) {
+    return (
+      <PetHouseProductPage
+        product={product}
+        images={images}
+      />
+    );
+  }
 
   // Per-template design family decision. Order matters — FB is
   // checked first, then trust, then specialty. In practice the
