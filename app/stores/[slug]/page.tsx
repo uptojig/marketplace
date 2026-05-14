@@ -29,6 +29,8 @@ import {
   isReactTemplateSchema,
   type ReactTemplateSchema,
 } from "@/components/storefront/templates/registry";
+import { isPetHouseStore } from "@/lib/landing/pet-house";
+import { PetHouseHomepage } from "@/components/storefront/themes/pet-house/PetHouseHomepage";
 
 export const dynamic = "force-dynamic";
 
@@ -170,6 +172,17 @@ export default async function StorePage({
 
   const baseStore = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!baseStore) notFound();
+
+  // ── pet-house custom homepage (fluffyhouse) ─────────────────
+  // Bespoke landing for the pet-supplies store. Detection looks at the
+  // store slug AND optional templateId/landingThemeVariant opt-ins so
+  // an operator can later attach this homepage to a sibling pet store.
+  // Renders inside the shared ShopHeader / ShopFooter chrome that
+  // `app/stores/[slug]/layout.tsx` already wraps around every store
+  // sub-page.
+  if (isPetHouseStore(baseStore)) {
+    return <PetHouseHomepage store={baseStore} />;
+  }
 
   // ── New scaffold-based template (vendor wizard v2) ──────────
   // Stores created via the new /create-store wizard set `templateId` to
