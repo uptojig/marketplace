@@ -10,6 +10,8 @@ import {
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 import { ContactForm } from "./contact-form";
+import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { FashionBeautyContactPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyContactPage";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +46,8 @@ export default async function StoreContactPage({
       landingBlocks: true,
       bannerUrl: true,
       slug: true,
+      templateId: true,
+      landingThemeVariant: true,
       // Needed by the filterInactiveProductsFromSchema query below.
       id: true,
     },
@@ -90,6 +94,25 @@ export default async function StoreContactPage({
     !!store.instagramUrl ||
     !!store.websiteUrl ||
     !!store.lineId;
+
+  // FB stores render a bespoke editorial contact page (top essay +
+  // form below + stationery-card store info). Other families fall
+  // through to the generic 2-column layout for now.
+  const isFB = isFashionBeautyStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  if (isFB) {
+    return (
+      <FashionBeautyContactPage
+        slug={params.slug}
+        storeName={store.name}
+        tagline={store.tagline}
+        store={store}
+        addressLines={addressLines}
+      />
+    );
+  }
 
   return (
     <div className="container mx-auto max-w-[1200px] px-4 py-8">
