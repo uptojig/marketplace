@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 // across all storefronts and there are no callers left.
 import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
+import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
+import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
@@ -43,6 +45,15 @@ export default async function ShopProductPage({
     orderBy: { createdAt: "desc" },
   });
 
+  // Per-template design family decision. fashion-beauty (lookbook /
+  // beauty-swatch / boutique) gets the editorial portrait variant;
+  // all other templates render the default hero untouched.
+  const isFB = isFashionBeautyStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const HeroComponent = isFB ? FashionBeautyProductHero : ProductDetailHero;
+
   return (
     <div className="flex min-h-screen flex-col">
 
@@ -62,7 +73,7 @@ export default async function ShopProductPage({
             ← กลับ
           </Link>
 
-      <ProductDetailHero
+      <HeroComponent
         product={{
           id: product.id,
           title: product.titleTh ?? product.title,
@@ -129,29 +140,95 @@ export default async function ShopProductPage({
       />
 
       {related.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--shop-ink)' }}>สินค้าที่เกี่ยวข้อง</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+        <section className={isFB ? "space-y-6 py-8" : "space-y-3"}>
+          <h2
+            className={isFB ? "text-3xl sm:text-4xl" : "text-lg font-semibold"}
+            style={{
+              color: 'var(--shop-ink)',
+              ...(isFB
+                ? {
+                    fontFamily:
+                      'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif',
+                    fontWeight: 500,
+                  }
+                : {}),
+            }}
+          >
+            {isFB ? 'You may also love' : 'สินค้าที่เกี่ยวข้อง'}
+          </h2>
+          <div
+            className={
+              isFB
+                ? "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4"
+                : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6"
+            }
+          >
             {related.map((r) => (
               <Link
                 key={r.id}
                 href={`/stores/${params.slug}/products/${r.id}`}
-                className="group overflow-hidden rounded-lg border"
-                style={{ background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }}
+                className={isFB ? "group block" : "group overflow-hidden rounded-lg border"}
+                style={
+                  isFB
+                    ? undefined
+                    : { background: 'var(--shop-card)', borderColor: 'var(--shop-border)' }
+                }
               >
-                <div className="aspect-square overflow-hidden" style={{ backgroundColor: 'var(--shop-bg)' }}>
+                <div
+                  className={
+                    isFB
+                      ? "overflow-hidden rounded-2xl border bg-white p-2 shadow-sm"
+                      : "aspect-square overflow-hidden"
+                  }
+                  style={{
+                    ...(isFB
+                      ? { borderColor: 'var(--shop-border)' }
+                      : { backgroundColor: 'var(--shop-bg)' }),
+                  }}
+                >
                   {r.imageUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={r.imageUrl}
-                      alt={r.titleTh ?? r.title}
-                      className="h-full w-full object-cover transition group-hover:scale-105"
-                    />
+                    <div
+                      className={
+                        isFB
+                          ? "relative overflow-hidden rounded-xl"
+                          : "h-full w-full"
+                      }
+                      style={
+                        isFB
+                          ? { aspectRatio: '4 / 5', backgroundColor: 'var(--shop-muted)' }
+                          : undefined
+                      }
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={r.imageUrl}
+                        alt={r.titleTh ?? r.title}
+                        className={
+                          isFB
+                            ? "absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                            : "h-full w-full object-cover transition group-hover:scale-105"
+                        }
+                      />
+                    </div>
                   )}
                 </div>
-                <div className="p-3">
-                  <div className="line-clamp-2 text-sm font-medium" style={{ color: 'var(--shop-ink, #1c1917)' }}>{r.titleTh ?? r.title}</div>
-                  <div className="text-sm font-semibold mt-1" style={{ color: "var(--shop-primary)" }}>฿ {Number(r.priceTHB).toLocaleString("th-TH")}</div>
+                <div className={isFB ? "px-1 pt-3" : "p-3"}>
+                  <div
+                    className={
+                      isFB
+                        ? "line-clamp-2 text-sm"
+                        : "line-clamp-2 text-sm font-medium"
+                    }
+                    style={{ color: 'var(--shop-ink, #1c1917)' }}
+                  >
+                    {r.titleTh ?? r.title}
+                  </div>
+                  <div
+                    className="mt-1 text-sm font-semibold"
+                    style={{ color: 'var(--shop-primary)' }}
+                  >
+                    ฿ {Number(r.priceTHB).toLocaleString("th-TH")}
+                  </div>
                 </div>
               </Link>
             ))}

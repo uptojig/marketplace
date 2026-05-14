@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { DM_Sans, Noto_Sans_Thai, Prompt, IBM_Plex_Sans_Thai, Inter } from "next/font/google";
+import {
+  DM_Sans,
+  Noto_Sans_Thai,
+  Prompt,
+  IBM_Plex_Sans_Thai,
+  Inter,
+  Cormorant_Garamond,
+} from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AddToCartModal } from "@/components/shop/AddToCartModal";
@@ -47,6 +54,17 @@ const notoSansThai = Noto_Sans_Thai({
   display: "swap",
 });
 
+// Editorial display serif for the fashion-beauty design family.
+// Loaded as a CSS variable so only stores in this family pick it up
+// (via .theme-fashion-beauty in globals.css); the rest of the app
+// keeps its sans defaults at zero cost.
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-fashion-display",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Marketplace",
   description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
@@ -57,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="th"
-      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, "font-sans", inter.variable)}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>

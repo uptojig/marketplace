@@ -21,6 +21,10 @@ import {
   ORDER_STATUS_COLOR,
   ORDER_STATUS_LABEL,
 } from '@/lib/orders/status-ui';
+import { isFashionBeautyStore } from '@/lib/landing/fashion-beauty';
+
+const FB_DISPLAY_FONT =
+  'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,12 +45,12 @@ export default async function AccountDashboard({
   const userId = (session?.user as { id?: string } | undefined)?.id;
 
   if (!userId) {
-    redirect(`/signin?callbackUrl=/stores/${slug}/account`);
+    redirect(`/stores/${slug}/signin?callbackUrl=/stores/${slug}/account`);
   }
 
   const base = `/stores/${slug}/account`;
 
-  const [user, recentOrdersRaw, activeOrders, addressCount] = await Promise.all([
+  const [user, recentOrdersRaw, activeOrders, addressCount, store] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { name: true, email: true, image: true, createdAt: true },
@@ -60,10 +64,19 @@ export default async function AccountDashboard({
         store: { slug },
       },
     }),
-    // Phase 1C: per-store address book. Filter by storeId so the
-    // dashboard count matches the addresses page rendering.
     prisma.address.count({ where: { userId, store: { slug } } }),
+    prisma.store.findUnique({
+      where: { slug },
+      select: { templateId: true, landingThemeVariant: true },
+    }),
   ]);
+
+  const isFB = store
+    ? isFashionBeautyStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   const recentOrders = toOrderViews(recentOrdersRaw);
   const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
@@ -71,13 +84,41 @@ export default async function AccountDashboard({
 
   return (
     <div className="space-y-6">
-      <Card className="flex items-center gap-4 p-4">
-        <Avatar className="h-14 w-14">
+      <Card
+        className={
+          isFB
+            ? "flex items-center gap-4 rounded-2xl border bg-white p-6 shadow-sm"
+            : "flex items-center gap-4 p-4"
+        }
+      >
+        <Avatar className={isFB ? "h-16 w-16" : "h-14 w-14"}>
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-semibold">สวัสดี, {displayName}</h1>
+          {isFB && (
+            <p
+              className="text-xs uppercase tracking-[0.22em]"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              Welcome back
+            </p>
+          )}
+          <h1
+            className={isFB ? "text-3xl" : "text-lg font-semibold"}
+            style={
+              isFB
+                ? {
+                    fontFamily: FB_DISPLAY_FONT,
+                    fontWeight: 500,
+                    color: 'var(--shop-ink)',
+                    letterSpacing: '-0.005em',
+                  }
+                : undefined
+            }
+          >
+            {isFB ? displayName : `สวัสดี, ${displayName}`}
+          </h1>
           {user?.createdAt && (
             <p className="text-xs text-muted-foreground">
               สมาชิกตั้งแต่{" "}
@@ -109,10 +150,24 @@ export default async function AccountDashboard({
 
       <section>
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="font-semibold">คำสั่งซื้อล่าสุด</h2>
+          <h2
+            className={isFB ? "text-2xl" : "font-semibold"}
+            style={
+              isFB
+                ? {
+                    fontFamily: FB_DISPLAY_FONT,
+                    fontWeight: 500,
+                    color: 'var(--shop-ink)',
+                  }
+                : undefined
+            }
+          >
+            {isFB ? "Recent orders" : "คำสั่งซื้อล่าสุด"}
+          </h2>
           <Link
             href={`${base}/orders`}
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            className="inline-flex items-center gap-1 text-sm hover:underline"
+            style={{ color: isFB ? 'var(--shop-primary)' : undefined }}
           >
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
           </Link>
