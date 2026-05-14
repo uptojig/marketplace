@@ -10,6 +10,7 @@ import {
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 import { ContactForm } from "./contact-form";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -106,7 +107,7 @@ export default async function StoreContactPage({
     !!store.lineId;
 
   // Each design family now has a fully bespoke contact page.
-  const familyKey = { templateId: store.templateId, landingThemeVariant: store.landingThemeVariant };
+  const familyKey = { templateId: effectiveTemplateId(store), landingThemeVariant: store.landingThemeVariant };
   const sharedContactProps = {
     slug: params.slug,
     storeName: store.name,

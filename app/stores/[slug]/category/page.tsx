@@ -22,6 +22,7 @@ import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { PetHouseCategoryFilterHero } from "@/components/storefront/themes/pet-house/PetHouseCategoryFilterHero";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -114,23 +115,23 @@ export default async function CategoryIndexPage({
   // promotes that grid into 4/5 portrait via the data-fb-promote-
   // portrait CSS hook).
   const isFB = isFashionBeautyStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
   const isTrust = !isFB && isTrustStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
   const isBM = !isFB && !isTrust && isBusinessModelStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
   const isLifestyle = !isFB && !isTrust && !isBM && isLifestyleStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
   const isElectronicsTech = !isFB && !isTrust && !isBM && !isLifestyle && isElectronicsTechStore({
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
 
@@ -303,7 +304,7 @@ export default async function CategoryIndexPage({
   // nothing on non-pet-house stores or when no pet-* filter is active.
   const showPetHouseHero = isPetHouseStore({
     slug: store.slug,
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
 

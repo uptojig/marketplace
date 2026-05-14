@@ -24,6 +24,7 @@ import { BusinessModelProductHero } from "@/components/storefront/themes/busines
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
 import { ElectronicsTechProductHero } from "@/components/storefront/themes/electronics-tech/ElectronicsTechProductHero";
 import { SpecialtyProductHero } from "@/components/storefront/themes/specialty/SpecialtyProductHero";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -130,27 +131,27 @@ export default async function ShopProductPage({
   // renders the artisan kraft hero; everything else renders the
   // default hero untouched.
   const isFB = isFashionBeautyStore({
-    templateId: product.store.templateId,
+    templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
   const isTrust = !isFB && isTrustStore({
-    templateId: product.store.templateId,
+    templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
   const isBM = !isFB && !isTrust && isBusinessModelStore({
-    templateId: product.store.templateId,
+    templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
   const isLifestyle = !isFB && !isTrust && !isBM && isLifestyleStore({
-    templateId: product.store.templateId,
+    templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
   const isElectronicsTech = !isFB && !isTrust && !isBM && !isLifestyle && isElectronicsTechStore({
-    templateId: product.store.templateId,
+    templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
   const isSpecialty = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && isSpecialtyStore({
-    templateId: product.store.templateId,
+    templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
   const HeroComponent = isFB

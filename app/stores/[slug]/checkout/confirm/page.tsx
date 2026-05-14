@@ -9,6 +9,7 @@
 // client without any extra chrome (keeps existing behaviour unchanged).
 
 import { prisma } from "@/lib/prisma";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -75,10 +76,10 @@ export default async function CheckoutConfirmPage({
 }) {
   const store = await prisma.store.findUnique({
     where: { slug: params.slug },
-    select: { templateId: true, landingThemeVariant: true },
+    select: { slug: true, templateId: true, landingThemeVariant: true },
   });
   const familyKey = {
-    templateId: store?.templateId,
+    templateId: store ? effectiveTemplateId(store) : null,
     landingThemeVariant: store?.landingThemeVariant,
   };
   const isFB = isFashionBeautyStore(familyKey);
