@@ -53,11 +53,6 @@ export default function CheckoutConfirmPage({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const id = sessionStorage.getItem("checkout.addressId");
-    if (!id) {
-      router.replace(`/stores/${params.slug}/checkout/address`);
-      return;
-    }
     void (async () => {
       // Phase 1C: scope by storeSlug so the confirm step looks up the
       // selected address within THIS store's address book. Otherwise
@@ -66,7 +61,28 @@ export default function CheckoutConfirmPage({
       const res = await fetch(
         `/api/addresses?storeSlug=${encodeURIComponent(params.slug)}`,
       );
+      // Guest checkout — /api/addresses 401s; the typed-in address
+      // lives in sessionStorage instead. Use that without bouncing
+      // to /signin.
+      if (res.status === 401) {
+        const raw = sessionStorage.getItem("checkout.guestAddress");
+        if (!raw) {
+          router.replace(`/stores/${params.slug}/checkout/address`);
+          return;
+        }
+        try {
+          setAddress(JSON.parse(raw) as Address);
+        } catch {
+          router.replace(`/stores/${params.slug}/checkout/address`);
+        }
+        return;
+      }
       if (!res.ok) {
+        router.replace(`/stores/${params.slug}/checkout/address`);
+        return;
+      }
+      const id = sessionStorage.getItem("checkout.addressId");
+      if (!id) {
         router.replace(`/stores/${params.slug}/checkout/address`);
         return;
       }

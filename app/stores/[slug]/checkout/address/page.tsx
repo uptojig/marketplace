@@ -42,6 +42,11 @@ export default function CheckoutAddressPage({
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Guest mode: /api/addresses returned 401 (no session). Skip the
+  // saved-address book entirely, keep the typed-in address in
+  // sessionStorage and let the confirm page read it back without
+  // round-tripping to a guest-leaky API.
+  const [isGuest, setIsGuest] = useState(false);
 
   const [form, setForm] = useState({
     recipientName: "",
@@ -69,12 +74,34 @@ export default function CheckoutAddressPage({
         `/api/addresses?storeSlug=${encodeURIComponent(params.slug)}`,
       );
       // /api/addresses returns 401 when the visitor isn't signed in.
-      // We previously fell through and rendered addresses from a shared
-      // guest user — a data leak between anonymous visitors. Bounce to
-      // /signin with a return URL so they come back here after auth.
+      // Don't bounce to /signin — let guests check out. Hydrate any
+      // previously-typed guest address back from sessionStorage so a
+      // refresh doesn't lose their input.
       if (res.status === 401) {
-        const next = `/stores/${params.slug}/checkout/address`;
-        router.replace(`/signin?callbackUrl=${encodeURIComponent(next)}`);
+        setIsGuest(true);
+        const cached = sessionStorage.getItem("checkout.guestAddress");
+        if (cached) {
+          try {
+            const a = JSON.parse(cached) as Address;
+            setAddresses([a]);
+            setSelectedId(a.id);
+            setForm({
+              recipientName: a.recipientName,
+              phone: a.phone,
+              line1: a.line1,
+              line2: a.line2 ?? "",
+              subdistrict: a.subdistrict ?? "",
+              district: a.district ?? "",
+              province: a.province,
+              postalCode: a.postalCode,
+              country: a.country,
+            });
+          } catch {
+            setShowForm(true);
+          }
+        } else {
+          setShowForm(true);
+        }
         return;
       }
       if (!res.ok) {
@@ -103,6 +130,32 @@ export default function CheckoutAddressPage({
     setSaving(true);
     setError(null);
     try {
+      if (isGuest) {
+        // Guest path: never hit /api/addresses (it 401s anyway), just
+        // stash the typed-in form into sessionStorage. /api/checkout
+        // will receive the address inline and snapshot it onto the
+        // order's shippingAddressJson, so no DB Address row is needed.
+        const guestAddr: Address = {
+          id: "guest",
+          recipientName: form.recipientName,
+          phone: form.phone,
+          line1: form.line1,
+          line2: form.line2 || null,
+          subdistrict: form.subdistrict || null,
+          district: form.district || null,
+          province: form.province,
+          postalCode: form.postalCode,
+          country: form.country,
+        };
+        sessionStorage.setItem(
+          "checkout.guestAddress",
+          JSON.stringify(guestAddr),
+        );
+        setAddresses([guestAddr]);
+        setSelectedId(guestAddr.id);
+        setShowForm(false);
+        return;
+      }
       const res = await fetch("/api/addresses", {
         method: "POST",
         headers: { "content-type": "application/json" },

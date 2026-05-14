@@ -35,22 +35,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid payload", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  // SECURITY: Require a real signed-in user. The previous version
-  // fell back to a single shared `guest@marketplace.local` row when
-  // no session was present, which let anonymous checkouts attribute
-  // orders to the same user record across visitors — and let any
-  // visitor query that user's address history via /api/addresses.
-  // If we ever want guest checkout back, we have to scope guest
-  // identity with a per-browser cookie token, not a shared DB row.
+  // Resolve the buyer. Logged-in shoppers map onto their existing User
+  // row; guests get a fresh User created per checkout, identified only
+  // by the name/phone they typed into the shipping form. This satisfies
+  // the security constraint that closed the shared `guest@marketplace
+  // .local` hole (orders no longer collide across anonymous visitors,
+  // /api/addresses still 401s for unauthed reads) while letting guest
+  // checkout work end-to-end. Email stays null — Postgres treats null
+  // as distinct so the @unique constraint allows many guest rows.
+  let userId: string;
   const session = await getServerSession(authOptions).catch(() => null);
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  if (session?.user?.email) {
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (!user) {
+      return NextResponse.json({ error: "Account not found" }, { status: 401 });
+    }
+    userId = user.id;
+  } else {
+    const guest = await prisma.user.create({
+      data: {
+        email: null,
+        name: parsed.data.address.recipientName,
+        phone: parsed.data.address.phone,
+      },
+    });
+    userId = guest.id;
   }
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-  if (!user) {
-    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
-  }
-  const userId = user.id;
 
   try {
     const order = await createOrderFromCart({
