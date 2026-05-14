@@ -3,6 +3,9 @@ export interface CreatePaymentInput {
   amountTHB: number;
   customerEmail?: string;
   description?: string;
+  /** Per-store slug — used to build the per-store return URL so the
+   *  buyer lands inside the store's chrome + theme after payment. */
+  storeSlug?: string;
 }
 
 export interface CreatePaymentResult {

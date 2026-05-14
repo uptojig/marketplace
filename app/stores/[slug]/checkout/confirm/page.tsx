@@ -107,6 +107,7 @@ export default function CheckoutConfirmPage({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          storeSlug: params.slug,
           items: lines.map((l) => ({ productId: l.productId, qty: l.qty })),
           address: {
             recipientName: address.recipientName,

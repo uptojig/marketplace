@@ -38,7 +38,6 @@ import { useCart } from "@/lib/store/cart";
 import { formatTHB } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CountdownBlock } from "@/components/blocks/countdown";
 import { FaqBlock } from "@/components/blocks/faq";
 import { bmActiveTier } from "@/lib/landing/business-model";
 import { TrendingDown } from "lucide-react";
@@ -76,12 +75,6 @@ const SPECIALTY_HAND_FONT =
 
 const FREE_SHIPPING_THRESHOLD = 990;
 const DEFAULT_SHIPPING = 50;
-
-function endOfTodayISO() {
-  const d = new Date();
-  d.setHours(23, 59, 59, 999);
-  return d.toISOString();
-}
 
 /**
  * Build a deterministic SKU from the product id — mirrors the
@@ -981,17 +974,10 @@ export function StoreCartClient({
           </div>
         )}
 
-        {/* shadcn-studio extras — Countdown urgency + Cart FAQ.
-            Only render when the cart has lines so the empty state stays
-            quiet. Countdown target is end-of-day so it resets daily. */}
+        {/* shadcn-studio extras — Cart FAQ. Only render when the cart
+            has lines so the empty state stays quiet. */}
         {lines.length > 0 && (
           <>
-            <CountdownBlock
-              headline="ดีลพิเศษวันนี้ — สั่งภายในเที่ยงคืนเพื่อรับส่วนลด"
-              target_at={endOfTodayISO()}
-              ctaText="ไปเลือกสินค้าเพิ่ม"
-              ctaLink={`/stores/${store.slug}/category`}
-            />
             <FaqBlock
               title="คำถามที่พบบ่อยเรื่องการสั่งซื้อ"
               items={[

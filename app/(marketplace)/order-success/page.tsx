@@ -43,18 +43,11 @@ export default async function OrderSuccess({
     );
   }
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    redirect(`/signin?next=/order-success?orderId=${encodeURIComponent(orderId)}`);
-  }
-  const me = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    select: { id: true, email: true },
-  });
-  if (!me) {
-    redirect(`/signin?next=/order-success?orderId=${encodeURIComponent(orderId)}`);
-  }
-
+  // Unauthenticated lookup of the order's store FIRST — guest checkout
+  // means the buyer may not have a session, and we still need to bounce
+  // them to the per-store success page where they can see their order.
+  // We only resolve the store slug here (no order body), so this is not
+  // a PII leak: the orderId is a cuid, not enumerable.
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: {
@@ -67,11 +60,12 @@ export default async function OrderSuccess({
     },
   });
 
-  if (!order || order.userId !== me.id) notFound();
+  if (!order) notFound();
 
-  // If every item is from the same store, surface its slug so the
-  // primary CTAs can return the user to that storefront. Multi-store
-  // orders fall back to the marketplace home.
+  // If every item is from the same store, surface its slug and bounce
+  // to the per-store success page — no auth required at this layer
+  // (guests can see their own freshly-placed order via the per-store
+  // page which scopes by orderId in the URL).
   const storeSlugs = new Set(
     order.items.map((it) => it.product.store?.slug).filter(Boolean) as string[],
   );
@@ -81,15 +75,23 @@ export default async function OrderSuccess({
       ? order.items[0].product.store.name
       : null;
 
-  // Phase-1B: when the order lives entirely inside one store, bounce
-  // to the per-store success page so the storefront chrome + theme
-  // cascade survives. The legacy marketplace-level layout below is
-  // only rendered for multi-store carts (rare today).
   if (singleStore) {
     redirect(
       `/stores/${singleStore}/checkout/success?orderId=${encodeURIComponent(orderId)}`,
     );
   }
+
+  // Multi-store fallback only — enforce auth so we don't leak order
+  // contents for orders the visitor doesn't own.
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    redirect(`/signin?next=/order-success?orderId=${encodeURIComponent(orderId)}`);
+  }
+  const me = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true, email: true },
+  });
+  if (!me || order.userId !== me.id) notFound();
 
   // Estimated delivery — naive 1-3 business days for now (TODO real
   // ETA from shipping carrier API).
