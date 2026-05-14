@@ -123,9 +123,16 @@ export default async function ShopProductPage({
             imageUrl: v.imageUrl,
             inventory: v.inventory,
           })),
-          // Use Prisma stockTotal as the catch-all stockLeft. When variants
-          // exist, the hero prefers the selected variant's inventory.
-          stockLeft: product.hasVariants ? null : product.stockTotal,
+          // Use Prisma stockTotal as stockLeft. For dropshipping products
+          // (CJ / AliExpress) stockTotal often stays 0 because real stock
+          // lives on the supplier side — treat 0 as "stock unknown" (null)
+          // so the Add to Cart button stays enabled instead of locking
+          // the buyer out. Variants override this via their own inventory.
+          stockLeft: product.hasVariants
+            ? null
+            : product.stockTotal > 0
+              ? product.stockTotal
+              : null,
           // rating / reviewCount / soldCount intentionally omitted —
           // not in schema yet. Hero hides the meta row gracefully.
         }}
