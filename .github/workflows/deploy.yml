@@ -32,7 +32,9 @@ jobs:
           fi
 
       - name: Setup SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
+        # v0.9.0 → v0.10.0: Node 20 deprecation (forced to Node 24 by
+        # June 2026). Bumping unblocks future runner updates.
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.DROPLET_SSH_KEY }}
 
@@ -46,9 +48,22 @@ jobs:
           # 5s default), taking the whole workflow down even though
           # the actual deploy ssh ran fine. We don't need the pre-scan
           # anyway — accept-new handles the first connection.
+          #
+          # Keep-alive flags (ServerAliveInterval=60 + ServerAliveCountMax=10)
+          # are CRITICAL — Next.js static page generation inside the
+          # docker build can take 4+ minutes of silence on the SSH
+          # channel. Without keep-alive, intermediate NATs / load
+          # balancers / DO Cloud Firewall drop the TCP connection as
+          # "idle", the ssh client sees "Connection timed out during
+          # banner exchange" or "Broken pipe", and the workflow fails
+          # at exit 255 even though the deploy is mid-way through a
+          # successful build on the droplet.
           mkdir -p ~/.ssh
           ssh -o StrictHostKeyChecking=accept-new \
               -o UserKnownHostsFile=~/.ssh/known_hosts \
               -o ConnectTimeout=30 \
+              -o ServerAliveInterval=60 \
+              -o ServerAliveCountMax=10 \
+              -o TCPKeepAlive=yes \
               root@${{ secrets.DROPLET_IP }} \
               "/opt/marketplace/infra/setup/deploy.sh ${{ steps.branch.outputs.name }}"
