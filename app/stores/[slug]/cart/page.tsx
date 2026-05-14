@@ -7,6 +7,7 @@ import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { StoreCartClient } from "./cart-client";
+import { FashionBeautyCartPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyCartPage";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,15 @@ export default async function StoreCartPage({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
+
+  // FB stores render a fully bespoke editorial cart layout (magazine
+  // line items + soft-pink summary frame + italic-serif trust strip).
+  // Other families continue to use the shared StoreCartClient with
+  // its family-aware branching for now — they'll be promoted to their
+  // own bespoke pages in subsequent phases of the 6×8=48 build-out.
+  if (isFB) {
+    return <FashionBeautyCartPage store={store} />;
+  }
 
   return (
     <StoreCartClient

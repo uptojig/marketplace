@@ -35,6 +35,7 @@ import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { SpecialtyStamp } from "@/components/storefront/themes/specialty/SpecialtyDivider";
+import { FashionBeautyOrderSuccessPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyOrderSuccessPage";
 
 export const dynamic = "force-dynamic";
 
@@ -175,6 +176,32 @@ export default async function StoreOrderSuccess({
 
   const shortCode = order.id.slice(-8).toUpperCase();
   const storeName = order.store?.name ?? params.slug;
+
+  // FB stores render a fully bespoke editorial thank-you page. Other
+  // families fall through to the existing JSX below with their own
+  // family-aware branching until they're promoted in later phases.
+  if (isFB) {
+    return (
+      <FashionBeautyOrderSuccessPage
+        slug={params.slug}
+        storeName={storeName}
+        shortCode={shortCode}
+        fullId={order.id}
+        buyerEmail={me.email ?? null}
+        totalTHB={Number(order.totalTHB)}
+        items={order.items.map((it) => ({
+          id: it.id,
+          title: it.product.titleTh ?? it.product.title,
+          imageUrl: it.product.imageUrl,
+          qty: it.qty,
+          lineTotalTHB: Number(it.unitPriceTHB) * it.qty,
+        }))}
+        etaRange={`${fmt(eta1)} – ${fmt(eta3)}`}
+        statusLabel={translateStatus(order.status)}
+        paymentStatusLabel={order.payment ? translateStatus(order.payment.status) : null}
+      />
+    );
+  }
 
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
