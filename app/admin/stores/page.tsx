@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Plus, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import type { StoreApprovalStatus } from "@prisma/client";
+import { getStoreQualitySnapshot } from "@/lib/admin/enrich-products";
+import { EnrichProductsButton } from "./enrich-products-button";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +57,16 @@ export default async function AdminStoresPage({
     take: 200,
   });
 
+  // Per-store product-quality snapshot — counts of translated /
+  // categorized / low-image. Fan-out is bounded (<= 200 stores per
+  // the take above) and each snapshot is three count() queries, so
+  // we accept the parallelism rather than wiring a custom join.
+  const qualityById = new Map(
+    await Promise.all(
+      stores.map(async (s) => [s.id, await getStoreQualitySnapshot(s.id)] as const),
+    ),
+  );
+
   return (
     <div className="mx-auto max-w-6xl space-y-4">
       <div className="flex items-center justify-between gap-4">
@@ -94,6 +106,7 @@ export default async function AdminStoresPage({
               <th className="px-4 py-3">สถานะ</th>
               <th className="px-4 py-3">เจ้าของ</th>
               <th className="px-4 py-3 text-center">สินค้า</th>
+              <th className="px-4 py-3">คุณภาพข้อมูล</th>
               <th className="px-4 py-3">โดเมน</th>
               <th className="px-4 py-3">สร้างเมื่อ</th>
               <th className="px-4 py-3"></th>
@@ -102,7 +115,7 @@ export default async function AdminStoresPage({
           <tbody className="divide-y">
             {stores.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">
                   ไม่พบร้านค้า
                 </td>
               </tr>
@@ -145,6 +158,43 @@ export default async function AdminStoresPage({
                     {s._count.products}
                   </td>
                   <td className="px-4 py-3 text-xs">
+                    {(() => {
+                      const q = qualityById.get(s.id);
+                      if (!q || q.total === 0) {
+                        return <span className="text-muted-foreground">—</span>;
+                      }
+                      return (
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className={
+                              q.translated === q.total
+                                ? "text-green-700"
+                                : "text-amber-700"
+                            }
+                          >
+                            แปลไทย {q.translated}/{q.total}
+                          </span>
+                          <span
+                            className={
+                              q.categorized === q.total
+                                ? "text-green-700"
+                                : "text-amber-700"
+                            }
+                          >
+                            Category {q.categorized}/{q.total}
+                          </span>
+                          <span
+                            className={
+                              q.lowImage === 0 ? "text-green-700" : "text-red-700"
+                            }
+                          >
+                            รูปน้อย {q.lowImage}
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-4 py-3 text-xs">
                     {s.customDomain ? (
                       <code className="rounded bg-gray-100 px-1.5 py-0.5">{s.customDomain}</code>
                     ) : (
@@ -156,6 +206,7 @@ export default async function AdminStoresPage({
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-3">
+                      <EnrichProductsButton storeId={s.id} storeName={s.name} />
                       <Link
                         href={`/admin/stores/${s.id}`}
                         className="inline-flex items-center gap-1 text-xs text-gray-600 hover:underline"

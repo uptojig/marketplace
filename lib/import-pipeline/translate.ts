@@ -1,16 +1,24 @@
 
 import type { SupplierProduct } from '@/lib/import-sources/types';
+import Anthropic from '@anthropic-ai/sdk';
+import { AGENT_MODEL } from '@/lib/agent/config';
 
 /**
  * Thai localization for supplier products.
  *
- * Real impl: Claude API with the product-translator-ip-filter skill prompt.
- * Current: rule-based mock that demonstrates the output shape.
+ * Real impl: Claude API via the @anthropic-ai/sdk. Model is the shared
+ * Haiku 4.5 (lib/agent/config.AGENT_MODEL) — chosen for speed/cost on
+ * batch translation tasks (~394 products per enrichment run).
  *
  * Pricing psychology (per skill):
  *   - Under ฿5,000: avoid round numbers, prefer ฿299/฿499/฿990
  *   - Markup: typically 2.5x-4x cost (we use 3x default)
  *   - costTHB = costUSD * 36 + shipping
+ *
+ * `translateProductCopy` exported separately because the enrichment
+ * tool only needs title + description + a category hint (the rest of
+ * `TranslatedProduct` — pricing, variants — applies to fresh imports,
+ * not products that already live in the DB).
  */
 
 export interface TranslatedProduct {
@@ -59,7 +67,196 @@ const COLOR_TH: Record<string, string> = {
   purple: 'ม่วง',
 };
 
-// Category mapping
+/**
+ * Output of a single product copy translation call.
+ *
+ * `categoryNameTh` + `categorySlug` are PROPOSALS from the model. The
+ * enrichment server action ultimately decides whether to assign the
+ * product to an existing Category row (by slug-match) or create a new
+ * one. Pure-translation callers (the legacy import pipeline below)
+ * map them onto the in-memory `CATEGORY_MAP` instead.
+ */
+export interface TranslatedCopy {
+  titleTh: string;
+  descriptionTh: string;
+  categoryNameTh: string;
+  categorySlug: string;
+  tags: string[];
+}
+
+export class TranslateNotConfiguredError extends Error {
+  constructor() {
+    super('ANTHROPIC_API_KEY missing');
+    this.name = 'TranslateNotConfiguredError';
+  }
+}
+
+let cachedClient: Anthropic | null = null;
+function getClient(): Anthropic {
+  if (cachedClient) return cachedClient;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new TranslateNotConfiguredError();
+  cachedClient = new Anthropic({ apiKey });
+  return cachedClient;
+}
+
+const TRANSLATE_COPY_TOOL: Anthropic.Tool = {
+  name: 'emit_thai_copy',
+  description:
+    'Return the Thai translation of a single dropshipping product. ' +
+    'Output natural marketing copy suitable for a Thai e-commerce listing, ' +
+    'not a literal word-for-word translation.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      titleTh: {
+        type: 'string',
+        description:
+          'Thai marketing-quality title. Concise, idiomatic. Keep brand names / model numbers in Latin script when they appear. Max 120 chars.',
+      },
+      descriptionTh: {
+        type: 'string',
+        description:
+          'Thai description, 1-3 short paragraphs. Highlight features, materials, sizing. Drop filler like "high quality", "wholesale", "drop shipping". Max 1500 chars.',
+      },
+      categoryNameTh: {
+        type: 'string',
+        description:
+          'Concise Thai category label (1-3 words) — what shoppers would expect to filter by, e.g. "เสื้อผ้าผู้หญิง", "หูฟัง", "ของใช้ในครัว".',
+      },
+      categorySlug: {
+        type: 'string',
+        description:
+          'Lowercase ASCII URL slug for the category — a-z/0-9/hyphen only, e.g. "women-fashion", "earbuds", "kitchenware".',
+      },
+      tags: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Up to 6 short Thai tags useful for search. Stay product-relevant; no marketing fluff.',
+      },
+    },
+    required: ['titleTh', 'descriptionTh', 'categoryNameTh', 'categorySlug', 'tags'],
+  },
+};
+
+/**
+ * System prompt for the translator. Sent with prompt caching so the
+ * ~394-product batch only pays the prompt-build cost on the first
+ * call — subsequent products in the run reuse the cached prefix.
+ *
+ * See: https://docs.claude.com/en/docs/build-with-claude/prompt-caching
+ */
+const TRANSLATE_SYSTEM_PROMPT = `You are translating dropshipping product copy from English to Thai for a Thai marketplace. Translate the title and description to natural, sellable Thai, and propose a Thai category label + ASCII URL slug.
+
+Rules:
+- Output Thai. Keep brand names, model numbers, and technical specs in Latin script.
+- Sound like a real Thai product listing — not a literal translation. Drop filler ("high quality", "wholesale", "drop shipping", "factory direct").
+- Title: <= 120 Thai characters, marketing-grade.
+- Description: 1-3 short paragraphs, focused on features / materials / sizing that matter to a Thai shopper. <= 1500 chars.
+- Category: pick a single concise Thai label a shopper would filter on (e.g. "เสื้อผ้าผู้หญิง", "หูฟัง", "ของใช้ในครัว"). Match the proposed slug to it.
+- Slug: lowercase a-z/0-9 with hyphens; no Thai script, no other punctuation. Max 60 chars.
+- Tags: <= 6 short Thai keywords. Skip generic marketing words.
+- Never invent specs that aren't in the source.
+- ALWAYS call the emit_thai_copy tool — do NOT reply with plain text.`;
+
+function basicSlug(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 60);
+}
+
+function cleanSlug(raw: string | undefined, fallback: string): string {
+  const cleaned = basicSlug(raw ?? '');
+  return cleaned || fallback || 'category';
+}
+
+/**
+ * Call Claude Haiku 4.5 to translate one product's title + description
+ * and propose a category. Throws on hard errors so the caller can
+ * decide whether to retry or skip — we never silently return English.
+ *
+ * Uses prompt caching on the system prompt (the system block is the
+ * largest static part of the request; with caching, the per-call cost
+ * drops to roughly user-tokens + output-tokens after the first hit).
+ */
+export async function translateProductCopy(input: {
+  title: string;
+  description?: string | null;
+  supplierCategories?: string[];
+  /** Existing per-store category names — purely a hint, not a constraint. */
+  storeCategoryHints?: string[];
+}): Promise<TranslatedCopy> {
+  const client = getClient();
+
+  const userParts: string[] = [];
+  userParts.push(`Title (English): ${input.title}`);
+  if (input.description?.trim()) {
+    // Bound the description so a wall-of-text supplier blurb doesn't
+    // blow out the input-token budget. 4000 chars is enough to capture
+    // every CJ description we've seen in spot-checks.
+    userParts.push(`Description (English):\n${input.description.trim().slice(0, 4000)}`);
+  }
+  if (input.supplierCategories && input.supplierCategories.length > 0) {
+    userParts.push(`Supplier categories: ${input.supplierCategories.join(' > ')}`);
+  }
+  if (input.storeCategoryHints && input.storeCategoryHints.length > 0) {
+    userParts.push(
+      `Existing store categories (prefer one of these if it fits, else propose new):\n${input.storeCategoryHints
+        .map((c) => `  - ${c}`)
+        .join('\n')}`,
+    );
+  }
+
+  const response = await client.messages.create({
+    model: AGENT_MODEL,
+    max_tokens: 1500,
+    system: [
+      {
+        type: 'text',
+        text: TRANSLATE_SYSTEM_PROMPT,
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
+    tools: [TRANSLATE_COPY_TOOL],
+    tool_choice: { type: 'tool', name: TRANSLATE_COPY_TOOL.name },
+    messages: [{ role: 'user', content: userParts.join('\n\n') }],
+  });
+
+  for (const block of response.content) {
+    if (block.type !== 'tool_use' || block.name !== TRANSLATE_COPY_TOOL.name) continue;
+    const out = block.input as Partial<TranslatedCopy>;
+    const titleTh = (out.titleTh ?? '').trim();
+    const descriptionTh = (out.descriptionTh ?? '').trim();
+    const categoryNameTh = (out.categoryNameTh ?? '').trim();
+    const fallbackSlug = basicSlug(input.title) || 'product';
+    const categorySlug = cleanSlug(out.categorySlug, fallbackSlug);
+    const tags = Array.isArray(out.tags)
+      ? out.tags.filter((t): t is string => typeof t === 'string').slice(0, 6)
+      : [];
+    if (!titleTh) {
+      throw new Error('translator returned empty titleTh');
+    }
+    return {
+      titleTh: titleTh.slice(0, 200),
+      descriptionTh: descriptionTh.slice(0, 2000),
+      categoryNameTh: categoryNameTh.slice(0, 80) || 'อื่นๆ',
+      categorySlug,
+      tags,
+    };
+  }
+
+  throw new Error('translator did not call emit_thai_copy tool');
+}
+
+// Category mapping — used by the legacy `translateProduct` path (the
+// supplier import pipeline). The enrichment tool ignores this and
+// asks Claude to pick a Thai category directly per-product.
 const CATEGORY_MAP: Array<{ keywords: string[]; th: string; slug: string }> = [
   { keywords: ['earbuds', 'headphones', 'audio'], th: 'เครื่องเสียง > หูฟัง', slug: 'electronics-audio' },
   { keywords: ['laptop stand', 'laptop'], th: 'อุปกรณ์คอมพิวเตอร์ > ฐานวางโน๊ตบุ๊ก', slug: 'computer-stands' },
@@ -73,12 +270,38 @@ const CATEGORY_MAP: Array<{ keywords: string[]; th: string; slug: string }> = [
 
 export async function translateProduct(product: SupplierProduct): Promise<TranslatedProduct> {
   const enTitle = product.title;
-  const thTitle = await translateTitle(enTitle, product.supplierCategories);
-
   const enDesc = product.description ?? '';
-  const thDesc = await translateDescription(enDesc, enTitle);
 
-  const cat = mapCategory(enTitle, product.supplierCategories);
+  // Pull live Thai copy + category proposal from Claude. Fall back to
+  // English + heuristic category if the API isn't configured or errors
+  // — the legacy import pipeline shouldn't hard-fail on a translator
+  // hiccup; it can still surface the row for the operator to fix up
+  // manually after import.
+  let thTitle = enTitle;
+  let thDesc = enDesc;
+  let cat: { th: string; slug: string } = mapCategory(enTitle, product.supplierCategories);
+  let tags: string[] = product.supplierTags ?? [];
+
+  try {
+    const ai = await translateProductCopy({
+      title: enTitle,
+      description: enDesc,
+      supplierCategories: product.supplierCategories,
+    });
+    thTitle = ai.titleTh;
+    thDesc = ai.descriptionTh;
+    cat = { th: ai.categoryNameTh, slug: ai.categorySlug };
+    tags = ai.tags.length > 0 ? ai.tags : tags;
+  } catch (err) {
+    // Best-effort during import. The enrichment tool re-runs against
+    // the persisted row later and will fail loudly there if needed.
+    if (err instanceof TranslateNotConfiguredError) {
+      // ANTHROPIC_API_KEY not set — silent fallback; this is expected
+      // in local dev. Logs would be noise.
+    } else {
+      console.warn('[import-pipeline.translate] translateProductCopy failed, falling back to heuristic:', err);
+    }
+  }
 
   const costTHB = Math.round(product.costPrice * USD_TO_THB);
   const priceTHB = applyPricingPsychology(costTHB * DEFAULT_MARKUP);
@@ -98,7 +321,7 @@ export async function translateProduct(product: SupplierProduct): Promise<Transl
     description: { th: thDesc, en: enDesc },
     category: cat.th,
     categorySlug: cat.slug,
-    tags: product.supplierTags ?? [],
+    tags,
     priceTHB,
     compareAtTHB,
     costTHB,
@@ -114,57 +337,19 @@ export async function translateProduct(product: SupplierProduct): Promise<Transl
 }
 
 export async function translateBatch(products: SupplierProduct[]): Promise<TranslatedProduct[]> {
-  return Promise.all(products.map(translateProduct));
+  // Bounded concurrency: hit Anthropic 5-at-a-time to amortize the
+  // per-request HTTP overhead without blowing through token/min limits.
+  const CONCURRENCY = 5;
+  const out: TranslatedProduct[] = new Array(products.length);
+  for (let i = 0; i < products.length; i += CONCURRENCY) {
+    const slice = products.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(slice.map(translateProduct));
+    for (let j = 0; j < results.length; j++) out[i + j] = results[j];
+  }
+  return out;
 }
 
 // =============== Helpers ===============
-
-/**
- * Stub: real impl calls Claude API.
- * For demo, applies simple keyword swaps that look passably Thai.
- */
-async function translateTitle(en: string, categories?: string[]): Promise<string> {
-  // TODO: real Claude API call:
-  // const res = await anthropic.messages.create({
-  //   model: 'claude-3-7-sonnet-20250219',
-  //   system: SKILL_PROMPT,  // load product-translator-ip-filter skill
-  //   messages: [{ role: 'user', content: JSON.stringify({ title: en, categories }) }],
-  // });
-  // return JSON.parse(res.content[0].text).title.th;
-
-  // Mock: pattern-match common product types
-  const lc = en.toLowerCase();
-  if (lc.includes('earbuds')) return 'หูฟังบลูทูธไร้สาย ตัดเสียงรบกวน คุยโทรศัพท์ชัด';
-  if (lc.includes('laptop stand')) return 'ที่วางโน๊ตบุ๊กพับได้ ปรับองศาได้ ระบายความร้อน';
-  if (lc.includes('water bottle')) return 'กระติกน้ำสแตนเลส 750ml เก็บความเย็น 24 ชม.';
-  if (lc.includes('ring light')) return 'ไฟริงไลท์ 10 นิ้ว พร้อมขาตั้ง ปรับแสง 3 โทน';
-  if (lc.includes('phone holder') && lc.includes('car')) {
-    return 'ที่วางโทรศัพท์ในรถ แม่เหล็กแรง ติดแน่น ไม่หล่น';
-  }
-  if (lc.includes('sweater') || lc.includes('pullover')) {
-    return 'เสื้อสเวตเตอร์ถักไหมพรม สไตล์เกาหลี ทรงโอเวอร์ไซส์';
-  }
-  if (lc.includes('baking mat')) return 'แผ่นรองอบซิลิโคน กันติด ใช้ซ้ำได้ ปลอดสาร BPA (เซ็ต 2 ชิ้น)';
-  if (lc.includes('organizer') || lc.includes('drawer')) {
-    return 'กล่องเก็บของอะคริลิคใส วางซ้อนได้ จัดเครื่องสำอาง';
-  }
-  return en;
-}
-
-async function translateDescription(en: string, title: string): Promise<string> {
-  // Mock — same TODO as title
-  const lc = (title + ' ' + en).toLowerCase();
-  if (lc.includes('earbuds')) {
-    return 'หูฟังตัดเสียงรบกวน เสียงคมชัด เบสแน่น แบตอึด 35 ชม. กันน้ำ IPX5 ใช้สั่งงานผ่านสัมผัส ชาร์จไว USB-C';
-  }
-  if (lc.includes('water bottle')) {
-    return 'กระติกน้ำสแตนเลสฉนวน 2 ชั้น เก็บเย็น 24 ชม. ร้อน 12 ชม. ฝาเกลียวกันรั่ว มีหูจับ พกพาสะดวก';
-  }
-  if (lc.includes('ring light')) {
-    return 'ไฟริงไลท์ขนาด 10 นิ้ว ปรับแสงได้ 3 โทน 10 ระดับ มาพร้อมขาตั้ง 1.6 เมตร เหมาะกับไลฟ์สด ถ่ายคอนเทนต์ TikTok';
-  }
-  return en.slice(0, 200);
-}
 
 function mapCategory(title: string, supplierCats?: string[]): { th: string; slug: string } {
   const haystack = `${title} ${(supplierCats ?? []).join(' ')}`.toLowerCase();
