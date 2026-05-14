@@ -29,10 +29,7 @@ export default async function VendorDashboard() {
       <div>
         <h1 className="text-2xl font-semibold">ภาพรวมร้านค้า</h1>
         <p className="text-sm text-muted-foreground">
-          Mode:{" "}
-          <span className="font-mono">
-            ANYPAY_MODE={process.env.ANYPAY_MODE ?? "mock"}
-          </span>
+          ยอดล่าสุด จำนวนสินค้า และสถานะการจัดส่ง
         </p>
       </div>
 

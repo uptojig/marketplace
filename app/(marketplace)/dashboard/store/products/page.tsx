@@ -73,7 +73,7 @@ export default async function StoreProductsPage({
           </p>
           <Link
             href={`/dashboard/store/products/new${slugSuffix}`}
-            className="mt-5 inline-flex items-center gap-1.5 rounded-md bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
           >
             <Plus className="h-3.5 w-3.5" />
             เพิ่มสินค้าแรก
