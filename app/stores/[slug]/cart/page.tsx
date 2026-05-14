@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
 import { StoreCartClient } from "./cart-client";
 
 export const dynamic = "force-dynamic";
@@ -25,13 +26,25 @@ export default async function StoreCartPage({
   if (!store) notFound();
 
   // Tell the cart client which design family to render under. The
-  // .theme-fashion-beauty cascade on the layout wrapper handles the
-  // palette + headings; this flag lets us swap copy + a couple of
-  // layout details (serif title, italic empty state, etc).
+  // .theme-fashion-beauty / .theme-trust cascade on the layout wrapper
+  // handles palette + headings; these flags let us swap copy + a
+  // couple of layout details (serif title, divider style, etc). FB
+  // takes precedence — they're disjoint in practice but we pick a
+  // consistent winner if a future store row somehow matched both.
   const isFB = isFashionBeautyStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
+  const isTrust = !isFB && isTrustStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
 
-  return <StoreCartClient store={store} isFashionBeauty={isFB} />;
+  return (
+    <StoreCartClient
+      store={store}
+      isFashionBeauty={isFB}
+      isTrust={isTrust}
+    />
+  );
 }

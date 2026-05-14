@@ -20,6 +20,9 @@ const ERROR_MESSAGES: Record<string, string> = {
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
 
+const TRUST_DISPLAY_FONT =
+  'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
 function ErrorBanner() {
   const params = useSearchParams();
   const error = params.get('error');
@@ -35,9 +38,11 @@ function ErrorBanner() {
 function EmailForm({
   defaultCallback,
   isFashionBeauty,
+  isTrust,
 }: {
   defaultCallback: string;
   isFashionBeauty: boolean;
+  isTrust: boolean;
 }) {
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -67,17 +72,40 @@ function EmailForm({
     );
   }
 
+  // Per-family input + submit skinning. Trust uses squared rounded-sm
+  // inputs with gold-hairline borders + uppercase-tracking submit.
+  const labelClass =
+    isFashionBeauty
+      ? 'mb-2 block text-xs uppercase tracking-[0.18em]'
+      : isTrust
+        ? 'mb-2 block text-xs uppercase'
+        : 'mb-1 block text-sm font-medium';
+  const labelStyle: React.CSSProperties = isTrust
+    ? {
+        color: 'var(--shop-ink-muted)',
+        letterSpacing: '0.28em',
+        fontWeight: 600,
+      }
+    : { color: 'var(--shop-ink-muted)' };
+  const inputClass =
+    isFashionBeauty
+      ? 'rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
+      : isTrust
+        ? 'rounded-sm border-[var(--shop-accent)] bg-white px-4 py-5'
+        : '';
+  const submitClass =
+    isFashionBeauty
+      ? 'w-full rounded-full py-6 text-sm font-medium text-white hover:opacity-90'
+      : isTrust
+        ? 'w-full rounded-sm py-6 text-sm font-semibold uppercase tracking-[0.18em] text-white hover:opacity-90'
+        : 'w-full';
+  const submitStyle =
+    isFashionBeauty || isTrust ? { background: 'var(--shop-primary)' } : undefined;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 text-left">
       <label className="block">
-        <span
-          className={
-            isFashionBeauty
-              ? 'mb-2 block text-xs uppercase tracking-[0.18em]'
-              : 'mb-1 block text-sm font-medium'
-          }
-          style={{ color: 'var(--shop-ink-muted)' }}
-        >
+        <span className={labelClass} style={labelStyle}>
           อีเมล
         </span>
         <Input
@@ -86,26 +114,20 @@ function EmailForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className={
-            isFashionBeauty
-              ? 'rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
-              : ''
-          }
+          className={inputClass}
         />
       </label>
       <Button
         type="submit"
         disabled={submitting}
-        className={
-          isFashionBeauty
-            ? 'w-full rounded-full py-6 text-sm font-medium text-white hover:opacity-90'
-            : 'w-full'
-        }
-        style={
-          isFashionBeauty ? { background: 'var(--shop-primary)' } : undefined
-        }
+        className={submitClass}
+        style={submitStyle}
       >
-        {submitting ? 'กำลังส่ง...' : 'ส่งลิงก์ยืนยันทางอีเมล'}
+        {submitting
+          ? 'กำลังส่ง...'
+          : isTrust
+            ? 'Send sign-up link'
+            : 'ส่งลิงก์ยืนยันทางอีเมล'}
       </Button>
     </form>
   );
@@ -115,11 +137,13 @@ export function StoreSignUpClient({
   storeSlug,
   storeName,
   isFashionBeauty,
+  isTrust = false,
   defaultCallback,
 }: {
   storeSlug: string;
   storeName: string;
   isFashionBeauty: boolean;
+  isTrust?: boolean;
   defaultCallback: string;
 }) {
   return (
@@ -151,6 +175,41 @@ export function StoreSignUpClient({
               สมัครเพื่อรับข้อเสนอพิเศษและคอลเลคชั่นใหม่ก่อนใคร
             </p>
           </div>
+        ) : isTrust ? (
+          <div className="text-center">
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.28em',
+                fontWeight: 600,
+              }}
+            >
+              Maison · New Members
+            </p>
+            <h1
+              className="mt-3 text-4xl sm:text-5xl"
+              style={{
+                color: 'var(--shop-ink)',
+                fontFamily: TRUST_DISPLAY_FONT,
+                fontWeight: 600,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Create your account
+            </h1>
+            <div
+              aria-hidden
+              className="mx-auto mt-5 h-px w-16"
+              style={{ background: 'var(--shop-accent)' }}
+            />
+            <p
+              className="mt-5 text-sm"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              สมัครเพื่อเริ่มสะสมที่ {storeName}
+            </p>
+          </div>
         ) : (
           <div className="text-center">
             <h1 className="text-2xl font-semibold" style={{ color: 'var(--shop-ink)' }}>
@@ -173,10 +232,12 @@ export function StoreSignUpClient({
           className={
             isFashionBeauty
               ? 'rounded-2xl border bg-white p-8 shadow-sm'
-              : 'p-6'
+              : isTrust
+                ? 'rounded-sm border bg-white p-8 shadow-sm'
+                : 'p-6'
           }
           style={{
-            borderColor: 'var(--shop-border)',
+            borderColor: isTrust ? 'var(--shop-accent)' : 'var(--shop-border)',
             background: 'var(--shop-card)',
           }}
         >
@@ -186,7 +247,9 @@ export function StoreSignUpClient({
             className={
               isFashionBeauty
                 ? 'w-full rounded-full border-[var(--shop-border)] py-6'
-                : 'w-full'
+                : isTrust
+                  ? 'w-full rounded-sm border-[var(--shop-ink)] py-6 uppercase tracking-[0.18em]'
+                  : 'w-full'
             }
           >
             <Mail className="mr-2 h-4 w-4" />
@@ -196,11 +259,17 @@ export function StoreSignUpClient({
           <div className="relative my-6">
             <div
               className="absolute inset-x-0 top-1/2 h-px"
-              style={{ background: 'var(--shop-border)' }}
+              style={{
+                background: isTrust ? 'var(--shop-accent)' : 'var(--shop-border)',
+              }}
             />
             <span
-              className="relative bg-white px-3 text-xs uppercase tracking-[0.18em]"
-              style={{ color: 'var(--shop-ink-muted)' }}
+              className="relative bg-white px-3 text-xs uppercase"
+              style={{
+                color: 'var(--shop-ink-muted)',
+                letterSpacing: isTrust ? '0.28em' : '0.18em',
+                fontWeight: isTrust ? 600 : undefined,
+              }}
             >
               หรือ
             </span>
@@ -210,6 +279,7 @@ export function StoreSignUpClient({
             <EmailForm
               defaultCallback={defaultCallback}
               isFashionBeauty={isFashionBeauty}
+              isTrust={isTrust}
             />
           </Suspense>
 
@@ -236,7 +306,9 @@ export function StoreSignUpClient({
           <Link
             href={`/stores/${storeSlug}/signin`}
             className="font-medium hover:underline"
-            style={{ color: 'var(--shop-primary)' }}
+            style={{
+              color: isTrust ? 'var(--shop-accent)' : 'var(--shop-primary)',
+            }}
           >
             เข้าสู่ระบบ
           </Link>

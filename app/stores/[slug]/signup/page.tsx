@@ -13,6 +13,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
 import { StoreSignUpClient } from "./signup-client";
 
 export const dynamic = "force-dynamic";
@@ -46,12 +47,19 @@ export default async function StoreSignUpPage({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  const isTrust = !isFB && store
+    ? isTrustStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   return (
     <StoreSignUpClient
       storeSlug={params.slug}
       storeName={store?.name ?? params.slug}
       isFashionBeauty={isFB}
+      isTrust={isTrust}
       defaultCallback={`/stores/${params.slug}/account`}
     />
   );

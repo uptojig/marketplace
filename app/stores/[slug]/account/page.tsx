@@ -22,9 +22,13 @@ import {
   ORDER_STATUS_LABEL,
 } from '@/lib/orders/status-ui';
 import { isFashionBeautyStore } from '@/lib/landing/fashion-beauty';
+import { isTrustStore } from '@/lib/landing/trust';
 
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
+
+const TRUST_DISPLAY_FONT =
+  'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,10 +81,22 @@ export default async function AccountDashboard({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  const isTrust = !isFB && store
+    ? isTrustStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   const recentOrders = toOrderViews(recentOrdersRaw);
   const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
   const initials = displayName.slice(0, 2);
+  // Heritage member-since year — used in the trust eyebrow above
+  // the welcome name. Falls back to the current year for accounts
+  // without a createdAt (legacy seeds).
+  const memberYear = user?.createdAt
+    ? user.createdAt.getFullYear()
+    : new Date().getFullYear();
 
   return (
     <div className="space-y-6">
@@ -88,12 +104,27 @@ export default async function AccountDashboard({
         className={
           isFB
             ? "flex items-center gap-4 rounded-2xl border bg-white p-6 shadow-sm"
-            : "flex items-center gap-4 p-4"
+            : isTrust
+              ? "flex items-center gap-4 rounded-sm border bg-white p-6 shadow-sm"
+              : "flex items-center gap-4 p-4"
+        }
+        style={
+          isTrust ? { borderColor: "var(--shop-accent)" } : undefined
         }
       >
-        <Avatar className={isFB ? "h-16 w-16" : "h-14 w-14"}>
+        <Avatar
+          className={
+            isFB
+              ? "h-16 w-16"
+              : isTrust
+                ? "h-16 w-16 rounded-sm"
+                : "h-14 w-14"
+          }
+        >
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback className={isTrust ? "rounded-sm" : undefined}>
+            {initials}
+          </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           {isFB && (
@@ -104,8 +135,26 @@ export default async function AccountDashboard({
               Welcome back
             </p>
           )}
+          {isTrust && (
+            <p
+              className="text-xs uppercase"
+              style={{
+                color: 'var(--shop-accent)',
+                letterSpacing: '0.28em',
+                fontWeight: 600,
+              }}
+            >
+              Est. member since {memberYear}
+            </p>
+          )}
           <h1
-            className={isFB ? "text-3xl" : "text-lg font-semibold"}
+            className={
+              isFB
+                ? "text-3xl"
+                : isTrust
+                  ? "text-3xl"
+                  : "text-lg font-semibold"
+            }
             style={
               isFB
                 ? {
@@ -114,13 +163,43 @@ export default async function AccountDashboard({
                     color: 'var(--shop-ink)',
                     letterSpacing: '-0.005em',
                   }
-                : undefined
+                : isTrust
+                  ? {
+                      fontFamily: TRUST_DISPLAY_FONT,
+                      fontWeight: 600,
+                      color: 'var(--shop-ink)',
+                      letterSpacing: '-0.01em',
+                    }
+                  : undefined
             }
           >
-            {isFB ? displayName : `สวัสดี, ${displayName}`}
+            {isFB
+              ? displayName
+              : isTrust
+                ? `Welcome back, ${displayName}`
+                : `สวัสดี, ${displayName}`}
           </h1>
-          {user?.createdAt && (
+          {isTrust && (
+            <div
+              aria-hidden
+              className="mt-2 h-px w-12"
+              style={{ background: 'var(--shop-accent)' }}
+            />
+          )}
+          {user?.createdAt && !isTrust && (
             <p className="text-xs text-muted-foreground">
+              สมาชิกตั้งแต่{" "}
+              {user.createdAt.toLocaleDateString("th-TH", {
+                year: "numeric",
+                month: "long",
+              })}
+            </p>
+          )}
+          {user?.createdAt && isTrust && (
+            <p
+              className="mt-3 text-xs"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
               สมาชิกตั้งแต่{" "}
               {user.createdAt.toLocaleDateString("th-TH", {
                 year: "numeric",
@@ -134,24 +213,42 @@ export default async function AccountDashboard({
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Package}
-          label="คำสั่งซื้อที่ใช้งาน"
+          label={isTrust ? "Active orders" : "คำสั่งซื้อที่ใช้งาน"}
           value={activeOrders.toString()}
           href={`${base}/orders`}
+          isTrust={isTrust}
         />
         <StatCard
           icon={MapPin}
-          label="ที่อยู่บันทึกไว้"
+          label={isTrust ? "Saved addresses" : "ที่อยู่บันทึกไว้"}
           value={addressCount.toString()}
           href={`${base}/addresses`}
+          isTrust={isTrust}
         />
-        <StatCard icon={Wallet} label="ยอด Anypay" value="฿0" href={`${base}/wallet`} muted />
-        <StatCard icon={Heart} label="รายการโปรด" value="0" href={`${base}/favorites`} muted />
+        <StatCard
+          icon={Wallet}
+          label={isTrust ? "Wallet balance" : "ยอด Anypay"}
+          value="฿0"
+          href={`${base}/wallet`}
+          muted
+          isTrust={isTrust}
+        />
+        <StatCard
+          icon={Heart}
+          label={isTrust ? "Favorites" : "รายการโปรด"}
+          value="0"
+          href={`${base}/favorites`}
+          muted
+          isTrust={isTrust}
+        />
       </div>
 
       <section>
         <div className="mb-3 flex items-baseline justify-between">
           <h2
-            className={isFB ? "text-2xl" : "font-semibold"}
+            className={
+              isFB || isTrust ? "text-2xl" : "font-semibold"
+            }
             style={
               isFB
                 ? {
@@ -159,15 +256,31 @@ export default async function AccountDashboard({
                     fontWeight: 500,
                     color: 'var(--shop-ink)',
                   }
-                : undefined
+                : isTrust
+                  ? {
+                      fontFamily: TRUST_DISPLAY_FONT,
+                      fontWeight: 600,
+                      color: 'var(--shop-ink)',
+                    }
+                  : undefined
             }
           >
-            {isFB ? "Recent orders" : "คำสั่งซื้อล่าสุด"}
+            {isFB
+              ? "Recent orders"
+              : isTrust
+                ? "Recent orders"
+                : "คำสั่งซื้อล่าสุด"}
           </h2>
           <Link
             href={`${base}/orders`}
             className="inline-flex items-center gap-1 text-sm hover:underline"
-            style={{ color: isFB ? 'var(--shop-primary)' : undefined }}
+            style={{
+              color: isFB
+                ? 'var(--shop-primary)'
+                : isTrust
+                  ? 'var(--shop-accent)'
+                  : undefined,
+            }}
           >
             ดูทั้งหมด <ArrowRight className="h-3 w-3" />
           </Link>
@@ -254,23 +367,81 @@ function StatCard({
   value,
   href,
   muted = false,
+  isTrust = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
   href: string;
   muted?: boolean;
+  isTrust?: boolean;
 }) {
   return (
     <Link href={href}>
-      <Card className="p-3 transition hover:shadow-md">
+      <Card
+        className={
+          isTrust
+            ? "rounded-sm p-4 transition hover:shadow-md"
+            : "p-3 transition hover:shadow-md"
+        }
+        style={
+          isTrust ? { borderColor: "var(--shop-accent)" } : undefined
+        }
+      >
         <div className="flex items-center gap-3">
-          <div className="rounded-md bg-primary/10 p-2 text-primary">
+          <div
+            className={
+              isTrust
+                ? "rounded-sm border bg-[var(--shop-muted)] p-2"
+                : "rounded-md bg-primary/10 p-2 text-primary"
+            }
+            style={
+              isTrust
+                ? {
+                    borderColor: "var(--shop-accent)",
+                    color: "var(--shop-ink)",
+                  }
+                : undefined
+            }
+          >
             <Icon className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs text-muted-foreground">{label}</div>
-            <div className={`text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`}>
+            <div
+              className={
+                isTrust
+                  ? "text-[10px] uppercase"
+                  : "text-xs text-muted-foreground"
+              }
+              style={
+                isTrust
+                  ? {
+                      color: "var(--shop-ink-muted)",
+                      letterSpacing: "0.22em",
+                      fontWeight: 600,
+                    }
+                  : undefined
+              }
+            >
+              {label}
+            </div>
+            <div
+              className={
+                isTrust
+                  ? `text-xl ${muted ? "text-muted-foreground" : ""}`
+                  : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
+              }
+              style={
+                isTrust && !muted
+                  ? {
+                      color: "var(--shop-ink)",
+                      fontFamily:
+                        'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
+                      fontWeight: 600,
+                    }
+                  : undefined
+              }
+            >
               {value}
             </div>
           </div>

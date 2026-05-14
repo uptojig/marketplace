@@ -20,6 +20,12 @@ import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import { RecentlyViewedRail } from "@/components/storefront/RecentlyViewed";
 import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
+import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
+import { TrustCategoryGrid } from "@/components/storefront/themes/trust/TrustCategoryGrid";
+
+const TRUST_DISPLAY_FONT =
+  'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +71,20 @@ export default async function CategoryIndexPage({
     },
   });
   if (!store) notFound();
+
+  // Per-family branching. Trust gets the squared TrustCategoryGrid
+  // with heritage SKU + serif titles + gold-rule frame. FB and the
+  // default continue to render the ProductCard markup below (FB's
+  // theme-fashion-beauty cascade promotes that grid into 4/5 portrait
+  // via the data-fb-promote-portrait CSS hook).
+  const isFB = isFashionBeautyStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isTrust = !isFB && isTrustStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
 
   // Counts per category — always derived from full set so filter UI
   // can show stable numbers regardless of which filters are on
@@ -128,10 +148,39 @@ export default async function CategoryIndexPage({
         </div>
 
         {/* ── Page header ──────────────────────────────────────── */}
-        <div className="flex items-baseline justify-between border-b pb-6 pt-2" style={{ borderColor: "var(--shop-border)" }}>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ color: "var(--shop-ink)" }}>
-            สินค้าทั้งหมด
-          </h1>
+        <div
+          className="flex items-baseline justify-between border-b pb-6 pt-2"
+          style={{ borderColor: isTrust ? "var(--shop-accent)" : "var(--shop-border)" }}
+        >
+          <div>
+            {isTrust && (
+              <p
+                className="mb-2 text-xs uppercase"
+                style={{
+                  color: "var(--shop-accent)",
+                  letterSpacing: "0.28em",
+                  fontWeight: 600,
+                }}
+              >
+                Maison · The Collection
+              </p>
+            )}
+            <h1
+              className="text-3xl md:text-4xl tracking-tight"
+              style={{
+                color: "var(--shop-ink)",
+                ...(isTrust
+                  ? {
+                      fontFamily: TRUST_DISPLAY_FONT,
+                      fontWeight: 600,
+                      letterSpacing: "-0.01em",
+                    }
+                  : { fontWeight: 700 }),
+              }}
+            >
+              {isTrust ? "The Collection" : "สินค้าทั้งหมด"}
+            </h1>
+          </div>
           <div className="flex items-center gap-4">
             <span className="hidden sm:inline text-sm" style={{ color: "var(--shop-ink-muted)" }}>
               พบ {filtered.length.toLocaleString()} รายการ
@@ -249,15 +298,30 @@ export default async function CategoryIndexPage({
                 <EmptyState />
               ) : (
                 <>
-                  <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-                    {pageProducts.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        storeSlug={store.slug}
-                      />
-                    ))}
-                  </div>
+                  {isTrust ? (
+                    <TrustCategoryGrid
+                      storeSlug={store.slug}
+                      products={pageProducts.map((p) => ({
+                        id: p.id,
+                        title: p.titleTh ?? p.title,
+                        imageUrl: p.imageUrl,
+                        priceTHB: Number(p.priceTHB),
+                        compareAtPriceTHB: p.compareAtPriceTHB
+                          ? Number(p.compareAtPriceTHB)
+                          : null,
+                      }))}
+                    />
+                  ) : (
+                    <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+                      {pageProducts.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          storeSlug={store.slug}
+                        />
+                      ))}
+                    </div>
+                  )}
 
                   {totalPages > 1 && (
                     <Pagination
