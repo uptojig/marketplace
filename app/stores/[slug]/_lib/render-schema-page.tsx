@@ -3,15 +3,15 @@
  * (faq / shipping / returns / privacy / terms / etc).
  *
  * Reads the v12 multi-page schema, finds the page with the requested
- * slug, and hands it to MultiPageRenderer. Falls back to a friendly
- * "ยังไม่มีเนื้อหา" message when the agent hasn't emitted that page
- * yet (e.g. older schemas pre-SKILL-update, or briefs that explicitly
- * skipped the page).
+ * slug, and hands it to MultiPageRenderer. Falls back to a default
+ * body (rich React fallback OR plain hint text) when the agent hasn't
+ * emitted that page yet.
  *
  * The fallback purposely doesn't 404 — these pages are linked from
  * the footer of EVERY store, so a 404 there breaks UX and fails
  * payment-gateway merchant approval.
  */
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isV12Schema } from "@/lib/multi-page-migration";
@@ -22,6 +22,11 @@ interface SchemaPageProps {
   pageSlug: string;
   fallbackTitle: string;
   fallbackHint?: string;
+  /** Optional rich fallback rendered when the store's schema doesn't
+   *  emit this page. Use this for legally / commercially important
+   *  pages (returns / shipping / privacy / terms) so the buyer always
+   *  sees real content, not a "ยังไม่มีเนื้อหา" stub. */
+  fallbackBody?: ReactNode;
 }
 
 export async function renderSchemaPage({
@@ -29,6 +34,7 @@ export async function renderSchemaPage({
   pageSlug,
   fallbackTitle,
   fallbackHint,
+  fallbackBody,
 }: SchemaPageProps) {
   const store = await prisma.store.findUnique({
     where: { slug: storeSlug },
@@ -77,10 +83,12 @@ export async function renderSchemaPage({
       <h1 className="text-3xl font-bold mb-6" style={{ color: "var(--shop-ink)" }}>
         {fallbackTitle}
       </h1>
-      <p className="text-base leading-relaxed" style={{ color: "var(--shop-ink-muted)" }}>
-        {fallbackHint ??
-          "ยังไม่มีเนื้อหาในหน้านี้ — สร้าง landing page ใหม่ใน admin เพื่อเพิ่มเนื้อหาอัตโนมัติ"}
-      </p>
+      {fallbackBody ?? (
+        <p className="text-base leading-relaxed" style={{ color: "var(--shop-ink-muted)" }}>
+          {fallbackHint ??
+            "ยังไม่มีเนื้อหาในหน้านี้ — สร้าง landing page ใหม่ใน admin เพื่อเพิ่มเนื้อหาอัตโนมัติ"}
+        </p>
+      )}
     </div>
   );
 }
