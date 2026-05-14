@@ -37,33 +37,43 @@ const updateSchema = z.object({
   variants: z.array(variantSchema).max(50).optional().default([]),
 });
 
-async function getStore(email: string) {
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: { store: true },
-  });
-  return { user, store: user?.store ?? null };
-}
-
 function syntheticId(prefix: string) {
   return `${prefix}_${crypto.randomUUID()}`;
 }
 
+// Authorize EITHER the store owner OR a platform admin. The earlier
+// version pulled `user.store` and 404'd "Store not found" for admins
+// (who don't own any store via Store.ownerId) and for vendors editing
+// a store other than their own primary one through the dashboard
+// store-picker. Now we load the product first, then accept anyone
+// with ADMIN role OR ownership of the product's store — matching the
+// shape used in lib/admin/contact-messages.ts.
 async function authorizeOwner(productId: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
   }
-  const { store } = await getStore(session.user.email);
-  if (!store) {
-    return { error: NextResponse.json({ error: "Store not found" }, { status: 404 }) };
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true, role: true },
+  });
+  if (!user) {
+    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
   }
-  const product = await prisma.product.findUnique({ where: { id: productId } });
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { store: { select: { id: true, ownerId: true } } },
+  });
   // 404 (not 403) on cross-store access so we don't leak existence.
-  if (!product || product.storeId !== store.id) {
+  if (!product || !product.store) {
     return { error: NextResponse.json({ error: "Not found" }, { status: 404 }) };
   }
-  return { store, product };
+  const isAdmin = user.role === "ADMIN";
+  const isOwner = product.store.ownerId === user.id;
+  if (!isAdmin && !isOwner) {
+    return { error: NextResponse.json({ error: "Not found" }, { status: 404 }) };
+  }
+  return { store: { id: product.store.id }, product };
 }
 
 export async function GET(

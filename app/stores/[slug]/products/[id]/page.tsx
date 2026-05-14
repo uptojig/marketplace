@@ -47,7 +47,12 @@ export default async function ShopProductPage({
   if (!product || !product.active) notFound();
 
   const gallery = (Array.isArray(product.galleryUrls) ? (product.galleryUrls as string[]) : []).filter(Boolean);
-  const images = [product.imageUrl, ...gallery].filter((x): x is string => !!x);
+  // Importers + the legacy form sometimes save the main imageUrl into
+  // galleryUrls too, which then renders the cover photo twice in the
+  // PDP carousel. Dedup so each unique URL only shows once.
+  const images = Array.from(
+    new Set([product.imageUrl, ...gallery].filter((x): x is string => !!x)),
+  );
 
   const related = await prisma.product.findMany({
     where: { storeId: product.storeId, active: true, NOT: { id: product.id } },

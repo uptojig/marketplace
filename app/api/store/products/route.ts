@@ -49,12 +49,38 @@ const createSchema = z.object({
   externalPayload: z.unknown().optional(),
 });
 
-async function getStore(email: string) {
+// Resolve the dashboard's active store. Mirrors lib/stores/resolve-
+// dashboard-store.ts but for API context: prefer the explicit storeSlug
+// query / body param (passed from the dashboard URL), fall back to the
+// signed-in user's owned store. Admins can target any store via slug.
+async function resolveActiveStore(
+  email: string,
+  requestedSlug?: string | null,
+) {
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { store: true },
+    select: {
+      id: true,
+      role: true,
+      store: { select: { id: true, slug: true, ownerId: true } },
+    },
   });
-  return { user, store: user?.store ?? null };
+  if (!user) return { user: null, store: null };
+
+  if (requestedSlug) {
+    const target = await prisma.store.findUnique({
+      where: { slug: requestedSlug },
+      select: { id: true, slug: true, ownerId: true },
+    });
+    if (!target) return { user, store: null };
+    // ADMIN can target any; otherwise must own the requested store.
+    if (user.role !== "ADMIN" && target.ownerId !== user.id) {
+      return { user, store: null };
+    }
+    return { user, store: target };
+  }
+
+  return { user, store: user.store ?? null };
 }
 
 function syntheticId(prefix: string) {
@@ -63,12 +89,13 @@ function syntheticId(prefix: string) {
   return `${prefix}_${crypto.randomUUID()}`;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { store } = await getStore(session.user.email);
+  const slug = new URL(req.url).searchParams.get("storeSlug");
+  const { store } = await resolveActiveStore(session.user.email, slug);
   if (!store) {
     return NextResponse.json({ error: "Store not found" }, { status: 404 });
   }
@@ -94,7 +121,17 @@ export async function POST(req: Request) {
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { store } = await getStore(session.user.email);
+  // storeSlug can come from the query (?storeSlug=...) OR the body —
+  // older form code didn't include it.
+  const urlSlug = new URL(req.url).searchParams.get("storeSlug");
+  const bodyForSlug = await req.clone().json().catch(() => null);
+  const bodySlug = bodyForSlug && typeof bodyForSlug.storeSlug === "string"
+    ? bodyForSlug.storeSlug
+    : null;
+  const { store } = await resolveActiveStore(
+    session.user.email,
+    urlSlug ?? bodySlug,
+  );
   if (!store) {
     return NextResponse.json({ error: "Store not found" }, { status: 404 });
   }

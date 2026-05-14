@@ -29,20 +29,44 @@ const createSchema = z.object({
   sortOrder: z.number().int().min(0).max(9999).optional(),
 });
 
-async function getStore(email: string) {
+// Mirrors /api/store/products: ADMIN can act on any store via the
+// ?storeSlug=… query / body param; regular vendors fall back to
+// their owned store. Fixes the "Store not found" 404 admins hit
+// when their User row has no Store back-reference of its own.
+async function resolveActiveStore(
+  email: string,
+  requestedSlug?: string | null,
+) {
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { store: true },
+    select: {
+      id: true,
+      role: true,
+      store: { select: { id: true, slug: true, ownerId: true } },
+    },
   });
-  return { user, store: user?.store ?? null };
+  if (!user) return { user: null, store: null };
+  if (requestedSlug) {
+    const target = await prisma.store.findUnique({
+      where: { slug: requestedSlug },
+      select: { id: true, slug: true, ownerId: true },
+    });
+    if (!target) return { user, store: null };
+    if (user.role !== "ADMIN" && target.ownerId !== user.id) {
+      return { user, store: null };
+    }
+    return { user, store: target };
+  }
+  return { user, store: user.store ?? null };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { store } = await getStore(session.user.email);
+  const slug = new URL(req.url).searchParams.get("storeSlug");
+  const { store } = await resolveActiveStore(session.user.email, slug);
   if (!store) {
     return NextResponse.json({ error: "Store not found" }, { status: 404 });
   }
@@ -73,7 +97,17 @@ export async function POST(req: Request) {
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { store } = await getStore(session.user.email);
+  // storeSlug comes from query (?storeSlug=…) OR body; the dashboard
+  // sends it from the URL on submit.
+  const urlSlug = new URL(req.url).searchParams.get("storeSlug");
+  const bodyForSlug = await req.clone().json().catch(() => null);
+  const bodySlug = bodyForSlug && typeof bodyForSlug.storeSlug === "string"
+    ? bodyForSlug.storeSlug
+    : null;
+  const { store } = await resolveActiveStore(
+    session.user.email,
+    urlSlug ?? bodySlug,
+  );
   if (!store) {
     return NextResponse.json({ error: "Store not found" }, { status: 404 });
   }
