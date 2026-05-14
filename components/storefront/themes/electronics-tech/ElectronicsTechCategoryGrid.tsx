@@ -84,12 +84,12 @@ export function ElectronicsTechCategoryGrid({
             fontWeight: 600,
           }}
         >
-          Filter
+          ตัวกรอง
         </span>
-        <CompareChip label="Brand" />
-        <CompareChip label="Price" />
-        <CompareChip label="Rating" />
-        <CompareChip label="In Stock" highlight />
+        <CompareChip label="แบรนด์" />
+        <CompareChip label="ราคา" />
+        <CompareChip label="คะแนน" />
+        <CompareChip label="มีสินค้า" highlight />
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -147,7 +147,7 @@ export function ElectronicsTechCategoryGrid({
                       style={{ letterSpacing: '0.1em' }}
                     >
                       <CheckCircle2 className="h-2.5 w-2.5" />
-                      In stock
+                      มีสินค้า
                     </span>
                   )}
                 </div>

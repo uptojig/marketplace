@@ -214,7 +214,7 @@ export function BusinessModelRelatedProducts({
                         letterSpacing: '0.12em',
                       }}
                     >
-                      FLASH
+                      ดีลด่วน
                     </span>
                   )}
                 </div>

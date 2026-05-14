@@ -241,7 +241,7 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
               letterSpacing: '0.12em',
             }}
           >
-            FLASH DEAL
+            ดีลด่วน
           </span>
         )}
       </div>
@@ -403,7 +403,7 @@ function InfoColumn({
             letterSpacing: '0.12em',
           }}
         >
-          CARTON
+          ต่อลัง
           <span
             data-bm-mono="true"
             className="font-bold"
@@ -910,7 +910,7 @@ function InfoColumn({
               >
                 {moq}
               </span>{' '}
-              · Carton{' '}
+              · ต่อลัง{' '}
               <span
                 data-bm-mono="true"
                 style={{ fontFamily: BM_MONO_FONT, fontVariantNumeric: 'tabular-nums' }}

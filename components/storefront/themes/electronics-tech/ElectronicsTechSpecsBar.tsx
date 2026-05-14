@@ -20,9 +20,9 @@ interface SpecPillar {
 }
 
 const PILLARS: SpecPillar[] = [
-  { label: 'QC · ISO-certified', descriptor: 'Bench-tested before dispatch' },
-  { label: 'STOCK · Real-time inventory', descriptor: 'Live count from the warehouse' },
-  { label: 'WARRANTY · 12-month coverage', descriptor: 'Repair or replace, no questions' },
+  { label: 'QC · มาตรฐาน ISO', descriptor: 'ผ่านการทดสอบก่อนจัดส่ง' },
+  { label: 'สต็อก · อัปเดตเรียลไทม์', descriptor: 'จำนวนสินค้าจากคลังแบบสด' },
+  { label: 'การรับประกัน · 12 เดือน', descriptor: 'ซ่อมหรือเปลี่ยน ไม่มีคำถาม' },
 ];
 
 export function ElectronicsTechSpecsBar() {
