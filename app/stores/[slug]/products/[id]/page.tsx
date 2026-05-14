@@ -8,8 +8,10 @@ import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
+import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { cleanDescription } from "@/lib/format/cleanDescription";
 import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import {
@@ -62,11 +64,20 @@ export default async function ShopProductPage({
     templateId: product.store.templateId,
     landingThemeVariant: product.store.landingThemeVariant,
   });
+  // business-model (wholesale-b2b / flash-deal / subscription) — only
+  // checked when FB + trust both miss, so the disjoint template→group
+  // mapping stays safe. Renders the rectangular deal-dashboard hero.
+  const isBM = !isFB && !isTrust && isBusinessModelStore({
+    templateId: product.store.templateId,
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
   const HeroComponent = isFB
     ? FashionBeautyProductHero
     : isTrust
       ? TrustProductHero
-      : ProductDetailHero;
+      : isBM
+        ? BusinessModelProductHero
+        : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -156,12 +167,13 @@ export default async function ShopProductPage({
       {related.length > 0 && (
         <section
           className={
-            isFB || isTrust ? "space-y-6 py-8" : "space-y-3"
+            isFB || isTrust ? "space-y-6 py-8" : isBM ? "space-y-4 py-6" : "space-y-3"
           }
         >
           {/* Section eyebrow + heading. Trust adds a heritage caps
               eyebrow above the serif headline; FB renders a serif
-              headline only; default keeps its compact sans label. */}
+              headline only; business-model uses a tight-caps utility
+              label; default keeps its compact sans label. */}
           {isTrust && (
             <p
               className="text-xs uppercase"
@@ -174,11 +186,24 @@ export default async function ShopProductPage({
               From the Collection
             </p>
           )}
+          {isBM && (
+            <p
+              className="text-xs font-semibold uppercase"
+              style={{
+                color: 'var(--shop-primary)',
+                letterSpacing: '0.12em',
+              }}
+            >
+              Related deals
+            </p>
+          )}
           <h2
             className={
               isFB || isTrust
                 ? "text-3xl sm:text-4xl"
-                : "text-lg font-semibold"
+                : isBM
+                  ? "text-xl sm:text-2xl"
+                  : "text-lg font-semibold"
             }
             style={{
               color: 'var(--shop-ink)',
@@ -202,7 +227,9 @@ export default async function ShopProductPage({
               ? 'You may also love'
               : isTrust
                 ? 'You may also like'
-                : 'สินค้าที่เกี่ยวข้อง'}
+                : isBM
+                  ? 'ดีลใกล้เคียง'
+                  : 'สินค้าที่เกี่ยวข้อง'}
           </h2>
           <div
             className={

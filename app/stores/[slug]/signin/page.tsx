@@ -16,6 +16,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { StoreSignInClient } from "./signin-client";
 
 export const dynamic = "force-dynamic";
@@ -61,6 +62,12 @@ export default async function StoreSignInPage({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  const isBusinessModel = !isFB && !isTrust && store
+    ? isBusinessModelStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   return (
     <StoreSignInClient
@@ -68,6 +75,7 @@ export default async function StoreSignInPage({
       storeName={store?.name ?? params.slug}
       isFashionBeauty={isFB}
       isTrust={isTrust}
+      isBusinessModel={isBusinessModel}
       defaultCallback={`/stores/${params.slug}/account`}
     />
   );

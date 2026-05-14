@@ -22,10 +22,15 @@ import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { TrustCategoryGrid } from "@/components/storefront/themes/trust/TrustCategoryGrid";
+import { BusinessModelCategoryGrid } from "@/components/storefront/themes/business-model/BusinessModelCategoryGrid";
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const BM_MONO_FONT =
+  'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace';
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +87,13 @@ export default async function CategoryIndexPage({
     landingThemeVariant: store.landingThemeVariant,
   });
   const isTrust = !isFB && isTrustStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  // business-model — only when FB and trust both miss. Renders the
+  // dense rectangular deal-card grid with amber discount stickers +
+  // mono prices + savings chips.
+  const isBM = !isFB && !isTrust && isBusinessModelStore({
     templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -165,6 +177,17 @@ export default async function CategoryIndexPage({
                 Maison · The Collection
               </p>
             )}
+            {isBM && (
+              <p
+                className="mb-2 text-xs font-semibold uppercase"
+                style={{
+                  color: "var(--shop-primary)",
+                  letterSpacing: "0.12em",
+                }}
+              >
+                Deal Dashboard · ดีลทั้งหมด
+              </p>
+            )}
             <h1
               className="text-3xl md:text-4xl tracking-tight"
               style={{
@@ -178,7 +201,11 @@ export default async function CategoryIndexPage({
                   : { fontWeight: 700 }),
               }}
             >
-              {isTrust ? "The Collection" : "สินค้าทั้งหมด"}
+              {isTrust
+                ? "The Collection"
+                : isBM
+                  ? "Catalog & Deals"
+                  : "สินค้าทั้งหมด"}
             </h1>
           </div>
           <div className="flex items-center gap-4">
@@ -309,6 +336,24 @@ export default async function CategoryIndexPage({
                         compareAtPriceTHB: p.compareAtPriceTHB
                           ? Number(p.compareAtPriceTHB)
                           : null,
+                      }))}
+                    />
+                  ) : isBM ? (
+                    <BusinessModelCategoryGrid
+                      storeSlug={store.slug}
+                      products={pageProducts.map((p) => ({
+                        id: p.id,
+                        title: p.titleTh ?? p.title,
+                        imageUrl: p.imageUrl,
+                        priceTHB: Number(p.priceTHB),
+                        compareAtPriceTHB: p.compareAtPriceTHB
+                          ? Number(p.compareAtPriceTHB)
+                          : null,
+                        // stockLeft drives the amber low-stock chip
+                        // on the card. Only pass when variants are
+                        // absent — variant-heavy products handle
+                        // stock on the PDP.
+                        stockLeft: p.hasVariants ? null : p.stockTotal,
                       }))}
                     />
                   ) : (

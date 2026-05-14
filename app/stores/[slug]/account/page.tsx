@@ -23,12 +23,16 @@ import {
 } from '@/lib/orders/status-ui';
 import { isFashionBeautyStore } from '@/lib/landing/fashion-beauty';
 import { isTrustStore } from '@/lib/landing/trust';
+import { isBusinessModelStore } from '@/lib/landing/business-model';
 
 const FB_DISPLAY_FONT =
   'var(--font-fashion-display, "Cormorant Garamond"), "Playfair Display", Georgia, "Noto Serif Thai", serif';
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
+
+const BM_MONO_FONT =
+  'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +91,15 @@ export default async function AccountDashboard({
         landingThemeVariant: store.landingThemeVariant,
       })
     : false;
+  // business-model — only checked when FB and trust both miss.
+  // Renders the dashboard-style welcome with mono stat values + tier
+  // badge + active-subscriptions count.
+  const isBM = !isFB && !isTrust && store
+    ? isBusinessModelStore({
+        templateId: store.templateId,
+        landingThemeVariant: store.landingThemeVariant,
+      })
+    : false;
 
   const recentOrders = toOrderViews(recentOrdersRaw);
   const displayName = user?.name ?? user?.email ?? 'ผู้ใช้';
@@ -98,6 +111,24 @@ export default async function AccountDashboard({
     ? user.createdAt.getFullYear()
     : new Date().getFullYear();
 
+  // Business-model dashboard stats — total orders count + total
+  // spent across all orders + a static "tier" classification driven
+  // by spend. Only computed when this family is active.
+  let bmTotalOrders = 0;
+  let bmTotalSpent = 0;
+  let bmTier = 'Bronze';
+  if (isBM) {
+    const allOrders = await prisma.order.findMany({
+      where: { userId, store: { slug } },
+      select: { totalTHB: true },
+    });
+    bmTotalOrders = allOrders.length;
+    bmTotalSpent = allOrders.reduce((acc, o) => acc + Number(o.totalTHB), 0);
+    if (bmTotalSpent >= 100000) bmTier = 'Platinum';
+    else if (bmTotalSpent >= 30000) bmTier = 'Gold';
+    else if (bmTotalSpent >= 10000) bmTier = 'Silver';
+  }
+
   return (
     <div className="space-y-6">
       <Card
@@ -106,10 +137,16 @@ export default async function AccountDashboard({
             ? "flex items-center gap-4 rounded-2xl border bg-white p-6 shadow-sm"
             : isTrust
               ? "flex items-center gap-4 rounded-sm border bg-white p-6 shadow-sm"
-              : "flex items-center gap-4 p-4"
+              : isBM
+                ? "flex items-center gap-4 rounded-md border bg-white p-5 shadow-sm"
+                : "flex items-center gap-4 p-4"
         }
         style={
-          isTrust ? { borderColor: "var(--shop-accent)" } : undefined
+          isTrust
+            ? { borderColor: "var(--shop-accent)" }
+            : isBM
+              ? { borderColor: "var(--shop-border)" }
+              : undefined
         }
       >
         <Avatar
@@ -118,11 +155,17 @@ export default async function AccountDashboard({
               ? "h-16 w-16"
               : isTrust
                 ? "h-16 w-16 rounded-sm"
-                : "h-14 w-14"
+                : isBM
+                  ? "h-14 w-14 rounded-md"
+                  : "h-14 w-14"
           }
         >
           {user?.image && <AvatarImage src={user.image} alt={displayName} />}
-          <AvatarFallback className={isTrust ? "rounded-sm" : undefined}>
+          <AvatarFallback
+            className={
+              isTrust ? "rounded-sm" : isBM ? "rounded-md" : undefined
+            }
+          >
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -147,13 +190,26 @@ export default async function AccountDashboard({
               Est. member since {memberYear}
             </p>
           )}
+          {isBM && (
+            <p
+              className="text-xs font-semibold uppercase"
+              style={{
+                color: 'var(--shop-primary)',
+                letterSpacing: '0.12em',
+              }}
+            >
+              B2B Account · Tier {bmTier}
+            </p>
+          )}
           <h1
             className={
               isFB
                 ? "text-3xl"
                 : isTrust
                   ? "text-3xl"
-                  : "text-lg font-semibold"
+                  : isBM
+                    ? "text-2xl font-bold"
+                    : "text-lg font-semibold"
             }
             style={
               isFB
@@ -170,14 +226,22 @@ export default async function AccountDashboard({
                       color: 'var(--shop-ink)',
                       letterSpacing: '-0.01em',
                     }
-                  : undefined
+                  : isBM
+                    ? {
+                        fontWeight: 700,
+                        color: 'var(--shop-ink)',
+                        letterSpacing: '-0.015em',
+                      }
+                    : undefined
             }
           >
             {isFB
               ? displayName
               : isTrust
                 ? `Welcome back, ${displayName}`
-                : `สวัสดี, ${displayName}`}
+                : isBM
+                  ? `Welcome back, ${displayName}`
+                  : `สวัสดี, ${displayName}`}
           </h1>
           {isTrust && (
             <div
@@ -211,36 +275,76 @@ export default async function AccountDashboard({
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={Package}
-          label={isTrust ? "Active orders" : "คำสั่งซื้อที่ใช้งาน"}
-          value={activeOrders.toString()}
-          href={`${base}/orders`}
-          isTrust={isTrust}
-        />
-        <StatCard
-          icon={MapPin}
-          label={isTrust ? "Saved addresses" : "ที่อยู่บันทึกไว้"}
-          value={addressCount.toString()}
-          href={`${base}/addresses`}
-          isTrust={isTrust}
-        />
-        <StatCard
-          icon={Wallet}
-          label={isTrust ? "Wallet balance" : "ยอด Anypay"}
-          value="฿0"
-          href={`${base}/wallet`}
-          muted
-          isTrust={isTrust}
-        />
-        <StatCard
-          icon={Heart}
-          label={isTrust ? "Favorites" : "รายการโปรด"}
-          value="0"
-          href={`${base}/favorites`}
-          muted
-          isTrust={isTrust}
-        />
+        {isBM ? (
+          <>
+            {/* Dashboard stat row — total orders / total spent /
+                active subscriptions / tier. Mono numerics + tight
+                caps labels. Wholesale buyers want spreadsheet data
+                up top, not a wallet placeholder. */}
+            <StatCard
+              icon={Package}
+              label="Total orders"
+              value={bmTotalOrders.toString()}
+              href={`${base}/orders`}
+              isBM
+            />
+            <StatCard
+              icon={Wallet}
+              label="Total spent"
+              value={`฿${bmTotalSpent.toLocaleString('th-TH')}`}
+              href={`${base}/orders`}
+              isBM
+            />
+            <StatCard
+              icon={Heart}
+              label="Active subs"
+              value="0"
+              href={`${base}/orders`}
+              muted
+              isBM
+            />
+            <StatCard
+              icon={MapPin}
+              label="Tier"
+              value={bmTier}
+              href={`${base}/orders`}
+              isBM
+            />
+          </>
+        ) : (
+          <>
+            <StatCard
+              icon={Package}
+              label={isTrust ? "Active orders" : "คำสั่งซื้อที่ใช้งาน"}
+              value={activeOrders.toString()}
+              href={`${base}/orders`}
+              isTrust={isTrust}
+            />
+            <StatCard
+              icon={MapPin}
+              label={isTrust ? "Saved addresses" : "ที่อยู่บันทึกไว้"}
+              value={addressCount.toString()}
+              href={`${base}/addresses`}
+              isTrust={isTrust}
+            />
+            <StatCard
+              icon={Wallet}
+              label={isTrust ? "Wallet balance" : "ยอด Anypay"}
+              value="฿0"
+              href={`${base}/wallet`}
+              muted
+              isTrust={isTrust}
+            />
+            <StatCard
+              icon={Heart}
+              label={isTrust ? "Favorites" : "รายการโปรด"}
+              value="0"
+              href={`${base}/favorites`}
+              muted
+              isTrust={isTrust}
+            />
+          </>
+        )}
       </div>
 
       <section>
@@ -368,6 +472,7 @@ function StatCard({
   href,
   muted = false,
   isTrust = false,
+  isBM = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -375,6 +480,7 @@ function StatCard({
   href: string;
   muted?: boolean;
   isTrust?: boolean;
+  isBM?: boolean;
 }) {
   return (
     <Link href={href}>
@@ -382,10 +488,19 @@ function StatCard({
         className={
           isTrust
             ? "rounded-sm p-4 transition hover:shadow-md"
-            : "p-3 transition hover:shadow-md"
+            : isBM
+              ? "rounded-md p-4 transition hover:shadow-md"
+              : "p-3 transition hover:shadow-md"
         }
         style={
-          isTrust ? { borderColor: "var(--shop-accent)" } : undefined
+          isTrust
+            ? { borderColor: "var(--shop-accent)" }
+            : isBM
+              ? {
+                  borderColor: "var(--shop-border)",
+                  background: "#fafafa",
+                }
+              : undefined
         }
       >
         <div className="flex items-center gap-3">
@@ -393,7 +508,9 @@ function StatCard({
             className={
               isTrust
                 ? "rounded-sm border bg-[var(--shop-muted)] p-2"
-                : "rounded-md bg-primary/10 p-2 text-primary"
+                : isBM
+                  ? "rounded-md border bg-white p-2"
+                  : "rounded-md bg-primary/10 p-2 text-primary"
             }
             style={
               isTrust
@@ -401,7 +518,12 @@ function StatCard({
                     borderColor: "var(--shop-accent)",
                     color: "var(--shop-ink)",
                   }
-                : undefined
+                : isBM
+                  ? {
+                      borderColor: "var(--shop-border)",
+                      color: "var(--shop-primary)",
+                    }
+                  : undefined
             }
           >
             <Icon className="h-4 w-4" />
@@ -411,7 +533,9 @@ function StatCard({
               className={
                 isTrust
                   ? "text-[10px] uppercase"
-                  : "text-xs text-muted-foreground"
+                  : isBM
+                    ? "text-[10px] font-semibold uppercase"
+                    : "text-xs text-muted-foreground"
               }
               style={
                 isTrust
@@ -420,16 +544,24 @@ function StatCard({
                       letterSpacing: "0.22em",
                       fontWeight: 600,
                     }
-                  : undefined
+                  : isBM
+                    ? {
+                        color: "var(--shop-ink-muted)",
+                        letterSpacing: "0.12em",
+                      }
+                    : undefined
               }
             >
               {label}
             </div>
             <div
+              data-bm-mono={isBM ? "true" : undefined}
               className={
                 isTrust
                   ? `text-xl ${muted ? "text-muted-foreground" : ""}`
-                  : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
+                  : isBM
+                    ? `text-lg font-bold ${muted ? "text-muted-foreground" : ""}`
+                    : `text-lg font-semibold ${muted ? "text-muted-foreground" : ""}`
               }
               style={
                 isTrust && !muted
@@ -439,7 +571,16 @@ function StatCard({
                         'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif',
                       fontWeight: 600,
                     }
-                  : undefined
+                  : isBM && !muted
+                    ? {
+                        color: "var(--shop-ink)",
+                        fontFamily:
+                          'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace',
+                        fontVariantNumeric: "tabular-nums",
+                        fontWeight: 700,
+                        letterSpacing: "-0.01em",
+                      }
+                    : undefined
               }
             >
               {value}

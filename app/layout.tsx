@@ -7,6 +7,7 @@ import {
   Inter,
   Cormorant_Garamond,
   Playfair_Display,
+  JetBrains_Mono,
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -79,6 +80,20 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+// Dashboard / wholesale-utility mono face for the business-model
+// design family (templates: wholesale-b2b, flash-deal, subscription).
+// Loaded as a CSS variable so only stores in this family pick it up
+// (via .theme-business-model [data-bm-mono="true"] in globals.css);
+// the rest of the app keeps its sans defaults at zero cost. JetBrains
+// Mono has tabular numerals which read cleanly in tier-pricing tables,
+// countdown timers, and SKU/MOQ chips.
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-bm-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Marketplace",
   description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
@@ -89,7 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="th"
-      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, "font-sans", inter.variable)}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, jetBrainsMono.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>

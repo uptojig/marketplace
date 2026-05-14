@@ -24,6 +24,9 @@ const FB_DISPLAY_FONT =
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
 
+const BM_MONO_FONT =
+  'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace';
+
 function ErrorBanner() {
   const params = useSearchParams();
   const error = params.get('error');
@@ -40,10 +43,12 @@ function CredentialsForm({
   defaultCallback,
   isFashionBeauty,
   isTrust,
+  isBusinessModel,
 }: {
   defaultCallback: string;
   isFashionBeauty: boolean;
   isTrust: boolean;
+  isBusinessModel: boolean;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -82,34 +87,46 @@ function CredentialsForm({
 
   // Per-family input + button skinning. Trust uses squared rounded-sm
   // inputs + uppercase-tracking submit; FB uses pill inputs + pill
-  // submit; default keeps the shadcn baseline.
+  // submit; business-model uses rectangular rounded inputs + bold
+  // tight-caps red submit; default keeps the shadcn baseline.
   const labelClass =
     isFashionBeauty
       ? 'text-xs uppercase tracking-[0.18em]'
       : isTrust
         ? 'text-xs uppercase'
-        : 'text-sm font-medium';
+        : isBusinessModel
+          ? 'text-xs font-semibold uppercase'
+          : 'text-sm font-medium';
   const labelStyle: React.CSSProperties = isTrust
     ? {
         color: 'var(--shop-ink-muted)',
         letterSpacing: '0.28em',
         fontWeight: 600,
       }
-    : { color: 'var(--shop-ink-muted)' };
+    : isBusinessModel
+      ? {
+          color: 'var(--shop-ink-muted)',
+          letterSpacing: '0.12em',
+        }
+      : { color: 'var(--shop-ink-muted)' };
   const inputClass =
     isFashionBeauty
       ? 'mt-2 rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
       : isTrust
         ? 'mt-2 rounded-sm border-[var(--shop-accent)] bg-white px-4 py-5'
-        : 'mt-1';
+        : isBusinessModel
+          ? 'mt-1.5 rounded-md border-[var(--shop-border)] bg-white px-3 py-2.5'
+          : 'mt-1';
   const submitClass =
     isFashionBeauty
       ? 'w-full rounded-full py-6 text-sm font-medium text-white hover:opacity-90'
       : isTrust
         ? 'w-full rounded-sm py-6 text-sm font-semibold uppercase tracking-[0.18em] text-white hover:opacity-90'
-        : 'w-full';
+        : isBusinessModel
+          ? 'w-full rounded-md py-5 text-sm font-bold uppercase tracking-[0.08em] text-white hover:opacity-90'
+          : 'w-full';
   const submitStyle =
-    isFashionBeauty || isTrust ? { background: 'var(--shop-primary)' } : undefined;
+    isFashionBeauty || isTrust || isBusinessModel ? { background: 'var(--shop-primary)' } : undefined;
 
   return (
     <form onSubmit={submit} className="space-y-4 text-left">
@@ -154,7 +171,7 @@ function CredentialsForm({
         style={submitStyle}
       >
         {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isTrust ? 'Sign in' : 'เข้าสู่ระบบ'}
+        {isTrust ? 'Sign in' : isBusinessModel ? 'Sign in' : 'เข้าสู่ระบบ'}
       </Button>
     </form>
   );
@@ -165,12 +182,14 @@ export function StoreSignInClient({
   storeName,
   isFashionBeauty,
   isTrust = false,
+  isBusinessModel = false,
   defaultCallback,
 }: {
   storeSlug: string;
   storeName: string;
   isFashionBeauty: boolean;
   isTrust?: boolean;
+  isBusinessModel?: boolean;
   defaultCallback: string;
 }) {
   return (
@@ -237,6 +256,34 @@ export function StoreSignInClient({
               เข้าสู่ระบบเพื่อช้อปและติดตามคำสั่งซื้อของคุณ
             </p>
           </div>
+        ) : isBusinessModel ? (
+          <div className="text-center">
+            <p
+              className="text-xs font-semibold uppercase"
+              style={{
+                color: 'var(--shop-primary)',
+                letterSpacing: '0.12em',
+              }}
+            >
+              B2B Account · Sign in
+            </p>
+            <h1
+              className="mt-2 text-2xl sm:text-3xl font-bold"
+              style={{
+                color: 'var(--shop-ink)',
+                fontWeight: 700,
+                letterSpacing: '-0.015em',
+              }}
+            >
+              Sign in to {storeName}
+            </h1>
+            <p
+              className="mt-3 text-sm"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              เข้าสู่ระบบเพื่อสั่งซื้อแบบขายส่งและจัดการบัญชี B2B
+            </p>
+          </div>
         ) : (
           <div className="text-center">
             <h1 className="text-2xl font-semibold" style={{ color: 'var(--shop-ink)' }}>
@@ -261,7 +308,9 @@ export function StoreSignInClient({
               ? 'rounded-2xl border bg-white p-8 shadow-sm'
               : isTrust
                 ? 'rounded-sm border bg-white p-8 shadow-sm'
-                : 'p-6'
+                : isBusinessModel
+                  ? 'rounded-md border bg-white p-6 shadow-sm'
+                  : 'p-6'
           }
           style={{
             borderColor: isTrust ? 'var(--shop-accent)' : 'var(--shop-border)',
@@ -273,6 +322,7 @@ export function StoreSignInClient({
               defaultCallback={defaultCallback}
               isFashionBeauty={isFashionBeauty}
               isTrust={isTrust}
+              isBusinessModel={isBusinessModel}
             />
           </Suspense>
 
@@ -303,7 +353,9 @@ export function StoreSignInClient({
                 ? 'w-full rounded-full border-[var(--shop-border)] py-6'
                 : isTrust
                   ? 'w-full rounded-sm border-[var(--shop-ink)] py-6 uppercase tracking-[0.18em]'
-                  : 'w-full'
+                  : isBusinessModel
+                    ? 'w-full rounded-md border-[var(--shop-border)] py-5 font-semibold'
+                    : 'w-full'
             }
           >
             <Mail className="mr-2 h-4 w-4" />
@@ -311,21 +363,38 @@ export function StoreSignInClient({
           </Button>
         </Card>
 
-        <p
-          className="text-center text-sm"
-          style={{ color: 'var(--shop-ink-muted)' }}
-        >
-          ยังไม่มีบัญชี?{' '}
-          <Link
-            href={`/stores/${storeSlug}/signup`}
-            className="font-medium hover:underline"
-            style={{
-              color: isTrust ? 'var(--shop-accent)' : 'var(--shop-primary)',
-            }}
-          >
-            สมัครสมาชิก
-          </Link>
-        </p>
+        <div className="space-y-3 text-center text-sm">
+          <p style={{ color: 'var(--shop-ink-muted)' }}>
+            ยังไม่มีบัญชี?{' '}
+            <Link
+              href={`/stores/${storeSlug}/signup`}
+              className="font-medium hover:underline"
+              style={{
+                color: isTrust ? 'var(--shop-accent)' : 'var(--shop-primary)',
+              }}
+            >
+              สมัครสมาชิก
+            </Link>
+          </p>
+          {isBusinessModel && (
+            <p
+              className="text-xs"
+              style={{ color: 'var(--shop-ink-muted)' }}
+            >
+              B2B account?{' '}
+              <Link
+                href={`/stores/${storeSlug}/signup?type=wholesale`}
+                className="font-bold uppercase hover:underline"
+                style={{
+                  color: 'var(--shop-primary)',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                Wholesale signup
+              </Link>
+            </p>
+          )}
+        </div>
       </main>
     </div>
   );

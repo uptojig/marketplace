@@ -33,6 +33,12 @@ import {
   trustCssVars,
   isTrustStore,
 } from "@/lib/landing/trust";
+import {
+  BUSINESS_MODEL_BODY_CLASS,
+  BUSINESS_MODEL_TOKENS,
+  businessModelCssVars,
+  isBusinessModelStore,
+} from "@/lib/landing/business-model";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
@@ -178,26 +184,47 @@ export default async function ShopLayout({
   const trustVars = isTrust ? trustCssVars() : {};
   const trustClass = isTrust ? TRUST_BODY_CLASS : "";
 
+  // Business-model family (DESIGN-B sibling). Targets the deal /
+  // wholesale templates (wholesale-b2b, flash-deal, subscription).
+  // Stacked alongside FB + trust so we never break their cascades:
+  // FB and trust are checked first; this only activates when neither
+  // matched. The detection set is disjoint by template group so a
+  // single store can only ever land in one family. Reads from
+  // lib/landing/business-model.ts — same shape as the trust module.
+  const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const bmVars = isBusinessModel ? businessModelCssVars() : {};
+  const bmClass = isBusinessModel ? BUSINESS_MODEL_BODY_CLASS : "";
+
   // Convenience aliases — the layout's three render paths all want
   // "give me the active family's class + vars" without recomputing.
-  // FB takes precedence by virtue of being checked first above.
-  const familyClass = `${fbClass}${fbClass && trustClass ? " " : ""}${trustClass}`;
-  const familyVars = { ...trustVars, ...fbVars };
+  // FB takes precedence by virtue of being checked first above; trust
+  // is next, business-model last.
+  const familyClass = [fbClass, trustClass, bmClass].filter(Boolean).join(" ");
+  const familyVars = { ...bmVars, ...trustVars, ...fbVars };
   // Active family's accent — used by ShopHeader / ShopFooter to
   // paint chrome links + glyph fills. FB pink stays as it was; trust
-  // borrows the gold for accents (the charcoal primary stays in CTAs).
+  // borrows the gold for accents; business-model uses amber (the red
+  // primary stays in CTAs).
   const familyAccent = isFB
     ? "#f43f5e"
     : isTrust
       ? TRUST_TOKENS.colors.accent
-      : null;
-  // Button shape pinned per-family — FB pills, trust squared. Falls
-  // through to the per-template default when neither applies.
+      : isBusinessModel
+        ? BUSINESS_MODEL_TOKENS.colors.accent
+        : null;
+  // Button shape pinned per-family — FB pills, trust squared,
+  // business-model squared (utility / rectangular). Falls through to
+  // the per-template default when none applies.
   const familyButtonShape: "pill" | "square" | null = isFB
     ? "pill"
     : isTrust
       ? "square"
-      : null;
+      : isBusinessModel
+        ? "square"
+        : null;
 
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality
