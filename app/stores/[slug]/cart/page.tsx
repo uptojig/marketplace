@@ -8,6 +8,11 @@ import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { StoreCartClient } from "./cart-client";
 import { FashionBeautyCartPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyCartPage";
+import { TrustCartPage } from "@/components/storefront/themes/trust/TrustCartPage";
+import { BusinessModelCartPage } from "@/components/storefront/themes/business-model/BusinessModelCartPage";
+import { LifestyleCartPage } from "@/components/storefront/themes/lifestyle/LifestyleCartPage";
+import { ElectronicsTechCartPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCartPage";
+import { SpecialtyCartPage } from "@/components/storefront/themes/specialty/SpecialtyCartPage";
 
 export const dynamic = "force-dynamic";
 
@@ -63,13 +68,28 @@ export default async function StoreCartPage({
     landingThemeVariant: store.landingThemeVariant,
   });
 
-  // FB stores render a fully bespoke editorial cart layout (magazine
-  // line items + soft-pink summary frame + italic-serif trust strip).
-  // Other families continue to use the shared StoreCartClient with
-  // its family-aware branching for now — they'll be promoted to their
-  // own bespoke pages in subsequent phases of the 6×8=48 build-out.
+  // Each design family now has a fully bespoke cart page with a
+  // structurally distinct layout (not just palette / typography swaps).
+  // Dispatch in family detection order. Stores whose template doesn't
+  // match any family continue to use the shared StoreCartClient with
+  // its old branching for graceful degradation.
   if (isFB) {
     return <FashionBeautyCartPage store={store} />;
+  }
+  if (isTrust) {
+    return <TrustCartPage store={store} />;
+  }
+  if (isBusinessModel) {
+    return <BusinessModelCartPage store={store} />;
+  }
+  if (isLifestyle) {
+    return <LifestyleCartPage store={store} />;
+  }
+  if (isElectronicsTech) {
+    return <ElectronicsTechCartPage store={store} />;
+  }
+  if (isSpecialty) {
+    return <SpecialtyCartPage store={store} />;
   }
 
   return (

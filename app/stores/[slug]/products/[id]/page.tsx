@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
+import { FashionBeautyBrandStory } from "@/components/storefront/themes/fashion-beauty/FashionBeautyBrandStory";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
 import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
@@ -229,6 +230,20 @@ export default async function ShopProductPage({
           // rating / followers also not in schema — hero hides them.
         }}
       />
+
+      {/* FB stores get an editorial brand-story panel between the hero
+          and the spec tabs — uses store.tagline / description to give
+          the PDP a magazine-letter voice. Renders nothing when the
+          store has no copy yet, so non-FB or unfilled stores see no
+          empty frame. */}
+      {isFB && (
+        <FashionBeautyBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
 
       <ProductDetailTabs
         product={{
