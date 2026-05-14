@@ -135,11 +135,27 @@ export default async function CategoryIndexPage({
   }
   const categoryNames = Object.keys(categoryCounts).sort();
 
-  // Apply category filter on top of sorted set
+  // Apply category filter on top of sorted set.
+  //
+  // Pet pseudo-categories: the pet-house homepage (PR #64) links to
+  // ?cat=cats / ?cat=dogs but the underlying products usually have a
+  // `categoryName` like "Pet Supplies > Cat Beds". Map those two
+  // pseudo-keys to substring regexes so the filter actually returns
+  // products. Only kicks in when there's no exact-name match — direct
+  // selections (e.g. clicking the sidebar checkbox) still take the
+  // strict path.
+  const PET_PSEUDO: Record<string, RegExp> = {
+    cats: /(?:^|\W)(cat|cats|kitten|kittens|แมว)(?:$|\W)/i,
+    dogs: /(?:^|\W)(dog|dogs|puppy|puppies|หมา|สุนัข)(?:$|\W)/i,
+  };
   const filtered = selectedCats.length
     ? store.products.filter((p) => {
         const key = p.categoryName ?? "uncategorized";
-        return selectedCats.includes(key);
+        if (selectedCats.includes(key)) return true;
+        return selectedCats.some((sel) => {
+          const regex = PET_PSEUDO[sel.toLowerCase()];
+          return regex && p.categoryName && regex.test(p.categoryName);
+        });
       })
     : store.products;
 
