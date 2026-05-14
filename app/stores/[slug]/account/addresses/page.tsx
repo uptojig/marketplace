@@ -83,7 +83,7 @@ export default function AddressesPage() {
         // Bounce to /signin with a return URL so users come back here
         // after auth — same pattern as the checkout address picker.
         router.replace(
-          `/signin?callbackUrl=${encodeURIComponent(`/stores/${slug}/account/addresses`)}`,
+          `/stores/${slug}/signin?callbackUrl=${encodeURIComponent(`/stores/${slug}/account/addresses`)}`,
         );
         return;
       }
