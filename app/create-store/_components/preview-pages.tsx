@@ -919,9 +919,22 @@ function HomeMock({
   );
 }
 
-function CategoryMock({ t, family, behavior: _behavior, eyebrow, title, headingFont }: { t: FamilyTheme; family: Family; behavior: Behavior; eyebrow: string; title: string; headingFont: string }) {
+function CategoryMock({ t, family, behavior, eyebrow, title, headingFont }: { t: FamilyTheme; family: Family; behavior: Behavior; eyebrow: string; title: string; headingFont: string }) {
   const isFB = family === "fashion-beauty";
   const isLifestyle = family === "lifestyle";
+
+  // Determine the grid columns: dense beats family defaults.
+  const isDense = behavior.productGridDensity === "dense";
+  const familyWantsDense = family === "business-model" || family === "electronics-tech";
+  const gridCols = isDense ? "grid-cols-4" : familyWantsDense ? "grid-cols-3" : "grid-cols-2";
+  const tileCount = isDense ? 8 : familyWantsDense ? 6 : 4;
+
+  // Pastel backgrounds for categoryTilesColored (kids-toys vibe).
+  const tilePastels = ["#fde68a", "#bbf7d0", "#bfdbfe", "#fbcfe8", "#fed7aa", "#ddd6fe", "#fecaca", "#a7f3d0"];
+
+  // Performance badge labels (sport).
+  const perfBadges = ["DRY-FIT", "OUTDOOR", "FLEX", "PRO"];
+
   return (
     <div className="px-4 py-4 space-y-3">
       <div>
@@ -930,6 +943,44 @@ function CategoryMock({ t, family, behavior: _behavior, eyebrow, title, headingF
         {family === "trust" && <div className="mt-1.5 h-px w-8" style={{ background: t.accent }} />}
         {isLifestyle && <div className="mt-1.5 h-1 w-12 rounded" style={{ background: t.accent }} />}
       </div>
+
+      {/* behavior: dropCalendar — calendar grid above products (subscription) */}
+      {behavior.dropCalendar && (
+        <div className="space-y-1">
+          <Eyebrow t={t} family={family}>UPCOMING DROPS</Eyebrow>
+          <div className="grid grid-cols-7 gap-1">
+            {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+              <span
+                key={`hd-${i}`}
+                className="text-center text-[8px]"
+                style={{ color: t.inkMuted, fontFamily: t.mono }}
+              >
+                {d}
+              </span>
+            ))}
+            {Array.from({ length: 14 }).map((_, i) => {
+              const isDrop = i === 4 || i === 11;
+              return (
+                <div
+                  key={`day-${i}`}
+                  className="flex items-center justify-center text-[8px]"
+                  style={{
+                    aspectRatio: "1/1",
+                    background: isDrop ? t.primary : t.surface,
+                    color: isDrop ? "#fff" : t.ink,
+                    border: `1px solid ${t.border}`,
+                    borderRadius: radiusPx(t.radius, "sm"),
+                    fontFamily: t.mono,
+                    fontWeight: isDrop ? 700 : 400,
+                  }}
+                >
+                  {i + 1}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Filter row — chips at top for FB/Lifestyle, sidebar otherwise */}
       {isFB || isLifestyle ? (
@@ -959,14 +1010,75 @@ function CategoryMock({ t, family, behavior: _behavior, eyebrow, title, headingF
             ))}
           </div>
         )}
-        <div className={`grid flex-1 ${family === "business-model" || family === "electronics-tech" ? "grid-cols-3" : "grid-cols-2"} gap-1.5`}>
-          {Array.from({ length: family === "business-model" || family === "electronics-tech" ? 6 : 4 }).map((_, i) => (
-            <div key={i} className="space-y-0.5">
-              <Tile t={t} ratio={isFB ? "4/5" : "1/1"} />
-              <p className="line-clamp-1 text-[9px]" style={{ color: t.ink, fontFamily: family === "specialty" ? t.serif : undefined }}>Product {i + 1}</p>
-              <PriceLine t={t} family={family} />
-            </div>
-          ))}
+        <div className={`grid flex-1 ${gridCols} gap-1.5`}>
+          {Array.from({ length: tileCount }).map((_, i) => {
+            const cardBg = behavior.categoryTilesColored ? tilePastels[i % tilePastels.length] : undefined;
+            return (
+              <div
+                key={i}
+                className="relative space-y-0.5"
+                style={
+                  cardBg
+                    ? {
+                        background: cardBg,
+                        padding: 4,
+                        borderRadius: radiusPx(t.radius, "md"),
+                      }
+                    : undefined
+                }
+              >
+                <div className="relative">
+                  <Tile t={t} ratio={isFB ? "4/5" : "1/1"} />
+                  {/* behavior: conditionBadges — "สภาพดี" badge */}
+                  {behavior.conditionBadges && (
+                    <span
+                      className="absolute left-1 top-1 rounded px-1 py-0.5 text-[7px] font-bold"
+                      style={{
+                        background: t.surface,
+                        color: t.accent,
+                        border: `1px solid ${t.accent}`,
+                        borderRadius: radiusPx(t.radius, "sm"),
+                      }}
+                    >
+                      สภาพดี
+                    </span>
+                  )}
+                  {/* behavior: performanceBadges — DRY-FIT / OUTDOOR */}
+                  {behavior.performanceBadges && (
+                    <span
+                      className="absolute left-1 top-1 rounded px-1 py-0.5 text-[7px] font-bold text-white"
+                      style={{
+                        background: t.accent,
+                        borderRadius: radiusPx(t.radius, "sm"),
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {perfBadges[i % perfBadges.length]}
+                    </span>
+                  )}
+                  {/* behavior: makerPortrait — avatar overlay (handmade) */}
+                  {behavior.makerPortrait && (
+                    <div
+                      className="absolute -bottom-1 -right-1 inline-flex items-center justify-center text-[8px] text-white"
+                      style={{
+                        width: 16,
+                        height: 16,
+                        background: t.accent,
+                        borderRadius: 999,
+                        border: `1.5px solid ${t.surface}`,
+                        fontFamily: t.serif,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      {String.fromCharCode(65 + i)}
+                    </div>
+                  )}
+                </div>
+                <p className="line-clamp-1 text-[9px]" style={{ color: t.ink, fontFamily: family === "specialty" ? t.serif : undefined }}>Product {i + 1}</p>
+                <PriceLine t={t} family={family} />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
