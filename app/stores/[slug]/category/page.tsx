@@ -144,9 +144,18 @@ export default async function CategoryIndexPage({
   // products. Only kicks in when there's no exact-name match — direct
   // selections (e.g. clicking the sidebar checkbox) still take the
   // strict path.
+  //
+  // Type pseudo-categories (food/toys/beds/hygiene) added by the
+  // Shop-by-Type section (PR #fluffyhouse-homepage-v2). Keep these
+  // keyword buckets in sync with TYPE_BUCKETS in
+  // components/storefront/themes/pet-house/PetHouseShopByType.tsx.
   const PET_PSEUDO: Record<string, RegExp> = {
     cats: /(?:^|\W)(cat|cats|kitten|kittens|แมว)(?:$|\W)/i,
     dogs: /(?:^|\W)(dog|dogs|puppy|puppies|หมา|สุนัข)(?:$|\W)/i,
+    food: /(?:^|\W)(food|feed|treats|ขนม|อาหาร)(?:$|\W)/i,
+    toys: /(?:^|\W)(toy|toys|play|ของเล่น)(?:$|\W)/i,
+    beds: /(?:^|\W)(bed|beds|house|scratcher|ที่นอน|บ้าน)(?:$|\W)/i,
+    hygiene: /(?:^|\W)(litter|grooming|clean|ทราย|สบู่|แชมพู|สุขอนามัย)(?:$|\W)/i,
   };
   const filtered = selectedCats.length
     ? store.products.filter((p) => {

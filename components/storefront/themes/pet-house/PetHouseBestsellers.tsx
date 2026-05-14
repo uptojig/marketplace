@@ -32,6 +32,79 @@ function thb(n: number) {
   return `฿${n.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`;
 }
 
+const MAX_DESC_CHARS = 50;
+
+/**
+ * Build the card description bullets. Tries 3 sources in order:
+ *   1. `keyAttributes` (PR #63) — Json array of feature bullets,
+ *      already in the right "bullet" shape. Take first 3-4, join " · ".
+ *   2. `materials` (PR #63) — Json record of key/value spec pairs.
+ *      Take the first 3 values, join " · ".
+ *   3. `descriptionTh` / `description` — slice the first segment up
+ *      to the first separator (· / , .). Word-boundary aware so we
+ *      never cut mid-word.
+ *
+ * Result is capped at MAX_DESC_CHARS chars but trimmed back to a word
+ * boundary (no mid-word truncation, no ellipsis).
+ */
+function buildCardDesc(p: {
+  keyAttributes: unknown;
+  materials: unknown;
+  description: string | null;
+  descriptionTh: string | null;
+}): string {
+  const bullets: string[] = [];
+
+  // 1. keyAttributes — array of strings.
+  if (Array.isArray(p.keyAttributes)) {
+    for (const v of p.keyAttributes.slice(0, 4)) {
+      if (typeof v === 'string' && v.trim()) bullets.push(v.trim());
+    }
+  }
+
+  // 2. materials — record of string:string.
+  if (
+    bullets.length === 0 &&
+    p.materials !== null &&
+    typeof p.materials === 'object' &&
+    !Array.isArray(p.materials)
+  ) {
+    const entries = Object.values(p.materials as Record<string, unknown>).slice(
+      0,
+      3,
+    );
+    for (const v of entries) {
+      if (typeof v === 'string' && v.trim()) bullets.push(v.trim());
+    }
+  }
+
+  let joined = bullets.length > 0 ? bullets.join(' · ') : '';
+
+  // 3. Fall back to first segment of descriptionTh / description.
+  if (!joined) {
+    const raw = (p.descriptionTh ?? p.description ?? '').trim();
+    if (raw) {
+      // Cut at first sentence-ish separator. Skip leading separators.
+      const m = raw.match(/^([^·,./\n]+)/);
+      joined = (m ? m[1] : raw).trim();
+    }
+  }
+
+  if (!joined) return '';
+  if (joined.length <= MAX_DESC_CHARS) return joined;
+
+  // Word-boundary truncate: cut at MAX, then back up to last space /
+  // bullet separator so we never end mid-word. No ellipsis per spec.
+  let cut = joined.slice(0, MAX_DESC_CHARS);
+  const lastBreak = Math.max(
+    cut.lastIndexOf(' '),
+    cut.lastIndexOf(' · '),
+    cut.lastIndexOf('·'),
+  );
+  if (lastBreak > 20) cut = cut.slice(0, lastBreak);
+  return cut.trim();
+}
+
 export async function PetHouseBestsellers({ storeId, storeSlug }: Props) {
   const products = await prisma.product.findMany({
     where: { storeId, active: true },
@@ -43,6 +116,8 @@ export async function PetHouseBestsellers({ storeId, storeSlug }: Props) {
       titleTh: true,
       description: true,
       descriptionTh: true,
+      keyAttributes: true,
+      materials: true,
       priceTHB: true,
       compareAtPriceTHB: true,
       imageUrl: true,
@@ -108,7 +183,7 @@ export async function PetHouseBestsellers({ storeId, storeSlug }: Props) {
                 ? Math.round(((compare - price) / compare) * 100)
                 : 0;
               const title = p.titleTh ?? p.title;
-              const desc = p.descriptionTh ?? p.description ?? '';
+              const desc = buildCardDesc(p);
               const cardBg = CARD_BG[i % CARD_BG.length];
 
               // Badge: first product = Hot, sale = Sale, others = New
@@ -227,16 +302,17 @@ export async function PetHouseBestsellers({ storeId, storeSlug }: Props) {
                       {title}
                     </div>
                     {desc && (
+                      // line-clamp-1 keeps the row at a single line; the
+                      // upstream buildCardDesc has already capped at ~50
+                      // chars on a word boundary so we don't get ellipsis
+                      // mid-word — but line-clamp will still elide if a
+                      // card is narrow on mobile, which is acceptable.
                       <div
-                        className="overflow-hidden mb-2"
+                        className="line-clamp-1 overflow-hidden mb-2"
                         style={{
                           fontSize: '10px',
                           color: '#8A7B6A',
                           lineHeight: 1.3,
-                          height: '13px',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 1,
-                          WebkitBoxOrient: 'vertical',
                         }}
                       >
                         {desc}

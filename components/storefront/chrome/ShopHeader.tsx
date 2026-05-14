@@ -136,9 +136,17 @@ export function ShopHeader({
               )}
             </Link>
 
+            {/*
+              Search container.
+              Cap width at 280px on md+ so the header's visual
+              hierarchy stays clean (logo · search · icons) instead of
+              the search swallowing half the bar via flex-1. Mobile is
+              unchanged: the icon-trigger anchor in the actions cluster
+              continues to handle <md.
+            */}
             <form
               action={`/stores/${storeSlug}`}
-              className="hidden md:flex flex-1 max-w-lg items-center"
+              className="hidden md:flex md:w-[280px] md:max-w-[280px] items-center"
             >
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--shop-ink-muted)]" />
