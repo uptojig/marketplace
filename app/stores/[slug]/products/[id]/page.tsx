@@ -8,6 +8,11 @@ import { ProductDetailHero } from "@/components/storefront/ProductDetailHero";
 import { ProductDetailTabs } from "@/components/storefront/ProductDetailTabs";
 import { FashionBeautyProductHero } from "@/components/storefront/themes/fashion-beauty/FashionBeautyProductHero";
 import { FashionBeautyBrandStory } from "@/components/storefront/themes/fashion-beauty/FashionBeautyBrandStory";
+import { TrustBrandStory } from "@/components/storefront/themes/trust/TrustBrandStory";
+import { BusinessModelBrandStory } from "@/components/storefront/themes/business-model/BusinessModelBrandStory";
+import { LifestyleBrandStory } from "@/components/storefront/themes/lifestyle/LifestyleBrandStory";
+import { ElectronicsTechBrandStory } from "@/components/storefront/themes/electronics-tech/ElectronicsTechBrandStory";
+import { SpecialtyBrandStory } from "@/components/storefront/themes/specialty/SpecialtyBrandStory";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
 import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
@@ -231,13 +236,52 @@ export default async function ShopProductPage({
         }}
       />
 
-      {/* FB stores get an editorial brand-story panel between the hero
-          and the spec tabs — uses store.tagline / description to give
-          the PDP a magazine-letter voice. Renders nothing when the
-          store has no copy yet, so non-FB or unfilled stores see no
-          empty frame. */}
+      {/* Each family gets its bespoke brand-story panel between the
+          PDP hero and the spec/description tabs. Renders nothing when
+          the store has no tagline or description, so unfilled stores
+          see no empty frame. */}
       {isFB && (
         <FashionBeautyBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isTrust && (
+        <TrustBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isBM && (
+        <BusinessModelBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isLifestyle && (
+        <LifestyleBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isElectronicsTech && (
+        <ElectronicsTechBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+        />
+      )}
+      {isSpecialty && (
+        <SpecialtyBrandStory
           storeSlug={product.store.slug}
           storeName={product.store.name}
           tagline={product.store.tagline}
