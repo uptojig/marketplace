@@ -5,6 +5,7 @@ import type { StoreApprovalStatus } from "@prisma/client";
 import { getStoreQualitySnapshot } from "@/lib/admin/enrich-products";
 import { EnrichProductsButton } from "./enrich-products-button";
 import { BackfillCJImagesButton } from "./backfill-cj-images-button";
+import { RefetchCJMissingPayloadButton } from "./refetch-cj-missing-payload-button";
 
 export const dynamic = "force-dynamic";
 
@@ -208,6 +209,7 @@ export default async function AdminStoresPage({
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-3">
                       <EnrichProductsButton storeId={s.id} storeName={s.name} />
+                      <RefetchCJMissingPayloadButton storeId={s.id} storeName={s.name} />
                       <BackfillCJImagesButton storeId={s.id} storeName={s.name} />
                       <Link
                         href={`/admin/stores/${s.id}`}
