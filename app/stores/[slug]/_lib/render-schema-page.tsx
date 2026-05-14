@@ -16,6 +16,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
+import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import {
+  FashionBeautyPolicyShell,
+  fashionBeautyPolicyHeading,
+} from "@/components/storefront/themes/fashion-beauty/FashionBeautyPolicyShell";
 
 interface SchemaPageProps {
   storeSlug: string;
@@ -41,6 +46,15 @@ export async function renderSchemaPage({
   });
   if (!store) notFound();
 
+  // FB family pages wrap whatever inner content (v12 schema renderer OR
+  // fallback body) in a bespoke editorial shell — serif title, italic
+  // eyebrow, gold-rule divider, and inline CSS that promotes h2/h3 in
+  // the fallback HTML to serif without per-page rewrites.
+  const isFB = isFashionBeautyStore({
+    templateId: store.templateId,
+    landingThemeVariant: store.landingThemeVariant,
+  });
+
   if (
     store.landingBlocks &&
     typeof store.landingBlocks === "object" &&
@@ -63,7 +77,7 @@ export async function renderSchemaPage({
           .map((r) => r.externalProductId)
           .filter((s): s is string => !!s),
       );
-      return (
+      const inner = (
         <MultiPageRenderer
           schema={store.landingBlocks}
           pageSlug={pageSlug}
@@ -75,7 +89,40 @@ export async function renderSchemaPage({
           activeProductIds={activeProductIds}
         />
       );
+      if (isFB) {
+        const heading = fashionBeautyPolicyHeading(pageSlug, fallbackTitle);
+        return (
+          <FashionBeautyPolicyShell
+            slug={store.slug}
+            title={heading.title}
+            eyebrow={heading.eyebrow}
+          >
+            {inner}
+          </FashionBeautyPolicyShell>
+        );
+      }
+      return inner;
     }
+  }
+
+  const fallback = fallbackBody ?? (
+    <p className="text-base leading-relaxed" style={{ color: "var(--shop-ink-muted)" }}>
+      {fallbackHint ??
+        "ยังไม่มีเนื้อหาในหน้านี้ — สร้าง landing page ใหม่ใน admin เพื่อเพิ่มเนื้อหาอัตโนมัติ"}
+    </p>
+  );
+
+  if (isFB) {
+    const heading = fashionBeautyPolicyHeading(pageSlug, fallbackTitle);
+    return (
+      <FashionBeautyPolicyShell
+        slug={store.slug}
+        title={heading.title}
+        eyebrow={heading.eyebrow}
+      >
+        {fallback}
+      </FashionBeautyPolicyShell>
+    );
   }
 
   return (
@@ -83,12 +130,7 @@ export async function renderSchemaPage({
       <h1 className="text-3xl font-bold mb-6" style={{ color: "var(--shop-ink)" }}>
         {fallbackTitle}
       </h1>
-      {fallbackBody ?? (
-        <p className="text-base leading-relaxed" style={{ color: "var(--shop-ink-muted)" }}>
-          {fallbackHint ??
-            "ยังไม่มีเนื้อหาในหน้านี้ — สร้าง landing page ใหม่ใน admin เพื่อเพิ่มเนื้อหาอัตโนมัติ"}
-        </p>
-      )}
+      {fallback}
     </div>
   );
 }
