@@ -144,14 +144,14 @@ export function ElectronicsTechHero({
                   fontWeight: 600,
                 }}
               >
-                Catalog index
+                ดัชนีแคตตาล็อก
               </p>
               <span
                 data-tech-stock="true"
                 className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase"
                 style={{ letterSpacing: '0.12em' }}
               >
-                Live
+                ออนไลน์
               </span>
             </div>
             <div
@@ -171,7 +171,7 @@ export function ElectronicsTechHero({
                     fontWeight: 600,
                   }}
                 >
-                  Vendor
+                  ผู้ขาย
                 </dt>
                 <dd
                   data-tech-mono="true"
@@ -210,7 +210,7 @@ export function ElectronicsTechHero({
                     textTransform: 'uppercase',
                   }}
                 >
-                  Certified
+                  รับรอง
                 </dd>
               </div>
               <div>
@@ -224,7 +224,7 @@ export function ElectronicsTechHero({
                     fontWeight: 600,
                   }}
                 >
-                  Lead time
+                  ระยะเวลาผลิต
                 </dt>
                 <dd
                   data-tech-mono="true"
@@ -237,7 +237,7 @@ export function ElectronicsTechHero({
                     fontVariantNumeric: 'tabular-nums',
                   }}
                 >
-                  1&ndash;3 days
+                  1&ndash;3 วัน
                 </dd>
               </div>
               <div>
@@ -251,7 +251,7 @@ export function ElectronicsTechHero({
                     fontWeight: 600,
                   }}
                 >
-                  Warranty
+                  การรับประกัน
                 </dt>
                 <dd
                   data-tech-mono="true"
@@ -264,7 +264,7 @@ export function ElectronicsTechHero({
                     fontVariantNumeric: 'tabular-nums',
                   }}
                 >
-                  12 months
+                  12 เดือน
                 </dd>
               </div>
             </dl>

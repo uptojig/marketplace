@@ -94,7 +94,7 @@ export function BusinessModelTierLadder() {
                 lineHeight: 1.1,
               }}
             >
-              Stack the savings as you stack the order
+              สั่งซื้อมากขึ้น ประหยัดมากขึ้น
             </h2>
             <p
               className="text-sm"
@@ -103,7 +103,7 @@ export function BusinessModelTierLadder() {
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              No coupons. No haggling. Tiers apply on every line.
+              ไม่ต้องใช้คูปอง ไม่ต้องต่อรอง ระบบคำนวณส่วนลดทุกรายการอัตโนมัติ
             </p>
           </div>
         </header>
@@ -123,11 +123,11 @@ export function BusinessModelTierLadder() {
               letterSpacing: '0.12em',
             }}
           >
-            <span>Tier</span>
-            <span>Qty range</span>
-            <span>Unit ×</span>
-            <span>You save</span>
-            <span>Notes</span>
+            <span>ระดับ</span>
+            <span>ช่วงจำนวน</span>
+            <span>คูณ</span>
+            <span>ประหยัด</span>
+            <span>หมายเหตุ</span>
           </div>
 
           <ul>
@@ -160,7 +160,7 @@ export function BusinessModelTierLadder() {
                         letterSpacing: '0.12em',
                       }}
                     >
-                      Tier
+                      ระดับ
                       <span
                         data-bm-mono="true"
                         style={{
@@ -194,7 +194,7 @@ export function BusinessModelTierLadder() {
                           fontFamily: BM_HEADING_FONT,
                         }}
                       >
-                        units
+                        ชิ้น
                       </span>
                     </p>
                     {/* Mobile-only: bunch the multiplier + chip under qty */}
@@ -289,7 +289,7 @@ export function BusinessModelTierLadder() {
                           fontFamily: BM_HEADING_FONT,
                         }}
                       >
-                        — no chip
+                        — ไม่มีส่วนลด
                       </span>
                     )}
                   </div>
@@ -320,7 +320,7 @@ export function BusinessModelTierLadder() {
             letterSpacing: '0.12em',
           }}
         >
-          Tiers apply per SKU at checkout · No code required
+          ระดับส่วนลดคำนวณแยกต่อ SKU เมื่อชำระเงิน · ไม่ต้องใช้รหัส
         </p>
       </div>
     </section>

@@ -84,7 +84,7 @@ export async function ElectronicsTechCatalogIndex({
                 fontWeight: 600,
               }}
             >
-              PRODUCT INDEX · LATEST
+              ดัชนีสินค้า · ใหม่ล่าสุด
             </p>
             <h2
               className="mt-2 text-2xl sm:text-3xl"
@@ -96,7 +96,7 @@ export async function ElectronicsTechCatalogIndex({
                 lineHeight: 1.1,
               }}
             >
-              Latest catalog additions
+              สินค้าใหม่ในแคตตาล็อก
             </h2>
             <div
               aria-hidden
@@ -116,7 +116,7 @@ export async function ElectronicsTechCatalogIndex({
               fontWeight: 600,
             }}
           >
-            VIEW FULL CATALOG
+            ดูแคตตาล็อกทั้งหมด
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -136,7 +136,7 @@ export async function ElectronicsTechCatalogIndex({
                 fontWeight: 600,
               }}
             >
-              CATALOG EMPTY · 0 ITEMS
+แคตตาล็อกว่าง · 0 รายการ
             </p>
           </div>
         ) : (
@@ -199,7 +199,7 @@ export async function ElectronicsTechCatalogIndex({
                         style={{ letterSpacing: '0.1em' }}
                       >
                         <CheckCircle2 className="h-2.5 w-2.5" />
-                        In stock
+                        มีสินค้า
                       </span>
                     </div>
                   </div>
