@@ -353,7 +353,7 @@ function InfoColumn({
         <div className="flex flex-wrap items-center gap-2">
           {product.badges.includes('hot') && (
             <Badge className="rounded-md bg-[var(--shop-primary)] text-white hover:bg-[var(--shop-primary)]">
-              BESTSELLER
+              ขายดี
             </Badge>
           )}
           {product.badges.includes('new') && (
@@ -362,7 +362,7 @@ function InfoColumn({
               className="rounded-md border-[var(--shop-accent)]"
               style={{ color: 'var(--shop-accent)' }}
             >
-              NEW
+              ใหม่
             </Badge>
           )}
           {product.badges.includes('limited') && (
@@ -371,7 +371,7 @@ function InfoColumn({
               className="rounded-md border-[var(--shop-primary)]"
               style={{ color: 'var(--shop-primary)' }}
             >
-              LIMITED
+              จำนวนจำกัด
             </Badge>
           )}
           {product.badges.includes('official') && (
@@ -380,7 +380,7 @@ function InfoColumn({
               className="rounded-md border-[var(--shop-primary)]"
               style={{ color: 'var(--shop-primary)' }}
             >
-              OFFICIAL
+              ทางการ
             </Badge>
           )}
         </div>

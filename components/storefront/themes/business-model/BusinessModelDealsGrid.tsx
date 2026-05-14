@@ -119,7 +119,7 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
                     color: 'var(--shop-ink-muted)',
                   }}
                 >
-                  <span className="uppercase tracking-[0.12em]">SKUs</span>
+                  <span className="uppercase tracking-[0.12em]">SKU</span>
                   <span
                     data-bm-mono="true"
                     style={{
@@ -134,7 +134,7 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
                   <span aria-hidden style={{ color: 'var(--shop-border)' }}>
                     ·
                   </span>
-                  <span className="uppercase tracking-[0.12em]">On sale</span>
+                  <span className="uppercase tracking-[0.12em]">ลดราคา</span>
                   <span
                     data-bm-mono="true"
                     style={{
@@ -154,7 +154,7 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
               className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] hover:underline"
               style={{ color: 'var(--shop-primary)' }}
             >
-              View full catalog
+              ดูแคตตาล็อกทั้งหมด
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -199,7 +199,7 @@ function BusinessModelDealsEmpty({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '0.12em',
         }}
       >
-        No deals listed
+        ยังไม่มีดีล
       </p>
       <h3
         className="mt-2 text-2xl"
@@ -210,7 +210,7 @@ function BusinessModelDealsEmpty({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '-0.015em',
         }}
       >
-        Catalog is loading
+        แคตตาล็อกกำลังโหลด
       </h3>
       <p
         className="mx-auto mt-3 max-w-sm text-sm"
@@ -219,14 +219,14 @@ function BusinessModelDealsEmpty({ storeSlug }: { storeSlug: string }) {
           color: 'var(--shop-ink-muted)',
         }}
       >
-        New stock is being uploaded — check back shortly.
+        กำลังอัปโหลดสินค้าใหม่ — โปรดกลับมาภายหลัง
       </p>
       <Link
         href={`/stores/${storeSlug}/category`}
         className="mt-6 inline-flex h-11 items-center justify-center rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
         style={{ background: 'var(--shop-primary)' }}
       >
-        Browse catalog
+        ดูแคตตาล็อก
       </Link>
     </div>
   );

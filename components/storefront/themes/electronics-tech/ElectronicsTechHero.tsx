@@ -76,7 +76,7 @@ export function ElectronicsTechHero({
                 lineHeight: 1.05,
               }}
             >
-              Engineered for the catalog
+              วิศวกรรมเพื่อแคตตาล็อก
             </h1>
             {/* Mint hairline rule — anchors the spec-sheet aesthetic. */}
             <div

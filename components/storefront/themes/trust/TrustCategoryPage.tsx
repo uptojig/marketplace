@@ -275,7 +275,7 @@ export function TrustCategoryPage(props: TrustCategoryPageProps) {
           <nav
             className="mt-16 flex flex-wrap items-center justify-center gap-3 border-t pt-7 sm:gap-5"
             style={{ borderColor: 'var(--shop-accent)' }}
-            aria-label="Pagination"
+            aria-label="แบ่งหน้า"
           >
             {currentPage > 1 ? (
               <Link
