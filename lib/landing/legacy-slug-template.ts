@@ -32,8 +32,11 @@ export const LEGACY_SLUG_TEMPLATE: Record<string, TemplateId> = {
   bikini551: "lookbook",
   // Kids cartoon merch / playful tile-led → lifestyle kids-toys
   powerpuff678: "kids-toys",
-  // Ergonomic body / wellness gear → lifestyle sport-active
-  ergobodies: "sport-active",
+  // Ergonomic body / wellness gadgets → electronics-tech tech-compare
+  // (was sport-active but that collided with powerpuff678 — both fell
+  // into Lifestyle and the two homepages rendered identical. ET gives
+  // ergobodies its own spec-sheet voice.)
+  ergobodies: "tech-compare",
   // Sugar / gift-box artisan → specialty handmade
   zugarbox: "handmade",
 };
