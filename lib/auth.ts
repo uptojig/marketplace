@@ -22,11 +22,51 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   );
 }
 
-if (process.env.EMAIL_SERVER && process.env.EMAIL_FROM) {
+// EMAIL_SERVER is parsed for its password (Resend's SMTP password
+// IS the API key) so we can drive Resend's HTTPS /emails endpoint
+// instead of nodemailer SMTP. DigitalOcean blocks outbound :465/:587
+// on shop droplets by default, so SMTP times out; the HTTPS API on
+// :443 is always reachable.
+function extractResendApiKey(): string | null {
+  if (process.env.RESEND_API_KEY) return process.env.RESEND_API_KEY;
+  const url = process.env.EMAIL_SERVER;
+  if (!url) return null;
+  // Form: smtp://<user>:<password>@host:port  — password is the API key.
+  const m = url.match(/^smtps?:\/\/[^:]+:([^@]+)@/);
+  return m?.[1] ?? null;
+}
+
+const resendApiKey = extractResendApiKey();
+
+if (resendApiKey && process.env.EMAIL_FROM) {
   providers.push(
     EmailProvider({
-      server: process.env.EMAIL_SERVER,
+      // server/from are required by NextAuth's type but ignored when
+      // we override sendVerificationRequest. Keep server set so any
+      // future code reading provider.options.server still works.
+      server: process.env.EMAIL_SERVER ?? "",
       from: process.env.EMAIL_FROM,
+      async sendVerificationRequest({ identifier: to, url, provider }) {
+        const from = provider.from;
+        const subject = `เข้าสู่ระบบ ${new URL(url).host}`;
+        const html = `
+          <p>คลิกลิงก์ด้านล่างเพื่อเข้าสู่ระบบ (ลิงก์มีอายุ 24 ชั่วโมง):</p>
+          <p><a href="${url}" style="display:inline-block;padding:12px 24px;background:#000;color:#fff;text-decoration:none;border-radius:8px;font-family:system-ui,sans-serif">เข้าสู่ระบบ</a></p>
+          <p style="font-size:12px;color:#666">หรือคัดลอกลิงก์: <br>${url}</p>
+        `;
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ from, to, subject, html }),
+        });
+        if (!res.ok) {
+          const body = await res.text().catch(() => "");
+          throw new Error(`Resend send failed: ${res.status} ${body.slice(0, 200)}`);
+        }
+      },
     }),
   );
 }
