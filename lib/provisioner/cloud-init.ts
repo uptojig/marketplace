@@ -34,6 +34,18 @@ export type CloudInitInput = {
   // operators add them manually via the Cloud Console.
   googleClientId?: string;
   googleClientSecret?: string;
+  // SMTP creds for NextAuth EmailProvider (magic-link signup). Optional —
+  // when either is unset the provider doesn't register and email signup
+  // is silently disabled.
+  emailServer?: string;
+  emailFrom?: string;
+  // DigitalOcean Spaces creds for /api/admin/upload (image picker).
+  // Optional — when unset, /api/admin/upload returns 503.
+  spacesEndpoint?: string;
+  spacesRegion?: string;
+  spacesBucket?: string;
+  spacesKey?: string;
+  spacesSecret?: string;
   // Whether snapshot is available -- falls back to bootstrap install if not.
   useSnapshot: boolean;
   // Optional override for the shop image registry coordinates.
@@ -70,6 +82,13 @@ export function renderCloudInit(input: CloudInitInput): string {
     `PLATFORM_DOMAIN=${cfg.cfPlatformDomain}`,
     ...(input.googleClientId ? [`GOOGLE_CLIENT_ID=${input.googleClientId}`] : []),
     ...(input.googleClientSecret ? [`GOOGLE_CLIENT_SECRET=${input.googleClientSecret}`] : []),
+    ...(input.emailServer ? [`EMAIL_SERVER=${input.emailServer}`] : []),
+    ...(input.emailFrom ? [`EMAIL_FROM=${input.emailFrom}`] : []),
+    ...(input.spacesEndpoint ? [`SPACES_ENDPOINT=${input.spacesEndpoint}`] : []),
+    ...(input.spacesRegion ? [`SPACES_REGION=${input.spacesRegion}`] : []),
+    ...(input.spacesBucket ? [`SPACES_BUCKET=${input.spacesBucket}`] : []),
+    ...(input.spacesKey ? [`SPACES_KEY=${input.spacesKey}`] : []),
+    ...(input.spacesSecret ? [`SPACES_SECRET=${input.spacesSecret}`] : []),
     `TZ=Asia/Bangkok`,
   ].join("\n");
 

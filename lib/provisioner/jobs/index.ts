@@ -82,6 +82,17 @@ async function createDropletJob(ctx: JobContext): Promise<JobResult> {
     controlPlaneBaseUrl: cfg.controlPlaneBaseUrl,
     googleClientId: process.env.GOOGLE_CLIENT_ID,
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    // SMTP + image-upload creds. Without EMAIL_SERVER/EMAIL_FROM the
+    // NextAuth EmailProvider never registers, breaking magic-link
+    // signup. Without SPACES_* the /api/admin/upload endpoint 503s,
+    // breaking image picker. Both are shared with control plane.
+    emailServer: process.env.EMAIL_SERVER,
+    emailFrom: process.env.EMAIL_FROM,
+    spacesEndpoint: process.env.SPACES_ENDPOINT,
+    spacesRegion: process.env.SPACES_REGION,
+    spacesBucket: process.env.SPACES_BUCKET,
+    spacesKey: process.env.SPACES_KEY,
+    spacesSecret: process.env.SPACES_SECRET,
     useSnapshot: Boolean(cfg.doImageSnapshotId),
   });
 
