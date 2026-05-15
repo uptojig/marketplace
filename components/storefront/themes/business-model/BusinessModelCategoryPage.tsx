@@ -28,7 +28,7 @@
  */
 
 import Link from 'next/link';
-import { ChevronLeft, Filter, Inbox, Timer, TrendingDown } from 'lucide-react';
+import { ChevronLeft, Inbox, Timer, TrendingDown } from 'lucide-react';
 import { BusinessModelCategoryGrid } from './BusinessModelCategoryGrid';
 import type { BusinessModelCategoryProduct } from './BusinessModelCategoryGrid';
 
@@ -83,16 +83,12 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
     storeName,
     totalCount,
     pageProducts,
-    categoryNames,
-    categoryCounts,
-    uncatCount,
     selectedCats,
     sortKey,
     currentPage,
     totalPages,
     buildUrl,
     buildSortUrl,
-    filteredCount,
   } = props;
 
   const onSaleCount = pageProducts.filter(
@@ -195,165 +191,41 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
           </span>
         </div>
 
-        {/* Spreadsheet toolbar — filter chips + sort pills */}
+        {/* Sort toolbar — top nav already handles category filter. */}
         <div
           className="mb-6 grid gap-3 border-y py-3"
           style={{ borderColor: 'var(--shop-border)' }}
         >
-          {/* Category chips */}
+          {/* Sort pills */}
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase"
+              className="text-[10px] font-semibold uppercase"
               style={{
                 color: 'var(--shop-ink-muted)',
                 letterSpacing: '0.12em',
               }}
             >
-              <Filter className="h-3.5 w-3.5" />
-              Filter
+              Sort
             </span>
-            <Link
-              href={buildUrl()}
-              className="rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-[0.06em] transition"
-              style={{
-                borderColor:
-                  selectedCats.length === 0
-                    ? 'var(--shop-primary)'
-                    : 'var(--shop-border)',
-                background:
-                  selectedCats.length === 0 ? 'var(--shop-primary)' : '#ffffff',
-                color:
-                  selectedCats.length === 0 ? '#ffffff' : 'var(--shop-ink)',
-              }}
-            >
-              All
-              <span
-                data-bm-mono="true"
-                className="ml-1.5 text-[10px]"
-                style={{
-                  fontFamily: BM_MONO_FONT,
-                  fontVariantNumeric: 'tabular-nums',
-                  opacity: 0.8,
-                }}
-              >
-                {totalCount}
-              </span>
-            </Link>
-            {categoryNames.map((name) => {
-              const active = selectedCats.includes(name);
+            {SORT_OPTIONS.map((opt) => {
+              const active = sortKey === opt.key;
               return (
                 <Link
-                  key={name}
-                  href={buildUrl(name)}
+                  key={opt.key}
+                  href={buildSortUrl(opt.key)}
                   className="rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-[0.06em] transition hover:border-[var(--shop-primary)]"
                   style={{
                     borderColor: active
-                      ? 'var(--shop-primary)'
+                      ? 'var(--shop-ink)'
                       : 'var(--shop-border)',
-                    background: active ? 'var(--shop-primary)' : '#ffffff',
+                    background: active ? 'var(--shop-ink)' : '#ffffff',
                     color: active ? '#ffffff' : 'var(--shop-ink)',
                   }}
                 >
-                  {name}
-                  <span
-                    data-bm-mono="true"
-                    className="ml-1.5 text-[10px]"
-                    style={{
-                      fontFamily: BM_MONO_FONT,
-                      fontVariantNumeric: 'tabular-nums',
-                      opacity: 0.8,
-                    }}
-                  >
-                    {categoryCounts[name] ?? 0}
-                  </span>
+                  {opt.label}
                 </Link>
               );
             })}
-            {uncatCount > 0 && (
-              <Link
-                href={buildUrl('uncategorized')}
-                className="rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-[0.06em] transition hover:border-[var(--shop-primary)]"
-                style={{
-                  borderColor: selectedCats.includes('uncategorized')
-                    ? 'var(--shop-primary)'
-                    : 'var(--shop-border)',
-                  background: selectedCats.includes('uncategorized')
-                    ? 'var(--shop-primary)'
-                    : '#ffffff',
-                  color: selectedCats.includes('uncategorized')
-                    ? '#ffffff'
-                    : 'var(--shop-ink)',
-                }}
-              >
-                Other
-                <span
-                  data-bm-mono="true"
-                  className="ml-1.5 text-[10px]"
-                  style={{
-                    fontFamily: BM_MONO_FONT,
-                    fontVariantNumeric: 'tabular-nums',
-                    opacity: 0.8,
-                  }}
-                >
-                  {uncatCount}
-                </span>
-              </Link>
-            )}
-          </div>
-
-          {/* Sort pills + filtered-count readout */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span
-                className="text-[10px] font-semibold uppercase"
-                style={{
-                  color: 'var(--shop-ink-muted)',
-                  letterSpacing: '0.12em',
-                }}
-              >
-                Sort
-              </span>
-              {SORT_OPTIONS.map((opt) => {
-                const active = sortKey === opt.key;
-                return (
-                  <Link
-                    key={opt.key}
-                    href={buildSortUrl(opt.key)}
-                    className="rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-[0.06em] transition hover:border-[var(--shop-primary)]"
-                    style={{
-                      borderColor: active
-                        ? 'var(--shop-ink)'
-                        : 'var(--shop-border)',
-                      background: active ? 'var(--shop-ink)' : '#ffffff',
-                      color: active ? '#ffffff' : 'var(--shop-ink)',
-                    }}
-                  >
-                    {opt.label}
-                  </Link>
-                );
-              })}
-            </div>
-            <span
-              className="text-[11px] font-semibold uppercase"
-              style={{
-                color: 'var(--shop-ink-muted)',
-                letterSpacing: '0.12em',
-              }}
-            >
-              Showing{' '}
-              <span
-                data-bm-mono="true"
-                className="font-bold"
-                style={{
-                  color: 'var(--shop-ink)',
-                  fontFamily: BM_MONO_FONT,
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {filteredCount.toLocaleString()}
-              </span>{' '}
-              rows
-            </span>
           </div>
         </div>
 
