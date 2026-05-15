@@ -72,8 +72,12 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
       {/* Red FLASH DEAL countdown stripe — mirrors the catalog stripe */}
       <div
         data-bm-countdown="true"
-        className="flex flex-wrap items-center justify-center gap-3 px-4 py-2.5 text-sm sm:text-base"
-        style={{ background: 'var(--shop-primary)', color: '#ffffff' }}
+        className="flex flex-wrap items-center justify-center gap-3 px-4 py-3 text-sm shadow-sm sm:text-base"
+        style={{
+          background:
+            'linear-gradient(135deg, var(--shop-primary), color-mix(in oklab, var(--shop-primary), #ffffff 12%))',
+          color: '#ffffff',
+        }}
       >
         <Timer className="h-4 w-4 shrink-0" />
         <span className="font-bold uppercase tracking-[0.12em]">
@@ -112,16 +116,17 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
               style={{ background: 'var(--shop-primary)' }}
             />
             <h1
-              className="mt-5 text-3xl sm:text-4xl md:text-5xl"
+              className="mt-5 text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
               style={{
                 fontFamily: BM_HEADING_FONT,
                 color: 'var(--shop-ink)',
-                fontWeight: 700,
-                letterSpacing: '-0.02em',
-                lineHeight: 1.05,
+                fontWeight: 800,
+                letterSpacing: '-0.03em',
+                lineHeight: 1.02,
               }}
             >
-              {storeName} ขายส่งราคาดีสำหรับคนซื้อจริง
+              {storeName} ขายส่งราคาดี <br />
+              <span style={{ color: 'var(--shop-primary)' }}>สำหรับคนซื้อจริง</span>
             </h1>
             <p
               className="mt-5 max-w-xl text-sm leading-relaxed sm:text-base"
@@ -157,7 +162,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href={`/stores/${storeSlug}/category`}
-                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
+                className="inline-flex h-14 items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
                 style={{ background: 'var(--shop-primary)' }}
               >
                 ดูดีล
@@ -167,7 +172,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
                 href={`mailto:sales@basketplace.local?subject=${encodeURIComponent(
                   `ขอใบเสนอราคา: ${storeName}`,
                 )}`}
-                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-md border bg-white px-6 text-xs font-bold uppercase tracking-[0.08em] transition hover:bg-[var(--shop-muted)]"
+                className="inline-flex h-14 items-center justify-center gap-2 rounded-xl border-2 bg-white px-7 py-3.5 text-sm font-bold uppercase tracking-[0.08em] transition hover:-translate-y-0.5 hover:bg-[var(--shop-muted)] hover:shadow-md"
                 style={{
                   borderColor: 'var(--shop-ink)',
                   color: 'var(--shop-ink)',
@@ -183,7 +188,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
           <div className="hidden lg:block">
             {bannerUrl ? (
               <div
-                className="relative overflow-hidden rounded-md border"
+                className="relative overflow-hidden rounded-3xl border shadow-2xl"
                 style={{
                   borderColor: 'var(--shop-border)',
                   aspectRatio: '4 / 3',
@@ -229,7 +234,7 @@ function BusinessModelHeroStat({
     tone === 'savings' ? 'var(--shop-savings, #10b981)' : 'var(--shop-ink)';
   return (
     <li
-      className="rounded-md border p-3"
+      className="rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md"
       style={{
         borderColor: 'var(--shop-border)',
         background: 'var(--shop-muted)',
@@ -287,7 +292,7 @@ function BusinessModelHeroDashboardMock() {
   ];
   return (
     <div
-      className="rounded-md border bg-white p-4 shadow-sm"
+      className="rounded-3xl border bg-white p-5 shadow-xl"
       style={{ borderColor: 'var(--shop-border)' }}
     >
       <div className="flex items-center justify-between border-b pb-2"

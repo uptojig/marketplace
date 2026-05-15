@@ -110,7 +110,7 @@ export function BusinessModelTierLadder() {
 
         {/* Spreadsheet-style ledger — header strip + 3 ledger rows */}
         <div
-          className="overflow-hidden rounded-md border bg-white"
+          className="overflow-hidden rounded-3xl border bg-white shadow-sm"
           style={{ borderColor: 'var(--shop-border)' }}
         >
           {/* Header strip */}
@@ -145,7 +145,7 @@ export function BusinessModelTierLadder() {
                   {/* Tier badge — caps + mono numeral */}
                   <div className="flex items-center">
                     <span
-                      className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-bold uppercase"
+                      className="inline-flex items-center gap-1 rounded-xl border px-2.5 py-1 text-[10px] font-bold uppercase"
                       style={{
                         borderColor:
                           t.savingsPct > 0
@@ -212,7 +212,7 @@ export function BusinessModelTierLadder() {
                       </span>
                       {t.savingsPct > 0 && (
                         <span
-                          className="inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase"
+                          className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase shadow-sm"
                           style={{
                             background: 'var(--shop-savings, #10b981)',
                             color: '#ffffff',
@@ -262,7 +262,7 @@ export function BusinessModelTierLadder() {
                   <div className="hidden sm:block">
                     {t.savingsPct > 0 ? (
                       <span
-                        className="inline-flex items-center gap-1 rounded-sm px-2 py-1 text-[11px] font-bold uppercase shadow-sm"
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold uppercase shadow-md"
                         style={{
                           background: 'var(--shop-savings, #10b981)',
                           color: '#ffffff',

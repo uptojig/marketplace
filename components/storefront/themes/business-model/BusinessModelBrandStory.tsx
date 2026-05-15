@@ -55,7 +55,7 @@ export function BusinessModelBrandStory({
 
   return (
     <section
-      className="my-12 rounded-md border bg-white p-6 sm:p-10"
+      className="my-12 rounded-3xl border bg-gradient-to-br from-white to-[var(--shop-muted)] p-8 shadow-sm sm:p-12"
       style={{
         borderColor: 'var(--shop-border)',
       }}
@@ -101,7 +101,7 @@ export function BusinessModelBrandStory({
 
         <Link
           href={quoteHref}
-          className="inline-flex h-11 shrink-0 items-center justify-center rounded-md px-6 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
+          className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl px-7 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
           style={{ background: 'var(--shop-primary)' }}
         >
           ขอใบเสนอราคา
@@ -160,10 +160,9 @@ export function BusinessModelBrandStory({
         : 'var(--shop-ink)';
     return (
       <li
-        className="rounded-md border p-3"
+        className="rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
         style={{
           borderColor: 'var(--shop-border)',
-          background: 'var(--shop-muted)',
         }}
       >
         <p

@@ -100,13 +100,13 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
           <div className="mt-4 flex flex-wrap items-baseline justify-between gap-3">
             <div className="flex flex-wrap items-baseline gap-3">
               <h2
-                className="text-2xl sm:text-3xl"
+                className="text-3xl sm:text-4xl"
                 style={{
                   fontFamily: BM_HEADING_FONT,
                   color: 'var(--shop-ink)',
-                  fontWeight: 700,
-                  letterSpacing: '-0.015em',
-                  lineHeight: 1.1,
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.05,
                 }}
               >
                 ดีลเด็ดวันนี้
@@ -151,8 +151,11 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
             </div>
             <Link
               href={`/stores/${storeSlug}/category`}
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] hover:underline"
-              style={{ color: 'var(--shop-primary)' }}
+              className="inline-flex items-center gap-2 rounded-full border-2 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.1em] transition hover:-translate-y-0.5 hover:shadow-md"
+              style={{
+                borderColor: 'var(--shop-primary)',
+                color: 'var(--shop-primary)',
+              }}
             >
               ดูแคตตาล็อกทั้งหมด
               <ArrowRight className="h-3.5 w-3.5" />

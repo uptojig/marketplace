@@ -168,8 +168,12 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
         {/* Countdown stripe — daily deals refresh */}
         <div
           data-bm-countdown="true"
-          className="mb-5 flex flex-wrap items-center justify-center gap-3 rounded-md px-4 py-2.5 text-sm sm:text-base"
-          style={{ background: 'var(--shop-primary)', color: '#ffffff' }}
+          className="mb-6 flex flex-wrap items-center justify-center gap-3 rounded-2xl px-5 py-3 text-sm shadow-lg sm:text-base"
+          style={{
+            background:
+              'linear-gradient(135deg, var(--shop-primary), color-mix(in oklab, var(--shop-primary), #ffffff 12%))',
+            color: '#ffffff',
+          }}
         >
           <Timer className="h-4 w-4 shrink-0" />
           <span className="font-bold uppercase tracking-[0.12em]">
