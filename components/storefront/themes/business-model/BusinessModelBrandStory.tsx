@@ -50,7 +50,7 @@ export function BusinessModelBrandStory({
   // mailto fallback — encoded subject mentions the operator name so
   // the email lands in the right inbox thread on the buyer side.
   const quoteHref = `mailto:sales@basketplace.local?subject=${encodeURIComponent(
-    `Quote request: ${storeName}`,
+    `ขอใบเสนอราคา: ${storeName}`,
   )}`;
 
   return (
@@ -69,7 +69,7 @@ export function BusinessModelBrandStory({
               letterSpacing: '0.12em',
             }}
           >
-            WHOLESALE PARTNER · {storeName.toUpperCase()}
+            พันธมิตรขายส่ง · {storeName.toUpperCase()}
           </p>
           <div
             aria-hidden
@@ -86,7 +86,7 @@ export function BusinessModelBrandStory({
               lineHeight: 1.15,
             }}
           >
-            Why partner with {storeName}?
+            ทำไมต้องเลือก {storeName}?
           </h2>
           <p
             className="mt-4 max-w-2xl text-sm leading-relaxed sm:text-base"
@@ -104,7 +104,7 @@ export function BusinessModelBrandStory({
           className="inline-flex h-11 shrink-0 items-center justify-center rounded-md px-6 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Request a quote
+          ขอใบเสนอราคา
         </Link>
       </div>
 
@@ -113,11 +113,11 @@ export function BusinessModelBrandStory({
         className="mt-8 grid grid-cols-1 gap-3 border-t pt-6 sm:grid-cols-3 sm:gap-4"
         style={{ borderColor: 'var(--shop-border)' }}
       >
-        <BusinessModelStat label="Years in business" value="10+" unit="yr" />
-        <BusinessModelStat label="Catalog depth" value="500+" unit="SKU" />
+        <BusinessModelStat label="ดำเนินธุรกิจ" value="10+" unit="ปี" />
+        <BusinessModelStat label="ขนาดแคตตาล็อก" value="500+" unit="รายการ" />
         <BusinessModelStat
-          label="Bulk discount"
-          value="up to 25%"
+          label="ส่วนลดขายส่ง"
+          value="ถึง 25%"
           tone="savings"
         />
       </ul>
@@ -137,7 +137,7 @@ export function BusinessModelBrandStory({
           className="hover:underline"
           style={{ color: 'var(--shop-ink-muted)' }}
         >
-          ← Back to wholesale catalog
+          ← กลับสู่แคตตาล็อกขายส่ง
         </Link>
       </p>
     </section>

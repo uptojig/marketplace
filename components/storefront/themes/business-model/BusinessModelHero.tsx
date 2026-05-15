@@ -77,7 +77,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
       >
         <Timer className="h-4 w-4 shrink-0" />
         <span className="font-bold uppercase tracking-[0.12em]">
-          Flash deal
+          ดีลด่วน
         </span>
         <span aria-hidden style={{ opacity: 0.6 }}>·</span>
         <span
@@ -92,7 +92,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
           {countdown}
         </span>
         <span className="hidden text-xs opacity-90 sm:inline">
-          · ends today midnight ICT
+          · จบเที่ยงคืนวันนี้
         </span>
       </div>
 
@@ -104,7 +104,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
               className="text-[11px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Wholesale · {storeName}
+              ขายส่ง · {storeName}
             </p>
             <div
               aria-hidden
@@ -121,7 +121,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
                 lineHeight: 1.05,
               }}
             >
-              {storeName} bulk pricing for serious buyers
+              {storeName} ขายส่งราคาดีสำหรับคนซื้อจริง
             </h1>
             <p
               className="mt-5 max-w-xl text-sm leading-relaxed sm:text-base"
@@ -130,26 +130,26 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              Volume tiers stack automatically · Net-30 terms for verified
-              buyers · Same-week dispatch from Bangkok.
+              ส่วนลดจำนวนคำนวณอัตโนมัติ · เครดิต Net-30 สำหรับลูกค้าผ่านการตรวจสอบ ·
+              จัดส่งภายในสัปดาห์จากกรุงเทพ
             </p>
 
             {/* 3-stat ledger row — matches the BrandStory stat tiles */}
             <ul className="mt-7 grid grid-cols-3 gap-2.5 sm:gap-3">
               <BusinessModelHeroStat
-                label="Catalog"
+                label="แคตตาล็อก"
                 value="500+"
-                unit="SKU"
+                unit="รายการ"
               />
               <BusinessModelHeroStat
-                label="Bulk discount"
-                value="up to 25%"
+                label="ส่วนลดขายส่ง"
+                value="ถึง 25%"
                 tone="savings"
               />
               <BusinessModelHeroStat
-                label="Payment"
+                label="การชำระเงิน"
                 value="Net-30"
-                unit="terms"
+                unit="เครดิต"
               />
             </ul>
 
@@ -160,12 +160,12 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
                 className="inline-flex h-12 items-center justify-center gap-1.5 rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
                 style={{ background: 'var(--shop-primary)' }}
               >
-                Browse deals
+                ดูดีล
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <a
                 href={`mailto:sales@basketplace.local?subject=${encodeURIComponent(
-                  `Quote request: ${storeName}`,
+                  `ขอใบเสนอราคา: ${storeName}`,
                 )}`}
                 className="inline-flex h-12 items-center justify-center gap-1.5 rounded-md border bg-white px-6 text-xs font-bold uppercase tracking-[0.08em] transition hover:bg-[var(--shop-muted)]"
                 style={{
@@ -174,7 +174,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
                 }}
               >
                 <Mail className="h-3.5 w-3.5" />
-                Request a quote
+                ขอใบเสนอราคา
               </a>
             </div>
           </div>
@@ -300,7 +300,7 @@ function BusinessModelHeroDashboardMock() {
             letterSpacing: '0.12em',
           }}
         >
-          Deal dashboard
+          แดชบอร์ดดีล
         </span>
         <span
           data-bm-mono="true"
@@ -323,9 +323,9 @@ function BusinessModelHeroDashboardMock() {
           borderColor: 'var(--shop-border)',
         }}
       >
-        <span>SKU</span>
-        <span className="text-right">Qty</span>
-        <span className="text-right">Save</span>
+        <span>รหัส</span>
+        <span className="text-right">จำนวน</span>
+        <span className="text-right">ประหยัด</span>
       </div>
       <ul>
         {rows.map((r, i) => (
