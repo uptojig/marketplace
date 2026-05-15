@@ -1097,12 +1097,6 @@ function ContactFormBlock({
               </div>
             </a>
           )}
-          <Link
-            href={`/stores/${storeSlug}/contact`}
-            className={`block py-8 text-center font-semibold ${t.accent} hover:underline`}
-          >
-            ไปที่หน้าฟอร์มติดต่อ →
-          </Link>
         </div>
       </div>
     </section>

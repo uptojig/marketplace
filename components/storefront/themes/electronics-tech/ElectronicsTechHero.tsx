@@ -111,7 +111,7 @@ export function ElectronicsTechHero({
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <Link
-                href={`/stores/${storeSlug}/contact`}
+                href={`/stores/${storeSlug}/help/faq`}
                 data-tech-mono="true"
                 className="inline-flex h-11 items-center justify-center rounded-md border bg-white px-5 text-[11px] uppercase transition hover:border-[var(--shop-highlight,#34d399)] hover:text-[var(--shop-highlight,#34d399)]"
                 style={{

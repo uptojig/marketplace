@@ -94,7 +94,7 @@ export function LifestyleHero({
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href={`/stores/${storeSlug}/contact`}
+              href={`/stores/${storeSlug}/about`}
               className="inline-flex items-center gap-1 text-sm font-semibold transition hover:opacity-80"
               style={{
                 color: 'var(--shop-primary)',

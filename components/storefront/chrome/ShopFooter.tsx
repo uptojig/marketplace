@@ -172,14 +172,6 @@ export function ShopFooter({
                 FAQ
               </Link>
             </li>
-            <li>
-              <Link
-                href={`/stores/${store.slug}/contact`}
-                className="hover:text-[var(--shop-ink)]"
-              >
-                ติดต่อร้าน
-              </Link>
-            </li>
           </ul>
         </div>
 

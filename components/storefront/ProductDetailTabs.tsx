@@ -17,7 +17,6 @@
  *                       the spec sheet.
  */
 
-import Link from 'next/link';
 import { MessageSquare, Truck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -96,14 +95,7 @@ export function ProductDetailTabs({
             </p>
           ) : (
             <p className="text-sm text-muted-foreground">
-              ทางร้านยังไม่ได้ใส่รายละเอียดสินค้านี้ — สอบถามข้อมูลเพิ่มเติมได้ที่{' '}
-              <Link
-                href={`/stores/${store.slug}/contact`}
-                className="font-medium underline"
-                style={{ color: 'var(--shop-primary)' }}
-              >
-                หน้าติดต่อร้าน
-              </Link>
+              ทางร้านยังไม่ได้ใส่รายละเอียดสินค้านี้
             </p>
           )}
           {hasKeyAttrs && (
