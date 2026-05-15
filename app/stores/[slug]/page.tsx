@@ -49,6 +49,36 @@ import { CaseStudioHomepage } from "@/components/storefront/themes/case-studio/C
 
 export const dynamic = "force-dynamic";
 
+// Per-shop SEO metadata. Falls back to a generic Thai description when
+// the store hasn't set a tagline yet. Buyer-facing copy is Thai only;
+// the store name itself can stay in its original casing/language
+// because it IS the brand.
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const store = await prisma.store.findUnique({
+    where: { slug: params.slug },
+    select: { name: true, tagline: true, description: true },
+  });
+  if (!store) {
+    return { title: "ไม่พบร้านค้า" };
+  }
+  const description =
+    store.tagline?.trim() ||
+    store.description?.trim() ||
+    `ช้อปสินค้าออนไลน์ ส่งฟรีทั่วประเทศ จาก ${store.name}`;
+  return {
+    title: store.name,
+    description,
+    openGraph: {
+      title: store.name,
+      description,
+    },
+  };
+}
+
 type TabId = "all" | "hot" | "new" | "sale";
 type Tab = { id: TabId; label: string };
 const ALL_TABS: Tab[] = [

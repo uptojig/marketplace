@@ -107,7 +107,7 @@ export function ElectronicsTechHero({
                   fontWeight: 700,
                 }}
               >
-                VIEW CATALOG
+                ดูสินค้าทั้งหมด
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <Link
@@ -122,7 +122,7 @@ export function ElectronicsTechHero({
                   fontWeight: 600,
                 }}
               >
-                TECHNICAL SUPPORT
+                สอบถามข้อมูล
               </Link>
             </div>
           </div>

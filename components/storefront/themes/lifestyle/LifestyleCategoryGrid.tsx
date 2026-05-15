@@ -34,35 +34,7 @@ export interface LifestyleCategoryProduct {
   imageUrl: string | null;
   priceTHB: number;
   compareAtPriceTHB: number | null;
-  /** Optional category tag — shown as a small chip top-left of the
-   *  card. Falls back to "Everyday essentials" when absent so the
-   *  card still feels intentional. */
   categoryName?: string | null;
-}
-
-/**
- * Build an optimistic catalog tagline for a product. Deterministic
- * by id so the same card always shows the same tagline across renders.
- * Reads as warm catalog copy rather than feature bullets.
- *
- * TODO(schema): once Product.tagline lands, prefer it over this hash.
- */
-function benefitTagline(id: string): string {
-  const lines = [
-    'Built for everyday adventures',
-    'A friend in every basket',
-    'Made to be loved + used',
-    'Comfort that travels with you',
-    'Soft on hands, kind to the planet',
-    'A small joy for the home',
-    'Designed with care',
-    'Honest craft, honest price',
-  ];
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return lines[hash % lines.length];
 }
 
 export function LifestyleCategoryGrid({
@@ -77,7 +49,7 @@ export function LifestyleCategoryGrid({
       {/* Row-based layout so we can drop hand-drawn squiggle dividers
           BETWEEN rows. Tailwind grid would lose the row boundary; we
           chunk into pages of 3 (lg) / 2 (md) groups instead. */}
-      <div className="grid grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
         {products.map((p) => (
           <ProductCard key={p.id} storeSlug={storeSlug} product={p} />
         ))}
@@ -107,8 +79,6 @@ function ProductCard({
     product.compareAtPriceTHB && product.compareAtPriceTHB > product.priceTHB
       ? Math.round((1 - product.priceTHB / product.compareAtPriceTHB) * 100)
       : null;
-  const tagline = benefitTagline(product.id);
-  const tag = product.categoryName ?? 'Everyday essentials';
 
   return (
     <Link
@@ -138,23 +108,13 @@ function ProductCard({
               ไม่มีรูป
             </div>
           )}
-          {/* Tag chip top-left — sage outline on white. */}
-          <span
-            className="absolute left-3 top-3 inline-flex items-center rounded-full border bg-white/95 px-3 py-1 text-[11px] font-semibold backdrop-blur"
-            style={{
-              color: 'var(--shop-ink)',
-              borderColor: 'var(--shop-accent)',
-            }}
-          >
-            {tag}
-          </span>
           {/* Discount chip top-right — terracotta fill. */}
           {discount != null && (
             <span
               className="absolute right-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold text-white"
               style={{ background: 'var(--shop-primary)' }}
             >
-              Save {discount}%
+              ลด {discount}%
             </span>
           )}
         </div>
@@ -170,12 +130,6 @@ function ProductCard({
           }}
         >
           {product.title}
-        </p>
-        <p
-          className="mt-1 line-clamp-1 text-xs"
-          style={{ color: 'var(--shop-ink-muted)' }}
-        >
-          {tagline}
         </p>
         <div className="mt-3 flex items-baseline gap-2">
           <span

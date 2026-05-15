@@ -90,7 +90,7 @@ export function LifestyleHero({
                 fontFamily: LIFESTYLE_DISPLAY_FONT,
               }}
             >
-              Start exploring
+              เลือกชม
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
@@ -103,7 +103,7 @@ export function LifestyleHero({
                 paddingBottom: '2px',
               }}
             >
-              About us
+              เกี่ยวกับเรา
             </Link>
           </div>
         </div>

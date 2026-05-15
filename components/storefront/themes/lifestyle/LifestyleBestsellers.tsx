@@ -39,29 +39,6 @@ export interface LifestyleBestsellersProps {
   storeSlug: string;
 }
 
-/**
- * Build an optimistic catalog tagline for a product. Deterministic by
- * id so the same card always shows the same tagline. Mirrors the
- * helper used in LifestyleCategoryGrid for visual parity.
- */
-function benefitTagline(id: string): string {
-  const lines = [
-    'Built for everyday adventures',
-    'A friend in every basket',
-    'Made to be loved + used',
-    'Comfort that travels with you',
-    'Soft on hands, kind to the planet',
-    'A small joy for the home',
-    'Designed with care',
-    'Honest craft, honest price',
-  ];
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return lines[hash % lines.length];
-}
-
 export async function LifestyleBestsellers({
   storeId,
   storeSlug,
@@ -142,12 +119,11 @@ export async function LifestyleBestsellers({
                 fontFamily: LIFESTYLE_DISPLAY_FONT,
               }}
             >
-              Our shelves are being styled — pop back soon for the first
-              drop.
+              ทางร้านกำลังจัดสินค้าอยู่ — เร็ว ๆ นี้พบกันใหม่
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 md:gap-y-14 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 md:gap-y-14 lg:grid-cols-4">
             {products.map((p) => (
               <BestsellerCard
                 key={p.id}
@@ -190,8 +166,6 @@ function BestsellerCard({
       ? Math.round((1 - price / compare) * 100)
       : null;
   const title = product.titleTh ?? product.title;
-  const tagline = benefitTagline(product.id);
-  const tag = product.categoryName ?? 'Everyday essentials';
 
   return (
     <Link
@@ -221,23 +195,13 @@ function BestsellerCard({
               ไม่มีรูป
             </div>
           )}
-          {/* Tag chip top-left — sage outline on white */}
-          <span
-            className="absolute left-3 top-3 inline-flex items-center rounded-full border bg-white/95 px-3 py-1 text-[11px] font-semibold backdrop-blur"
-            style={{
-              color: 'var(--shop-ink)',
-              borderColor: 'var(--shop-accent)',
-            }}
-          >
-            {tag}
-          </span>
           {/* Discount chip top-right — terracotta fill */}
           {discount != null && (
             <span
               className="absolute right-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold text-white"
               style={{ background: 'var(--shop-primary)' }}
             >
-              Save {discount}%
+              ลด {discount}%
             </span>
           )}
         </div>
@@ -253,12 +217,6 @@ function BestsellerCard({
           }}
         >
           {title}
-        </p>
-        <p
-          className="mt-1 line-clamp-1 text-xs"
-          style={{ color: 'var(--shop-ink-muted)' }}
-        >
-          {tagline}
         </p>
         <div className="mt-3 flex items-baseline gap-2">
           <span
