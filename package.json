@@ -12,7 +12,8 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:generate": "prisma generate",
-    "shadcn:studio:ecommerce": "node scripts/install-shadcn-studio-ecommerce.mjs"
+    "shadcn:studio:ecommerce": "node scripts/install-shadcn-studio-ecommerce.mjs",
+    "oauth:add-shop": "node scripts/add-shop-to-google-oauth.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -86,6 +87,9 @@
     "@types/react-payment-inputs": "^1.1.4",
     "@types/three": "^0.184.1",
     "autoprefixer": "^10.4.20",
+    "playwright": "^1.49.0",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.35",
     "postcss": "^8.4.49",
