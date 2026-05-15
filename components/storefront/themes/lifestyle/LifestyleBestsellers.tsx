@@ -221,10 +221,7 @@ function BestsellerCard({
         <div className="mt-3 flex items-baseline gap-2">
           <span
             className="text-base font-semibold sm:text-lg"
-            style={{
-              color: 'var(--shop-primary)',
-              fontFamily: LIFESTYLE_DISPLAY_FONT,
-            }}
+            style={{ color: 'var(--shop-primary)' }}
           >
             ฿ {price.toLocaleString('th-TH')}
           </span>

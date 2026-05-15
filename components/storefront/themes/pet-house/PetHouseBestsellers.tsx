@@ -140,7 +140,7 @@ export async function PetHouseBestsellers({ storeId, storeSlug }: Props) {
                 color: '#5BA033',
               }}
             >
-              Bestsellers
+              ขายดี
             </div>
             <h2
               className="m-0"
@@ -193,10 +193,10 @@ export async function PetHouseBestsellers({ storeId, storeSlug }: Props) {
                 badgeText = `−${salePct}%`;
                 badgeClass = 'sale';
               } else if (i === 0) {
-                badgeText = 'Hot';
+                badgeText = 'ฮิต';
                 badgeClass = 'hot';
               } else {
-                badgeText = 'New';
+                badgeText = 'ใหม่';
                 badgeClass = 'new';
               }
 

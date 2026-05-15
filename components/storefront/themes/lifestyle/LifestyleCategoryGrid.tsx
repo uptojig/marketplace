@@ -134,10 +134,7 @@ function ProductCard({
         <div className="mt-3 flex items-baseline gap-2">
           <span
             className="text-base font-semibold"
-            style={{
-              color: 'var(--shop-primary)',
-              fontFamily: LIFESTYLE_DISPLAY_FONT,
-            }}
+            style={{ color: 'var(--shop-primary)' }}
           >
             ฿ {product.priceTHB.toLocaleString('th-TH')}
           </span>
