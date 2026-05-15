@@ -224,14 +224,17 @@ export function CategoriesManager({
     successMsg: (count: number) => string,
   ) {
     setBulkBusy(true);
-    const res = await fetch("/api/store/categories/bulk-products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        productIds: Array.from(selectedProductIds),
-        ...body,
-      }),
-    });
+    const res = await fetch(
+      `/api/store/categories/bulk-products?storeSlug=${encodeURIComponent(storeSlug)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productIds: Array.from(selectedProductIds),
+          ...body,
+        }),
+      },
+    );
     setBulkBusy(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -291,7 +294,9 @@ export function CategoriesManager({
   async function loadSuggestions() {
     setSuggestionsLoading(true);
     try {
-      const res = await fetch("/api/store/categories/suggestions");
+      const res = await fetch(
+        `/api/store/categories/suggestions?storeSlug=${encodeURIComponent(storeSlug)}`,
+      );
       if (!res.ok) {
         showToast({ type: "err", msg: "โหลดรายการแนะนำไม่สำเร็จ" });
         return;
@@ -336,15 +341,18 @@ export function CategoriesManager({
       return;
     }
     setImportBusy(true);
-    const res = await fetch("/api/store/categories/import", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        source: importTab,
-        names: Array.from(importPicked),
-        rewrite: importRewrite,
-      }),
-    });
+    const res = await fetch(
+      `/api/store/categories/import?storeSlug=${encodeURIComponent(storeSlug)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: importTab,
+          names: Array.from(importPicked),
+          rewrite: importRewrite,
+        }),
+      },
+    );
     setImportBusy(false);
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));

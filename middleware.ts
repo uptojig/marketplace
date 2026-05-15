@@ -19,13 +19,21 @@ function extractSubdomain(host: string): string | null {
   return leftmost || null;
 }
 
-const PASSTHROUGH_PREFIXES = [
+// Framework / static / API paths that never participate in per-store
+// rewriting — these are owned by Next.js, not by any tenant.
+const FRAMEWORK_PREFIXES = [
   "/api",
   "/_next",
   "/static",
   "/favicon",
   "/icons",
   "/uploads",
+];
+
+// Marketplace-only routes (basketplace.co) that should bypass tenant
+// rewriting but ARE NOT framework. On a shop droplet these don't apply —
+// every non-framework path belongs to the bound store.
+const MARKETPLACE_PASSTHROUGH = [
   "/stores/",
   "/products/",
   "/dashboard",
@@ -38,7 +46,6 @@ const PASSTHROUGH_PREFIXES = [
   "/mock-payment-gate",
   "/signin",
   "/resolve-domain",
-  "/api/webhook/quickpay",
 ];
 
 export async function middleware(req: NextRequest) {
@@ -79,8 +86,31 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Skip framework / API / already-namespaced routes
-  if (PASSTHROUGH_PREFIXES.some((p) => path === p || path.startsWith(p))) {
+  const isFramework = FRAMEWORK_PREFIXES.some(
+    (p) => path === p || path.startsWith(p),
+  );
+
+  // Framework / API / static paths are owned by Next.js — never rewrite.
+  if (isFramework) {
+    return NextResponse.next();
+  }
+
+  // Single-tenant shop droplet: SHOP_SLUG is baked into the per-droplet
+  // env at provision time. Everything that isn't a framework path maps
+  // straight to the bound store — no marketplace passthrough applies
+  // here because the droplet has no marketplace. /products/<id>,
+  // /cart, /admin etc. all get rewritten to /stores/<slug>/<rest>.
+  if (shopSlug) {
+    const target = url.clone();
+    target.pathname = `/stores/${shopSlug}${path === "/" ? "" : path}`;
+    return NextResponse.rewrite(target);
+  }
+
+  // Marketplace (basketplace.co): existing per-store paths and dashboard
+  // routes pass through to their own page handlers.
+  if (
+    MARKETPLACE_PASSTHROUGH.some((p) => path === p || path.startsWith(p))
+  ) {
     // Inject the request URL as a header so server layouts/components
     // can read the current pathname + search string. Next.js doesn't
     // expose `searchParams` to layouts (only pages); we use this on
@@ -95,17 +125,6 @@ export async function middleware(req: NextRequest) {
       return NextResponse.next({ request: { headers: requestHeaders } });
     }
     return NextResponse.next();
-  }
-
-  // Single-tenant shop droplet: SHOP_SLUG is baked into the per-droplet
-  // env at provision time. Everything that isn't a passthrough route maps
-  // straight to that store — no host-based routing or DB lookup needed.
-  // This is the right behavior whether the request came in via the
-  // platform subdomain or via the vendor's custom domain.
-  if (shopSlug) {
-    const target = url.clone();
-    target.pathname = `/stores/${shopSlug}${path === "/" ? "" : path}`;
-    return NextResponse.rewrite(target);
   }
 
   // Subdomain match: <slug>.<MAIN_DOMAIN> → rewrite to /stores/<slug><path>

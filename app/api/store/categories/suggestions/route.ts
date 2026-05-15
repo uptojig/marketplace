@@ -24,19 +24,40 @@ import { aliexpressAdapter } from "@/lib/suppliers/aliexpress/adapter";
  * Existing slugs in this store are also returned so the client can
  * dedupe + warn before posting to the import endpoint.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  // Admins (no Store back-ref of their own) target a store via
+  // ?storeSlug=…; vendors fall back to their owned store.
+  const slug = new URL(req.url).searchParams.get("storeSlug");
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    include: { store: true },
+    select: {
+      id: true,
+      role: true,
+      store: { select: { id: true, ownerId: true } },
+    },
   });
-  if (!user?.store) {
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  let storeId: string | null = null;
+  if (slug) {
+    const target = await prisma.store.findUnique({
+      where: { slug },
+      select: { id: true, ownerId: true },
+    });
+    if (target && (user.role === "ADMIN" || target.ownerId === user.id)) {
+      storeId = target.id;
+    }
+  } else if (user.store) {
+    storeId = user.store.id;
+  }
+  if (!storeId) {
     return NextResponse.json({ error: "Store not found" }, { status: 404 });
   }
-  const storeId = user.store.id;
 
   // Legacy categoryNames not yet bucketed into a Category row.
   // Group + count so the UI can show "เสื้อผ้า (37)" badges.

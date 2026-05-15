@@ -23,6 +23,11 @@ const updateSchema = z.object({
   sortOrder: z.number().int().min(0).max(9999).optional(),
 });
 
+// Authorize via the category's own storeId so ADMIN users (whose User
+// row has no Store back-ref) can edit any store's categories — same
+// pattern we use in /api/store/products/[id]. Without this, admin
+// edits on /dashboard/store/categories?storeSlug=… 404'd with "Store
+// not found" even though the admin was clearly authenticated.
 async function authorize(categoryId: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -32,23 +37,29 @@ async function authorize(categoryId: string) {
   }
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    include: { store: true },
+    select: { id: true, role: true },
   });
-  if (!user?.store) {
+  if (!user) {
     return {
-      error: NextResponse.json({ error: "Store not found" }, { status: 404 }),
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
     };
   }
   const category = await prisma.category.findUnique({
     where: { id: categoryId },
+    include: { store: { select: { id: true, slug: true, ownerId: true } } },
   });
-  // 404 (not 403) on cross-store access so we don't leak existence.
-  if (!category || category.storeId !== user.store.id) {
+  // 404 (not 403) on missing/cross-store access so we don't leak existence.
+  if (!category) {
     return {
       error: NextResponse.json({ error: "Not found" }, { status: 404 }),
     };
   }
-  return { store: user.store, category };
+  if (user.role !== "ADMIN" && category.store.ownerId !== user.id) {
+    return {
+      error: NextResponse.json({ error: "Not found" }, { status: 404 }),
+    };
+  }
+  return { store: category.store, category };
 }
 
 export async function GET(
