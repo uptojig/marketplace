@@ -59,6 +59,26 @@ export async function middleware(req: NextRequest) {
     return NextResponse.rewrite(target);
   }
 
+  // On a shop droplet, the entire app *is* the store — so /stores/<slug>/X
+  // and /X are the same page. Most Link components in the codebase still
+  // emit the prefixed form (because they're shared with the marketplace),
+  // which leaks the slug into the buyer's address bar
+  // (e.g. fluffy-house.com/stores/fluffyhouse/category). Strip the prefix
+  // with a 308 so links normalize and URLs stay clean.
+  if (shopSlug) {
+    const prefix = `/stores/${shopSlug}`;
+    if (path === prefix || path === `${prefix}/`) {
+      const target = url.clone();
+      target.pathname = "/";
+      return NextResponse.redirect(target, 308);
+    }
+    if (path.startsWith(`${prefix}/`)) {
+      const target = url.clone();
+      target.pathname = path.slice(prefix.length);
+      return NextResponse.redirect(target, 308);
+    }
+  }
+
   // Skip framework / API / already-namespaced routes
   if (PASSTHROUGH_PREFIXES.some((p) => path === p || path.startsWith(p))) {
     // Inject the request URL as a header so server layouts/components
