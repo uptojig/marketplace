@@ -8,8 +8,10 @@
  * Section order — all on a white "spreadsheet" background:
  *   1. BusinessModelHero — red countdown stripe + bold sans h1 + 3-stat
  *      ledger row + "Browse deals" / "Request a quote" CTAs.
- *   2. BusinessModelTierLadder — 3-tier savings explainer (1-9 / 10-49 / 50+)
- *      with mint chips. Marketing surface; matches the cart's tier banner.
+ *   2. BusinessModelCouponStrip — 3 platform-wide bulk coupons
+ *      (BULK10 / BULK15 / BULK20) as click-to-copy cards. Replaces the
+ *      earlier auto-tier ladder per ops request — coupons feel more
+ *      actionable than an auto-applied tier table.
  *   3. BusinessModelDealsGrid — 12 latest products through the existing
  *      BusinessModelCategoryGrid so card chrome stays catalog-identical.
  *   4. BusinessModelBrandStory — REUSED from the PDP; surfaces tagline /
@@ -31,7 +33,7 @@
 import type { Store } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { BusinessModelHero } from './BusinessModelHero';
-import { BusinessModelTierLadder } from './BusinessModelTierLadder';
+import { BusinessModelCouponStrip } from './BusinessModelCouponStrip';
 import { BusinessModelDealsGrid } from './BusinessModelDealsGrid';
 import { BusinessModelBrandStory } from './BusinessModelBrandStory';
 
@@ -59,7 +61,7 @@ export async function BusinessModelHomepage({ store }: Props) {
         storeName={store.name}
         bannerUrl={extra?.bannerUrl ?? null}
       />
-      <BusinessModelTierLadder />
+      <BusinessModelCouponStrip />
       <BusinessModelDealsGrid storeId={store.id} storeSlug={store.slug} />
       <BusinessModelBrandStory
         storeSlug={store.slug}

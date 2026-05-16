@@ -69,7 +69,7 @@ export function BusinessModelBrandStory({
               letterSpacing: '0.12em',
             }}
           >
-            พันธมิตรขายส่ง · {storeName.toUpperCase()}
+            เกี่ยวกับร้าน · {storeName.toUpperCase()}
           </p>
           <div
             aria-hidden
@@ -113,10 +113,10 @@ export function BusinessModelBrandStory({
         className="mt-8 grid grid-cols-1 gap-3 border-t pt-6 sm:grid-cols-3 sm:gap-4"
         style={{ borderColor: 'var(--shop-border)' }}
       >
-        <BusinessModelStat label="ดำเนินธุรกิจ" value="10+" unit="ปี" />
-        <BusinessModelStat label="ขนาดแคตตาล็อก" value="500+" unit="รายการ" />
+        <BusinessModelStat label="เปิดร้านมา" value="10+" unit="ปี" />
+        <BusinessModelStat label="สินค้าในร้าน" value="500+" unit="รายการ" />
         <BusinessModelStat
-          label="ส่วนลดขายส่ง"
+          label="ส่วนลดสูงสุด"
           value="ถึง 25%"
           tone="savings"
         />
@@ -137,7 +137,7 @@ export function BusinessModelBrandStory({
           className="hover:underline"
           style={{ color: 'var(--shop-ink-muted)' }}
         >
-          ← กลับสู่แคตตาล็อกขายส่ง
+          ← กลับสู่หน้าสินค้า
         </Link>
       </p>
     </section>
