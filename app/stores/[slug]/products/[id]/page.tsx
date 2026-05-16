@@ -24,6 +24,7 @@ import { BusinessModelProductHero } from "@/components/storefront/themes/busines
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
 import { ElectronicsTechProductHero } from "@/components/storefront/themes/electronics-tech/ElectronicsTechProductHero";
 import { SpecialtyProductHero } from "@/components/storefront/themes/specialty/SpecialtyProductHero";
+import { EverydayProductHero } from "@/components/storefront/themes/everyday/EverydayProductHero";
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
@@ -31,6 +32,7 @@ import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isEverydayStore } from "@/lib/landing/everyday";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { PetHouseProductPage } from "@/components/storefront/themes/pet-house/PetHouseProductPage";
 import { cleanDescription } from "@/lib/format/cleanDescription";
@@ -154,6 +156,10 @@ export default async function ShopProductPage({
     templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
+  const isEveryday = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && isEverydayStore({
+    templateId: effectiveTemplateId(product.store),
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
   const HeroComponent = isFB
     ? FashionBeautyProductHero
     : isTrust
@@ -166,7 +172,9 @@ export default async function ShopProductPage({
             ? ElectronicsTechProductHero
             : isSpecialty
               ? SpecialtyProductHero
-              : ProductDetailHero;
+              : isEveryday
+                ? EverydayProductHero
+                : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
