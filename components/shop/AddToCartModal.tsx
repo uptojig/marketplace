@@ -36,7 +36,7 @@ export function AddToCartModal() {
               href={cartHref}
               onClick={hide}
               className="rounded-full px-4 py-2.5 text-sm font-semibold text-white"
-              style={{ backgroundColor: "var(--shop-primary, #dc2626)" }}
+              style={{ backgroundColor: "#dc2626" }}
             >
               สั่งซื้อสินค้าในตะกร้า
             </Link>
