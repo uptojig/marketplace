@@ -89,7 +89,7 @@ export function BusinessModelHero({
       >
         <Timer className="h-4 w-4 shrink-0" />
         <span className="font-bold uppercase tracking-[0.12em]">
-          Flash deal
+          ดีลด่วน
         </span>
         <span aria-hidden style={{ opacity: 0.6 }}>·</span>
         <span
@@ -104,7 +104,7 @@ export function BusinessModelHero({
           {countdown}
         </span>
         <span className="hidden text-xs opacity-90 sm:inline">
-          · ends today midnight ICT
+          · สิ้นสุดเที่ยงคืนวันนี้
         </span>
       </div>
 
@@ -148,19 +148,18 @@ export function BusinessModelHero({
             {/* 3-stat ledger row — matches the BrandStory stat tiles */}
             <ul className="mt-7 grid grid-cols-3 gap-2.5 sm:gap-3">
               <BusinessModelHeroStat
-                label="Catalog"
+                label="รายการสินค้า"
                 value="500+"
                 unit="SKU"
               />
               <BusinessModelHeroStat
-                label="Bulk discount"
-                value="up to 25%"
+                label="ส่วนลดยกล็อต"
+                value="สูงสุด 25%"
                 tone="savings"
               />
               <BusinessModelHeroStat
-                label="Payment"
+                label="ชำระเงิน"
                 value="Net-30"
-                unit="terms"
               />
             </ul>
 
@@ -171,7 +170,7 @@ export function BusinessModelHero({
                 className="inline-flex h-12 items-center justify-center gap-1.5 rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
                 style={{ background: 'var(--shop-primary)' }}
               >
-                Browse deals
+                ดูสินค้าลดราคา
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
               <a
@@ -185,7 +184,7 @@ export function BusinessModelHero({
                 }}
               >
                 <Mail className="h-3.5 w-3.5" />
-                Request a quote
+                ขอใบเสนอราคา
               </a>
             </div>
           </div>
@@ -203,7 +202,7 @@ export function BusinessModelHero({
               >
                 <Image
                   src={bannerUrl}
-                  alt={`${storeName} bulk catalog`}
+                  alt={`แคตตาล็อกขายส่ง ${storeName}`}
                   fill
                   sizes="(max-width: 1024px) 0px, 40vw"
                   className="object-cover"
@@ -311,7 +310,7 @@ function BusinessModelHeroDashboardMock() {
             letterSpacing: '0.12em',
           }}
         >
-          Deal dashboard
+          แดชบอร์ดดีล
         </span>
         <span
           data-bm-mono="true"
@@ -323,7 +322,7 @@ function BusinessModelHeroDashboardMock() {
             letterSpacing: '0.12em',
           }}
         >
-          LIVE
+          สด
         </span>
       </div>
       <div
@@ -335,8 +334,8 @@ function BusinessModelHeroDashboardMock() {
         }}
       >
         <span>SKU</span>
-        <span className="text-right">Qty</span>
-        <span className="text-right">Save</span>
+        <span className="text-right">จำนวน</span>
+        <span className="text-right">ลด</span>
       </div>
       <ul>
         {rows.map((r, i) => (
