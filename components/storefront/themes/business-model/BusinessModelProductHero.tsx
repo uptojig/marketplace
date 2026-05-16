@@ -48,10 +48,8 @@ import {
   Truck,
 } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatTHB } from '@/lib/utils';
 import { useCart } from '@/lib/store/cart';
@@ -69,10 +67,6 @@ import type {
 
 const BM_MONO_FONT =
   'var(--font-bm-mono, "JetBrains Mono"), ui-monospace, "Cascadia Mono", "Source Code Pro", monospace';
-
-function storeHref(slug: string): string {
-  return `/stores/${slug}`;
-}
 
 function cartHref(slug: string): string {
   return `/stores/${slug}/cart`;
@@ -808,37 +802,6 @@ function InfoColumn({
       </div>
 
       <Separator className="bg-[var(--shop-border)]" />
-
-      {/* Store card — rectangular, mono SKU prefix label. */}
-      <Card
-        className="rounded-md border bg-white p-3 shadow-none"
-        style={{ borderColor: 'var(--shop-border)' }}
-      >
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 rounded-md">
-            {store.logoUrl && <AvatarImage src={store.logoUrl} alt={store.name} />}
-            <AvatarFallback className="rounded-md">
-              {store.name.slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div
-              className="truncate text-sm font-bold"
-              style={{ color: 'var(--shop-ink)' }}
-            >
-              {store.name}
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="rounded-md border-[var(--shop-ink)]"
-          >
-            <Link href={storeHref(store.slug)}>ดูร้าน</Link>
-          </Button>
-        </div>
-      </Card>
 
       {/* Utility strip — fast facts in tight caps + mono. */}
       <ul
