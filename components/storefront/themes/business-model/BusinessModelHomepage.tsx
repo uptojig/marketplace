@@ -58,6 +58,8 @@ export async function BusinessModelHomepage({ store }: Props) {
         storeSlug={store.slug}
         storeName={store.name}
         bannerUrl={extra?.bannerUrl ?? null}
+        tagline={extra?.tagline ?? null}
+        description={extra?.description ?? null}
       />
       <BusinessModelTierLadder />
       <BusinessModelDealsGrid storeId={store.id} storeSlug={store.slug} />

@@ -39,6 +39,8 @@ interface Props {
   storeSlug: string;
   storeName: string;
   bannerUrl?: string | null;
+  tagline?: string | null;
+  description?: string | null;
 }
 
 /**
@@ -58,8 +60,18 @@ function stubFlashCountdown(seed: string): string {
   return `${hh}:${mm}:${ss}`;
 }
 
-export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
+export function BusinessModelHero({
+  storeSlug,
+  storeName,
+  bannerUrl,
+  tagline,
+  description,
+}: Props) {
   const countdown = stubFlashCountdown(storeSlug);
+  const headline = tagline?.trim() || storeName;
+  const subhead =
+    description?.trim() ||
+    'ส่วนลดจำนวนคำนวณอัตโนมัติ · เครดิต Net-30 สำหรับลูกค้าผ่านการตรวจสอบ · จัดส่งภายในสัปดาห์จากกรุงเทพ';
 
   return (
     <section
@@ -104,7 +116,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
               className="text-[11px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              Wholesale · {storeName}
+              {storeName}
             </p>
             <div
               aria-hidden
@@ -121,7 +133,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
                 lineHeight: 1.05,
               }}
             >
-              {storeName} bulk pricing for serious buyers
+              {headline}
             </h1>
             <p
               className="mt-5 max-w-xl text-sm leading-relaxed sm:text-base"
@@ -130,8 +142,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              Volume tiers stack automatically · Net-30 terms for verified
-              buyers · Same-week dispatch from Bangkok.
+              {subhead}
             </p>
 
             {/* 3-stat ledger row — matches the BrandStory stat tiles */}
