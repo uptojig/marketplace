@@ -472,21 +472,21 @@ export default async function AccountDashboard({
                 up top, not a wallet placeholder. */}
             <StatCard
               icon={Package}
-              label="Total orders"
+              label="ออเดอร์ทั้งหมด"
               value={bmTotalOrders.toString()}
               href={`${base}/orders`}
               isBM
             />
             <StatCard
               icon={Wallet}
-              label="Total spent"
+              label="ยอดสั่งซื้อรวม"
               value={`฿${bmTotalSpent.toLocaleString('th-TH')}`}
               href={`${base}/orders`}
               isBM
             />
             <StatCard
               icon={Heart}
-              label="Active subs"
+              label="ออเดอร์ประจำ"
               value="0"
               href={`${base}/orders`}
               muted
@@ -494,7 +494,7 @@ export default async function AccountDashboard({
             />
             <StatCard
               icon={MapPin}
-              label="Tier"
+              label="ระดับลูกค้า"
               value={bmTier}
               href={`${base}/orders`}
               isBM

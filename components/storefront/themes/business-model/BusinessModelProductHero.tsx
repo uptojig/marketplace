@@ -809,7 +809,7 @@ function InfoColumn({
           onClick={handleQuote}
           disabled={outOfStock}
         >
-          <Mail className="mr-1 h-4 w-4" /> ขอใบเสนอราคา
+          <Mail className="mr-1 h-4 w-4" /> ติดต่อเรา
         </Button>
       </div>
 

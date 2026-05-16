@@ -179,7 +179,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
                 }}
               >
                 <Mail className="h-3.5 w-3.5" />
-                ขอใบเสนอราคา
+                ติดต่อเรา
               </a>
             </div>
           </div>
