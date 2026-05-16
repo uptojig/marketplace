@@ -184,7 +184,7 @@ export function BusinessModelHero({
                 }}
               >
                 <Mail className="h-3.5 w-3.5" />
-                ขอใบเสนอราคา
+                ติดต่อเรา
               </a>
             </div>
           </div>
