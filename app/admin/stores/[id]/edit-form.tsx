@@ -18,6 +18,7 @@ type StoreData = {
   customDomain: string | null;
   logoPosition: string | null;
   menuPosition: string | null;
+  landingThemeVariant: string | null;
   companyName: string | null;
   taxId: string | null;
   addressLine1: string | null;
@@ -51,6 +52,7 @@ type FormValues = {
   customDomain: string;
   logoPosition: string;
   menuPosition: string;
+  landingThemeVariant: string;
   companyName: string;
   taxId: string;
   addressLine1: string;
@@ -83,6 +85,7 @@ function toForm(s: StoreData): FormValues {
     customDomain: s.customDomain ?? "",
     logoPosition: s.logoPosition ?? "left",
     menuPosition: s.menuPosition ?? "right",
+    landingThemeVariant: s.landingThemeVariant ?? "",
     companyName: s.companyName ?? "",
     taxId: s.taxId ?? "",
     addressLine1: s.addressLine1 ?? "",
@@ -328,6 +331,25 @@ export function StoreEditForm({ store }: { store: StoreData }) {
                 className="w-32 rounded-md border px-3 py-2 font-mono text-sm"
               />
             </div>
+          </Field>
+        </Section>
+
+        <Section title="ธีมหน้าร้าน (Storefront theme)">
+          <Field
+            label="Theme variant"
+            hint="กำหนดดีไซน์หน้าร้าน — PDP / cart / homepage จะ render ตามธีมที่เลือก ค่าว่าง = auto ตาม templateId"
+          >
+            <select
+              value={form.landingThemeVariant}
+              onChange={(e) => update("landingThemeVariant", e.target.value)}
+              className="w-full rounded-md border bg-white px-3 py-2 text-sm"
+            >
+              <option value="">— auto จาก templateId —</option>
+              <option value="everyday">everyday · consumer retail (Shopee-style)</option>
+              <option value="business-model">business-model · B2B wholesale (red ledger)</option>
+              <option value="minimal">minimal · legacy single-page (A family)</option>
+              <option value="cute">cute · legacy single-page (I family)</option>
+            </select>
           </Field>
         </Section>
 

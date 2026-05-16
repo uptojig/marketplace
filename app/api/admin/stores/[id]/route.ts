@@ -53,6 +53,18 @@ const updateSchema = z.object({
     .refine((v) => v == null || domainRegex.test(v), "โดเมนไม่ถูกต้อง (เช่น shop.example.com)"),
   logoPosition: z.enum(["left", "center"]).optional(),
   menuPosition: z.enum(["left", "center", "right"]).optional(),
+  // Storefront theme — drives which <ThemeProductHero> / homepage layout
+  // renders on the buyer-facing pages. See lib/landing/<theme>.ts for the
+  // detectors. Empty string = clear (fall through to the default theme).
+  landingThemeVariant: z
+    .string()
+    .max(40)
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return undefined;
+      const t = v.trim();
+      return t === "" ? null : t;
+    }),
   contactEmail: z
     .string()
     .optional()
