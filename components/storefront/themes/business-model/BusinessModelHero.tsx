@@ -173,10 +173,8 @@ export function BusinessModelHero({
                 ดูสินค้าลดราคา
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              <a
-                href={`mailto:sales@basketplace.local?subject=${encodeURIComponent(
-                  `Quote request: ${storeName}`,
-                )}`}
+              <Link
+                href={`/stores/${storeSlug}/about`}
                 className="inline-flex h-12 items-center justify-center gap-1.5 rounded-md border bg-white px-6 text-xs font-bold uppercase tracking-[0.08em] transition hover:bg-[var(--shop-muted)]"
                 style={{
                   borderColor: 'var(--shop-ink)',
@@ -185,7 +183,7 @@ export function BusinessModelHero({
               >
                 <Mail className="h-3.5 w-3.5" />
                 ติดต่อเรา
-              </a>
+              </Link>
             </div>
           </div>
 

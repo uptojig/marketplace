@@ -47,11 +47,7 @@ export function BusinessModelBrandStory({
   const body = (tagline?.trim() || description?.trim() || '').trim();
   if (!body) return null;
 
-  // mailto fallback — encoded subject mentions the operator name so
-  // the email lands in the right inbox thread on the buyer side.
-  const quoteHref = `mailto:sales@basketplace.local?subject=${encodeURIComponent(
-    `Quote request: ${storeName}`,
-  )}`;
+  const quoteHref = `/stores/${storeSlug}/about`;
 
   return (
     <section
