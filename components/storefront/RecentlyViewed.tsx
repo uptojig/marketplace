@@ -105,7 +105,33 @@ export function RecentlyViewedRail({
     const recent = readRecent(storeSlug).filter(
       (p) => !excludeIds.includes(p.id),
     );
-    setItems(recent.slice(0, 8));
+    if (recent.length === 0) {
+      setItems([]);
+      return;
+    }
+    const ids = recent.map((p) => p.id).join(",");
+    let cancelled = false;
+    fetch(`/api/stores/${storeSlug}/products/verify-ids?ids=${ids}`)
+      .then((r) => (r.ok ? r.json() : { validIds: [] }))
+      .then((data: { validIds?: string[] }) => {
+        if (cancelled) return;
+        const valid = new Set(data.validIds ?? []);
+        const filtered = recent.filter((p) => valid.has(p.id)).slice(0, 10);
+        setItems(filtered);
+        // Persist scrub so the localStorage doesn't keep ghost rows
+        writeRecent(
+          storeSlug,
+          recent.filter((p) => valid.has(p.id)),
+        );
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // On API failure, fall back to localStorage list rather than hide
+        setItems(recent.slice(0, 10));
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [storeSlug, excludeIds]);
 
   if (items.length === 0) return null;
@@ -132,11 +158,11 @@ export function RecentlyViewedRail({
         </button>
       </div>
 
-      <ul className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory">
+      <ul className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 sm:gap-4 sm:mx-0 sm:px-0 snap-x snap-mandatory">
         {items.map((p) => (
           <li
             key={p.id}
-            className="snap-start shrink-0 w-36 sm:w-44"
+            className="snap-start shrink-0 w-[calc((100%-4*0.75rem)/5)] sm:w-[calc((100%-4*1rem)/5)] min-w-[9rem]"
           >
             <Link href={`/stores/${storeSlug}/products/${p.id}`} className="group block">
               <div

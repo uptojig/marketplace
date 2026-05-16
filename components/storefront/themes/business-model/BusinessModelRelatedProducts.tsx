@@ -66,7 +66,7 @@ export function BusinessModelRelatedProducts({
     <section
       className="my-12 rounded-md border bg-white p-6 sm:p-8"
       style={{ borderColor: 'var(--shop-border)' }}
-      aria-label={`Related deals from ${storeName}`}
+      aria-label={`สินค้าอื่นๆ จาก ${storeName}`}
     >
       {/* Dashboard header — eyebrow + bold sans h2 + row-count chip */}
       <header className="mb-6 sm:mb-8">
@@ -78,7 +78,7 @@ export function BusinessModelRelatedProducts({
               letterSpacing: '0.12em',
             }}
           >
-            <span>Deal dashboard</span>
+            <span>แดชบอร์ดดีล</span>
             <span aria-hidden style={{ margin: '0 0.45em', opacity: 0.6 }}>
               ·
             </span>
@@ -90,7 +90,7 @@ export function BusinessModelRelatedProducts({
                 letterSpacing: '0.16em',
               }}
             >
-              RELATED
+              สินค้าที่เกี่ยวข้อง
             </span>
           </p>
           <span
@@ -101,7 +101,7 @@ export function BusinessModelRelatedProducts({
               background: 'var(--shop-muted)',
             }}
           >
-            <span className="uppercase tracking-[0.12em]">Rows</span>
+            <span className="uppercase tracking-[0.12em]">รายการ</span>
             <span
               data-bm-mono="true"
               style={{
@@ -132,7 +132,7 @@ export function BusinessModelRelatedProducts({
             lineHeight: 1.1,
           }}
         >
-          Related deals
+          ดีลที่น่าสนใจอื่นๆ
         </h2>
         <p
           className="mt-2 text-sm"
@@ -141,13 +141,12 @@ export function BusinessModelRelatedProducts({
             fontFamily: BM_HEADING_FONT,
           }}
         >
-          More live SKUs from {storeName} — same deal terms, same wholesale
-          pricing.
+          สินค้าอื่นจาก {storeName} — เงื่อนไขขายส่งเดียวกัน ราคาเดียวกัน
         </p>
       </header>
 
-      {/* Dense rectangular ledger grid — 3-up at md/lg, 2-up at sm */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+      {/* Horizontal scroll carousel — 5 visible at desktop, scroll on overflow */}
+      <ul className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 sm:gap-4 sm:mx-0 sm:px-0 snap-x snap-mandatory">
         {products.map((p) => {
           const displayTitle = p.titleTh ?? p.title;
           const discount =
@@ -156,8 +155,11 @@ export function BusinessModelRelatedProducts({
               : null;
 
           return (
-            <Link
+            <li
               key={p.id}
+              className="snap-start shrink-0 w-[calc((100%-4*0.75rem)/5)] sm:w-[calc((100%-4*1rem)/5)] min-w-[10rem]"
+            >
+            <Link
               href={`/stores/${storeSlug}/products/${p.id}`}
               className="group block"
             >
@@ -215,7 +217,7 @@ export function BusinessModelRelatedProducts({
                         letterSpacing: '0.12em',
                       }}
                     >
-                      FLASH
+                      ลดด่วน
                     </span>
                   )}
                 </div>
@@ -276,15 +278,16 @@ export function BusinessModelRelatedProducts({
                         letterSpacing: '0.06em',
                       }}
                     >
-                      Save {discount}%
+                      ลด {discount}%
                     </span>
                   )}
                 </div>
               </div>
             </Link>
+            </li>
           );
         })}
-      </div>
+      </ul>
 
       {/* Footer hairline + back-to-catalog link — keeps the panel
           self-contained for users who want to keep browsing the
@@ -300,7 +303,7 @@ export function BusinessModelRelatedProducts({
             letterSpacing: '0.12em',
           }}
         >
-          Same deal terms · daily refresh
+          เงื่อนไขขายส่งเดียวกัน · อัปเดตทุกวัน
         </p>
         <Link
           href={`/stores/${storeSlug}/category`}
@@ -310,7 +313,7 @@ export function BusinessModelRelatedProducts({
             color: 'var(--shop-ink)',
           }}
         >
-          View full catalog
+          ดูสินค้าทั้งหมด
         </Link>
       </div>
     </section>
