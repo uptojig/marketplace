@@ -657,35 +657,35 @@ function FeatureCards() {
           className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em]"
           style={{ color: '#737373' }}
         >
-          ★ จุดเด่นของสินค้า
+          ★ ทำไมต้องช้อปกับเรา
         </p>
         <h2
           className="text-2xl font-extrabold tracking-tight sm:text-3xl"
           style={{ color: '#0A0A0A' }}
         >
-          4 เหตุผลที่ทำให้ <em className="not-italic" style={{ color: '#DC2626' }}>ขายดี</em>
+          4 เหตุผลที่ลูกค้า <em className="not-italic" style={{ color: '#DC2626' }}>ไว้ใจ</em>
         </h2>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <FeatureCard
-          icon={<Wind className="h-7 w-7" />}
-          title="ดูดแรง"
-          subtitle="มอเตอร์ทรงพลัง ดูดเศษอาหาร ฝุ่น เส้นผม ขนสัตว์ได้หมดในครั้งเดียว"
+          icon={<Truck className="h-7 w-7" />}
+          title="ส่งฟรี ฿590+"
+          subtitle="ทั่วประเทศ 1-3 วันทำการ · ของถึงไวจากกรุงเทพ"
         />
         <FeatureCard
-          icon={<BatteryMedium className="h-7 w-7" />}
-          title="แบตทน"
-          subtitle="ใช้งานต่อเนื่อง 30 นาที · ชาร์จเต็มใน 3 ชม. · USB-C"
+          icon={<RotateCcw className="h-7 w-7" />}
+          title="คืนได้ใน 7 วัน"
+          subtitle="ของไม่ตรงสเปคหรือชำรุด เปลี่ยน/คืนได้ทันที"
         />
         <FeatureCard
-          icon={<Feather className="h-7 w-7" />}
-          title="พกพาง่าย"
-          subtitle="น้ำหนักเบา ถือสบาย ใช้ในรถ ในบ้าน บนโซฟา ไม่เมื่อยมือ"
+          icon={<ShieldCheck className="h-7 w-7" />}
+          title="ของแท้ 100%"
+          subtitle="รับประกันจากร้าน · มีใบกำกับภาษีให้ทุกออเดอร์"
         />
         <FeatureCard
-          icon={<Volume2 className="h-7 w-7" />}
-          title="เสียงเบา"
-          subtitle="ดูดได้ทั้งกลางวันกลางคืน ไม่รบกวนเพื่อนบ้าน · เด็กไม่ตกใจ"
+          icon={<CreditCard className="h-7 w-7" />}
+          title="ชำระสบาย"
+          subtitle="SSL · COD ได้ · ผ่อน 0% ผ่านบัตรเครดิต"
         />
       </div>
     </section>
