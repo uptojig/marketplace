@@ -28,21 +28,21 @@ export function isPackagingStore(input: {
 export const PACKAGING_BODY_CLASS = 'theme-packaging';
 
 /**
- * Vibrant Packaging palette — coral primary, sunshine accent, mint savings.
- * Applied to the page wrapper via inline style so the .theme-packaging
- * class in globals.css can also override these. Kraft-brown source theme
- * was muted; this brightens it for SMB consumer feel.
+ * Vibrant Packaging palette — pink primary, sunshine accent, sky savings on
+ * a clean white background. Operator brief: ชมพู / เหลือง / ฟ้า / ขาว —
+ * playful and cheerful so the storefront reads as friendly SMB instead of
+ * the muted kraft-brown source mockup.
  */
 export const PACKAGING_TOKENS = {
-  primary: '#FF6B6B', // coral
-  accent: '#FFD93D', // sunshine yellow
-  savings: '#06D6A0', // mint
+  primary: '#FF4E8B', // vivid hot pink — CTAs / accents
+  accent: '#FFD93D', // sunshine yellow — secondary highlights / badges
+  savings: '#3B82F6', // royal blue — savings / info chips
   ink: '#1A1A2E',
-  inkMuted: '#5C5C7B',
-  bg: '#FFF8F0', // warm cream
-  bgSoft: '#FFEDD8',
-  border: '#FFE0C2',
-  muted: '#FFF5E6',
+  inkMuted: '#6B7280',
+  bg: '#FFFFFF', // pure white background
+  bgSoft: '#FFF0F6', // barely-there pink wash for section bands
+  border: '#FFE0EC', // soft pink hairlines
+  muted: '#FFF7FA', // tile-fill / surface-2
 } as const;
 
 export function packagingCssVars(): Record<string, string> {
