@@ -1,0 +1,193 @@
+/**
+ * Shared homepage skeleton — hero banner + featured grid + brand-story
+ * stripe. Used by the slim themes (everyday / taobao / packaging /
+ * community) that don't need their own bespoke section composer like
+ * BusinessModel does. Caller provides a `<Banner />` slot (the
+ * theme-specific top section) and we render the rest.
+ */
+
+import Link from 'next/link';
+import Image from 'next/image';
+import { prisma } from '@/lib/prisma';
+import type { Store } from '@prisma/client';
+
+interface Props {
+  store: Pick<Store, 'id' | 'slug' | 'name'>;
+  /** Theme-specific top banner. */
+  Banner: React.ComponentType<{
+    storeSlug: string;
+    storeName: string;
+    bannerUrl: string | null;
+    tagline: string | null;
+  }>;
+  /** Accent color used for chips / underlines in the featured strip. */
+  accentColor: string;
+  /** Primary CTA color used for the "ดูสินค้าทั้งหมด" link. */
+  primaryColor: string;
+  /** Header label above the products grid. */
+  featuredLabel?: string;
+  /** Header heading above the products grid. */
+  featuredTitle?: string;
+}
+
+export async function SimpleHomepage({
+  store,
+  Banner,
+  accentColor,
+  primaryColor,
+  featuredLabel = '★ FEATURED',
+  featuredTitle = 'สินค้าน่าสนใจ',
+}: Props) {
+  const extra = await prisma.store.findUnique({
+    where: { id: store.id },
+    select: { bannerUrl: true, tagline: true, description: true },
+  });
+
+  const products = await prisma.product.findMany({
+    where: { storeId: store.id, active: true },
+    orderBy: { createdAt: 'desc' },
+    take: 8,
+    select: {
+      id: true,
+      title: true,
+      titleTh: true,
+      imageUrl: true,
+      priceTHB: true,
+      compareAtPriceTHB: true,
+    },
+  });
+
+  return (
+    <div style={{ background: 'var(--shop-bg, #FAFAFA)' }}>
+      <Banner
+        storeSlug={store.slug}
+        storeName={store.name}
+        bannerUrl={extra?.bannerUrl ?? null}
+        tagline={extra?.tagline ?? null}
+      />
+
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <header className="mb-6 sm:mb-8">
+          <p
+            className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em]"
+            style={{ color: accentColor }}
+          >
+            {featuredLabel}
+          </p>
+          <h2
+            className="text-2xl font-extrabold tracking-tight sm:text-3xl"
+            style={{ color: 'var(--shop-ink, #0A0A0A)' }}
+          >
+            {featuredTitle}
+          </h2>
+        </header>
+
+        {products.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--shop-ink-muted, #737373)' }}>
+            ร้านนี้ยังไม่มีสินค้า — กลับมาดูใหม่เร็วๆนี้
+          </p>
+        ) : (
+          <ul className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+            {products.map((p) => {
+              const title = p.titleTh ?? p.title;
+              const price = Number(p.priceTHB);
+              const compare = p.compareAtPriceTHB ? Number(p.compareAtPriceTHB) : null;
+              const discount =
+                compare && compare > price
+                  ? Math.round((1 - price / compare) * 100)
+                  : null;
+              return (
+                <li key={p.id}>
+                  <Link
+                    href={`/stores/${store.slug}/products/${p.id}`}
+                    className="group block"
+                  >
+                    <div
+                      className="relative aspect-square overflow-hidden rounded-xl border bg-white transition group-hover:shadow-md"
+                      style={{ borderColor: 'var(--shop-border, #E5E5E5)' }}
+                    >
+                      {p.imageUrl && (
+                        <Image
+                          src={p.imageUrl}
+                          alt={title}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover transition group-hover:scale-[1.03]"
+                        />
+                      )}
+                      {discount != null && (
+                        <span
+                          className="absolute left-2 top-2 rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase text-white"
+                          style={{ background: primaryColor, letterSpacing: '0.04em' }}
+                        >
+                          -{discount}%
+                        </span>
+                      )}
+                    </div>
+                    <p
+                      className="mt-2 line-clamp-2 text-sm font-semibold"
+                      style={{ color: 'var(--shop-ink, #0A0A0A)' }}
+                    >
+                      {title}
+                    </p>
+                    <p
+                      className="mt-1 text-base font-extrabold tabular-nums"
+                      style={{ color: primaryColor }}
+                    >
+                      ฿{price.toLocaleString('th-TH')}
+                      {compare && compare > price && (
+                        <span
+                          className="ml-2 text-xs font-medium line-through"
+                          style={{ color: 'var(--shop-ink-muted, #737373)' }}
+                        >
+                          ฿{compare.toLocaleString('th-TH')}
+                        </span>
+                      )}
+                    </p>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <div className="mt-8 text-center">
+          <Link
+            href={`/stores/${store.slug}/category`}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 px-6 py-3 text-sm font-bold uppercase tracking-[0.06em] transition hover:opacity-80"
+            style={{ borderColor: primaryColor, color: primaryColor }}
+          >
+            ดูสินค้าทั้งหมด →
+          </Link>
+        </div>
+      </section>
+
+      {(extra?.tagline || extra?.description) && (
+        <section
+          className="border-t border-b py-12"
+          style={{ background: 'var(--shop-bg-soft, #fff)', borderColor: 'var(--shop-border, #E5E5E5)' }}
+        >
+          <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+            <p
+              className="mb-3 text-[11px] font-bold uppercase tracking-[0.12em]"
+              style={{ color: accentColor }}
+            >
+              ★ ABOUT US
+            </p>
+            <h3
+              className="mb-4 text-2xl font-extrabold tracking-tight sm:text-3xl"
+              style={{ color: 'var(--shop-ink, #0A0A0A)' }}
+            >
+              {extra?.tagline ?? store.name}
+            </h3>
+            {extra?.description && (
+              <p className="text-sm leading-relaxed sm:text-base" style={{ color: 'var(--shop-ink-muted, #525252)' }}>
+                {extra.description}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}

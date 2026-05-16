@@ -37,6 +37,8 @@ import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { isEverydayStore } from "@/lib/landing/everyday";
 import { isTaobaoStore } from "@/lib/landing/taobao";
 import { isPackagingStore } from "@/lib/landing/packaging";
+import { isCommunityStore } from "@/lib/landing/community";
+import { CommunityProductHero } from "@/components/storefront/themes/community/CommunityProductHero";
 import { templates as TEMPLATE_REGISTRY } from "@/lib/templates/registry";
 import type { TemplateId } from "@/lib/templates/types";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
@@ -174,6 +176,10 @@ export default async function ShopProductPage({
     templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
+  const isCommunity = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && !isPackaging && isCommunityStore({
+    templateId: effectiveTemplateId(product.store),
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
   // Look up the template's behavior flags (hideRatingsCount, showTabs,
   // productCardStyle, etc.) so the default ProductDetailHero can apply
   // template-specific toggles. Falls through silently when templateId
@@ -199,7 +205,9 @@ export default async function ShopProductPage({
                   ? TaobaoProductHero
                   : isPackaging
                     ? PackagingProductHero
-                    : ProductDetailHero;
+                    : isCommunity
+                      ? CommunityProductHero
+                      : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
