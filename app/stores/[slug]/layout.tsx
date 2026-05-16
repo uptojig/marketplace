@@ -369,6 +369,15 @@ export default async function ShopLayout({
   // Merge order matters — earlier checks win because their vars
   // shadow later ones. FB → trust → business-model → lifestyle → ET → specialty.
   const familyVars = { ...specialtyVars, ...etVars, ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
+  // Operator's manual `store.primaryColor` (set in the admin form) must
+  // win over the family's hardcoded `--shop-primary` slot — otherwise an
+  // operator who picks (say) business-model is locked into red CTAs and
+  // can never tweak the brand button color. The rest of the family
+  // palette (--shop-bg / --shop-ink / --shop-accent / ...) stays intact
+  // so the theme still looks like the family it claims to be.
+  const operatorPrimaryOverride: Record<string, string> = store.primaryColor
+    ? { "--shop-primary": store.primaryColor }
+    : {};
   // Active family's accent — used by ShopHeader / ShopFooter to
   // paint chrome links + glyph fills. FB pink, trust gold, business-
   // model amber, lifestyle sage, electronics-tech cyan, specialty ochre.
@@ -433,7 +442,7 @@ export default async function ShopLayout({
     return (
       <div
         className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
-        style={{ ...tokensToCssVars(tokens), ...familyVars }}
+        style={{ ...tokensToCssVars(tokens), ...familyVars, ...operatorPrimaryOverride }}
       >
         <ShopHeader
           storeSlug={store.slug}
@@ -511,7 +520,7 @@ export default async function ShopLayout({
     return (
       <div
         className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass}`.trim()}
-        style={{ ...tokensToCssVars(tokens), ...familyVars }}
+        style={{ ...tokensToCssVars(tokens), ...familyVars, ...operatorPrimaryOverride }}
       >
         <ShopHeader
           storeSlug={store.slug}
@@ -569,7 +578,7 @@ export default async function ShopLayout({
   return (
     <div
       className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
-      style={{ ...tokensToCssVars(tokens), ...familyVars }}
+      style={{ ...tokensToCssVars(tokens), ...familyVars, ...operatorPrimaryOverride }}
     >
       <ShopHeader
         storeSlug={store.slug}
