@@ -115,13 +115,13 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to catalog
+            กลับสู่แคตตาล็อก
           </Link>
           <p
             className="mt-5 text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Bulk order · Deal dashboard
+            ออเดอร์ขายส่ง · แดชบอร์ดดีล
           </p>
           <div className="mt-1 flex flex-wrap items-baseline justify-between gap-3">
             <h1
@@ -133,7 +133,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                 lineHeight: 1.05,
               }}
             >
-              Order ledger
+              บัญชีคำสั่งซื้อ
             </h1>
             <span
               className="inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs font-semibold"
@@ -142,7 +142,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              <span className="uppercase tracking-[0.12em]">Lines</span>
+              <span className="uppercase tracking-[0.12em]">บรรทัด</span>
               <span
                 data-bm-mono="true"
                 style={{
@@ -157,7 +157,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
               <span aria-hidden style={{ color: 'var(--shop-border)' }}>
                 ·
               </span>
-              <span className="uppercase tracking-[0.12em]">Qty</span>
+              <span className="uppercase tracking-[0.12em]">จำนวน</span>
               <span
                 data-bm-mono="true"
                 style={{
@@ -187,7 +187,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                 <div className="flex items-center gap-2.5">
                   <TrendingDown className="h-4 w-4 shrink-0" />
                   <span className="font-bold uppercase tracking-[0.12em]">
-                    Tier {tierIndex + 1} unlocked
+                    ขั้น {tierIndex + 1} ปลดล็อกแล้ว
                   </span>
                   <span
                     data-bm-mono="true"
@@ -198,15 +198,15 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                       letterSpacing: '0.02em',
                     }}
                   >
-                    {tierDiscountPct}% off
+                    ลด {tierDiscountPct}%
                   </span>
                   <span className="text-xs opacity-90 hidden sm:inline">
-                    this entire order
+                    ทั้งออเดอร์
                   </span>
                 </div>
                 {nextTier && unitsToNextTier > 0 && (
                   <span className="text-xs uppercase tracking-[0.12em] opacity-90">
-                    Add{' '}
+                    เพิ่มอีก{' '}
                     <span
                       data-bm-mono="true"
                       className="font-bold"
@@ -217,7 +217,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                     >
                       {unitsToNextTier}
                     </span>{' '}
-                    more for{' '}
+                    ชิ้น เพื่อรับ{' '}
                     <span
                       data-bm-mono="true"
                       className="font-bold"
@@ -245,10 +245,10 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                   style={{ color: 'var(--shop-accent)' }}
                 />
                 <span className="font-semibold uppercase tracking-[0.12em] text-[11px]">
-                  Volume discount
+                  ส่วนลดยกล็อต
                 </span>
                 <span className="text-xs sm:text-sm">
-                  Add{' '}
+                  เพิ่มอีก{' '}
                   <span
                     data-bm-mono="true"
                     className="font-bold"
@@ -260,7 +260,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                   >
                     {unitsToNextTier}
                   </span>{' '}
-                  more units to unlock Tier {tierIndex + 2} ({' '}
+                  ชิ้น เพื่อปลดล็อกขั้น {tierIndex + 2} ({' '}
                   <span
                     data-bm-mono="true"
                     className="font-bold"
@@ -272,7 +272,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                   >
                     -{nextTier.savingsPct}%
                   </span>{' '}
-                  off all units )
+                  ทุกชิ้น)
                 </span>
               </div>
             ) : null}
@@ -281,7 +281,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
               {/* ── Spreadsheet ledger ─────────────────────────────── */}
               <section aria-labelledby="cart-heading">
                 <h2 id="cart-heading" className="sr-only">
-                  Cart line items
+                  รายการสินค้าในตะกร้า
                 </h2>
                 <div
                   className="overflow-hidden rounded-md border bg-white"
@@ -297,11 +297,11 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                       letterSpacing: '0.12em',
                     }}
                   >
-                    <span className="sr-only">Image</span>
-                    <span>Item · SKU</span>
-                    <span>Unit</span>
-                    <span>Qty</span>
-                    <span className="text-right">Subtotal</span>
+                    <span className="sr-only">รูปภาพ</span>
+                    <span>สินค้า · SKU</span>
+                    <span>หน่วย</span>
+                    <span>จำนวน</span>
+                    <span className="text-right">ยอดรวม</span>
                   </div>
 
                   <ul>
@@ -412,7 +412,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                                   setQty(l.productId, l.qty - 1, store.slug)
                                 }
                                 disabled={l.qty <= 1}
-                                aria-label="Decrease"
+                                aria-label="ลดจำนวน"
                                 className="inline-flex h-9 w-9 items-center justify-center text-sm transition hover:bg-[var(--shop-muted)] disabled:opacity-40"
                                 style={{ color: 'var(--shop-ink)' }}
                               >
@@ -445,7 +445,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                                 onClick={() =>
                                   setQty(l.productId, l.qty + 1, store.slug)
                                 }
-                                aria-label="Increase"
+                                aria-label="เพิ่มจำนวน"
                                 className="inline-flex h-9 w-9 items-center justify-center text-sm transition hover:bg-[var(--shop-muted)]"
                                 style={{ color: 'var(--shop-ink)' }}
                               >
@@ -517,7 +517,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                 className="mt-8 lg:mt-0 lg:sticky lg:top-24"
               >
                 <h2 id="summary-heading" className="sr-only">
-                  Order summary
+                  สรุปคำสั่งซื้อ
                 </h2>
 
                 <div
@@ -531,7 +531,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                       letterSpacing: '0.12em',
                     }}
                   >
-                    Order summary
+                    สรุปคำสั่งซื้อ
                   </p>
                   <h3
                     className="mt-1 text-xl"
@@ -541,13 +541,13 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                       letterSpacing: '-0.015em',
                     }}
                   >
-                    Bulk order
+                    ออเดอร์ขายส่ง
                   </h3>
 
                   <dl className="mt-5 space-y-2.5 text-sm">
                     <div className="flex items-center justify-between">
                       <dt style={{ color: 'var(--shop-ink-muted)' }}>
-                        Subtotal{' '}
+                        ยอดรวมย่อย{' '}
                         <span
                           data-bm-mono="true"
                           style={{
@@ -577,7 +577,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                           className="inline-flex items-center gap-2"
                           style={{ color: 'var(--shop-ink-muted)' }}
                         >
-                          <span>Volume discount</span>
+                          <span>ส่วนลดยกล็อต</span>
                           <span
                             data-bm-savings="true"
                             className="rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase"
@@ -587,7 +587,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                               letterSpacing: '0.06em',
                             }}
                           >
-                            Tier {tierIndex + 1}
+                            ขั้น {tierIndex + 1}
                           </span>
                         </dt>
                         <dd
@@ -605,7 +605,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                     )}
 
                     <div className="flex items-center justify-between">
-                      <dt style={{ color: 'var(--shop-ink-muted)' }}>Shipping</dt>
+                      <dt style={{ color: 'var(--shop-ink-muted)' }}>ค่าจัดส่ง</dt>
                       <dd
                         data-bm-mono="true"
                         className="font-bold"
@@ -618,7 +618,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                           fontVariantNumeric: 'tabular-nums',
                         }}
                       >
-                        {shipping === 0 ? 'FREE' : formatTHB(shipping)}
+                        {shipping === 0 ? 'ฟรี' : formatTHB(shipping)}
                       </dd>
                     </div>
 
@@ -633,7 +633,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                           letterSpacing: '0.12em',
                         }}
                       >
-                        Total
+                        รวมทั้งหมด
                       </dt>
                       <dd
                         data-bm-mono="true"
@@ -656,13 +656,11 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                     style={{ background: 'var(--shop-primary)' }}
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    Checkout · Bulk order
+                    ชำระเงิน · ออเดอร์ขายส่ง
                   </Link>
 
-                  <a
-                    href={`mailto:sales@basketplace.local?subject=${encodeURIComponent(
-                      `Quote request: bulk order from ${store.name} (${itemCount} units)`,
-                    )}`}
+                  <Link
+                    href={`/stores/${store.slug}/about`}
                     className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border text-xs font-bold uppercase tracking-[0.08em] transition hover:bg-[var(--shop-muted)]"
                     style={{
                       borderColor: 'var(--shop-ink)',
@@ -670,8 +668,8 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                     }}
                   >
                     <Mail className="h-4 w-4" />
-                    Request quote
-                  </a>
+                    ติดต่อเรา
+                  </Link>
 
                   <p
                     className="mt-4 inline-flex w-full items-center justify-center gap-1.5 text-[11px] font-semibold uppercase"
@@ -681,7 +679,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                     }}
                   >
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Secure B2B checkout
+                    ชำระเงินปลอดภัย
                   </p>
                 </div>
 
@@ -704,10 +702,10 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                           fontSize: '10px',
                         }}
                       >
-                        Shipping
+                        ค่าจัดส่ง
                       </div>
                       <div className="font-semibold" style={{ color: 'var(--shop-ink)' }}>
-                        Free over{' '}
+                        ฟรีเมื่อสั่งเกิน{' '}
                         <span
                           data-bm-mono="true"
                           style={{
@@ -737,10 +735,10 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                           fontSize: '10px',
                         }}
                       >
-                        Volume discount
+                        ส่วนลดยกล็อต
                       </div>
                       <div className="font-semibold" style={{ color: 'var(--shop-ink)' }}>
-                        Up to{' '}
+                        สูงสุด{' '}
                         <span
                           data-bm-mono="true"
                           style={{
@@ -751,7 +749,7 @@ export function BusinessModelCartPage({ store }: { store: StoreLite }) {
                         >
                           -20%
                         </span>{' '}
-                        at 50+ units
+                        เมื่อสั่งเกิน 50 ชิ้น
                       </div>
                     </div>
                   </li>
@@ -788,7 +786,7 @@ function BusinessModelEmptyCart({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '0.12em',
         }}
       >
-        No lines yet
+        ยังไม่มีรายการ
       </p>
       <h2
         className="mt-2 text-2xl sm:text-3xl"
@@ -798,13 +796,13 @@ function BusinessModelEmptyCart({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '-0.015em',
         }}
       >
-        Your bulk order is empty
+        ตะกร้าขายส่งของคุณว่างเปล่า
       </h2>
       <p
         className="mx-auto mt-3 max-w-sm text-sm"
         style={{ color: 'var(--shop-ink-muted)' }}
       >
-        Browse the catalog to start a bulk order. Volume discounts kick in at{' '}
+        เริ่มสั่งซื้อยกล็อตได้เลย ส่วนลดเริ่มที่{' '}
         <span
           data-bm-mono="true"
           style={{
@@ -816,7 +814,7 @@ function BusinessModelEmptyCart({ storeSlug }: { storeSlug: string }) {
         >
           10
         </span>{' '}
-        and{' '}
+        และ{' '}
         <span
           data-bm-mono="true"
           style={{
@@ -828,14 +826,14 @@ function BusinessModelEmptyCart({ storeSlug }: { storeSlug: string }) {
         >
           50
         </span>{' '}
-        units.
+        ชิ้น
       </p>
       <Link
         href={`/stores/${storeSlug}/category`}
         className="mt-7 inline-flex h-11 items-center justify-center rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
         style={{ background: 'var(--shop-primary)' }}
       >
-        Browse catalog
+        ดูสินค้า
       </Link>
     </div>
   );
