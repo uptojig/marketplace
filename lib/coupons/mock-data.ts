@@ -18,6 +18,43 @@ const pastISO = (days: number) => {
 };
 
 export const mockCoupons: Coupon[] = [
+  // ===== Bulk-buyer ladder (surfaced on BusinessModelCouponStrip) =====
+  {
+    id: 'cp_bulk10',
+    code: 'BULK10',
+    scope: { type: 'platform' },
+    discount: { kind: 'percent', percent: 10 },
+    validTo: futureISO(365),
+    title: 'ลด 10% ทุกออเดอร์ขายส่ง',
+    description: 'ไม่มีขั้นต่ำ',
+    issuer: 'Basketplace',
+    colorScheme: 'red',
+  },
+  {
+    id: 'cp_bulk15',
+    code: 'BULK15',
+    scope: { type: 'platform' },
+    discount: { kind: 'percent', percent: 15 },
+    minSpend: 5000,
+    validTo: futureISO(365),
+    title: 'ลด 15% เมื่อยอดถึง ฿5,000',
+    description: 'ขั้นต่ำ ฿5,000 ต่อออเดอร์',
+    issuer: 'Basketplace',
+    colorScheme: 'red',
+  },
+  {
+    id: 'cp_bulk20',
+    code: 'BULK20',
+    scope: { type: 'platform' },
+    discount: { kind: 'percent', percent: 20 },
+    minSpend: 20000,
+    validTo: futureISO(365),
+    title: 'ลด 20% เมื่อยอดถึง ฿20,000',
+    description: 'ขั้นต่ำ ฿20,000 ต่อออเดอร์',
+    issuer: 'Basketplace',
+    colorScheme: 'red',
+  },
+
   // ===== Platform-wide =====
   {
     id: 'cp_welcome100',

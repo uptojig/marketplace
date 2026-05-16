@@ -67,7 +67,41 @@ async function main() {
     });
   }
 
-  console.log("Seeded:", { alice: alice.email, bob: bob.email, products: seedProducts.length });
+  // Bulk-buyer coupon ladder — surfaced on BusinessModelCouponStrip on
+  // every business-model storefront homepage. validTo set ~1 year out so
+  // dev/preview envs don't expire mid-test; production should rotate.
+  const oneYearOut = new Date();
+  oneYearOut.setFullYear(oneYearOut.getFullYear() + 1);
+  const bulkCoupons = [
+    { code: "BULK10", percent: 10, minSpend: 0,     title: "ลด 10% ทุกออเดอร์ขายส่ง" },
+    { code: "BULK15", percent: 15, minSpend: 5000,  title: "ลด 15% เมื่อยอดถึง ฿5,000" },
+    { code: "BULK20", percent: 20, minSpend: 20000, title: "ลด 20% เมื่อยอดถึง ฿20,000" },
+  ];
+  for (const c of bulkCoupons) {
+    await prisma.coupon.upsert({
+      where: { code: c.code },
+      update: {
+        discount: { kind: "percent", percent: c.percent },
+        minSpendTHB: c.minSpend || null,
+        validTo: oneYearOut,
+        isActive: true,
+        title: c.title,
+      },
+      create: {
+        code: c.code,
+        scope: { type: "platform" },
+        discount: { kind: "percent", percent: c.percent },
+        minSpendTHB: c.minSpend || null,
+        validTo: oneYearOut,
+        title: c.title,
+        issuer: "Basketplace",
+        colorScheme: "red",
+        isActive: true,
+      },
+    });
+  }
+
+  console.log("Seeded:", { alice: alice.email, bob: bob.email, products: seedProducts.length, coupons: bulkCoupons.length });
 }
 
 main()
