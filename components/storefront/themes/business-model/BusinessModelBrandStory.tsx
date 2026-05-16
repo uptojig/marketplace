@@ -50,12 +50,12 @@ export function BusinessModelBrandStory({
   // mailto fallback — encoded subject mentions the operator name so
   // the email lands in the right inbox thread on the buyer side.
   const quoteHref = `mailto:sales@basketplace.local?subject=${encodeURIComponent(
-    `Quote request: ${storeName}`,
+    `ขอใบเสนอราคา: ${storeName}`,
   )}`;
 
   return (
     <section
-      className="my-12 rounded-md border bg-white p-6 sm:p-10"
+      className="my-12 rounded-3xl border bg-gradient-to-br from-white to-[var(--shop-muted)] p-8 shadow-sm sm:p-12"
       style={{
         borderColor: 'var(--shop-border)',
       }}
@@ -69,7 +69,7 @@ export function BusinessModelBrandStory({
               letterSpacing: '0.12em',
             }}
           >
-            WHOLESALE PARTNER · {storeName.toUpperCase()}
+            พันธมิตรขายส่ง · {storeName.toUpperCase()}
           </p>
           <div
             aria-hidden
@@ -86,7 +86,7 @@ export function BusinessModelBrandStory({
               lineHeight: 1.15,
             }}
           >
-            Why partner with {storeName}?
+            ทำไมต้องเลือก {storeName}?
           </h2>
           <p
             className="mt-4 max-w-2xl text-sm leading-relaxed sm:text-base"
@@ -101,10 +101,10 @@ export function BusinessModelBrandStory({
 
         <Link
           href={quoteHref}
-          className="inline-flex h-11 shrink-0 items-center justify-center rounded-md px-6 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
+          className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl px-7 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Request a quote
+          ขอใบเสนอราคา
         </Link>
       </div>
 
@@ -113,11 +113,11 @@ export function BusinessModelBrandStory({
         className="mt-8 grid grid-cols-1 gap-3 border-t pt-6 sm:grid-cols-3 sm:gap-4"
         style={{ borderColor: 'var(--shop-border)' }}
       >
-        <BusinessModelStat label="Years in business" value="10+" unit="yr" />
-        <BusinessModelStat label="Catalog depth" value="500+" unit="SKU" />
+        <BusinessModelStat label="ดำเนินธุรกิจ" value="10+" unit="ปี" />
+        <BusinessModelStat label="ขนาดแคตตาล็อก" value="500+" unit="รายการ" />
         <BusinessModelStat
-          label="Bulk discount"
-          value="up to 25%"
+          label="ส่วนลดขายส่ง"
+          value="ถึง 25%"
           tone="savings"
         />
       </ul>
@@ -137,7 +137,7 @@ export function BusinessModelBrandStory({
           className="hover:underline"
           style={{ color: 'var(--shop-ink-muted)' }}
         >
-          ← Back to wholesale catalog
+          ← กลับสู่แคตตาล็อกขายส่ง
         </Link>
       </p>
     </section>
@@ -160,10 +160,9 @@ export function BusinessModelBrandStory({
         : 'var(--shop-ink)';
     return (
       <li
-        className="rounded-md border p-3"
+        className="rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
         style={{
           borderColor: 'var(--shop-border)',
-          background: 'var(--shop-muted)',
         }}
       >
         <p

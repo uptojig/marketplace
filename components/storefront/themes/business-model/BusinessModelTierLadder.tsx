@@ -42,21 +42,21 @@ const TIERS: ReadonlyArray<BusinessModelTierRow> = [
     qtyRange: '1-9',
     multiplier: '1.00×',
     savingsPct: 0,
-    blurb: 'Base list price',
+    blurb: 'ราคาเต็ม',
   },
   {
     tier: 2,
     qtyRange: '10-49',
     multiplier: '0.92×',
     savingsPct: 8,
-    blurb: 'Auto-applied at checkout',
+    blurb: 'หักอัตโนมัติตอนชำระเงิน',
   },
   {
     tier: 3,
     qtyRange: '50+',
     multiplier: '0.85×',
     savingsPct: 15,
-    blurb: 'Best per-unit price',
+    blurb: 'ราคาต่อชิ้นต่ำสุด',
   },
 ];
 
@@ -76,7 +76,7 @@ export function BusinessModelTierLadder() {
             className="text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Deal tiers · Volume discount applied automatically
+            ระดับส่วนลด · หักอัตโนมัติตามจำนวน
           </p>
           <div
             aria-hidden
@@ -94,7 +94,7 @@ export function BusinessModelTierLadder() {
                 lineHeight: 1.1,
               }}
             >
-              Stack the savings as you stack the order
+              ยิ่งสั่งเยอะ ยิ่งประหยัด
             </h2>
             <p
               className="text-sm"
@@ -103,14 +103,14 @@ export function BusinessModelTierLadder() {
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              No coupons. No haggling. Tiers apply on every line.
+              ไม่ต้องใส่คูปอง ไม่ต้องต่อ ส่วนลดมาทุกบรรทัด
             </p>
           </div>
         </header>
 
         {/* Spreadsheet-style ledger — header strip + 3 ledger rows */}
         <div
-          className="overflow-hidden rounded-md border bg-white"
+          className="overflow-hidden rounded-3xl border bg-white shadow-sm"
           style={{ borderColor: 'var(--shop-border)' }}
         >
           {/* Header strip */}
@@ -123,11 +123,11 @@ export function BusinessModelTierLadder() {
               letterSpacing: '0.12em',
             }}
           >
-            <span>Tier</span>
-            <span>Qty range</span>
-            <span>Unit ×</span>
-            <span>You save</span>
-            <span>Notes</span>
+            <span>ระดับ</span>
+            <span>จำนวน</span>
+            <span>ตัวคูณ</span>
+            <span>ประหยัด</span>
+            <span>หมายเหตุ</span>
           </div>
 
           <ul>
@@ -145,7 +145,7 @@ export function BusinessModelTierLadder() {
                   {/* Tier badge — caps + mono numeral */}
                   <div className="flex items-center">
                     <span
-                      className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-bold uppercase"
+                      className="inline-flex items-center gap-1 rounded-xl border px-2.5 py-1 text-[10px] font-bold uppercase"
                       style={{
                         borderColor:
                           t.savingsPct > 0
@@ -160,7 +160,7 @@ export function BusinessModelTierLadder() {
                         letterSpacing: '0.12em',
                       }}
                     >
-                      Tier
+                      ระดับ
                       <span
                         data-bm-mono="true"
                         style={{
@@ -194,7 +194,7 @@ export function BusinessModelTierLadder() {
                           fontFamily: BM_HEADING_FONT,
                         }}
                       >
-                        units
+                        ชิ้น
                       </span>
                     </p>
                     {/* Mobile-only: bunch the multiplier + chip under qty */}
@@ -212,7 +212,7 @@ export function BusinessModelTierLadder() {
                       </span>
                       {t.savingsPct > 0 && (
                         <span
-                          className="inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase"
+                          className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase shadow-sm"
                           style={{
                             background: 'var(--shop-savings, #10b981)',
                             color: '#ffffff',
@@ -262,7 +262,7 @@ export function BusinessModelTierLadder() {
                   <div className="hidden sm:block">
                     {t.savingsPct > 0 ? (
                       <span
-                        className="inline-flex items-center gap-1 rounded-sm px-2 py-1 text-[11px] font-bold uppercase shadow-sm"
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold uppercase shadow-md"
                         style={{
                           background: 'var(--shop-savings, #10b981)',
                           color: '#ffffff',
@@ -289,7 +289,7 @@ export function BusinessModelTierLadder() {
                           fontFamily: BM_HEADING_FONT,
                         }}
                       >
-                        — no chip
+                        — ราคาเต็ม
                       </span>
                     )}
                   </div>
@@ -320,7 +320,7 @@ export function BusinessModelTierLadder() {
             letterSpacing: '0.12em',
           }}
         >
-          Tiers apply per SKU at checkout · No code required
+          ส่วนลดคิดต่อรายการตอนชำระเงิน · ไม่ต้องใส่โค้ด
         </p>
       </div>
     </section>

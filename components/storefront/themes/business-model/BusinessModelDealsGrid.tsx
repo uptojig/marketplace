@@ -90,7 +90,7 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
             className="text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Deal dashboard · Featured deals
+            แดชบอร์ดดีล · ดีลแนะนำ
           </p>
           <div
             aria-hidden
@@ -100,16 +100,16 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
           <div className="mt-4 flex flex-wrap items-baseline justify-between gap-3">
             <div className="flex flex-wrap items-baseline gap-3">
               <h2
-                className="text-2xl sm:text-3xl"
+                className="text-3xl sm:text-4xl"
                 style={{
                   fontFamily: BM_HEADING_FONT,
                   color: 'var(--shop-ink)',
-                  fontWeight: 700,
-                  letterSpacing: '-0.015em',
-                  lineHeight: 1.1,
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.05,
                 }}
               >
-                Today&rsquo;s best deals
+                ดีลเด็ดวันนี้
               </h2>
               {products.length > 0 && (
                 <span
@@ -119,7 +119,7 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
                     color: 'var(--shop-ink-muted)',
                   }}
                 >
-                  <span className="uppercase tracking-[0.12em]">SKUs</span>
+                  <span className="uppercase tracking-[0.12em]">สินค้า</span>
                   <span
                     data-bm-mono="true"
                     style={{
@@ -134,7 +134,7 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
                   <span aria-hidden style={{ color: 'var(--shop-border)' }}>
                     ·
                   </span>
-                  <span className="uppercase tracking-[0.12em]">On sale</span>
+                  <span className="uppercase tracking-[0.12em]">ลดราคา</span>
                   <span
                     data-bm-mono="true"
                     style={{
@@ -151,10 +151,13 @@ export async function BusinessModelDealsGrid({ storeId, storeSlug }: Props) {
             </div>
             <Link
               href={`/stores/${storeSlug}/category`}
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] hover:underline"
-              style={{ color: 'var(--shop-primary)' }}
+              className="inline-flex items-center gap-2 rounded-full border-2 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.1em] transition hover:-translate-y-0.5 hover:shadow-md"
+              style={{
+                borderColor: 'var(--shop-primary)',
+                color: 'var(--shop-primary)',
+              }}
             >
-              View full catalog
+              ดูแคตตาล็อกทั้งหมด
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -199,7 +202,7 @@ function BusinessModelDealsEmpty({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '0.12em',
         }}
       >
-        No deals listed
+        ยังไม่มีดีล
       </p>
       <h3
         className="mt-2 text-2xl"
@@ -210,7 +213,7 @@ function BusinessModelDealsEmpty({ storeSlug }: { storeSlug: string }) {
           letterSpacing: '-0.015em',
         }}
       >
-        Catalog is loading
+        กำลังโหลดแคตตาล็อก
       </h3>
       <p
         className="mx-auto mt-3 max-w-sm text-sm"
@@ -219,14 +222,14 @@ function BusinessModelDealsEmpty({ storeSlug }: { storeSlug: string }) {
           color: 'var(--shop-ink-muted)',
         }}
       >
-        New stock is being uploaded — check back shortly.
+        กำลังอัปโหลดสินค้าใหม่ — กลับมาดูอีกครั้งสักครู่
       </p>
       <Link
         href={`/stores/${storeSlug}/category`}
         className="mt-6 inline-flex h-11 items-center justify-center rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
         style={{ background: 'var(--shop-primary)' }}
       >
-        Browse catalog
+        ดูแคตตาล็อก
       </Link>
     </div>
   );

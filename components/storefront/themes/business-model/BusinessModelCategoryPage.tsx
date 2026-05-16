@@ -28,7 +28,7 @@
  */
 
 import Link from 'next/link';
-import { ChevronLeft, Filter, Inbox, Timer, TrendingDown } from 'lucide-react';
+import { ChevronLeft, Inbox, Timer, TrendingDown } from 'lucide-react';
 import { BusinessModelCategoryGrid } from './BusinessModelCategoryGrid';
 import type { BusinessModelCategoryProduct } from './BusinessModelCategoryGrid';
 
@@ -53,9 +53,9 @@ export interface BusinessModelCategoryPageProps {
 }
 
 const SORT_OPTIONS: Array<{ key: string; label: string }> = [
-  { key: 'newest', label: 'Newest' },
-  { key: 'price-asc', label: 'Price ↑' },
-  { key: 'price-desc', label: 'Price ↓' },
+  { key: 'newest', label: 'ใหม่ล่าสุด' },
+  { key: 'price-asc', label: 'ราคา ↑' },
+  { key: 'price-desc', label: 'ราคา ↓' },
 ];
 
 /**
@@ -83,16 +83,12 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
     storeName,
     totalCount,
     pageProducts,
-    categoryNames,
-    categoryCounts,
-    uncatCount,
     selectedCats,
     sortKey,
     currentPage,
     totalPages,
     buildUrl,
     buildSortUrl,
-    filteredCount,
   } = props;
 
   const onSaleCount = pageProducts.filter(
@@ -111,13 +107,13 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
             style={{ color: 'var(--shop-ink-muted)' }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Back to {storeName}
+            กลับไป {storeName}
           </Link>
           <p
             className="mt-5 text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            Deal dashboard · Bulk catalog
+            แดชบอร์ดดีล · แคตตาล็อกขายส่ง
           </p>
           <div className="mt-1 flex flex-wrap items-baseline justify-between gap-3">
             <h1
@@ -129,7 +125,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                 lineHeight: 1.05,
               }}
             >
-              All SKUs
+              สินค้าทั้งหมด
             </h1>
             <span
               className="inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs font-semibold"
@@ -138,7 +134,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              <span className="uppercase tracking-[0.12em]">SKUs</span>
+              <span className="uppercase tracking-[0.12em]">สินค้า</span>
               <span
                 data-bm-mono="true"
                 style={{
@@ -153,7 +149,7 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
               <span aria-hidden style={{ color: 'var(--shop-border)' }}>
                 ·
               </span>
-              <span className="uppercase tracking-[0.12em]">On sale</span>
+              <span className="uppercase tracking-[0.12em]">ลดราคา</span>
               <span
                 data-bm-mono="true"
                 style={{
@@ -172,12 +168,16 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
         {/* Countdown stripe — daily deals refresh */}
         <div
           data-bm-countdown="true"
-          className="mb-5 flex flex-wrap items-center justify-center gap-3 rounded-md px-4 py-2.5 text-sm sm:text-base"
-          style={{ background: 'var(--shop-primary)', color: '#ffffff' }}
+          className="mb-6 flex flex-wrap items-center justify-center gap-3 rounded-2xl px-5 py-3 text-sm shadow-lg sm:text-base"
+          style={{
+            background:
+              'linear-gradient(135deg, var(--shop-primary), color-mix(in oklab, var(--shop-primary), #ffffff 12%))',
+            color: '#ffffff',
+          }}
         >
           <Timer className="h-4 w-4 shrink-0" />
           <span className="font-bold uppercase tracking-[0.12em]">
-            Daily deals refresh in
+            ดีลรอบหน้าใน
           </span>
           <span
             data-bm-mono="true"
@@ -191,169 +191,45 @@ export function BusinessModelCategoryPage(props: BusinessModelCategoryPageProps)
             {countdown}
           </span>
           <span className="hidden text-xs opacity-90 sm:inline">
-            · refreshed daily at midnight ICT
+            · รีเฟรชทุกเที่ยงคืน
           </span>
         </div>
 
-        {/* Spreadsheet toolbar — filter chips + sort pills */}
+        {/* Sort toolbar — top nav already handles category filter. */}
         <div
           className="mb-6 grid gap-3 border-y py-3"
           style={{ borderColor: 'var(--shop-border)' }}
         >
-          {/* Category chips */}
+          {/* Sort pills */}
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase"
+              className="text-[10px] font-semibold uppercase"
               style={{
                 color: 'var(--shop-ink-muted)',
                 letterSpacing: '0.12em',
               }}
             >
-              <Filter className="h-3.5 w-3.5" />
-              Filter
+              เรียง
             </span>
-            <Link
-              href={buildUrl()}
-              className="rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-[0.06em] transition"
-              style={{
-                borderColor:
-                  selectedCats.length === 0
-                    ? 'var(--shop-primary)'
-                    : 'var(--shop-border)',
-                background:
-                  selectedCats.length === 0 ? 'var(--shop-primary)' : '#ffffff',
-                color:
-                  selectedCats.length === 0 ? '#ffffff' : 'var(--shop-ink)',
-              }}
-            >
-              All
-              <span
-                data-bm-mono="true"
-                className="ml-1.5 text-[10px]"
-                style={{
-                  fontFamily: BM_MONO_FONT,
-                  fontVariantNumeric: 'tabular-nums',
-                  opacity: 0.8,
-                }}
-              >
-                {totalCount}
-              </span>
-            </Link>
-            {categoryNames.map((name) => {
-              const active = selectedCats.includes(name);
+            {SORT_OPTIONS.map((opt) => {
+              const active = sortKey === opt.key;
               return (
                 <Link
-                  key={name}
-                  href={buildUrl(name)}
+                  key={opt.key}
+                  href={buildSortUrl(opt.key)}
                   className="rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-[0.06em] transition hover:border-[var(--shop-primary)]"
                   style={{
                     borderColor: active
-                      ? 'var(--shop-primary)'
+                      ? 'var(--shop-ink)'
                       : 'var(--shop-border)',
-                    background: active ? 'var(--shop-primary)' : '#ffffff',
+                    background: active ? 'var(--shop-ink)' : '#ffffff',
                     color: active ? '#ffffff' : 'var(--shop-ink)',
                   }}
                 >
-                  {name}
-                  <span
-                    data-bm-mono="true"
-                    className="ml-1.5 text-[10px]"
-                    style={{
-                      fontFamily: BM_MONO_FONT,
-                      fontVariantNumeric: 'tabular-nums',
-                      opacity: 0.8,
-                    }}
-                  >
-                    {categoryCounts[name] ?? 0}
-                  </span>
+                  {opt.label}
                 </Link>
               );
             })}
-            {uncatCount > 0 && (
-              <Link
-                href={buildUrl('uncategorized')}
-                className="rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-[0.06em] transition hover:border-[var(--shop-primary)]"
-                style={{
-                  borderColor: selectedCats.includes('uncategorized')
-                    ? 'var(--shop-primary)'
-                    : 'var(--shop-border)',
-                  background: selectedCats.includes('uncategorized')
-                    ? 'var(--shop-primary)'
-                    : '#ffffff',
-                  color: selectedCats.includes('uncategorized')
-                    ? '#ffffff'
-                    : 'var(--shop-ink)',
-                }}
-              >
-                Other
-                <span
-                  data-bm-mono="true"
-                  className="ml-1.5 text-[10px]"
-                  style={{
-                    fontFamily: BM_MONO_FONT,
-                    fontVariantNumeric: 'tabular-nums',
-                    opacity: 0.8,
-                  }}
-                >
-                  {uncatCount}
-                </span>
-              </Link>
-            )}
-          </div>
-
-          {/* Sort pills + filtered-count readout */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span
-                className="text-[10px] font-semibold uppercase"
-                style={{
-                  color: 'var(--shop-ink-muted)',
-                  letterSpacing: '0.12em',
-                }}
-              >
-                Sort
-              </span>
-              {SORT_OPTIONS.map((opt) => {
-                const active = sortKey === opt.key;
-                return (
-                  <Link
-                    key={opt.key}
-                    href={buildSortUrl(opt.key)}
-                    className="rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-[0.06em] transition hover:border-[var(--shop-primary)]"
-                    style={{
-                      borderColor: active
-                        ? 'var(--shop-ink)'
-                        : 'var(--shop-border)',
-                      background: active ? 'var(--shop-ink)' : '#ffffff',
-                      color: active ? '#ffffff' : 'var(--shop-ink)',
-                    }}
-                  >
-                    {opt.label}
-                  </Link>
-                );
-              })}
-            </div>
-            <span
-              className="text-[11px] font-semibold uppercase"
-              style={{
-                color: 'var(--shop-ink-muted)',
-                letterSpacing: '0.12em',
-              }}
-            >
-              Showing{' '}
-              <span
-                data-bm-mono="true"
-                className="font-bold"
-                style={{
-                  color: 'var(--shop-ink)',
-                  fontFamily: BM_MONO_FONT,
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {filteredCount.toLocaleString()}
-              </span>{' '}
-              rows
-            </span>
           </div>
         </div>
 
@@ -498,7 +374,7 @@ function BusinessModelEmptyCatalog({
           letterSpacing: '0.12em',
         }}
       >
-        No rows match
+        ไม่พบสินค้า
       </p>
       <h2
         className="mt-2 text-2xl"
@@ -508,15 +384,15 @@ function BusinessModelEmptyCatalog({
           letterSpacing: '-0.015em',
         }}
       >
-        No SKUs found
+        ยังไม่มีสินค้าในแคตตาล็อก
       </h2>
       <p
         className="mx-auto mt-3 max-w-sm text-sm"
         style={{ color: 'var(--shop-ink-muted)' }}
       >
         {hasFilters
-          ? 'Clear active filters to see the full catalog.'
-          : 'New stock is being loaded — check back shortly.'}
+          ? 'ล้าง filter ที่เปิดอยู่เพื่อดูแคตตาล็อกทั้งหมด'
+          : 'กำลังโหลดสต็อกใหม่ — กลับมาดูอีกสักครู่'}
       </p>
       {hasFilters ? (
         <Link
@@ -524,7 +400,7 @@ function BusinessModelEmptyCatalog({
           className="mt-6 inline-flex h-11 items-center justify-center rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Clear filters
+          ล้าง filter
         </Link>
       ) : (
         <Link
@@ -532,7 +408,7 @@ function BusinessModelEmptyCatalog({
           className="mt-6 inline-flex h-11 items-center justify-center rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
           style={{ background: 'var(--shop-primary)' }}
         >
-          Back to store
+          กลับไปหน้าร้าน
         </Link>
       )}
     </div>
