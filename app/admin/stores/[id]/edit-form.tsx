@@ -347,7 +347,8 @@ export function StoreEditForm({ store }: { store: StoreData }) {
               <option value="">— auto จาก templateId —</option>
               <option value="everyday">everyday · consumer retail (Shopee-style)</option>
               <option value="taobao">taobao · marketplace bold (orange/red/pink gradient)</option>
-              <option value="packaging">packaging · bright coral + sunshine (B2B supply)</option>
+              <option value="packaging">packaging · bright pink/yellow/sky (SMB supply)</option>
+              <option value="community">community · live-commerce purple-pink</option>
               <option value="business-model">business-model · B2B wholesale (red ledger)</option>
               <option value="minimal">minimal · legacy single-page (A family)</option>
               <option value="cute">cute · legacy single-page (I family)</option>

@@ -56,6 +56,11 @@ import {
   isTaobaoStore,
 } from "@/lib/landing/taobao";
 import {
+  COMMUNITY_BODY_CLASS,
+  communityCssVars,
+  isCommunityStore,
+} from "@/lib/landing/community";
+import {
   ELECTRONICS_TECH_BODY_CLASS,
   ELECTRONICS_TECH_TOKENS,
   electronicsTechCssVars,
@@ -288,16 +293,28 @@ export default async function ShopLayout({
   const taobaoVars = isTaobao ? taobaoCssVars() : {};
   const taobaoClass = isTaobao ? TAOBAO_BODY_CLASS : "";
 
+  // Community family — vivid purple-pink gradient (live-commerce /
+  // video-feed / storyteller). Last in priority chain.
+  const isCommunity =
+    !isFB && !isTrust && !isBusinessModel && !isLifestyle &&
+    !isElectronicsTech && !isSpecialty && !isPackaging && !isTaobao &&
+    isCommunityStore({
+      templateId: store.templateId,
+      landingThemeVariant: store.landingThemeVariant,
+    });
+  const communityVars = isCommunity ? communityCssVars() : {};
+  const communityClass = isCommunity ? COMMUNITY_BODY_CLASS : "";
+
   // Convenience aliases — the layout's three render paths all want
   // "give me the active family's class + vars" without recomputing.
   // FB takes precedence by virtue of being checked first above; trust
   // is next, business-model, lifestyle, electronics-tech, then specialty.
-  const familyClass = [fbClass, trustClass, bmClass, lifestyleClass, etClass, specialtyClass, packagingClass, taobaoClass]
+  const familyClass = [fbClass, trustClass, bmClass, lifestyleClass, etClass, specialtyClass, packagingClass, taobaoClass, communityClass]
     .filter(Boolean)
     .join(" ");
   // Merge order matters — earlier checks win because their vars
-  // shadow later ones. FB → trust → business-model → lifestyle → ET → specialty → packaging → taobao.
-  const familyVars = { ...taobaoVars, ...packagingVars, ...specialtyVars, ...etVars, ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
+  // shadow later ones. FB → trust → business-model → lifestyle → ET → specialty → packaging → taobao → community.
+  const familyVars = { ...communityVars, ...taobaoVars, ...packagingVars, ...specialtyVars, ...etVars, ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
   // Active family's accent — used by ShopHeader / ShopFooter to
   // paint chrome links + glyph fills. FB pink, trust gold, business-
   // model amber, lifestyle sage, electronics-tech cyan, specialty ochre.
