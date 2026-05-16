@@ -137,21 +137,114 @@ export default async function ShopLayout({
         REJECTED: "ร้านนี้ยังไม่ผ่านการตรวจสอบ",
         SUSPENDED: "ร้านนี้ถูกระงับชั่วคราว",
       };
+      const badgeByStatus: Record<string, { label: string; cls: string; dot: string }> = {
+        PENDING: { label: "รอตรวจสอบ", cls: "bg-amber-100 text-amber-800", dot: "bg-amber-500" },
+        REJECTED: { label: "ไม่ผ่านการตรวจสอบ", cls: "bg-rose-100 text-rose-800", dot: "bg-rose-500" },
+        SUSPENDED: { label: "ระงับชั่วคราว", cls: "bg-stone-200 text-stone-700", dot: "bg-stone-500" },
+      };
+      const badge = badgeByStatus[store.approvalStatus] ?? badgeByStatus.PENDING;
+      // Surface 4 live approved stores so the visitor doesn't dead-end —
+      // most blunders into a pending store come from an old shared link;
+      // the gate becomes a soft discovery shelf instead of a wall.
+      const otherStores = await prisma.store.findMany({
+        where: { approvalStatus: "APPROVED", slug: { not: store.slug } },
+        orderBy: { createdAt: "desc" },
+        take: 4,
+        select: { slug: true, name: true, logoUrl: true },
+      });
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-stone-50 px-6 text-center">
-          <div className="rounded-full bg-amber-100 p-4 text-3xl">⏳</div>
-          <h1 className="text-2xl font-bold text-stone-900">{store.name}</h1>
-          <p className="max-w-md text-sm text-stone-600">
-            {labelByStatus[store.approvalStatus] ?? "ร้านนี้ยังไม่เปิดให้ดูสาธารณะ"}
-            <br />
-            กรุณากลับมาใหม่อีกครั้งหลังจากร้านได้รับการอนุมัติ
-          </p>
-          <Link
-            href="/"
-            className="rounded-md border bg-white px-4 py-2 text-sm hover:bg-stone-50"
-          >
-            ← กลับหน้าหลัก
-          </Link>
+        <div className="flex min-h-screen flex-col bg-gradient-to-br from-stone-50 via-white to-stone-100">
+          <header className="border-b border-stone-200/70 bg-white/80 backdrop-blur">
+            <div className="mx-auto flex max-w-7xl items-center px-4 py-3.5 lg:px-6">
+              <Link href="/" className="inline-flex items-center gap-2">
+                <span
+                  aria-hidden
+                  className="h-7 w-7 rounded-md bg-gradient-to-br from-blue-500 to-purple-600"
+                />
+                <span className="text-base font-bold tracking-tight text-stone-900">
+                  Basketplace
+                </span>
+              </Link>
+            </div>
+          </header>
+
+          <main className="flex flex-1 items-center justify-center px-6 py-12 sm:py-20">
+            <div className="w-full max-w-lg text-center">
+              <div className="relative mx-auto mb-7 inline-flex">
+                <span
+                  aria-hidden
+                  className="absolute inset-0 rounded-full bg-amber-300/40 blur-2xl"
+                />
+                <span className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-amber-50 to-amber-200 shadow-inner ring-1 ring-amber-200/60">
+                  <span className="text-4xl" aria-hidden>⏳</span>
+                </span>
+              </div>
+
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${badge.cls}`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${badge.dot} animate-pulse`} />
+                {badge.label}
+              </span>
+
+              <h1 className="mt-5 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+                {store.name}
+              </h1>
+
+              <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-stone-600 sm:text-base">
+                {labelByStatus[store.approvalStatus] ?? "ร้านนี้ยังไม่เปิดให้ดูสาธารณะ"}
+                <br />
+                กรุณากลับมาใหม่อีกครั้งหลังจากร้านได้รับการอนุมัติ
+              </p>
+
+              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center rounded-full bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800"
+                >
+                  ← หน้าหลัก Basketplace
+                </Link>
+                <Link
+                  href="/search"
+                  className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-800 transition hover:bg-stone-50"
+                >
+                  ค้นหาร้านอื่น
+                </Link>
+              </div>
+
+              {otherStores.length > 0 && (
+                <div className="mt-12 border-t border-stone-200 pt-8">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+                    ลองดูร้านที่เปิดแล้ว
+                  </p>
+                  <ul className="mt-4 flex flex-wrap justify-center gap-2.5">
+                    {otherStores.map((s) => (
+                      <li key={s.slug}>
+                        <Link
+                          href={`/stores/${s.slug}`}
+                          className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md"
+                        >
+                          {s.logoUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={s.logoUrl}
+                              alt=""
+                              className="h-5 w-5 rounded-full object-cover"
+                            />
+                          ) : (
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-purple-500 text-[10px] font-bold uppercase text-white">
+                              {s.name.charAt(0)}
+                            </span>
+                          )}
+                          {s.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </main>
         </div>
       );
     }
