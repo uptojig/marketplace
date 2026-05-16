@@ -51,6 +51,11 @@ import {
   isPackagingStore,
 } from "@/lib/landing/packaging";
 import {
+  TAOBAO_BODY_CLASS,
+  taobaoCssVars,
+  isTaobaoStore,
+} from "@/lib/landing/taobao";
+import {
   ELECTRONICS_TECH_BODY_CLASS,
   ELECTRONICS_TECH_TOKENS,
   electronicsTechCssVars,
@@ -272,16 +277,27 @@ export default async function ShopLayout({
   const packagingVars = isPackaging ? packagingCssVars() : {};
   const packagingClass = isPackaging ? PACKAGING_BODY_CLASS : "";
 
+  // Taobao family — bold marketplace gradient palette. Last in chain.
+  const isTaobao =
+    !isFB && !isTrust && !isBusinessModel && !isLifestyle &&
+    !isElectronicsTech && !isSpecialty && !isPackaging &&
+    isTaobaoStore({
+      templateId: store.templateId,
+      landingThemeVariant: store.landingThemeVariant,
+    });
+  const taobaoVars = isTaobao ? taobaoCssVars() : {};
+  const taobaoClass = isTaobao ? TAOBAO_BODY_CLASS : "";
+
   // Convenience aliases — the layout's three render paths all want
   // "give me the active family's class + vars" without recomputing.
   // FB takes precedence by virtue of being checked first above; trust
   // is next, business-model, lifestyle, electronics-tech, then specialty.
-  const familyClass = [fbClass, trustClass, bmClass, lifestyleClass, etClass, specialtyClass, packagingClass]
+  const familyClass = [fbClass, trustClass, bmClass, lifestyleClass, etClass, specialtyClass, packagingClass, taobaoClass]
     .filter(Boolean)
     .join(" ");
   // Merge order matters — earlier checks win because their vars
-  // shadow later ones. FB → trust → business-model → lifestyle → ET → specialty → packaging.
-  const familyVars = { ...packagingVars, ...specialtyVars, ...etVars, ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
+  // shadow later ones. FB → trust → business-model → lifestyle → ET → specialty → packaging → taobao.
+  const familyVars = { ...taobaoVars, ...packagingVars, ...specialtyVars, ...etVars, ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
   // Active family's accent — used by ShopHeader / ShopFooter to
   // paint chrome links + glyph fills. FB pink, trust gold, business-
   // model amber, lifestyle sage, electronics-tech cyan, specialty ochre.

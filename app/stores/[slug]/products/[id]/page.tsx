@@ -25,6 +25,8 @@ import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/L
 import { ElectronicsTechProductHero } from "@/components/storefront/themes/electronics-tech/ElectronicsTechProductHero";
 import { SpecialtyProductHero } from "@/components/storefront/themes/specialty/SpecialtyProductHero";
 import { EverydayProductHero } from "@/components/storefront/themes/everyday/EverydayProductHero";
+import { TaobaoProductHero } from "@/components/storefront/themes/taobao/TaobaoProductHero";
+import { PackagingProductHero } from "@/components/storefront/themes/packaging/PackagingProductHero";
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
@@ -33,6 +35,8 @@ import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { isEverydayStore } from "@/lib/landing/everyday";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { isPackagingStore } from "@/lib/landing/packaging";
 import { templates as TEMPLATE_REGISTRY } from "@/lib/templates/registry";
 import type { TemplateId } from "@/lib/templates/types";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
@@ -162,6 +166,14 @@ export default async function ShopProductPage({
     templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
+  const isTaobao = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && isTaobaoStore({
+    templateId: effectiveTemplateId(product.store),
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const isPackaging = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && isPackagingStore({
+    templateId: effectiveTemplateId(product.store),
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
   // Look up the template's behavior flags (hideRatingsCount, showTabs,
   // productCardStyle, etc.) so the default ProductDetailHero can apply
   // template-specific toggles. Falls through silently when templateId
@@ -183,7 +195,11 @@ export default async function ShopProductPage({
               ? SpecialtyProductHero
               : isEveryday
                 ? EverydayProductHero
-                : ProductDetailHero;
+                : isTaobao
+                  ? TaobaoProductHero
+                  : isPackaging
+                    ? PackagingProductHero
+                    : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
