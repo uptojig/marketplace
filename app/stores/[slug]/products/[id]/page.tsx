@@ -33,6 +33,8 @@ import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { isEverydayStore } from "@/lib/landing/everyday";
+import { templates as TEMPLATE_REGISTRY } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { PetHouseProductPage } from "@/components/storefront/themes/pet-house/PetHouseProductPage";
 import { cleanDescription } from "@/lib/format/cleanDescription";
@@ -160,6 +162,13 @@ export default async function ShopProductPage({
     templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
+  // Look up the template's behavior flags (hideRatingsCount, showTabs,
+  // productCardStyle, etc.) so the default ProductDetailHero can apply
+  // template-specific toggles. Falls through silently when templateId
+  // doesn't match the 20-template registry (legacy stores).
+  const tplId = effectiveTemplateId(product.store) as TemplateId | undefined;
+  const templateBehavior = tplId ? TEMPLATE_REGISTRY[tplId]?.behavior : undefined;
+
   const HeroComponent = isFB
     ? FashionBeautyProductHero
     : isTrust
@@ -249,6 +258,7 @@ export default async function ShopProductPage({
           logoUrl: product.store.logoUrl,
           // rating / followers also not in schema — hero hides them.
         }}
+        templateBehavior={templateBehavior}
       />
 
       {/* Each family gets its bespoke brand-story panel between the
