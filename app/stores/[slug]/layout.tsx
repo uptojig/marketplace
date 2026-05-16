@@ -56,6 +56,7 @@ import {
   specialtyCssVars,
   isSpecialtyStore,
 } from "@/lib/landing/specialty";
+import { hasVariantFamilyOverride } from "@/lib/landing/dispatcher";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
@@ -267,6 +268,16 @@ export default async function ShopLayout({
     return <>{children}</>;
   }
 
+  // Operator-picked landingThemeVariant takes precedence over the
+  // templateId-inferred family in the chrome chain too — mirrors the
+  // homepage dispatcher in app/stores/[slug]/page.tsx so the CSS skin
+  // and the homepage stay in sync when the admin theme picker (PR #97)
+  // flips a store to a new family. Nulling templateId when the variant
+  // already maps to a family forces the cascade to resolve strictly
+  // via the variant. See lib/landing/dispatcher.ts.
+  const chromeVariantOverrides = hasVariantFamilyOverride(store.landingThemeVariant);
+  const chromeTpl = chromeVariantOverrides ? null : store.templateId;
+
   // Fashion-beauty pilot — single source of truth for the "is this
   // store in the fashion-beauty family?" check. Consulted by every
   // render path below to (a) add the .theme-fashion-beauty class and
@@ -275,7 +286,7 @@ export default async function ShopLayout({
   // stores) and `landingThemeVariant` (operator-picked or AI-multi-
   // page "B" code). See lib/landing/fashion-beauty.ts for the matrix.
   const isFB = isFashionBeautyStore({
-    templateId: store.templateId,
+    templateId: chromeTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const fbVars = isFB ? fashionBeautyCssVars() : {};
@@ -288,7 +299,7 @@ export default async function ShopLayout({
   // belt-and-braces. Reads from lib/landing/trust.ts — same shape as
   // the fashion-beauty module.
   const isTrust = !isFB && isTrustStore({
-    templateId: store.templateId,
+    templateId: chromeTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const trustVars = isTrust ? trustCssVars() : {};
@@ -302,7 +313,7 @@ export default async function ShopLayout({
   // single store can only ever land in one family. Reads from
   // lib/landing/business-model.ts — same shape as the trust module.
   const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
-    templateId: store.templateId,
+    templateId: chromeTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const bmVars = isBusinessModel ? businessModelCssVars() : {};
@@ -313,7 +324,7 @@ export default async function ShopLayout({
   // practice so this is belt-and-braces. Reads from
   // lib/landing/lifestyle.ts.
   const isLifestyle = !isFB && !isTrust && !isBusinessModel && isLifestyleStore({
-    templateId: store.templateId,
+    templateId: chromeTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const lifestyleVars = isLifestyle ? lifestyleCssVars() : {};
@@ -325,7 +336,7 @@ export default async function ShopLayout({
   // only be in one TemplateGroup) so this is belt-and-braces. Reads
   // from lib/landing/electronics-tech.ts.
   const isElectronicsTech = !isFB && !isTrust && !isBusinessModel && !isLifestyle && isElectronicsTechStore({
-    templateId: store.templateId,
+    templateId: chromeTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const etVars = isElectronicsTech ? electronicsTechCssVars() : {};
@@ -342,7 +353,7 @@ export default async function ShopLayout({
   const isSpecialty =
     !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech &&
     isSpecialtyStore({
-      templateId: store.templateId,
+      templateId: chromeTpl,
       landingThemeVariant: store.landingThemeVariant,
     });
   const specialtyVars = isSpecialty ? specialtyCssVars() : {};

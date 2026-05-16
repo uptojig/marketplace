@@ -17,6 +17,7 @@ import {
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 import { HtmlRenderer, isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isValidThemeVariant } from "@/lib/landing/families";
+import { hasVariantFamilyOverride } from "@/lib/landing/dispatcher";
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
@@ -252,8 +253,17 @@ export default async function StorePage({
   // pre-wizard-v2 stores all fall through to the generic grid and
   // look identical regardless of niche. See lib/landing/legacy-slug-template.ts.
   const effectiveTpl = effectiveTemplateId(baseStore);
+  // Operator-picked variant beats templateId-inferred family — when the
+  // admin theme picker (PR #97) sets landingThemeVariant to a value that
+  // maps to a family (business-model / fashion-beauty / trust / etc.),
+  // we strip the slug-inferred templateId so the cascade below resolves
+  // strictly via the variant. Without this, a store like ergobodies
+  // (slug→sport-active→lifestyle) would stay locked on Lifestyle even
+  // after the operator explicitly picked business-model. See
+  // lib/landing/dispatcher.ts for the helper.
+  const variantOverrides = hasVariantFamilyOverride(baseStore.landingThemeVariant);
   const familyKey = {
-    templateId: effectiveTpl,
+    templateId: variantOverrides ? null : effectiveTpl,
     landingThemeVariant: baseStore.landingThemeVariant,
   };
   if (isFashionBeautyStore(familyKey)) {
