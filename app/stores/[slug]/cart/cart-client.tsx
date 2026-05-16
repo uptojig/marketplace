@@ -371,10 +371,10 @@ export function StoreCartClient({
                     background: "#fafafa",
                   }}
                 >
-                  <span>Item</span>
-                  <span className="text-center">Qty</span>
-                  <span className="text-right">Unit price</span>
-                  <span className="text-right">Subtotal</span>
+                  <span>สินค้า</span>
+                  <span className="text-center">จำนวน</span>
+                  <span className="text-right">ราคา/หน่วย</span>
+                  <span className="text-right">รวม</span>
                 </div>
               )}
 

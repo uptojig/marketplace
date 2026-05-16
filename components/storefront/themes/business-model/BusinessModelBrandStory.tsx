@@ -104,7 +104,7 @@ export function BusinessModelBrandStory({
           className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl px-7 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
           style={{ background: 'var(--shop-primary)' }}
         >
-          ขอใบเสนอราคา
+          ติดต่อเรา
         </Link>
       </div>
 
