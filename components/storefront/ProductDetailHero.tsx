@@ -138,18 +138,25 @@ function uniqueAxisValues(
   return out;
 }
 
+import type { BehaviorFlags } from "@/lib/templates/types";
+
 export function ProductDetailHero({
   product,
   store,
+  templateBehavior,
 }: {
   product: ProductDetailHeroProduct;
   store: ProductDetailHeroStore;
+  /** When set, drives template-specific visual toggles (hideRatingsCount,
+   *  showTabs, productCardStyle, etc.). Wired up by app/stores/[slug]/
+   *  products/[id]/page.tsx from getTemplate(effectiveTemplateId).behavior. */
+  templateBehavior?: BehaviorFlags;
 }) {
   return (
     <div className="lg:p-6">
       <div className="lg:grid lg:grid-cols-[60%_40%] lg:gap-8">
         <Gallery product={product} />
-        <InfoColumn product={product} store={store} />
+        <InfoColumn product={product} store={store} templateBehavior={templateBehavior} />
       </div>
     </div>
   );
@@ -237,9 +244,11 @@ function Gallery({ product }: { product: ProductDetailHeroProduct }) {
 function InfoColumn({
   product,
   store,
+  templateBehavior,
 }: {
   product: ProductDetailHeroProduct;
   store: ProductDetailHeroStore;
+  templateBehavior?: BehaviorFlags;
 }) {
   const router = useRouter();
   const add = useCart((s) => s.add);
@@ -309,7 +318,8 @@ function InfoColumn({
 
       <h1 className="text-xl font-semibold leading-tight lg:text-2xl">{product.title}</h1>
 
-      {(product.rating != null || product.reviewCount != null || product.soldCount != null) && (
+      {!templateBehavior?.hideRatingsCount &&
+        (product.rating != null || product.reviewCount != null || product.soldCount != null) && (
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           {product.rating != null && (
             <div className="flex items-center gap-1">
