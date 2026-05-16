@@ -47,17 +47,14 @@ export function BusinessModelBrandStory({
   const body = (tagline?.trim() || description?.trim() || '').trim();
   if (!body) return null;
 
-  // mailto fallback — encoded subject mentions the operator name so
-  // the email lands in the right inbox thread on the buyer side.
-  const quoteHref = `mailto:sales@basketplace.local?subject=${encodeURIComponent(
-    `ขอใบเสนอราคา: ${storeName}`,
-  )}`;
+  const quoteHref = `/stores/${storeSlug}/about`;
 
   return (
     <section
-      className="my-12 rounded-3xl border bg-gradient-to-br from-white to-[var(--shop-muted)] p-8 shadow-sm sm:p-12"
+      className="my-12 rounded-md border p-6 sm:p-10"
       style={{
-        borderColor: 'var(--shop-border)',
+        background: '#dc2626',
+        borderColor: 'rgba(255, 255, 255, 0.2)',
       }}
     >
       <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-start md:gap-12">
@@ -65,22 +62,22 @@ export function BusinessModelBrandStory({
           <p
             className="text-[11px] font-semibold uppercase"
             style={{
-              color: 'var(--shop-ink-muted)',
+              color: 'rgba(255, 255, 255, 0.85)',
               letterSpacing: '0.12em',
             }}
           >
-            เกี่ยวกับร้าน · {storeName.toUpperCase()}
+            พาร์ทเนอร์ขายส่ง · {storeName.toUpperCase()}
           </p>
           <div
             aria-hidden
             className="mt-3 h-1 w-12 rounded-md"
-            style={{ background: 'var(--shop-primary)' }}
+            style={{ background: '#ffffff' }}
           />
           <h2
             className="mt-4 text-2xl sm:text-3xl"
             style={{
               fontFamily: BM_HEADING_FONT,
-              color: 'var(--shop-ink)',
+              color: '#ffffff',
               fontWeight: 700,
               letterSpacing: '-0.02em',
               lineHeight: 1.15,
@@ -92,7 +89,7 @@ export function BusinessModelBrandStory({
             className="mt-4 max-w-2xl text-sm leading-relaxed sm:text-base"
             style={{
               fontFamily: BM_HEADING_FONT,
-              color: 'var(--shop-ink-muted)',
+              color: 'rgba(255, 255, 255, 0.9)',
             }}
           >
             {body}
@@ -101,8 +98,8 @@ export function BusinessModelBrandStory({
 
         <Link
           href={quoteHref}
-          className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl px-7 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
-          style={{ background: 'var(--shop-primary)' }}
+          className="inline-flex h-11 shrink-0 items-center justify-center rounded-md px-6 text-xs font-bold uppercase tracking-[0.08em] shadow-sm transition hover:opacity-90"
+          style={{ background: '#ffffff', color: '#dc2626' }}
         >
           ติดต่อเรา
         </Link>
@@ -111,15 +108,11 @@ export function BusinessModelBrandStory({
       {/* Wholesale stat ledger — 3 mono numerics in a B2B trust strip */}
       <ul
         className="mt-8 grid grid-cols-1 gap-3 border-t pt-6 sm:grid-cols-3 sm:gap-4"
-        style={{ borderColor: 'var(--shop-border)' }}
+        style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}
       >
-        <BusinessModelStat label="เปิดร้านมา" value="10+" unit="ปี" />
-        <BusinessModelStat label="สินค้าในร้าน" value="500+" unit="รายการ" />
-        <BusinessModelStat
-          label="ส่วนลดสูงสุด"
-          value="ถึง 25%"
-          tone="savings"
-        />
+        <BusinessModelStat label="ดำเนินธุรกิจมา" value="10+" unit="ปี" />
+        <BusinessModelStat label="ความหลากหลายสินค้า" value="500+" unit="SKU" />
+        <BusinessModelStat label="ส่วนลดยกล็อต" value="สูงสุด 25%" />
       </ul>
 
       {/* Hidden link back to the wholesale catalog — keeps the panel
@@ -128,16 +121,16 @@ export function BusinessModelBrandStory({
       <p
         className="mt-5 text-[11px] font-semibold uppercase"
         style={{
-          color: 'var(--shop-ink-muted)',
+          color: 'rgba(255, 255, 255, 0.85)',
           letterSpacing: '0.12em',
         }}
       >
         <Link
           href={`/stores/${storeSlug}`}
           className="hover:underline"
-          style={{ color: 'var(--shop-ink-muted)' }}
+          style={{ color: 'rgba(255, 255, 255, 0.85)' }}
         >
-          ← กลับสู่หน้าสินค้า
+          ← กลับสู่แคตตาล็อกขายส่ง
         </Link>
       </p>
     </section>
@@ -147,28 +140,23 @@ export function BusinessModelBrandStory({
     label,
     value,
     unit,
-    tone,
   }: {
     label: string;
     value: string;
     unit?: string;
-    tone?: 'savings';
   }) {
-    const valueColor =
-      tone === 'savings'
-        ? 'var(--shop-savings, #10b981)'
-        : 'var(--shop-ink)';
     return (
       <li
-        className="rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+        className="rounded-md border p-3"
         style={{
-          borderColor: 'var(--shop-border)',
+          borderColor: 'rgba(255, 255, 255, 0.2)',
+          background: 'rgba(0, 0, 0, 0.15)',
         }}
       >
         <p
           className="text-[10px] font-semibold uppercase"
           style={{
-            color: 'var(--shop-ink-muted)',
+            color: 'rgba(255, 255, 255, 0.75)',
             letterSpacing: '0.12em',
           }}
         >
@@ -182,7 +170,7 @@ export function BusinessModelBrandStory({
               fontFamily: BM_MONO_FONT,
               fontVariantNumeric: 'tabular-nums',
               fontWeight: 700,
-              color: valueColor,
+              color: '#ffffff',
               letterSpacing: '-0.01em',
             }}
           >
@@ -192,7 +180,7 @@ export function BusinessModelBrandStory({
             <span
               className="text-[10px] font-semibold uppercase"
               style={{
-                color: 'var(--shop-ink-muted)',
+                color: 'rgba(255, 255, 255, 0.75)',
                 letterSpacing: '0.12em',
               }}
             >

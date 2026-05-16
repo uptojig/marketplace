@@ -338,14 +338,8 @@ function InfoColumn({
   };
 
   const handleQuote = () => {
-    // Quote request stub — opens a mailto: with the product name +
-    // requested qty. Real B2B quote flow lives elsewhere (operator
-    // dashboard) and is wired by a downstream PR.
     if (typeof window !== 'undefined') {
-      const subject = encodeURIComponent(
-        `Quote request: ${product.title} (${sku}) × ${qty}`,
-      );
-      window.location.href = `mailto:sales@basketplace.local?subject=${subject}`;
+      window.location.href = `/stores/${store.slug}/about`;
     }
   };
 
@@ -833,16 +827,6 @@ function InfoColumn({
               style={{ color: 'var(--shop-ink)' }}
             >
               {store.name}
-            </div>
-            <div
-              className="text-[10px] uppercase"
-              style={{
-                color: 'var(--shop-ink-muted)',
-                letterSpacing: '0.12em',
-                fontWeight: 600,
-              }}
-            >
-              Authorized · Bulk supplier
             </div>
           </div>
           <Button

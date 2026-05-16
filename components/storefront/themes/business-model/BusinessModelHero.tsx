@@ -39,6 +39,8 @@ interface Props {
   storeSlug: string;
   storeName: string;
   bannerUrl?: string | null;
+  tagline?: string | null;
+  description?: string | null;
 }
 
 /**
@@ -58,8 +60,18 @@ function stubFlashCountdown(seed: string): string {
   return `${hh}:${mm}:${ss}`;
 }
 
-export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
+export function BusinessModelHero({
+  storeSlug,
+  storeName,
+  bannerUrl,
+  tagline,
+  description,
+}: Props) {
   const countdown = stubFlashCountdown(storeSlug);
+  const headline = tagline?.trim() || 'ร้านขายอุปกรณ์ทำความสะอาด';
+  const subhead =
+    description?.trim() ||
+    'มิติใหม่ของการทำความสะอาดบ้าน ด้วยอุปกรณ์คุณภาพจากเรา ที่ช่วยเบาแรง ประหยัดเวลา ให้บ้านคุณสะอาดหมดจดในพริบตา';
 
   return (
     <section
@@ -72,12 +84,8 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
       {/* Red FLASH DEAL countdown stripe — mirrors the catalog stripe */}
       <div
         data-bm-countdown="true"
-        className="flex flex-wrap items-center justify-center gap-3 px-4 py-3 text-sm shadow-sm sm:text-base"
-        style={{
-          background:
-            'linear-gradient(135deg, var(--shop-primary), color-mix(in oklab, var(--shop-primary), #ffffff 12%))',
-          color: '#ffffff',
-        }}
+        className="flex flex-wrap items-center justify-center gap-3 px-4 py-2.5 text-sm sm:text-base"
+        style={{ background: 'var(--shop-primary)', color: '#ffffff' }}
       >
         <Timer className="h-4 w-4 shrink-0" />
         <span className="font-bold uppercase tracking-[0.12em]">
@@ -96,7 +104,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
           {countdown}
         </span>
         <span className="hidden text-xs opacity-90 sm:inline">
-          · จบเที่ยงคืนวันนี้
+          · สิ้นสุดเที่ยงคืนวันนี้
         </span>
       </div>
 
@@ -108,7 +116,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
               className="text-[11px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              ขายส่ง · {storeName}
+              {storeName}
             </p>
             <div
               aria-hidden
@@ -116,17 +124,16 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
               style={{ background: 'var(--shop-primary)' }}
             />
             <h1
-              className="mt-5 text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
+              className="mt-5 text-3xl sm:text-4xl md:text-5xl"
               style={{
                 fontFamily: BM_HEADING_FONT,
                 color: 'var(--shop-ink)',
-                fontWeight: 800,
-                letterSpacing: '-0.03em',
-                lineHeight: 1.02,
+                fontWeight: 700,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
               }}
             >
-              {storeName} ขายส่งราคาดี <br />
-              <span style={{ color: 'var(--shop-primary)' }}>สำหรับคนซื้อจริง</span>
+              {headline}
             </h1>
             <p
               className="mt-5 max-w-xl text-sm leading-relaxed sm:text-base"
@@ -135,26 +142,24 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
                 color: 'var(--shop-ink-muted)',
               }}
             >
-              ส่วนลดจำนวนคำนวณอัตโนมัติ · เครดิต Net-30 สำหรับลูกค้าผ่านการตรวจสอบ ·
-              จัดส่งภายในสัปดาห์จากกรุงเทพ
+              {subhead}
             </p>
 
             {/* 3-stat ledger row — matches the BrandStory stat tiles */}
             <ul className="mt-7 grid grid-cols-3 gap-2.5 sm:gap-3">
               <BusinessModelHeroStat
-                label="แคตตาล็อก"
+                label="รายการสินค้า"
                 value="500+"
-                unit="รายการ"
+                unit="SKU"
               />
               <BusinessModelHeroStat
-                label="ส่วนลดขายส่ง"
-                value="ถึง 25%"
+                label="ส่วนลดยกล็อต"
+                value="สูงสุด 25%"
                 tone="savings"
               />
               <BusinessModelHeroStat
-                label="การชำระเงิน"
+                label="ชำระเงิน"
                 value="Net-30"
-                unit="เครดิต"
               />
             </ul>
 
@@ -162,17 +167,15 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href={`/stores/${storeSlug}/category`}
-                className="inline-flex h-14 items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-md px-7 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-sm transition hover:opacity-90"
                 style={{ background: 'var(--shop-primary)' }}
               >
-                ดูดีล
+                ดูสินค้าลดราคา
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              <a
-                href={`mailto:sales@basketplace.local?subject=${encodeURIComponent(
-                  `ขอใบเสนอราคา: ${storeName}`,
-                )}`}
-                className="inline-flex h-14 items-center justify-center gap-2 rounded-xl border-2 bg-white px-7 py-3.5 text-sm font-bold uppercase tracking-[0.08em] transition hover:-translate-y-0.5 hover:bg-[var(--shop-muted)] hover:shadow-md"
+              <Link
+                href={`/stores/${storeSlug}/about`}
+                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-md border bg-white px-6 text-xs font-bold uppercase tracking-[0.08em] transition hover:bg-[var(--shop-muted)]"
                 style={{
                   borderColor: 'var(--shop-ink)',
                   color: 'var(--shop-ink)',
@@ -180,7 +183,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
               >
                 <Mail className="h-3.5 w-3.5" />
                 ติดต่อเรา
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -188,7 +191,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
           <div className="hidden lg:block">
             {bannerUrl ? (
               <div
-                className="relative overflow-hidden rounded-3xl border shadow-2xl"
+                className="relative overflow-hidden rounded-md border"
                 style={{
                   borderColor: 'var(--shop-border)',
                   aspectRatio: '4 / 3',
@@ -197,7 +200,7 @@ export function BusinessModelHero({ storeSlug, storeName, bannerUrl }: Props) {
               >
                 <Image
                   src={bannerUrl}
-                  alt={`${storeName} bulk catalog`}
+                  alt={`แคตตาล็อกขายส่ง ${storeName}`}
                   fill
                   sizes="(max-width: 1024px) 0px, 40vw"
                   className="object-cover"
@@ -234,7 +237,7 @@ function BusinessModelHeroStat({
     tone === 'savings' ? 'var(--shop-savings, #10b981)' : 'var(--shop-ink)';
   return (
     <li
-      className="rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+      className="rounded-md border p-3"
       style={{
         borderColor: 'var(--shop-border)',
         background: 'var(--shop-muted)',
@@ -292,7 +295,7 @@ function BusinessModelHeroDashboardMock() {
   ];
   return (
     <div
-      className="rounded-3xl border bg-white p-5 shadow-xl"
+      className="rounded-md border bg-white p-4 shadow-sm"
       style={{ borderColor: 'var(--shop-border)' }}
     >
       <div className="flex items-center justify-between border-b pb-2"
@@ -317,7 +320,7 @@ function BusinessModelHeroDashboardMock() {
             letterSpacing: '0.12em',
           }}
         >
-          LIVE
+          สด
         </span>
       </div>
       <div
@@ -328,9 +331,9 @@ function BusinessModelHeroDashboardMock() {
           borderColor: 'var(--shop-border)',
         }}
       >
-        <span>รหัส</span>
+        <span>SKU</span>
         <span className="text-right">จำนวน</span>
-        <span className="text-right">ประหยัด</span>
+        <span className="text-right">ลด</span>
       </div>
       <ul>
         {rows.map((r, i) => (
