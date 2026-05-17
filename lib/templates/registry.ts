@@ -357,6 +357,57 @@ export const templates: Record<TemplateId, Template> = {
     gating: {},
     customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
   },
+
+  'everyday-retail': {
+    id: 'everyday-retail',
+    name: 'Everyday Retail',
+    description: 'Shopee-style consumer retail — photo-forward, red CTA',
+    group: 'everyday',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'standard', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    gating: {},
+    customizable: { canReorder: true, canHideBlocks: [], canAddBlocks: [] },
+  },
+
+  'taobao-style': {
+    id: 'taobao-style',
+    name: 'Taobao Marketplace',
+    description: 'Bold orange/red/pink gradient marketplace · flash deals · countdown',
+    group: 'taobao',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'standard', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible', countdownBanner: 'visible', stockIndicators: 'visible' },
+    gating: {},
+    customizable: { canReorder: true, canHideBlocks: [], canAddBlocks: [] },
+  },
+
+  'packaging-supply': {
+    id: 'packaging-supply',
+    name: 'Packaging Supply',
+    description: 'Pink / yellow / sky / white cheerful packaging-supply storefront',
+    group: 'packaging',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'standard', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: true, canHideBlocks: [], canAddBlocks: [] },
+  },
 };
 
 export function getTemplate(id: TemplateId): Template {

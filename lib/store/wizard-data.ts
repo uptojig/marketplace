@@ -61,7 +61,10 @@ export type TemplateId =
   | "flash-deal"
   | "subscription"
   | "handmade"
-  | "vintage";
+  | "vintage"
+  | "everyday-retail"
+  | "taobao-style"
+  | "packaging-supply";
 
 export type TemplateGroup =
   | "trust"
@@ -70,7 +73,10 @@ export type TemplateGroup =
   | "lifestyle"
   | "community"
   | "business-model"
-  | "specialty";
+  | "specialty"
+  | "everyday"
+  | "taobao"
+  | "packaging";
 
 export type DesktopPattern = "A" | "B" | "C" | "D";
 
@@ -309,6 +315,34 @@ export const TEMPLATES: Template[] = [
     desktopPattern: "B",
     theme: { spacing: "default", radius: "sharp", titleScale: "default", font: "serif" },
     behavior: { conditionBadges: true, uniqueItemMode: true },
+  },
+  // ─── New themes (everyday / taobao / packaging) ───────────────────
+  {
+    id: "everyday-retail",
+    name: "Everyday Retail",
+    description: "Shopee-style คอนซูเมอร์ ภาพใหญ่ ราคาเด่น",
+    group: "everyday",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { stickyCTA: "buy-now", bottomNav: "visible" },
+  },
+  {
+    id: "taobao-style",
+    name: "Taobao Marketplace",
+    description: "ตลาดสด ลดทุกวัน gradient ส้ม-แดง-ชมพู flash deal",
+    group: "taobao",
+    desktopPattern: "C",
+    theme: { spacing: "compact", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { countdownBanner: true, stockIndicators: true, bottomNav: "visible" },
+  },
+  {
+    id: "packaging-supply",
+    name: "Packaging Supply",
+    description: "บรรจุภัณฑ์ ชมพู/เหลือง/ฟ้า/ขาว สดใส",
+    group: "packaging",
+    desktopPattern: "C",
+    theme: { spacing: "airy", radius: "round", titleScale: "default", font: "sans" },
+    behavior: { bottomNav: "visible" },
   },
 ];
 

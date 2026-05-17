@@ -81,6 +81,11 @@ const FAMILY_BY_TEMPLATE: Record<TemplateId, Family> = {
   "live-commerce": "default",
   "video-feed": "default",
   storyteller: "default",
+  // New themes — use "default" mockup palette for now; bespoke per-family
+  // preview tokens can ship in a follow-up.
+  "everyday-retail": "default",
+  "taobao-style": "business-model",
+  "packaging-supply": "default",
 };
 
 interface FamilyTheme {
