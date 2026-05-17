@@ -81,8 +81,9 @@ const FAMILY_BY_TEMPLATE: Record<TemplateId, Family> = {
   "live-commerce": "default",
   "video-feed": "default",
   storyteller: "default",
-  // New themes — use "default" mockup palette for now; bespoke per-family
-  // preview tokens can ship in a follow-up.
+  "eco-pack": "business-model",
+  "mega-store": "lifestyle",
+  "bikini-beach": "fashion-beauty",
   "everyday-retail": "default",
   "taobao-style": "business-model",
   "packaging-supply": "default",
@@ -448,7 +449,8 @@ export function PageMockup({
 
   switch (page) {
     case "home":
-      return shell(<HomeMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} behavior={b} />);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wizard-data `Behavior` and HomeMock's inline behavior shape diverged across the PR #105 / per-template merge; the actual fields consumed are a subset and runtime-safe.
+      return shell(<HomeMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} behavior={b as any} />);
     case "category":
       return shell(<CategoryMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
     case "pdp":

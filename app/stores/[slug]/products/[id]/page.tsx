@@ -51,6 +51,10 @@ import {
   RecentlyViewedRail,
   RecentlyViewedTracker,
 } from "@/components/storefront/RecentlyViewed";
+// Alias `templates` registry as `STORE_TEMPLATES` for the dispatcher block;
+// the file already imports it as `TEMPLATE_REGISTRY` (PR #105) — keep both
+// aliases so the merge resolution doesn't have to rewrite either side.
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
 
 export const dynamic = "force-dynamic";
 
@@ -101,6 +105,75 @@ export default async function ShopProductPage({
     take: 6,
     orderBy: { createdAt: "desc" },
   });
+
+  // ── Multi-page template dispatch ────────────────────────────
+  // When the active template ships a bespoke PDP, it wins over
+  // the pet-house / family-bespoke heroes below. Same data
+  // pipeline (product + variants + related list) is forwarded
+  // via the `ProductDetailProps` contract in
+  // lib/templates/types.ts.
+  const tplStore = product.store;
+  const effectiveTpl =
+    tplStore.templateId ??
+    (tplStore.slug ? null /* legacy slug remapping handled by family helpers */ : null);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+  const TemplatePdpPage = template?.pages?.pdp;
+  if (TemplatePdpPage) {
+    return (
+      <TemplatePdpPage
+        store={{
+          id: tplStore.id,
+          slug: tplStore.slug,
+          name: tplStore.name,
+          description: tplStore.description,
+          tagline: tplStore.tagline,
+          logoUrl: tplStore.logoUrl,
+          bannerUrl: tplStore.bannerUrl,
+          primaryColor: tplStore.primaryColor,
+        }}
+        product={{
+          id: product.id,
+          title: product.titleTh ?? product.title,
+          description: cleanDescription(product.descriptionTh ?? product.description),
+          priceTHB: Number(product.priceTHB),
+          originalPriceTHB: product.compareAtPriceTHB
+            ? Number(product.compareAtPriceTHB)
+            : null,
+          imageUrl: product.imageUrl,
+          images,
+          variants: product.variants.map((v) => ({
+            id: v.id,
+            attributes: v.attributes as Record<string, string>,
+            colorLabel: v.colorLabel,
+            sizeLabel: v.sizeLabel,
+            materialLabel: v.materialLabel,
+            priceTHB: Number(v.priceTHB),
+            imageUrl: v.imageUrl,
+            inventory: v.inventory,
+          })),
+          stockLeft: product.hasVariants
+            ? null
+            : product.stockTotal > 0
+              ? product.stockTotal
+              : null,
+          videoUrl: product.videoUrl,
+          categoryName: product.categoryName,
+        }}
+        related={related.map((r) => ({
+          id: r.id,
+          title: r.titleTh ?? r.title,
+          imageUrl: r.imageUrl,
+          priceTHB: Number(r.priceTHB),
+          compareAtPriceTHB: r.compareAtPriceTHB
+            ? Number(r.compareAtPriceTHB)
+            : null,
+          categoryName: r.categoryName,
+        }))}
+      />
+    );
+  }
 
   // ── pet-house custom PDP (fluffyhouse) ──────────────────────
   // Bespoke product detail layout for the pet-supplies store. Gated by

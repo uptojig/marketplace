@@ -62,6 +62,9 @@ export type TemplateId =
   | "subscription"
   | "handmade"
   | "vintage"
+  | "eco-pack"
+  | "mega-store"
+  | "bikini-beach"
   | "everyday-retail"
   | "taobao-style"
   | "packaging-supply";
@@ -106,8 +109,8 @@ export type Behavior = {
   compareBlock?: boolean;
   pricingTiers?: boolean;
   moqVisible?: boolean;
-  countdownBanner?: boolean;
-  stockIndicators?: boolean;
+  countdownBanner?: "visible" | "hidden";
+  stockIndicators?: "visible" | "hidden" | boolean;
   dropCalendar?: boolean;
   makerPortrait?: boolean;
   conditionBadges?: boolean;
@@ -287,7 +290,7 @@ export const TEMPLATES: Template[] = [
     group: "business-model",
     desktopPattern: "B",
     theme: { spacing: "compact", radius: "sharp", titleScale: "default", font: "sans" },
-    behavior: { countdownBanner: true, stockIndicators: true },
+    behavior: { countdownBanner: "visible", stockIndicators: "visible" },
   },
   {
     id: "subscription",
@@ -316,7 +319,35 @@ export const TEMPLATES: Template[] = [
     theme: { spacing: "default", radius: "sharp", titleScale: "default", font: "serif" },
     behavior: { conditionBadges: true, uniqueItemMode: true },
   },
-  // ─── New themes (everyday / taobao / packaging) ───────────────────
+  // ─── Per-template full mini-app entries (chrome + every route) ──
+  {
+    id: "eco-pack",
+    name: "Eco Pack",
+    description: "บรรจุภัณฑ์รักษ์โลก มินิมอล โทนธรรมชาติ และคราฟท์",
+    group: "business-model",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { heroSize: "cover" },
+  },
+  {
+    id: "mega-store",
+    name: "Mega Store",
+    description: "ร้านค้าสายช้อป อารมณ์ Taobao ของเยอะ โปรแน่น สีสันสดใส",
+    group: "lifestyle",
+    desktopPattern: "B",
+    theme: { spacing: "compact", radius: "default", titleScale: "compact", font: "sans" },
+    behavior: { coverHidden: true, searchInTopBar: true, productGridDensity: "dense" },
+  },
+  {
+    id: "bikini-beach",
+    name: "BIKINI 551",
+    description: "ชุดว่ายน้ำ ทะเลใส โทนสด · บีกีนี่สำหรับสาวเอเชีย",
+    group: "fashion-beauty",
+    desktopPattern: "A",
+    theme: { spacing: "default", radius: "round", titleScale: "display", font: "sans-display" },
+    behavior: { heroSize: "portrait", hideRatingsCount: true },
+  },
+  // ─── Skin-only themes (PR #105 — chrome + page palette via family) ─
   {
     id: "everyday-retail",
     name: "Everyday Retail",
@@ -333,7 +364,7 @@ export const TEMPLATES: Template[] = [
     group: "taobao",
     desktopPattern: "C",
     theme: { spacing: "compact", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { countdownBanner: true, stockIndicators: true, bottomNav: "visible" },
+    behavior: { countdownBanner: "visible", stockIndicators: "visible", bottomNav: "visible" },
   },
   {
     id: "packaging-supply",

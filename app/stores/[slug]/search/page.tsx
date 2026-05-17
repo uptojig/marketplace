@@ -26,6 +26,9 @@ import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import { RecentlyViewedRail } from "@/components/storefront/RecentlyViewed";
 import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +65,12 @@ export default async function SearchPage({
       id: true,
       name: true,
       slug: true,
+      description: true,
+      tagline: true,
+      bannerUrl: true,
+      logoUrl: true,
+      primaryColor: true,
+      templateId: true,
       products: {
         where: { active: true },
         select: { categoryName: true },
@@ -69,6 +78,113 @@ export default async function SearchPage({
     },
   });
   if (!store) notFound();
+
+  // ── Multi-page template dispatch ────────────────────────────
+  // The TemplatePages contract doesn't have a dedicated `search`
+  // slot (search is structurally a catalog of products matching
+  // a query), so we dispatch search → `pages.catalog` if the
+  // template ships one. The catalog template receives the search
+  // query as a single "selected category" so it can render the
+  // current query in its filter UI without reshuffling its
+  // existing prop interface. Templates that don't want this
+  // dispatch simply omit `pages.catalog`.
+  const effectiveTpl = effectiveTemplateId(store);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+  const TemplateCatalogPage = template?.pages?.catalog;
+  if (TemplateCatalogPage && q) {
+    const totalCountForTpl = await prisma.product.count({
+      where: {
+        storeId: store.id,
+        active: true,
+        OR: [
+          { title: { contains: q, mode: "insensitive" as const } },
+          { titleTh: { contains: q, mode: "insensitive" as const } },
+          { description: { contains: q, mode: "insensitive" as const } },
+          { descriptionTh: { contains: q, mode: "insensitive" as const } },
+          { categoryName: { contains: q, mode: "insensitive" as const } },
+        ],
+      },
+    });
+    const totalPagesForTpl = Math.max(1, Math.ceil(totalCountForTpl / PAGE_SIZE));
+    const currentPageForTpl = Math.min(requestedPage, totalPagesForTpl);
+    const tplProducts = await prisma.product.findMany({
+      where: {
+        storeId: store.id,
+        active: true,
+        OR: [
+          { title: { contains: q, mode: "insensitive" as const } },
+          { titleTh: { contains: q, mode: "insensitive" as const } },
+          { description: { contains: q, mode: "insensitive" as const } },
+          { descriptionTh: { contains: q, mode: "insensitive" as const } },
+          { categoryName: { contains: q, mode: "insensitive" as const } },
+        ],
+      },
+      orderBy: sort.orderBy,
+      skip: (currentPageForTpl - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    });
+    const distinctCatsRows = await prisma.product.findMany({
+      where: { storeId: store.id, active: true, categoryName: { not: null } },
+      select: { categoryName: true },
+      distinct: ["categoryName"],
+    });
+    const categoryNames = distinctCatsRows
+      .map((r) => r.categoryName)
+      .filter((c): c is string => !!c)
+      .sort();
+    const categoryCounts: Record<string, number> = {};
+    for (const p of store.products) {
+      if (p.categoryName)
+        categoryCounts[p.categoryName] =
+          (categoryCounts[p.categoryName] ?? 0) + 1;
+    }
+    return (
+      <TemplateCatalogPage
+        store={{
+          id: store.id,
+          slug: store.slug,
+          name: store.name,
+          description: store.description,
+          tagline: store.tagline,
+          logoUrl: store.logoUrl,
+          bannerUrl: store.bannerUrl,
+          primaryColor: store.primaryColor,
+        }}
+        pageProducts={tplProducts.map((p) => ({
+          id: p.id,
+          title: p.titleTh ?? p.title,
+          imageUrl: p.imageUrl,
+          priceTHB: Number(p.priceTHB),
+          compareAtPriceTHB: p.compareAtPriceTHB
+            ? Number(p.compareAtPriceTHB)
+            : null,
+          categoryName: p.categoryName,
+        }))}
+        categoryNames={categoryNames}
+        categoryCounts={categoryCounts}
+        selectedCats={[q]}
+        sortKey={sortKey}
+        currentPage={currentPageForTpl}
+        totalPages={totalPagesForTpl}
+        filteredCount={totalCountForTpl}
+        buildUrl={(toggleCat, page) => {
+          const sp = new URLSearchParams();
+          sp.set("q", toggleCat ?? q);
+          if (sortKey !== "relevance") sp.set("sort", sortKey);
+          if (page && page > 1) sp.set("page", String(page));
+          return `/stores/${store.slug}/search?${sp.toString()}`;
+        }}
+        buildSortUrl={(s) => {
+          const sp = new URLSearchParams();
+          sp.set("q", q);
+          if (s && s !== "relevance") sp.set("sort", s);
+          return `/stores/${store.slug}/search?${sp.toString()}`;
+        }}
+      />
+    );
+  }
 
   // Top-3 most-stocked categories — used in the empty/no-query state
   // as quick-jump links so the page is still useful with no search yet.

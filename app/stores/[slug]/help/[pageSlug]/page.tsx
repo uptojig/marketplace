@@ -3,6 +3,9 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getHelpPage, HELP_PAGES, HELP_CATEGORY_LABEL } from "@/lib/helpPages";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 import { isEverydayStore } from "@/lib/landing/everyday";
 import { isTaobaoStore } from "@/lib/landing/taobao";
 import { isPackagingStore } from "@/lib/landing/packaging";
@@ -138,10 +141,53 @@ export default async function StoreHelpPage({
   // Verify the store actually exists (otherwise the layout above would 404 anyway)
   const store = await prisma.store.findUnique({
     where: { slug: params.slug },
-    select: { name: true, templateId: true, landingThemeVariant: true },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+      tagline: true,
+      bannerUrl: true,
+      logoUrl: true,
+      primaryColor: true,
+      templateId: true,
+      landingThemeVariant: true,
+    },
   });
   if (!store) notFound();
 
+  // ── Multi-page template dispatch ────────────────────────────
+  // Bespoke help / size-guide / FAQ page from the template
+  // registry beats the markdown-renderer body below. We pass the
+  // store summary + the resolved `HelpPage` shape so the template
+  // can render its own table-of-contents + size-guide tables.
+  const effectiveTpl = effectiveTemplateId(store);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+  const TemplateHelpPage = template?.pages?.help;
+  if (TemplateHelpPage) {
+    return (
+      <TemplateHelpPage
+        store={{
+          id: store.id,
+          slug: store.slug,
+          name: store.name,
+          description: store.description,
+          tagline: store.tagline,
+          logoUrl: store.logoUrl,
+          bannerUrl: store.bannerUrl,
+          primaryColor: store.primaryColor,
+        }}
+        schemaPage={page}
+        pageSlug={params.pageSlug}
+      />
+    );
+  }
+
+  // Skin-only family detectors (everyday / taobao / packaging /
+  // community from PR #105) — render the markdown body wrapped with
+  // a family-tinted policy ribbon.
   const slimKey = { templateId: store.templateId, landingThemeVariant: store.landingThemeVariant };
   const isEveryday = isEverydayStore(slimKey);
   const isTaobao = !isEveryday && isTaobaoStore(slimKey);
