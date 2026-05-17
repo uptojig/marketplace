@@ -16,6 +16,11 @@ import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isEverydayStore } from "@/lib/landing/everyday";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { isPackagingStore } from "@/lib/landing/packaging";
+import { isCommunityStore } from "@/lib/landing/community";
+import { ThemeRibbon } from "@/components/storefront/themes/_shared/ThemeRibbon";
 import { TrustCheckoutHeader } from "@/components/storefront/themes/trust/TrustCheckoutHeader";
 import { BusinessModelCheckoutHeader } from "@/components/storefront/themes/business-model/BusinessModelCheckoutHeader";
 import { LifestyleCheckoutHeader } from "@/components/storefront/themes/lifestyle/LifestyleCheckoutHeader";
@@ -90,8 +95,12 @@ export default async function CheckoutConfirmPage({
     !isFB && !isTrust && !isBM && !isLifestyle && isElectronicsTechStore(familyKey);
   const isSpecialty =
     !isFB && !isTrust && !isBM && !isLifestyle && !isET && isSpecialtyStore(familyKey);
+  const isEveryday = !isFB && !isTrust && !isBM && !isLifestyle && !isET && !isSpecialty && isEverydayStore(familyKey);
+  const isTaobao = !isFB && !isTrust && !isBM && !isLifestyle && !isET && !isSpecialty && !isEveryday && isTaobaoStore(familyKey);
+  const isPackaging = !isFB && !isTrust && !isBM && !isLifestyle && !isET && !isSpecialty && !isEveryday && !isTaobao && isPackagingStore(familyKey);
+  const isCommunity = !isFB && !isTrust && !isBM && !isLifestyle && !isET && !isSpecialty && !isEveryday && !isTaobao && !isPackaging && isCommunityStore(familyKey);
 
-  if (!isFB && !isTrust && !isBM && !isLifestyle && !isET && !isSpecialty) {
+  if (!isFB && !isTrust && !isBM && !isLifestyle && !isET && !isSpecialty && !isEveryday && !isTaobao && !isPackaging && !isCommunity) {
     return <CheckoutConfirmClient params={params} />;
   }
 
@@ -103,6 +112,13 @@ export default async function CheckoutConfirmPage({
       {isLifestyle && <LifestyleCheckoutHeader step={2} />}
       {isET && <ElectronicsTechCheckoutHeader step={2} />}
       {isSpecialty && <SpecialtyCheckoutHeader step={2} />}
+      <ThemeRibbon
+        variant="checkout"
+        isEveryday={isEveryday}
+        isTaobao={isTaobao}
+        isPackaging={isPackaging}
+        isCommunity={isCommunity}
+      />
       <CheckoutConfirmClient params={params} />
     </div>
   );

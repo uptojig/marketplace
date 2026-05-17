@@ -29,6 +29,11 @@ import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isEverydayStore } from "@/lib/landing/everyday";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { isPackagingStore } from "@/lib/landing/packaging";
+import { isCommunityStore } from "@/lib/landing/community";
+import { ThemeRibbon } from "@/components/storefront/themes/_shared/ThemeRibbon";
 import { TrustCategoryGrid } from "@/components/storefront/themes/trust/TrustCategoryGrid";
 import { BusinessModelCategoryGrid } from "@/components/storefront/themes/business-model/BusinessModelCategoryGrid";
 import { LifestyleCategoryGrid } from "@/components/storefront/themes/lifestyle/LifestyleCategoryGrid";
@@ -131,6 +136,22 @@ export default async function CategoryIndexPage({
     landingThemeVariant: store.landingThemeVariant,
   });
   const isElectronicsTech = !isFB && !isTrust && !isBM && !isLifestyle && isElectronicsTechStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isEveryday = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && isEverydayStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isTaobao = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isEveryday && isTaobaoStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isPackaging = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isEveryday && !isTaobao && isPackagingStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isCommunity = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isEveryday && !isTaobao && !isPackaging && isCommunityStore({
     templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -296,6 +317,20 @@ export default async function CategoryIndexPage({
     return <SpecialtyCategoryPage {...sharedCategoryProps} />;
   }
 
+  // Slim themes (everyday / taobao / packaging / community) — render
+  // the default category UI prefixed with a theme-specific ribbon so
+  // the catalog still reads as the chosen theme without needing a
+  // fully bespoke <ThemeCategoryPage />.
+  const slimRibbon = (
+    <ThemeRibbon
+      variant="category"
+      isEveryday={isEveryday}
+      isTaobao={isTaobao}
+      isPackaging={isPackaging}
+      isCommunity={isCommunity}
+    />
+  );
+
   // Pet-house brand hero band — when fluffyhouse-style stores land on
   // the catalog with one of the 4 Shop-by-Type pseudo-slugs active,
   // surface the matching SVG icon + Thai name + result count above
@@ -310,6 +345,7 @@ export default async function CategoryIndexPage({
 
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
+      {slimRibbon}
       {showPetHouseHero && (
         <PetHouseCategoryFilterHero
           selectedCats={selectedCats}
