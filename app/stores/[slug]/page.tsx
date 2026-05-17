@@ -17,7 +17,6 @@ import {
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
 import { HtmlRenderer, isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isValidThemeVariant } from "@/lib/landing/families";
-import { hasVariantFamilyOverride } from "@/lib/landing/dispatcher";
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { DynamicBlockRenderer } from "@/components/DynamicBlockRenderer";
@@ -261,17 +260,8 @@ export default async function StorePage({
   // pre-wizard-v2 stores all fall through to the generic grid and
   // look identical regardless of niche. See lib/landing/legacy-slug-template.ts.
   const effectiveTpl = effectiveTemplateId(baseStore);
-  // Operator-picked variant beats templateId-inferred family — when the
-  // admin theme picker (PR #97) sets landingThemeVariant to a value that
-  // maps to a family (business-model / fashion-beauty / trust / etc.),
-  // we strip the slug-inferred templateId so the cascade below resolves
-  // strictly via the variant. Without this, a store like ergobodies
-  // (slug→sport-active→lifestyle) would stay locked on Lifestyle even
-  // after the operator explicitly picked business-model. See
-  // lib/landing/dispatcher.ts for the helper.
-  const variantOverrides = hasVariantFamilyOverride(baseStore.landingThemeVariant);
   const familyKey = {
-    templateId: variantOverrides ? null : effectiveTpl,
+    templateId: effectiveTpl,
     landingThemeVariant: baseStore.landingThemeVariant,
   };
   if (isFashionBeautyStore(familyKey)) {
@@ -303,64 +293,6 @@ export default async function StorePage({
   }
   if (isCommunityStore(familyKey)) {
     return <CommunityHomepage store={baseStore} />;
-  }
-
-  // ── Multi-page template — bespoke homepage from registry ────
-  // Last priority in the homepage chain before the wizard
-  // StoreRenderer fallback. Opt-in escape hatch: a template that
-  // registers a `pages.home` component takes over rendering;
-  // templates without it still flow through the existing block
-  // dispatcher. Family-driven and bespoke homepages (PetHouse /
-  // CaseStudio / FB / etc.) above already won by this point.
-  if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
-    const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
-    const TemplateHomePage = template.pages?.home;
-    if (TemplateHomePage) {
-      const dbProducts = await prisma.product.findMany({
-        where: { storeId: baseStore.id, active: true },
-        orderBy: { createdAt: "desc" },
-        take: 60,
-      });
-      const categoryRows = await prisma.product.findMany({
-        where: {
-          storeId: baseStore.id,
-          active: true,
-          categoryName: { not: null },
-        },
-        select: { categoryName: true },
-        distinct: ["categoryName"],
-        orderBy: { categoryName: "asc" },
-        take: 12,
-      });
-      const categories = categoryRows
-        .map((r) => r.categoryName)
-        .filter((c): c is string => !!c);
-      return (
-        <TemplateHomePage
-          store={{
-            id: baseStore.id,
-            slug: baseStore.slug,
-            name: baseStore.name,
-            description: baseStore.description,
-            tagline: baseStore.tagline,
-            logoUrl: baseStore.logoUrl,
-            bannerUrl: baseStore.bannerUrl,
-            primaryColor: baseStore.primaryColor,
-          }}
-          products={dbProducts.map((p) => ({
-            id: p.id,
-            title: p.titleTh ?? p.title,
-            imageUrl: p.imageUrl,
-            priceTHB: Number(p.priceTHB),
-            compareAtPriceTHB: p.compareAtPriceTHB
-              ? Number(p.compareAtPriceTHB)
-              : null,
-            categoryName: p.categoryName,
-          }))}
-          categories={categories}
-        />
-      );
-    }
   }
 
   // ── New scaffold-based template (vendor wizard v2) ──────────

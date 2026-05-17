@@ -71,7 +71,6 @@ import {
   specialtyCssVars,
   isSpecialtyStore,
 } from "@/lib/landing/specialty";
-import { hasVariantFamilyOverride } from "@/lib/landing/dispatcher";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
@@ -82,12 +81,6 @@ import {
   resolveChromeTokens,
   tokensToCssVars,
 } from "@/components/storefront/chrome/tokens";
-import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
-import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
-import type { TemplateId } from "@/lib/templates/types";
-import { bikiniBeachTokens } from "@/components/storefront/themes/bikini-beach/tokens";
-import { ecoPackTokens } from "@/components/storefront/themes/eco-pack/tokens";
-import { megaStoreTokens } from "@/components/storefront/themes/mega-store/tokens";
 
 export const dynamic = "force-dynamic";
 
@@ -159,114 +152,21 @@ export default async function ShopLayout({
         REJECTED: "ร้านนี้ยังไม่ผ่านการตรวจสอบ",
         SUSPENDED: "ร้านนี้ถูกระงับชั่วคราว",
       };
-      const badgeByStatus: Record<string, { label: string; cls: string; dot: string }> = {
-        PENDING: { label: "รอตรวจสอบ", cls: "bg-amber-100 text-amber-800", dot: "bg-amber-500" },
-        REJECTED: { label: "ไม่ผ่านการตรวจสอบ", cls: "bg-rose-100 text-rose-800", dot: "bg-rose-500" },
-        SUSPENDED: { label: "ระงับชั่วคราว", cls: "bg-stone-200 text-stone-700", dot: "bg-stone-500" },
-      };
-      const badge = badgeByStatus[store.approvalStatus] ?? badgeByStatus.PENDING;
-      // Surface 4 live approved stores so the visitor doesn't dead-end —
-      // most blunders into a pending store come from an old shared link;
-      // the gate becomes a soft discovery shelf instead of a wall.
-      const otherStores = await prisma.store.findMany({
-        where: { approvalStatus: "APPROVED", slug: { not: store.slug } },
-        orderBy: { createdAt: "desc" },
-        take: 4,
-        select: { slug: true, name: true, logoUrl: true },
-      });
       return (
-        <div className="flex min-h-screen flex-col bg-gradient-to-br from-stone-50 via-white to-stone-100">
-          <header className="border-b border-stone-200/70 bg-white/80 backdrop-blur">
-            <div className="mx-auto flex max-w-7xl items-center px-4 py-3.5 lg:px-6">
-              <Link href="/" className="inline-flex items-center gap-2">
-                <span
-                  aria-hidden
-                  className="h-7 w-7 rounded-md bg-gradient-to-br from-blue-500 to-purple-600"
-                />
-                <span className="text-base font-bold tracking-tight text-stone-900">
-                  Basketplace
-                </span>
-              </Link>
-            </div>
-          </header>
-
-          <main className="flex flex-1 items-center justify-center px-6 py-12 sm:py-20">
-            <div className="w-full max-w-lg text-center">
-              <div className="relative mx-auto mb-7 inline-flex">
-                <span
-                  aria-hidden
-                  className="absolute inset-0 rounded-full bg-amber-300/40 blur-2xl"
-                />
-                <span className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-amber-50 to-amber-200 shadow-inner ring-1 ring-amber-200/60">
-                  <span className="text-4xl" aria-hidden>⏳</span>
-                </span>
-              </div>
-
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${badge.cls}`}
-              >
-                <span className={`h-1.5 w-1.5 rounded-full ${badge.dot} animate-pulse`} />
-                {badge.label}
-              </span>
-
-              <h1 className="mt-5 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-                {store.name}
-              </h1>
-
-              <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-stone-600 sm:text-base">
-                {labelByStatus[store.approvalStatus] ?? "ร้านนี้ยังไม่เปิดให้ดูสาธารณะ"}
-                <br />
-                กรุณากลับมาใหม่อีกครั้งหลังจากร้านได้รับการอนุมัติ
-              </p>
-
-              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Link
-                  href="/"
-                  className="inline-flex items-center justify-center rounded-full bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800"
-                >
-                  ← หน้าหลัก Basketplace
-                </Link>
-                <Link
-                  href="/search"
-                  className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-800 transition hover:bg-stone-50"
-                >
-                  ค้นหาร้านอื่น
-                </Link>
-              </div>
-
-              {otherStores.length > 0 && (
-                <div className="mt-12 border-t border-stone-200 pt-8">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
-                    ลองดูร้านที่เปิดแล้ว
-                  </p>
-                  <ul className="mt-4 flex flex-wrap justify-center gap-2.5">
-                    {otherStores.map((s) => (
-                      <li key={s.slug}>
-                        <Link
-                          href={`/stores/${s.slug}`}
-                          className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md"
-                        >
-                          {s.logoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={s.logoUrl}
-                              alt=""
-                              className="h-5 w-5 rounded-full object-cover"
-                            />
-                          ) : (
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-purple-500 text-[10px] font-bold uppercase text-white">
-                              {s.name.charAt(0)}
-                            </span>
-                          )}
-                          {s.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </main>
+        <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-stone-50 px-6 text-center">
+          <div className="rounded-full bg-amber-100 p-4 text-3xl">⏳</div>
+          <h1 className="text-2xl font-bold text-stone-900">{store.name}</h1>
+          <p className="max-w-md text-sm text-stone-600">
+            {labelByStatus[store.approvalStatus] ?? "ร้านนี้ยังไม่เปิดให้ดูสาธารณะ"}
+            <br />
+            กรุณากลับมาใหม่อีกครั้งหลังจากร้านได้รับการอนุมัติ
+          </p>
+          <Link
+            href="/"
+            className="rounded-md border bg-white px-4 py-2 text-sm hover:bg-stone-50"
+          >
+            ← กลับหน้าหลัก
+          </Link>
         </div>
       );
     }
@@ -289,16 +189,6 @@ export default async function ShopLayout({
     return <>{children}</>;
   }
 
-  // Operator-picked landingThemeVariant takes precedence over the
-  // templateId-inferred family in the chrome chain too — mirrors the
-  // homepage dispatcher in app/stores/[slug]/page.tsx so the CSS skin
-  // and the homepage stay in sync when the admin theme picker (PR #97)
-  // flips a store to a new family. Nulling templateId when the variant
-  // already maps to a family forces the cascade to resolve strictly
-  // via the variant. See lib/landing/dispatcher.ts.
-  const chromeVariantOverrides = hasVariantFamilyOverride(store.landingThemeVariant);
-  const chromeTpl = chromeVariantOverrides ? null : store.templateId;
-
   // Fashion-beauty pilot — single source of truth for the "is this
   // store in the fashion-beauty family?" check. Consulted by every
   // render path below to (a) add the .theme-fashion-beauty class and
@@ -307,7 +197,7 @@ export default async function ShopLayout({
   // stores) and `landingThemeVariant` (operator-picked or AI-multi-
   // page "B" code). See lib/landing/fashion-beauty.ts for the matrix.
   const isFB = isFashionBeautyStore({
-    templateId: chromeTpl,
+    templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
   const fbVars = isFB ? fashionBeautyCssVars() : {};
@@ -320,7 +210,7 @@ export default async function ShopLayout({
   // belt-and-braces. Reads from lib/landing/trust.ts — same shape as
   // the fashion-beauty module.
   const isTrust = !isFB && isTrustStore({
-    templateId: chromeTpl,
+    templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
   const trustVars = isTrust ? trustCssVars() : {};
@@ -334,7 +224,7 @@ export default async function ShopLayout({
   // single store can only ever land in one family. Reads from
   // lib/landing/business-model.ts — same shape as the trust module.
   const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
-    templateId: chromeTpl,
+    templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
   const bmVars = isBusinessModel ? businessModelCssVars() : {};
@@ -345,7 +235,7 @@ export default async function ShopLayout({
   // practice so this is belt-and-braces. Reads from
   // lib/landing/lifestyle.ts.
   const isLifestyle = !isFB && !isTrust && !isBusinessModel && isLifestyleStore({
-    templateId: chromeTpl,
+    templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
   const lifestyleVars = isLifestyle ? lifestyleCssVars() : {};
@@ -357,7 +247,7 @@ export default async function ShopLayout({
   // only be in one TemplateGroup) so this is belt-and-braces. Reads
   // from lib/landing/electronics-tech.ts.
   const isElectronicsTech = !isFB && !isTrust && !isBusinessModel && !isLifestyle && isElectronicsTechStore({
-    templateId: chromeTpl,
+    templateId: store.templateId,
     landingThemeVariant: store.landingThemeVariant,
   });
   const etVars = isElectronicsTech ? electronicsTechCssVars() : {};
@@ -374,7 +264,7 @@ export default async function ShopLayout({
   const isSpecialty =
     !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech &&
     isSpecialtyStore({
-      templateId: chromeTpl,
+      templateId: store.templateId,
       landingThemeVariant: store.landingThemeVariant,
     });
   const specialtyVars = isSpecialty ? specialtyCssVars() : {};
@@ -425,15 +315,6 @@ export default async function ShopLayout({
   // Merge order matters — earlier checks win because their vars
   // shadow later ones. FB → trust → business-model → lifestyle → ET → specialty → packaging → taobao → community.
   const familyVars = { ...communityVars, ...taobaoVars, ...packagingVars, ...specialtyVars, ...etVars, ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
-  // Operator's manual `store.primaryColor` (set in the admin form) must
-  // win over the family's hardcoded `--shop-primary` slot — otherwise an
-  // operator who picks (say) business-model is locked into red CTAs and
-  // can never tweak the brand button color. The rest of the family
-  // palette (--shop-bg / --shop-ink / --shop-accent / ...) stays intact
-  // so the theme still looks like the family it claims to be.
-  const operatorPrimaryOverride: Record<string, string> = store.primaryColor
-    ? { "--shop-primary": store.primaryColor }
-    : {};
   // Active family's accent — used by ShopHeader / ShopFooter to
   // paint chrome links + glyph fills. FB pink, trust gold, business-
   // model amber, lifestyle sage, electronics-tech cyan, specialty ochre.
@@ -468,60 +349,6 @@ export default async function ShopLayout({
             ? "square"
             : null;
 
-  // Multi-page template chrome — resolve once and reuse in every
-  // render branch below. When the active template registers its
-  // own `chrome.Header` / `chrome.Footer` / `chrome.AnnouncementStrip`,
-  // the layout swaps the default ShopHeader / ShopFooter for those
-  // components instead. Token bag + family CSS class still cascade
-  // through the wrapper div so the template's bespoke chrome
-  // inherits the same --shop-* vars as everything else.
-  //
-  // `effectiveTemplateId()` covers legacy stores whose templateId
-  // column is null but whose slug is mapped in
-  // lib/landing/legacy-slug-template.ts (e.g. bikini551 → bikini-beach).
-  // Stores not in the registry simply skip the bespoke chrome path.
-  const templateForChrome = (() => {
-    const tpl = effectiveTemplateId(store);
-    return tpl && tpl in STORE_TEMPLATES
-      ? STORE_TEMPLATES[tpl as TemplateId]
-      : null;
-  })();
-  const TemplateHeader = templateForChrome?.chrome?.Header;
-  const TemplateFooter = templateForChrome?.chrome?.Footer;
-  const TemplateStrip = templateForChrome?.chrome?.AnnouncementStrip;
-
-  // Bikini-beach token bag — when the active templateId is
-  // `bikini-beach`, layer the bespoke palette (sky / coral / sand
-  // + summer gradients) over the family vars. This is harmless
-  // before the chrome lands because the bespoke `--bikini-*` and
-  // `--grad-*` vars are only consumed by the future bespoke
-  // pages; the `--shop-*` slots stay in sync with the FB family.
-  const isBikiniBeach = effectiveTemplateId(store) === "bikini-beach";
-  const bikiniVars = isBikiniBeach ? bikiniBeachTokens : {};
-  const bikiniClass = isBikiniBeach ? "theme-bikini-beach" : "";
-
-  // Eco Pack token bag — kraft brown + warm off-white + emerald accent.
-  // Layered the same way bikini-beach does: tokens flow into the wrapper
-  // div's style, and the `.theme-eco-pack` body class scopes the bespoke
-  // selectors in globals.css.
-  const isEcoPack = effectiveTemplateId(store) === "eco-pack";
-  const ecoPackVars = isEcoPack ? ecoPackTokens : {};
-  const ecoPackClass = isEcoPack ? "theme-eco-pack" : "";
-
-  // Mega Store token bag — Taobao orange + tmall red on light-gray surface.
-  const isMegaStore = effectiveTemplateId(store) === "mega-store";
-  const megaStoreVars = isMegaStore ? megaStoreTokens : {};
-  const megaStoreClass = isMegaStore ? "theme-mega-store" : "";
-
-  // Combined per-template-skin extras layered above the family vars so
-  // the bespoke `--eco-*` / `--mega-*` / `--bikini-*` accents win on the
-  // pages that consume them. Only one of these flags can be true since
-  // effectiveTemplateId returns a single value.
-  const templateSkinVars = { ...bikiniVars, ...ecoPackVars, ...megaStoreVars };
-  const templateSkinClass = [bikiniClass, ecoPackClass, megaStoreClass]
-    .filter(Boolean)
-    .join(" ");
-
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality
   //     comes from a token preset keyed off the template id (accent,
@@ -551,49 +378,28 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}${templateSkinClass ? ` ${templateSkinClass}` : ""}`}
-        style={{ ...tokensToCssVars(tokens), ...familyVars, ...templateSkinVars, ...operatorPrimaryOverride }}
+        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
+        style={{ ...tokensToCssVars(tokens), ...familyVars }}
       >
-        {TemplateStrip ? (
-          <TemplateStrip storeName={store.name} />
-        ) : null /* default chrome has no strip */}
-        {TemplateHeader ? (
-          <TemplateHeader
-            storeSlug={store.slug}
-            storeName={store.name}
-            storeLogoUrl={store.logoUrl}
-            categories={categories}
-            accent={familyAccent ?? tokens.accent}
-          />
-        ) : (
-          <ShopHeader
-            storeSlug={store.slug}
-            storeName={store.name}
-            storeLogoUrl={store.logoUrl}
-            categories={categories}
-            accent={familyAccent ?? tokens.accent}
-            decorationGlyph={tokens.decorationGlyph}
-            glyphStyle={tokens.glyphStyle}
-            announcement={tokens.announcement}
-            buttonShape={familyButtonShape ?? tokens.buttonShape}
-          />
-        )}
+        <ShopHeader
+          storeSlug={store.slug}
+          storeName={store.name}
+          storeLogoUrl={store.logoUrl}
+          categories={categories}
+          accent={familyAccent ?? tokens.accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+          announcement={tokens.announcement}
+          buttonShape={familyButtonShape ?? tokens.buttonShape}
+        />
         <main className="flex-1">{children}</main>
-        {TemplateFooter ? (
-          <TemplateFooter
-            store={store}
-            categories={categories}
-            accent={familyAccent ?? tokens.accent}
-          />
-        ) : (
-          <ShopFooter
-            store={store}
-            categories={categories}
-            accent={familyAccent ?? tokens.accent}
-            decorationGlyph={tokens.decorationGlyph}
-            glyphStyle={tokens.glyphStyle}
-          />
-        )}
+        <ShopFooter
+          store={store}
+          categories={categories}
+          accent={familyAccent ?? tokens.accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+        />
       </div>
     );
   }
@@ -650,49 +456,28 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass} ${templateSkinClass}`.trim()}
-        style={{ ...tokensToCssVars(tokens), ...familyVars, ...templateSkinVars, ...operatorPrimaryOverride }}
+        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass}`.trim()}
+        style={{ ...tokensToCssVars(tokens), ...familyVars }}
       >
-        {TemplateStrip ? (
-          <TemplateStrip storeName={store.name} />
-        ) : null /* default chrome has no strip */}
-        {TemplateHeader ? (
-          <TemplateHeader
-            storeSlug={store.slug}
-            storeName={store.name}
-            storeLogoUrl={store.logoUrl}
-            categories={navCategories}
-            accent={familyAccent ?? tokens.accent}
-          />
-        ) : (
-          <ShopHeader
-            storeSlug={store.slug}
-            storeName={store.name}
-            storeLogoUrl={store.logoUrl}
-            categories={navCategories}
-            accent={familyAccent ?? tokens.accent}
-            decorationGlyph={tokens.decorationGlyph}
-            glyphStyle={tokens.glyphStyle}
-            announcement={tokens.announcement}
-            buttonShape={familyButtonShape ?? tokens.buttonShape}
-          />
-        )}
+        <ShopHeader
+          storeSlug={store.slug}
+          storeName={store.name}
+          storeLogoUrl={store.logoUrl}
+          categories={navCategories}
+          accent={familyAccent ?? tokens.accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+          announcement={tokens.announcement}
+          buttonShape={familyButtonShape ?? tokens.buttonShape}
+        />
         <main className="flex-1">{children}</main>
-        {TemplateFooter ? (
-          <TemplateFooter
-            store={store}
-            categories={navCategories}
-            accent={familyAccent ?? tokens.accent}
-          />
-        ) : (
-          <ShopFooter
-            store={store}
-            categories={navCategories}
-            accent={familyAccent ?? tokens.accent}
-            decorationGlyph={tokens.decorationGlyph}
-            glyphStyle={tokens.glyphStyle}
-          />
-        )}
+        <ShopFooter
+          store={store}
+          categories={navCategories}
+          accent={familyAccent ?? tokens.accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+        />
         <CookiesBar />
         <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
       </div>
@@ -729,49 +514,28 @@ export default async function ShopLayout({
 
   return (
     <div
-      className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}${bikiniClass ? ` ${bikiniClass}` : ""}`}
-      style={{ ...tokensToCssVars(tokens), ...familyVars, ...bikiniVars, ...operatorPrimaryOverride }}
+      className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
+      style={{ ...tokensToCssVars(tokens), ...familyVars }}
     >
-      {TemplateStrip ? (
-        <TemplateStrip storeName={store.name} />
-      ) : null /* default chrome has no strip */}
-      {TemplateHeader ? (
-        <TemplateHeader
-          storeSlug={store.slug}
-          storeName={store.name}
-          storeLogoUrl={store.logoUrl}
-          categories={categories}
-          accent={familyAccent ?? tokens.accent}
-        />
-      ) : (
-        <ShopHeader
-          storeSlug={store.slug}
-          storeName={store.name}
-          storeLogoUrl={store.logoUrl}
-          categories={categories}
-          accent={familyAccent ?? tokens.accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-          announcement={tokens.announcement}
-          buttonShape={familyButtonShape ?? tokens.buttonShape}
-        />
-      )}
+      <ShopHeader
+        storeSlug={store.slug}
+        storeName={store.name}
+        storeLogoUrl={store.logoUrl}
+        categories={categories}
+        accent={familyAccent ?? tokens.accent}
+        decorationGlyph={tokens.decorationGlyph}
+        glyphStyle={tokens.glyphStyle}
+        announcement={tokens.announcement}
+        buttonShape={familyButtonShape ?? tokens.buttonShape}
+      />
       <main className="flex-1">{children}</main>
-      {TemplateFooter ? (
-        <TemplateFooter
-          store={store}
-          categories={categories}
-          accent={familyAccent ?? tokens.accent}
-        />
-      ) : (
-        <ShopFooter
-          store={store}
-          categories={categories}
-          accent={familyAccent ?? tokens.accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-        />
-      )}
+      <ShopFooter
+        store={store}
+        categories={categories}
+        accent={familyAccent ?? tokens.accent}
+        decorationGlyph={tokens.decorationGlyph}
+        glyphStyle={tokens.glyphStyle}
+      />
       <CookiesBar />
       <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
     </div>
