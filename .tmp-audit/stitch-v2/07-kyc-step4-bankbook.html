@@ -1,0 +1,231 @@
+<!DOCTYPE html><html class="light" lang="th"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>อัปโหลดสมุดบัญชีธนาคาร - MerchantRegistry</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@600;700&amp;family=Prompt:wght@400;500&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "success": "#4A7C59",
+                        "surface-container": "#f0eded",
+                        "surface-container-low": "#f6f3f2",
+                        "on-secondary-fixed-variant": "#1b4f40",
+                        "on-tertiary-fixed-variant": "#474743",
+                        "on-surface": "#1c1b1b",
+                        "on-error": "#ffffff",
+                        "ink-muted": "#6B6B6B",
+                        "border-warm": "#E5DDD0",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#767471",
+                        "tertiary-fixed": "#e5e2dd",
+                        "secondary-fixed": "#b8eed9",
+                        "inverse-primary": "#ffb4a3",
+                        "surface-container-highest": "#e5e2e1",
+                        "primary": "#a93013",
+                        "on-surface-variant": "#59413c",
+                        "surface": "#fcf9f8",
+                        "on-primary-fixed-variant": "#8a1b00",
+                        "surface-tint": "#ad3315",
+                        "on-primary-container": "#fffbff",
+                        "inverse-surface": "#313030",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#e1bfb7",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1c1b1b",
+                        "on-primary-fixed": "#3d0700",
+                        "surface-variant": "#e5e2e1",
+                        "warning": "#D49C3D",
+                        "secondary-fixed-dim": "#9cd2bd",
+                        "primary-fixed-dim": "#ffb4a3",
+                        "inverse-on-surface": "#f3f0ef",
+                        "background-alt": "#F0EBE2",
+                        "danger": "#C5443B",
+                        "primary-fixed": "#ffdad2",
+                        "tertiary-fixed-dim": "#c8c6c2",
+                        "on-secondary-fixed": "#002118",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#eae7e7",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "background": "#fcf9f8",
+                        "surface-bright": "#fcf9f8",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-container": "#b5ebd6",
+                        "outline": "#8d716a",
+                        "on-tertiary-container": "#fbffe4",
+                        "secondary": "#356857",
+                        "on-secondary-container": "#396c5b",
+                        "on-tertiary-fixed": "#1c1c19",
+                        "tertiary": "#5d5c58",
+                        "primary-container": "#cb4829"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-v-desktop": "80px",
+                        "margin-desktop": "24px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "container-max": "1200px",
+                        "base": "4px",
+                        "section-v-mobile": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["IBM Plex Sans Thai"],
+                        "headline-sm": ["IBM Plex Sans Thai"],
+                        "headline-md": ["IBM Plex Sans Thai"],
+                        "headline-lg": ["IBM Plex Sans Thai"],
+                        "stat-label": ["JetBrains Mono"],
+                        "display": ["IBM Plex Sans Thai"],
+                        "body-md": ["Prompt"],
+                        "body-lg": ["Prompt"],
+                        "caption": ["Prompt"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "headline-lg": ["40px", {"lineHeight": "48px", "fontWeight": "700"}],
+                        "stat-label": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "display": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "caption": ["13px", {"lineHeight": "18px", "letterSpacing": "0.08em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar (Suppressed as per rules: Transactional/Linear Onboarding Flow) -->
+<!-- SideNav/BottomNavBar (Suppressed as per rules: Transactional/Linear Onboarding Flow) -->
+<!-- Header (Simple Onboarding Header) -->
+<header class="sticky top-0 z-40 bg-surface-container-lowest/90 backdrop-blur border-b border-border-warm py-4">
+<div class="max-w-container-max mx-auto px-margin-desktop flex items-center justify-between">
+<div class="font-headline-sm text-headline-sm text-primary font-bold">
+                MerchantRegistry
+            </div>
+<div class="text-ink-muted font-caption text-caption">
+                Save &amp; Exit
+            </div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex justify-center py-section-v-desktop px-margin-desktop">
+<!-- Wizard Container -->
+<div class="w-full max-w-3xl flex flex-col gap-12">
+<!-- Stepper -->
+<div class="flex items-center justify-between w-full relative">
+<!-- Line background -->
+<div class="absolute top-1/2 left-0 w-full h-px bg-border-warm -z-10 -translate-y-1/2"></div>
+<!-- Step 1 -->
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-4">
+<div class="w-8 h-8 rounded-full bg-success text-on-primary flex items-center justify-center border border-success">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<span class="font-caption text-caption text-success font-bold">DGA</span>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-4">
+<div class="w-8 h-8 rounded-full bg-success text-on-primary flex items-center justify-center border border-success">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<span class="font-caption text-caption text-success font-bold">บัตร+เซลฟี่</span>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-4">
+<div class="w-8 h-8 rounded-full bg-success text-on-primary flex items-center justify-center border border-success">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<span class="font-caption text-caption text-success font-bold">SMS</span>
+</div>
+<!-- Step 4 (Active) -->
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-4">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center border border-primary-container shadow-sm">
+<span class="font-caption text-caption font-bold">4</span>
+</div>
+<span class="font-caption text-caption text-primary-container font-bold">สมุดบัญชี</span>
+</div>
+</div>
+<!-- Content Area -->
+<div class="flex flex-col gap-8">
+<!-- Headers -->
+<div class="flex flex-col gap-4 text-center items-center">
+<span class="font-caption text-caption text-ink-muted uppercase tracking-wider">ขั้นตอนสุดท้าย — 4 จาก 4</span>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">อัปโหลดสมุดบัญชีธนาคาร</h1>
+<p class="font-body-lg text-body-lg text-ink-muted max-w-xl">
+                        ระบบจะตรวจสอบว่าชื่อในสมุดบัญชีตรงกับชื่อในบัตรประชาชน — ใช้รับเงินจากการขายในร้านของคุณ
+                    </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8 mt-4">
+<!-- Instructions Card -->
+<div class="bg-surface rounded-xl border border-border-warm p-6 flex flex-col gap-4 h-fit">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">สิ่งที่ต้องเห็นในภาพ:</h3>
+<ul class="flex flex-col gap-3 font-body-md text-body-md text-on-surface-variant">
+<li class="flex items-start gap-2 border-b border-background-alt pb-2">
+<span class="material-symbols-outlined text-success text-[20px] shrink-0">check_circle</span>
+<span>ชื่อ-นามสกุล</span>
+</li>
+<li class="flex items-start gap-2 border-b border-background-alt pb-2">
+<span class="material-symbols-outlined text-success text-[20px] shrink-0">check_circle</span>
+<span>เลขที่บัญชี</span>
+</li>
+<li class="flex items-start gap-2 border-b border-background-alt pb-2">
+<span class="material-symbols-outlined text-success text-[20px] shrink-0">check_circle</span>
+<span>ชื่อธนาคาร</span>
+</li>
+</ul>
+<div class="mt-2 p-3 bg-surface-container-low rounded-lg border border-border-warm/50 flex items-start gap-2">
+<span class="material-symbols-outlined text-warning text-[18px] shrink-0">info</span>
+<p class="font-caption text-caption text-ink-muted">ใช้หน้าแรกของสมุดบัญชี — ไม่ต้องมีหน้ารายการเดินบัญชี</p>
+</div>
+</div>
+<!-- Upload Zone -->
+<button class="w-full h-[320px] rounded-xl border-2 border-dashed border-secondary bg-surface flex flex-col items-center justify-center gap-4 hover:-translate-y-[2px] hover:shadow-md transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+<div class="w-16 h-16 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform duration-200">
+<span class="material-symbols-outlined text-[32px]">cloud_upload</span>
+</div>
+<div class="text-center flex flex-col gap-1">
+<span class="font-headline-sm text-headline-sm text-on-surface group-hover:text-secondary transition-colors">ลากภาพสมุดบัญชีมาวางที่นี่ หรือ เลือกไฟล์</span>
+<span class="font-caption text-caption text-ink-muted">JPG, PNG · สูงสุด 5MB</span>
+</div>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Footer -->
+<footer class="sticky bottom-0 z-40 bg-surface-container-lowest border-t border-border-warm shadow-[0_-4px_20px_rgba(0,0,0,0.05)] py-6 px-margin-desktop">
+<div class="max-w-3xl mx-auto flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<button class="flex items-center gap-2 font-body-md text-body-md text-ink-muted hover:text-on-surface transition-colors h-[44px] px-4 rounded-lg border border-transparent hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+<span>ย้อนกลับ</span>
+</button>
+<button class="flex items-center gap-2 bg-primary-container text-on-primary font-headline-sm text-headline-sm px-8 h-[56px] rounded-lg shadow-sm hover:-translate-y-[2px] hover:shadow-md transition-all duration-200">
+<span>ส่งและจบขั้นตอน</span>
+<span class="material-symbols-outlined text-[24px]">arrow_forward</span>
+</button>
+</div>
+<div class="text-right flex items-center justify-end gap-1 font-caption text-caption text-ink-muted">
+<span class="material-symbols-outlined text-[14px]">timer</span>
+<span>เมื่อกดส่ง ระบบจะตรวจสอบและแจ้งผลทันที — ใช้เวลาประมาณ 30 วินาที</span>
+</div>
+</div>
+</footer>
+</body></html>

@@ -14,18 +14,18 @@ export function PhaseAssembly({ state }: Props) {
   return (
     <div className="space-y-5">
       <header className="space-y-1">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-mp-ink-muted">
           ขั้นที่ 4 · ประกอบหน้าร้าน
         </p>
         <h2 className="text-xl font-semibold tracking-tight">
           ระบบจะประกอบทุกอย่างให้คุณ
         </h2>
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-mp-ink-muted">
           ตรวจสอบสรุปด้านล่าง ถ้าครบแล้วกด &ldquo;สร้างร้านค้า&rdquo;
         </p>
       </header>
 
-      <ul className="space-y-2 rounded-lg border border-zinc-200 bg-white p-4 text-sm">
+      <ul className="space-y-2 rounded-lg border border-mp-border bg-white p-4 text-sm">
         <SummaryRow
           label="ชื่อร้าน"
           value={state.identity.name || "—"}
@@ -58,11 +58,11 @@ export function PhaseAssembly({ state }: Props) {
         />
       </ul>
 
-      <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center">
-        <p className="text-sm font-medium text-zinc-700">
+      <div className="rounded-lg border border-dashed border-mp-border bg-mp-cream-alt/40 p-6 text-center">
+        <p className="text-sm font-medium text-mp-ink">
           🪄 พร้อมเสกหน้าร้านอัตโนมัติ
         </p>
-        <p className="mt-1 text-[11px] text-zinc-500">
+        <p className="mt-1 text-[11px] text-mp-ink-muted">
           ระบบจะใช้เวลา ~10 วินาทีในการประกอบทุกอย่าง
         </p>
       </div>
@@ -80,9 +80,9 @@ function SummaryRow({
   ok: boolean;
 }) {
   return (
-    <li className="flex items-center justify-between gap-2 border-b border-zinc-100 pb-1.5 last:border-0 last:pb-0">
-      <span className="text-zinc-600">{label}</span>
-      <span className="flex items-center gap-1.5 text-zinc-900">
+    <li className="flex items-center justify-between gap-2 border-b border-mp-border pb-1.5 last:border-0 last:pb-0">
+      <span className="text-mp-ink-muted">{label}</span>
+      <span className="flex items-center gap-1.5 text-mp-ink">
         <span className={ok ? "text-emerald-600" : "text-amber-600"}>
           {ok ? "✓" : "•"}
         </span>

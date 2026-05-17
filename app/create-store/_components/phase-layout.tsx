@@ -21,13 +21,13 @@ export function PhaseLayout({ state, onChange }: Props) {
   return (
     <div className="space-y-5">
       <header className="space-y-1">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-mp-ink-muted">
           ขั้นที่ 2 · เลย์เอาต์
         </p>
         <h2 className="text-xl font-semibold tracking-tight">
           เลือกเลย์เอาต์ที่เหมาะกับร้าน
         </h2>
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-mp-ink-muted">
           {state.identity.niche
             ? "แนะนำตามหมวดที่คุณเลือก · ดูพรีวิวจริงด้านขวา"
             : "เลือกได้ทั้งหมด 20 แบบ"}
@@ -37,7 +37,7 @@ export function PhaseLayout({ state, onChange }: Props) {
       {recommended.length > 0 && (
         <section className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-zinc-700">
+            <span className="text-xs font-medium uppercase tracking-wide text-mp-ink">
               แนะนำสำหรับคุณ
             </span>
             <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
@@ -61,7 +61,7 @@ export function PhaseLayout({ state, onChange }: Props) {
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
-          className="text-xs font-medium text-zinc-700 underline-offset-4 hover:underline"
+          className="text-xs font-medium text-mp-ink underline-offset-4 hover:underline"
         >
           {showAll
             ? `↑ ซ่อนแม่แบบทั้งหมด`
@@ -103,22 +103,22 @@ function TemplateCard({
       disabled={locked}
       className={`group relative flex flex-col rounded-lg border p-3 text-left transition ${
         active
-          ? "border-zinc-900 bg-white ring-2 ring-zinc-900/10"
+          ? "border-mp-coral bg-white ring-2 ring-mp-coral/20"
           : locked
-          ? "border-zinc-200 bg-zinc-50 opacity-60"
-          : "border-zinc-200 bg-white hover:border-zinc-400"
+          ? "border-mp-border bg-mp-cream-alt/40 opacity-60"
+          : "border-mp-border bg-white hover:border-mp-coral/60"
       }`}
     >
-      <div className="mb-2 h-14 overflow-hidden rounded-md bg-zinc-100">
+      <div className="mb-2 h-14 overflow-hidden rounded-md bg-mp-cream-alt/60">
         <TemplateThumb id={template.id} />
       </div>
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-zinc-900">{template.name}</p>
-        <span className="rounded-sm bg-zinc-100 px-1 py-0.5 text-[9px] font-medium text-zinc-600">
+        <p className="text-sm font-medium text-mp-ink">{template.name}</p>
+        <span className="rounded-sm bg-mp-cream-alt/60 px-1 py-0.5 text-[9px] font-medium text-mp-ink-muted">
           {template.desktopPattern}
         </span>
       </div>
-      <p className="text-[11px] leading-snug text-zinc-500">
+      <p className="text-[11px] leading-snug text-mp-ink-muted">
         {template.description}
       </p>
       {locked && (
@@ -207,10 +207,10 @@ function Band({ kind }: { kind: string }) {
   if (kind === "hero-large")
     return <div className="h-4 rounded-sm bg-gradient-to-br from-zinc-700 to-zinc-500" />;
   if (kind === "hero-small")
-    return <div className="h-2 rounded-sm bg-zinc-200" />;
+    return <div className="h-2 rounded-sm bg-mp-cream-alt" />;
   if (kind === "text-hero")
     return (
-      <div className="flex h-4 flex-col justify-center gap-0.5 rounded-sm bg-zinc-50 px-1">
+      <div className="flex h-4 flex-col justify-center gap-0.5 rounded-sm bg-mp-cream-alt/40 px-1">
         <div className="h-0.5 w-8 rounded bg-zinc-400" />
         <div className="h-0.5 w-5 rounded bg-zinc-300" />
       </div>
@@ -219,24 +219,24 @@ function Band({ kind }: { kind: string }) {
     return <div className="h-4 rounded-sm bg-gradient-to-tr from-amber-200 to-rose-200" />;
   if (kind === "live")
     return (
-      <div className="flex h-4 items-center justify-end rounded-sm bg-zinc-800 px-1">
+      <div className="flex h-4 items-center justify-end rounded-sm bg-mp-ink px-1">
         <span className="h-1 w-2 rounded-sm bg-red-500" />
       </div>
     );
   if (kind === "compare")
     return (
       <div className="flex h-3 gap-0.5">
-        <div className="flex-1 rounded-sm bg-zinc-200" />
-        <div className="flex-1 rounded-sm bg-zinc-200" />
-        <div className="flex-1 rounded-sm bg-zinc-200" />
+        <div className="flex-1 rounded-sm bg-mp-cream-alt" />
+        <div className="flex-1 rounded-sm bg-mp-cream-alt" />
+        <div className="flex-1 rounded-sm bg-mp-cream-alt" />
       </div>
     );
   if (kind === "chips")
     return (
       <div className="flex h-2 gap-0.5">
         <div className="h-full w-3 rounded-full bg-zinc-300" />
-        <div className="h-full w-4 rounded-full bg-zinc-200" />
-        <div className="h-full w-3 rounded-full bg-zinc-200" />
+        <div className="h-full w-4 rounded-full bg-mp-cream-alt" />
+        <div className="h-full w-3 rounded-full bg-mp-cream-alt" />
       </div>
     );
   if (kind === "countdown")
@@ -268,14 +268,14 @@ function Band({ kind }: { kind: string }) {
         <span className="h-0.5 w-3 rounded" style={{ background: '#3B82F6' }} />
       </div>
     );
-  return <div className="h-3 rounded-sm bg-zinc-200" />;
+  return <div className="h-3 rounded-sm bg-mp-cream-alt" />;
 }
 
 function Body({ kind }: { kind: string }) {
   const baseGrid = "grid flex-1 gap-0.5";
-  const tile = "rounded-sm bg-zinc-100";
+  const tile = "rounded-sm bg-mp-cream-alt/60";
 
-  if (kind === "single") return <div className="flex-1 rounded-sm bg-zinc-200" />;
+  if (kind === "single") return <div className="flex-1 rounded-sm bg-mp-cream-alt" />;
   if (kind === "calendar")
     return (
       <div className={`${baseGrid} grid-cols-4 grid-rows-2`}>
@@ -335,9 +335,9 @@ function Body({ kind }: { kind: string }) {
   if (kind === "list-spec")
     return (
       <div className="flex flex-1 flex-col gap-0.5">
-        <div className="h-1.5 rounded-sm bg-zinc-100" />
-        <div className="h-1.5 rounded-sm bg-zinc-100" />
-        <div className="h-1.5 rounded-sm bg-zinc-100" />
+        <div className="h-1.5 rounded-sm bg-mp-cream-alt/60" />
+        <div className="h-1.5 rounded-sm bg-mp-cream-alt/60" />
+        <div className="h-1.5 rounded-sm bg-mp-cream-alt/60" />
       </div>
     );
   if (kind === "grid-3-dense")
@@ -351,15 +351,15 @@ function Body({ kind }: { kind: string }) {
   if (kind === "grid-2-airy")
     return (
       <div className="flex flex-1 items-center justify-center gap-1 px-2">
-        <div className="h-full w-1/3 rounded-sm bg-zinc-100" />
-        <div className="h-full w-1/3 rounded-sm bg-zinc-100" />
+        <div className="h-full w-1/3 rounded-sm bg-mp-cream-alt/60" />
+        <div className="h-full w-1/3 rounded-sm bg-mp-cream-alt/60" />
       </div>
     );
   if (kind === "grid-2-edit")
     return (
       <div className={`${baseGrid} grid-cols-2`}>
-        <div className="rounded-sm bg-zinc-200" />
-        <div className="rounded-sm bg-zinc-100" />
+        <div className="rounded-sm bg-mp-cream-alt" />
+        <div className="rounded-sm bg-mp-cream-alt/60" />
       </div>
     );
   if (kind === "grid-2-badges")

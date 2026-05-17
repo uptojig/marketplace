@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+
+<html class="light" lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Basketplace - เปิดร้านออนไลน์บนโดเมนของคุณเอง</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&amp;family=Prompt:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#3d0700",
+                        "inverse-primary": "#ffb4a3",
+                        "tertiary-fixed": "#e5e2dd",
+                        "tertiary": "#5d5c58",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#b8eed9",
+                        "on-primary-container": "#fffbff",
+                        "surface": "#fcf9f8",
+                        "surface-container": "#f0eded",
+                        "surface-dim": "#dcd9d9",
+                        "warning": "#D49C3D",
+                        "primary-container": "#cb4829",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f6f3f2",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#002118",
+                        "primary": "#a93013",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#8a1b00",
+                        "secondary-fixed-dim": "#9cd2bd",
+                        "error-container": "#ffdad6",
+                        "background-alt": "#F0EBE2",
+                        "on-tertiary-fixed": "#1c1c19",
+                        "border-warm": "#E5DDD0",
+                        "success": "#4A7C59",
+                        "primary-fixed-dim": "#ffb4a3",
+                        "on-surface-variant": "#59413c",
+                        "ink-muted": "#6B6B6B",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-tertiary": "#ffffff",
+                        "outline-variant": "#e1bfb7",
+                        "surface-container-high": "#eae7e7",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#fcf9f8",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#c8c6c2",
+                        "secondary-container": "#b5ebd6",
+                        "on-tertiary-fixed-variant": "#474743",
+                        "background": "#fcf9f8",
+                        "danger": "#C5443B",
+                        "surface-variant": "#e5e2e1",
+                        "primary-fixed": "#ffdad2",
+                        "on-background": "#1c1b1b",
+                        "on-secondary-container": "#396c5b",
+                        "tertiary-container": "#767471",
+                        "inverse-surface": "#313030",
+                        "surface-tint": "#ad3315",
+                        "on-surface": "#1c1b1b",
+                        "secondary": "#356857",
+                        "on-secondary-fixed-variant": "#1b4f40",
+                        "outline": "#8d716a",
+                        "on-tertiary-container": "#fbffe4",
+                        "surface-container-highest": "#e5e2e1",
+                        "warm-coral": "#E85D3C",
+                        "forest-green": "#2C5F4F"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-v-desktop": "80px",
+                        "section-v-mobile": "48px",
+                        "margin-desktop": "24px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "container-max": "1200px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "caption": ["Prompt", "sans-serif"],
+                        "headline-lg": ["IBM Plex Sans Thai", "sans-serif"],
+                        "headline-md": ["IBM Plex Sans Thai", "sans-serif"],
+                        "stat-label": ["JetBrains Mono", "monospace"],
+                        "display": ["IBM Plex Sans Thai", "sans-serif"],
+                        "headline-sm": ["IBM Plex Sans Thai", "sans-serif"],
+                        "body-lg": ["Prompt", "sans-serif"],
+                        "body-md": ["Prompt", "sans-serif"],
+                        "headline-lg-mobile": ["IBM Plex Sans Thai", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "caption": ["13px", { "lineHeight": "18px", "letterSpacing": "0.08em", "fontWeight": "500" }],
+                        "headline-lg": ["40px", { "lineHeight": "48px", "fontWeight": "700" }],
+                        "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "stat-label": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "display": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "700" }]
+                    },
+                    "boxShadow": {
+                        "soft": "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+                        "hover": "0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)"
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-[#FAF7F2] text-on-surface font-body-md antialiased selection:bg-primary-container selection:text-white">
+<!-- 1. STICKY HEADER -->
+<header class="bg-surface dark:bg-surface-container-lowest docked full-width top-0 sticky border-b border-border-warm dark:border-outline-variant flat no shadows z-50">
+<div class="flex justify-between items-center h-[72px] px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
+<a class="font-display text-headline-sm font-bold text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity" href="#">
+                Basketplace
+            </a>
+<nav class="hidden md:flex items-center space-x-8">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:opacity-80 transition-all" href="#">ตัวอย่างร้านค้า</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:opacity-80 transition-all" href="#">วิธีใช้งาน</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:opacity-80 transition-all" href="#">ราคา</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:opacity-80 transition-all" href="#">ช่วยเหลือ</a>
+</nav>
+<div class="flex items-center space-x-4">
+<a class="hidden md:inline-block font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:opacity-80 transition-all font-semibold" href="#">เข้าสู่ระบบ</a>
+<a class="inline-flex items-center justify-center h-[44px] px-6 bg-warm-coral text-white font-body-md text-body-md font-semibold rounded hover:-translate-y-[2px] transition-transform shadow-sm" href="#">
+                    เปิดร้าน
+                </a>
+</div>
+</div>
+</header>
+<!-- 2. HERO -->
+<section class="py-section-v-mobile md:py-section-v-desktop px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="flex flex-col items-start max-w-2xl">
+<span class="inline-block py-1 px-3 border border-border-warm rounded-full font-caption text-caption text-ink-muted mb-6 bg-white/50">สำหรับร้านค้าออนไลน์ไทย</span>
+<h1 class="font-display text-headline-lg-mobile md:text-display text-on-surface mb-6 leading-tight">
+                    เปิดร้านบนโดเมนของคุณเอง ไม่ใช่เช่าพื้นที่ใน Shopee
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-10 leading-relaxed">
+                    Basketplace ช่วยคุณเปิดร้านออนไลน์พร้อม domain, payment, KYC, และดีไซน์ — ภายใน 24 ชั่วโมง
+                </p>
+<div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+<a class="w-full sm:w-auto inline-flex items-center justify-center h-[44px] px-8 bg-warm-coral text-white font-body-md text-body-md font-semibold rounded hover:-translate-y-[2px] transition-transform shadow-soft hover:shadow-hover" href="#">
+                        เปิดร้านฟรี <span class="material-symbols-outlined ml-2 text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+<a class="w-full sm:w-auto inline-flex items-center justify-center h-[44px] px-8 bg-transparent border border-forest-green text-forest-green font-body-md text-body-md font-semibold rounded hover:-translate-y-[2px] transition-transform" href="#">
+                        ดูตัวอย่างร้านค้า
+                    </a>
+</div>
+</div>
+<div class="relative w-full h-[400px] lg:h-[600px] rounded-xl overflow-hidden shadow-hover border border-border-warm transform lg:-rotate-2 transition-transform duration-500 hover:rotate-0">
+<img alt="A high-quality, professional browser mockup showing a beautiful Thai e-commerce storefront. The store features a red/coral color theme, a flash-sale countdown banner, and elegant product displays. The mockup is slightly tilted and modern. Minimalist background. Professional lighting." class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJ1kTEq6CNCi4GcQyv-NJKHDuefcnCjrzLKIg-SdMnH7WzJSumpWqtar9CoBc5GzvYnKsrYEpa20a1aH1d4D3W5cVNyrUYZRhuo15WKyqo_r-I2Ez0RVgg0mV9DYBdaLfqb3gWL0H5O404QFtfQ4ooqa9LHwLPG3lDZiwqtiyv49ehtBGq6suea1D1IeRBkrRqTNoJNzrnQDLEyV5pPRANtlEdBgp561hL36CvFUKRdl3bR3T8A4z_UcXGKV2-YSq11LC00Hj0l5I"/>
+</div>
+</div>
+</section>
+<!-- 3. SOCIAL PROOF -->
+<section class="py-12 border-y border-border-warm bg-white/30 backdrop-blur-sm">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<p class="text-center font-caption text-caption text-ink-muted mb-8 uppercase tracking-widest">ร้านค้าที่เปิดกับเรา</p>
+<div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+<span class="font-headline-sm text-headline-sm font-bold">Minimop24</span>
+<span class="font-headline-sm text-headline-sm font-bold">ZugarBox</span>
+<span class="font-headline-sm text-headline-sm font-bold">ErgoBodies</span>
+<span class="font-headline-sm text-headline-sm font-bold">CaseThep</span>
+<span class="font-headline-sm text-headline-sm font-bold">Bikini551</span>
+</div>
+</div>
+</section>
+<!-- 4. HOW IT WORKS -->
+<section class="py-section-v-mobile md:py-section-v-desktop px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<h2 class="font-headline-md text-headline-md text-center mb-16 text-on-surface">จากสมัครถึงขายได้ ใน 24 ชั่วโมง</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-white border border-border-warm rounded-xl p-8 shadow-soft hover:shadow-hover hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+<div class="w-16 h-16 bg-background-alt rounded-full flex items-center justify-center mb-6 text-warm-coral">
+<span class="material-symbols-outlined text-3xl" data-icon="shield">shield</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-3">1. ยื่นเอกสารยืนยันตัวตน</h3>
+<p class="font-body-md text-body-md text-ink-muted">ทำ KYC รวดเร็ว ปลอดภัย สร้างความน่าเชื่อถือให้ร้านค้าของคุณตั้งแต่เริ่มต้น</p>
+</div>
+<!-- Card 2 -->
+<div class="bg-white border border-border-warm rounded-xl p-8 shadow-soft hover:shadow-hover hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+<div class="w-16 h-16 bg-background-alt rounded-full flex items-center justify-center mb-6 text-warm-coral">
+<span class="material-symbols-outlined text-3xl" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-3">2. ออกแบบร้านด้วยตัวช่วย AI</h3>
+<p class="font-body-md text-body-md text-ink-muted">ได้ดีไซน์สวยระดับพรีเมียมโดยไม่ต้องมีความรู้เรื่องโค้ด ปรับแต่งง่ายดาย</p>
+</div>
+<!-- Card 3 -->
+<div class="bg-white border border-border-warm rounded-xl p-8 shadow-soft hover:shadow-hover hover:-translate-y-1 transition-all flex flex-col items-center text-center">
+<div class="w-16 h-16 bg-background-alt rounded-full flex items-center justify-center mb-6 text-warm-coral">
+<span class="material-symbols-outlined text-3xl" data-icon="language">language</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-3">3. เปิดร้านพร้อม domain ของคุณ</h3>
+<p class="font-body-md text-body-md text-ink-muted">รับ Custom Domain ของตัวเองทันที สร้างแบรนด์ที่น่าจดจำและเป็นเจ้าของ 100%</p>
+</div>
+</div>
+</section>
+<!-- 5. FEATURED STORES -->
+<section class="py-section-v-mobile md:py-section-v-desktop bg-surface-container-low px-margin-mobile md:px-margin-desktop border-y border-border-warm">
+<div class="max-w-container-max mx-auto">
+<div class="flex justify-between items-end mb-12">
+<h2 class="font-headline-md text-headline-md text-on-surface">ดูร้านจริงที่ใช้ Basketplace</h2>
+<a class="hidden sm:inline-flex items-center text-warm-coral font-body-md text-body-md font-semibold hover:underline" href="#">
+                    ดูทั้งหมด <span class="material-symbols-outlined ml-1 text-sm" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Store 1 -->
+<div class="group bg-white rounded-xl border border-border-warm overflow-hidden shadow-soft hover:shadow-hover transition-all">
+<div class="aspect-[1.79] overflow-hidden bg-background-alt relative">
+<img alt="Store 1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJ1kTEq6CNCi4GcQyv-NJKHDuefcnCjrzLKIg-SdMnH7WzJSumpWqtar9CoBc5GzvYnKsrYEpa20a1aH1d4D3W5cVNyrUYZRhuo15WKyqo_r-I2Ez0RVgg0mV9DYBdaLfqb3gWL0H5O404QFtfQ4ooqa9LHwLPG3lDZiwqtiyv49ehtBGq6suea1D1IeRBkrRqTNoJNzrnQDLEyV5pPRANtlEdBgp561hL36CvFUKRdl3bR3T8A4z_UcXGKV2-YSq11LC00Hj0l5I"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="bg-white text-on-surface px-4 py-2 rounded font-body-md font-semibold shadow-md">เยี่ยมชมร้าน →</span>
+</div>
+</div>
+<div class="p-4 border-t border-border-warm">
+<p class="font-headline-sm text-headline-sm text-on-surface truncate">Minimop24</p>
+<p class="font-caption text-caption text-ink-muted">ไลฟ์สไตล์ &amp; แกดเจ็ต</p>
+</div>
+</div>
+<!-- Store 2 -->
+<div class="group bg-white rounded-xl border border-border-warm overflow-hidden shadow-soft hover:shadow-hover transition-all">
+<div class="aspect-[1.79] overflow-hidden bg-background-alt relative">
+<img alt="Store 2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCklXgsF1Z-iiIPxtLfmpCVGNJNTRh3wzZiiU-XbawsBtydme_ncnui5B2wQ_P-SKqy45oTx-_yUdQNFDla9m8vbwEQ_La0k3JGX0-fUPdnyJeMtwFABqfqAzYDCDqNbK-k24zBDGbHciDlRnPHDEGi6XZ1A5fSJ5gjachI2hGcEncKXavbrr8Xct2g7A4MyZM-SMRrQiDNBAbut8VFmESeZS1RjHJw8J9xmsyhYAze4T4UimWCyK_wLRID54CyHYOZJ7ZzNPHnPg0"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="bg-white text-on-surface px-4 py-2 rounded font-body-md font-semibold shadow-md">เยี่ยมชมร้าน →</span>
+</div>
+</div>
+<div class="p-4 border-t border-border-warm">
+<p class="font-headline-sm text-headline-sm text-on-surface truncate">ZugarBox</p>
+<p class="font-caption text-caption text-ink-muted">แฟชั่น &amp; เครื่องแต่งกาย</p>
+</div>
+</div>
+<!-- Store 3 -->
+<div class="group bg-white rounded-xl border border-border-warm overflow-hidden shadow-soft hover:shadow-hover transition-all">
+<div class="aspect-[1.79] overflow-hidden bg-background-alt relative">
+<img alt="Store 3" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZcHNrP0VJLpSitLAzMfIf3q78wZxBwGDf97lzakTGNrvyptvc9XmMRGKP112WSUHLH0PkXcoeQmLLGUraf5zX2DW3PFaRSImpEB01RQbPHZk8qmC83H84pWnObAsYaFYqBSWO7avgJ-bxe87q4RqMq8NTaKCLIyS-ElrXZ1ZHMqjecCGX2LtqbGsLSqssRYw4gyBTwACkQAe73ifJ-ZjIifIw5g1zLxud3PGWBxFEkTpHmjK_l8SvP9UUGov7s71IfZW6XsTQ-tc"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="bg-white text-on-surface px-4 py-2 rounded font-body-md font-semibold shadow-md">เยี่ยมชมร้าน →</span>
+</div>
+</div>
+<div class="p-4 border-t border-border-warm">
+<p class="font-headline-sm text-headline-sm text-on-surface truncate">ErgoBodies</p>
+<p class="font-caption text-caption text-ink-muted">ไอที &amp; อิเล็กทรอนิกส์</p>
+</div>
+</div>
+<!-- Store 4 -->
+<div class="group bg-white rounded-xl border border-border-warm overflow-hidden shadow-soft hover:shadow-hover transition-all">
+<div class="aspect-[1.79] overflow-hidden bg-background-alt relative">
+<img alt="Store 4" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH-TcNJn8coKTYhzwbYipUXSqB6eCcbacko8x-wUFk6HXTjLQHPXOGdwg8hfyKRhCqyPULuwpU2vhYwIEw-hx2rSg2zrcnTMlLnVOEcXV9HLbIbSMJWoxP6ecqF7VePjUAv2MIckKBnzQxQ02e3Ljk1MlKXW_8wwQ86bSM3jiRm4ydL7TEXaWeqiS_CKFngLz6VApFQU1yr4ipFK-0u2vAA10kM1FZWM4YDXz0HfvChpiM5fv-0stbFRD4EuuehBpsC7T_xodHkIg"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="bg-white text-on-surface px-4 py-2 rounded font-body-md font-semibold shadow-md">เยี่ยมชมร้าน →</span>
+</div>
+</div>
+<div class="p-4 border-t border-border-warm">
+<p class="font-headline-sm text-headline-sm text-on-surface truncate">Bikini551</p>
+<p class="font-caption text-caption text-ink-muted">สุขภาพ &amp; ความงาม</p>
+</div>
+</div>
+</div>
+<div class="mt-8 text-center sm:hidden">
+<a class="inline-flex items-center justify-center h-[44px] px-8 bg-white border border-border-warm text-on-surface font-body-md text-body-md font-semibold rounded w-full" href="#">
+                    ดูร้านค้าทั้งหมด
+                </a>
+</div>
+</div>
+</section>
+<!-- 6. WHY US -->
+<section class="py-section-v-mobile md:py-section-v-desktop px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto overflow-hidden">
+<!-- Row 1 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-24">
+<div class="order-2 lg:order-1 rounded-xl overflow-hidden border border-border-warm shadow-soft bg-white p-4">
+<img alt="A high-quality, professional illustration of a custom web domain dashboard with 'yourshop.com' visible, symbolizing ownership. Clean, modern, warm tones." class="w-full h-auto rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc4pKTfZRj4oa8-8iqGXSgq2eVcaqjrIIvBWWtULoKzlWwKxqcRoJFrZjhOJevrCm9yCsb0_U0cJy6koQoHttc0IuzqF_Wk6Dc3Sy6weR8PBn3LZTZXM91v3ptFrGJoOrkunO9xtbxgU56svjZVXOzs9nRJsouiZ_1MvYu91scEofwsPezVivhwQTey-vGqa8wTk8mptnsOSUR0Ok3F3xrf1GWvkpVRQbEp1uiNWyO-ERU421Tgo1xgY0MF9GCMwyc1PqFjIvsUPY"/>
+</div>
+<div class="order-1 lg:order-2">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">domain ของคุณเอง</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-6">สร้างความน่าเชื่อถือให้แบรนด์ด้วยโดเมนเนมของคุณเอง ลูกค้าจดจำง่าย ไม่ต้องพึ่งพาแพลตฟอร์มอื่น คุณเป็นเจ้าของหน้าร้าน 100%</p>
+<ul class="space-y-4">
+<li class="flex items-start">
+<span class="material-symbols-outlined text-warm-coral mr-3 mt-1" data-icon="check_circle">check_circle</span>
+<span class="font-body-md text-on-surface">เชื่อมต่อ Custom Domain ฟรี</span>
+</li>
+<li class="flex items-start">
+<span class="material-symbols-outlined text-warm-coral mr-3 mt-1" data-icon="check_circle">check_circle</span>
+<span class="font-body-md text-on-surface">ฟรี SSL Certificate ทุกโดเมน</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-24">
+<div class="order-1 lg:order-1">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">ระบบจ่ายเงินไทย</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-6">รองรับการชำระเงินที่คนไทยคุ้นเคยครบวงจร ปิดการขายง่าย ลดอัตราการทิ้งตะกร้าสินค้า ปลอดภัยมาตรฐานสากล</p>
+<ul class="space-y-4">
+<li class="flex items-start">
+<span class="material-symbols-outlined text-forest-green mr-3 mt-1" data-icon="qr_code_scanner">qr_code_scanner</span>
+<span class="font-body-md text-on-surface">พร้อมเพย์ QR Code อัตโนมัติ</span>
+</li>
+<li class="flex items-start">
+<span class="material-symbols-outlined text-forest-green mr-3 mt-1" data-icon="credit_card">credit_card</span>
+<span class="font-body-md text-on-surface">รับบัตรเครดิต และระบบผ่อนชำระ</span>
+</li>
+</ul>
+</div>
+<div class="order-2 lg:order-2 rounded-xl overflow-hidden border border-border-warm shadow-soft bg-white p-4">
+<img alt="A clean, professional UI mockup of a Thai payment gateway showing PromptPay, credit card, and installments. High trust, secure feel." class="w-full h-auto rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCq_kXm19SCDbO24QMaZp4negK6qAOZelICD3Fq0fXXunF4ng8jDHzs8LtPqKCxboDTmmIMki_1oLBfrBpfH70QU7tBGyKniKcc2JvdTZgxxnkxU83DBQ7deCithLQFvMC3eIBifzjsZ9rmwzQmIIl36OPGQukkhQqqEHnJA3cphqXYnF6AS28Oo-uwApg3IwAfAsj8Cr8EfLo0L5NMwbzrSfedZgcv2QyEmtxTtvzQ511eaylJ65EFuTp4MJ0UkRhWraxDrl75kn8"/>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="order-2 lg:order-1 rounded-xl overflow-hidden border border-border-warm shadow-soft bg-white p-4">
+<img alt="A modern illustration of an AI assistant (a friendly stylized duck mascot) helping to design a website. Warm colors, professional but approachable." class="w-full h-auto rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZX38aCq9ZS6q0wpnPB11543tHO3POUk_qTn9hjNY5r2WtUQjH1RMqGMIFy6oj9ylswdP7fJ2PGjHAkCxIA3adeXi9kObvU4ffFfNEwSIUsjzsnRADG80rcMrqqdHFxOBJGups0V8AAjvD64hBPDjYqF5I6E09phzBKEo9Jt2BLaRJa4xC9jU0LxLX2Ukd-mbTmvKHcXt5UOEVm4DZywk0s4KGUlVQitK1MMsEZ_RG7Vj5PvPekRpzdUDw-8t1_ghx1QV5pICn9Tc"/>
+</div>
+<div class="order-1 lg:order-2">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">ออกแบบให้ฟรี ด้วย AI</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-6">ไม่ต้องปวดหัวกับการจัดเลย์เอาต์ AI ของเราช่วยออกแบบหน้าร้านให้สวยงาม เหมาะกับสินค้าของคุณในไม่กี่คลิก</p>
+<ul class="space-y-4">
+<li class="flex items-start">
+<span class="material-symbols-outlined text-warm-coral mr-3 mt-1" data-icon="palette">palette</span>
+<span class="font-body-md text-on-surface">ธีมสวยงามสไตล์มินิมอล ปรับแต่งง่าย</span>
+</li>
+<li class="flex items-start">
+<span class="material-symbols-outlined text-warm-coral mr-3 mt-1" data-icon="devices">devices</span>
+<span class="font-body-md text-on-surface">แสดงผลสมบูรณ์แบบบนมือถือ (Responsive)</span>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- 7. PRICING -->
+<section class="py-section-v-mobile md:py-section-v-desktop bg-surface-container-low px-margin-mobile md:px-margin-desktop border-y border-border-warm">
+<div class="max-w-container-max mx-auto">
+<div class="text-center mb-16">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-4">เริ่มต้นฟรี ระหว่างเบต้า</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">ไม่มีค่าธรรมเนียมรายเดือนแอบแฝง จ่ายเมื่อคุณขายได้เท่านั้น</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Free Tier -->
+<div class="bg-white rounded-xl border-2 border-warm-coral p-8 shadow-soft relative flex flex-col hover:-translate-y-1 transition-transform">
+<div class="absolute top-0 right-0 bg-warm-coral text-white font-caption text-[11px] font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl uppercase tracking-wider">Most Popular</div>
+<h3 class="font-headline-sm text-headline-sm mb-2 text-on-surface">เริ่มต้น</h3>
+<div class="mb-6 flex items-baseline">
+<span class="font-display text-4xl font-bold text-on-surface">FREE</span>
+<span class="font-body-md text-ink-muted ml-2">/ ตลอดชีพ</span>
+</div>
+<ul class="space-y-4 mb-8 flex-1">
+<li class="flex items-start">
+<span class="material-symbols-outlined text-forest-green mr-2 text-xl" data-icon="check">check</span>
+<span class="font-body-md text-on-surface-variant">ไม่จำกัดจำนวนสินค้า</span>
+</li>
+<li class="flex items-start">
+<span class="material-symbols-outlined text-forest-green mr-2 text-xl" data-icon="check">check</span>
+<span class="font-body-md text-on-surface-variant">Custom Domain</span>
+</li>
+<li class="flex items-start">
+<span class="material-symbols-outlined text-forest-green mr-2 text-xl" data-icon="check">check</span>
+<span class="font-body-md text-on-surface-variant">ระบบรับชำระเงินพื้นฐาน</span>
+</li>
+<li class="flex items-start">
+<span class="material-symbols-outlined text-forest-green mr-2 text-xl" data-icon="check">check</span>
+<span class="font-body-md text-on-surface-variant">AI ออกแบบร้าน</span>
+</li>
+</ul>
+<a class="w-full inline-flex items-center justify-center h-[44px] bg-warm-coral text-white font-body-md font-semibold rounded hover:bg-primary transition-colors" href="#">
+                        เปิดร้านฟรี
+                    </a>
+</div>
+<!-- Pro Tier -->
+<div class="bg-surface rounded-xl border border-border-warm p-8 shadow-sm flex flex-col opacity-80">
+<h3 class="font-headline-sm text-headline-sm mb-2 text-on-surface">เติบโต</h3>
+<div class="mb-6 flex items-baseline">
+<span class="font-display text-4xl font-bold text-ink-muted">฿490</span>
+<span class="font-body-md text-ink-muted ml-2">/ เดือน</span>
+</div>
+<ul class="space-y-4 mb-8 flex-1">
+<li class="flex items-start opacity-70">
+<span class="material-symbols-outlined text-ink-muted mr-2 text-xl" data-icon="check">check</span>
+<span class="font-body-md text-on-surface-variant">ทุกฟีเจอร์ในแพ็กเกจเริ่มต้น</span>
+</li>
+<li class="flex items-start opacity-70">
+<span class="material-symbols-outlined text-ink-muted mr-2 text-xl" data-icon="check">check</span>
+<span class="font-body-md text-on-surface-variant">ค่าธรรมเนียมธุรกรรมพิเศษ</span>
+</li>
+<li class="flex items-start opacity-70">
+<span class="material-symbols-outlined text-ink-muted mr-2 text-xl" data-icon="check">check</span>
+<span class="font-body-md text-on-surface-variant">ระบบวิเคราะห์ข้อมูลเชิงลึก</span>
+</li>
+</ul>
+<button class="w-full inline-flex items-center justify-center h-[44px] bg-surface-dim text-ink-muted font-body-md font-semibold rounded cursor-not-allowed" disabled="">
+                        Coming Soon
+                    </button>
+</div>
+<!-- Enterprise -->
+<div class="bg-surface rounded-xl border border-border-warm p-8 shadow-sm flex flex-col">
+<h3 class="font-headline-sm text-headline-sm mb-2 text-on-surface">Enterprise</h3>
+<div class="mb-6 flex items-baseline">
+<span class="font-headline-md text-2xl font-bold text-on-surface">Custom</span>
+</div>
+<p class="font-body-md text-on-surface-variant mb-6 flex-1">สำหรับธุรกิจขนาดใหญ่ที่ต้องการการปรับแต่งพิเศษ และ API เชื่อมต่อกับระบบภายใน</p>
+<a class="w-full inline-flex items-center justify-center h-[44px] bg-transparent border border-border-warm text-on-surface font-body-md font-semibold rounded hover:bg-background-alt transition-colors" href="#">
+                        ติดต่อฝ่ายขาย
+                    </a>
+</div>
+</div>
+</div>
+</section>
+<!-- 8. TESTIMONIALS -->
+<section class="py-section-v-mobile md:py-section-v-desktop px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<h2 class="font-headline-md text-headline-md text-center mb-16 text-on-surface">ร้านที่ลองแล้วบอกอะไร</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Testimonial 1 -->
+<div class="bg-white border border-border-warm rounded-xl p-8 shadow-soft flex flex-col">
+<div class="flex text-warning mb-4">
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic flex-1 mb-6">"ย้ายมาจาก marketplace แล้วยอดไม่ตกเลย ลูกค้าชอบที่เว็บดูน่าเชื่อถือ และเราชอบที่ได้ฐานข้อมูลลูกค้ามาทำการตลาดต่อเองได้ 100%"</p>
+<div class="flex items-center">
+<div class="w-10 h-10 bg-surface-variant rounded-full flex items-center justify-center mr-3 font-bold text-on-surface">A</div>
+<div>
+<p class="font-headline-sm text-[14px] font-bold text-on-surface">คุณแอน</p>
+<p class="font-caption text-caption text-ink-muted">เจ้าของร้าน ErgoBodies</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 2 -->
+<div class="bg-white border border-border-warm rounded-xl p-8 shadow-soft flex flex-col">
+<div class="flex text-warning mb-4">
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic flex-1 mb-6">"ตอนแรกกังวลเรื่องการทำเว็บเพราะเขียนโค้ดไม่เป็น แต่ AI ของ Basketplace ช่วยจัดหน้าเว็บให้สวยมาก ใช้งานง่ายกว่าที่คิดเยอะเลย"</p>
+<div class="flex items-center">
+<div class="w-10 h-10 bg-surface-variant rounded-full flex items-center justify-center mr-3 font-bold text-on-surface">K</div>
+<div>
+<p class="font-headline-sm text-[14px] font-bold text-on-surface">คุณก้อง</p>
+<p class="font-caption text-caption text-ink-muted">เจ้าของร้าน Minimop24</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 3 -->
+<div class="bg-white border border-border-warm rounded-xl p-8 shadow-soft flex flex-col">
+<div class="flex text-warning mb-4">
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+<span class="material-symbols-outlined icon-fill" data-icon="star">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic flex-1 mb-6">"ระบบจ่ายเงินเนียนมาก ลูกค้าสแกน QR จ่ายได้เลย ไม่ต้องส่งสลิปให้แอดมินตรวจ ย่นเวลาทำงานได้เยอะ แถมดูเป็นมืออาชีพขึ้นมาก"</p>
+<div class="flex items-center">
+<div class="w-10 h-10 bg-surface-variant rounded-full flex items-center justify-center mr-3 font-bold text-on-surface">N</div>
+<div>
+<p class="font-headline-sm text-[14px] font-bold text-on-surface">คุณนุ่น</p>
+<p class="font-caption text-caption text-ink-muted">เจ้าของร้าน ZugarBox</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- FOOTER (From JSON) -->
+<footer class="bg-surface-container-low dark:bg-surface-container-highest full-width py-section-v-mobile md:py-section-v-desktop border-t border-border-warm dark:border-outline-variant flat no shadows Fade-in on scroll transition-opacity mt-12">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<div class="col-span-1 md:col-span-2 lg:col-span-1 mb-8 lg:mb-0">
+<a class="font-display text-headline-sm font-bold text-primary dark:text-primary-fixed-dim block mb-4" href="#">
+                    Basketplace
+                </a>
+<p class="font-body-md text-body-md text-ink-muted dark:text-on-surface-variant mb-4 max-w-xs">สร้างแบรนด์ที่แข็งแกร่งด้วยหน้าร้านออนไลน์ที่คุณเป็นเจ้าของอย่างแท้จริง</p>
+</div>
+<div class="flex flex-col space-y-3">
+<h4 class="font-headline-sm text-[16px] font-bold text-on-surface mb-2">เมนู</h4>
+<a class="font-body-md text-body-md text-ink-muted dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">เกี่ยวกับเรา</a>
+<a class="font-body-md text-body-md text-ink-muted dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">ตัวอย่างร้านค้า</a>
+<a class="font-body-md text-body-md text-ink-muted dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">ราคา</a>
+</div>
+<div class="flex flex-col space-y-3">
+<h4 class="font-headline-sm text-[16px] font-bold text-on-surface mb-2">ช่วยเหลือ</h4>
+<a class="font-body-md text-body-md text-ink-muted dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">เงื่อนไขการใช้งาน</a>
+<a class="font-body-md text-body-md text-ink-muted dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">นโยบายความเป็นส่วนตัว</a>
+<a class="font-body-md text-body-md text-ink-muted dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed-dim transition-colors" href="#">ติดต่อเรา</a>
+</div>
+<div class="col-span-1 md:col-span-2 lg:col-span-4 mt-12 pt-8 border-t border-border-warm/50 flex flex-col md:flex-row justify-between items-center">
+<p class="font-caption text-caption text-ink-muted dark:text-on-surface-variant">© 2024 Basketplace. สงวนลิขสิทธิ์</p>
+<div class="flex space-x-4 mt-4 md:mt-0">
+<span class="material-symbols-outlined text-ink-muted hover:text-primary transition-colors cursor-pointer" data-icon="language">language</span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

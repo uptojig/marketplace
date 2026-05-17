@@ -1,0 +1,283 @@
+<!DOCTYPE html><html lang="th"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ยืนยันตัวตนเพื่อเริ่มขาย - Basketplace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Prompt:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#002118",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#c8c6c2",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#eae7e7",
+                        "error": "#ba1a1a",
+                        "background": "#fcf9f8",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#8d716a",
+                        "secondary-container": "#b5ebd6",
+                        "surface-dim": "#dcd9d9",
+                        "surface-bright": "#fcf9f8",
+                        "secondary": "#356857",
+                        "on-tertiary-container": "#fbffe4",
+                        "on-secondary-container": "#396c5b",
+                        "tertiary": "#5d5c58",
+                        "on-tertiary-fixed": "#1c1c19",
+                        "primary-container": "#cb4829",
+                        "on-secondary-fixed-variant": "#1b4f40",
+                        "surface-container-low": "#f6f3f2",
+                        "success": "#4A7C59",
+                        "surface-container": "#f0eded",
+                        "on-tertiary-fixed-variant": "#474743",
+                        "on-surface": "#1c1b1b",
+                        "border-warm": "#E5DDD0",
+                        "on-secondary": "#ffffff",
+                        "ink-muted": "#6B6B6B",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#ffb4a3",
+                        "tertiary-fixed": "#e5e2dd",
+                        "secondary-fixed": "#b8eed9",
+                        "tertiary-container": "#767471",
+                        "on-primary-fixed-variant": "#8a1b00",
+                        "surface": "#fcf9f8",
+                        "on-surface-variant": "#59413c",
+                        "surface-container-highest": "#e5e2e1",
+                        "primary": "#a93013",
+                        "surface-tint": "#ad3315",
+                        "on-primary-fixed": "#3d0700",
+                        "surface-variant": "#e5e2e1",
+                        "outline-variant": "#e1bfb7",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1c1b1b",
+                        "on-primary-container": "#fffbff",
+                        "inverse-surface": "#313030",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#ffdad2",
+                        "danger": "#C5443B",
+                        "secondary-fixed-dim": "#9cd2bd",
+                        "primary-fixed-dim": "#ffb4a3",
+                        "inverse-on-surface": "#f3f0ef",
+                        "background-alt": "#F0EBE2",
+                        "warning": "#D49C3D"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "section-v-mobile": "48px",
+                        "section-v-desktop": "80px",
+                        "margin-desktop": "24px",
+                        "margin-mobile": "16px",
+                        "container-max": "1200px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "caption": [
+                            "Prompt"
+                        ],
+                        "body-lg": [
+                            "Prompt"
+                        ],
+                        "stat-label": [
+                            "JetBrains Mono"
+                        ],
+                        "display": [
+                            "IBM Plex Sans Thai"
+                        ],
+                        "body-md": [
+                            "Prompt"
+                        ],
+                        "headline-md": [
+                            "IBM Plex Sans Thai"
+                        ],
+                        "headline-lg": [
+                            "IBM Plex Sans Thai"
+                        ],
+                        "headline-sm": [
+                            "IBM Plex Sans Thai"
+                        ],
+                        "headline-lg-mobile": [
+                            "IBM Plex Sans Thai"
+                        ]
+                    },
+                    "fontSize": {
+                        "caption": [
+                            "13px",
+                            {
+                                "lineHeight": "18px",
+                                "letterSpacing": "0.08em",
+                                "fontWeight": "500"
+                            }
+                        ],
+                        "body-lg": [
+                            "18px",
+                            {
+                                "lineHeight": "28px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "stat-label": [
+                            "14px",
+                            {
+                                "lineHeight": "20px",
+                                "fontWeight": "500"
+                            }
+                        ],
+                        "display": [
+                            "56px",
+                            {
+                                "lineHeight": "64px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                            }
+                        ],
+                        "body-md": [
+                            "16px",
+                            {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "headline-md": [
+                            "28px",
+                            {
+                                "lineHeight": "36px",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "headline-lg": [
+                            "40px",
+                            {
+                                "lineHeight": "48px",
+                                "fontWeight": "700"
+                            }
+                        ],
+                        "headline-sm": [
+                            "20px",
+                            {
+                                "lineHeight": "28px",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "headline-lg-mobile": [
+                            "32px",
+                            {
+                                "lineHeight": "40px",
+                                "fontWeight": "700"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body-md antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+<!-- Top Navigation (Contextually Adapted as Header) -->
+<header class="bg-surface-container-lowest/90 backdrop-blur-md dark:bg-surface-dim/90 docked full-width top-0 sticky z-50 border-b border-warm dark:border-outline-variant flat no shadows">
+<div class="flex justify-between items-center max-w-[1200px] mx-auto px-margin-desktop py-4 max-w-screen-md">
+<a class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed tracking-tight hover:opacity-80 transition-opacity flex items-center gap-2" href="/">
+                Basketplace
+            </a>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-ink-muted hover:text-primary transition-colors font-body-md text-body-md flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_back">arrow_back</span> กลับ
+               </a>
+</nav>
+<div class="md:hidden">
+<a class="text-ink-muted hover:text-primary transition-colors font-body-md text-body-md flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_back">arrow_back</span>
+</a>
+</div>
+</div>
+</header>
+<main class="flex-grow w-full max-w-[640px] mx-auto px-margin-mobile md:px-margin-desktop py-section-v-mobile md:py-section-v-desktop flex flex-col gap-8">
+<!-- Header Section -->
+<section class="flex flex-col gap-4 text-center md:text-left">
+<span class="font-caption text-caption text-ink-muted uppercase tracking-widest">ขั้นตอนที่ 1 — ยืนยันตัวตน</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface">ยืนยันตัวตนเพื่อเริ่มขาย</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mx-auto md:mx-0">เราต้องตรวจสอบตัวตนของคุณตามกฎหมายไทยก่อนเปิดร้าน — ใช้เวลาประมาณ 5-10 นาที</p>
+</section>
+<!-- Trust Strip -->
+<section class="grid grid-cols-1 md:grid-cols-3 border border-warm rounded-lg overflow-hidden bg-surface-container-lowest">
+<div class="flex items-center gap-3 p-4 border-b md:border-b-0 md:border-r border-warm justify-center md:justify-start">
+<span class="material-symbols-outlined text-primary" data-icon="schedule">schedule</span>
+<span class="font-body-md text-body-md text-on-surface">ใช้เวลา 5-10 นาที</span>
+</div>
+<div class="flex items-center gap-3 p-4 border-b md:border-b-0 md:border-r border-warm justify-center md:justify-start">
+<span class="material-symbols-outlined text-success" data-icon="shield_person">shield_person</span>
+<span class="font-body-md text-body-md text-on-surface">ปลอดภัยตาม PDPA</span>
+</div>
+<div class="flex items-center gap-3 p-4 justify-center md:justify-start">
+<span class="material-symbols-outlined text-warning" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-body-md text-body-md text-on-surface">ระบบ OCR อนุมัติเร็ว</span>
+</div>
+</section>
+<!-- Preparation Card -->
+<section class="bg-surface rounded-xl border border-warm p-6 flex flex-col gap-6 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05),0_1px_4px_-1px_rgba(0,0,0,0.02)] transition-transform duration-300 hover:-translate-y-[2px] hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.05),0_4px_8px_-2px_rgba(0,0,0,0.02)]">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">เตรียมพร้อม 4 ขั้นตอน</h3>
+<ol class="flex flex-col">
+<li class="flex items-start gap-4 py-4 border-b border-background-alt last:border-b-0 last:pb-0 first:pt-0">
+<span class="font-stat-label text-stat-label text-primary bg-primary-fixed w-8 h-8 rounded-full flex items-center justify-center shrink-0">1</span>
+<span class="font-body-md text-body-md text-on-surface-variant pt-1">รูปแอป D.GA หรือ ThaID — หน้าโปรไฟล์ที่แสดงข้อมูลส่วนตัว</span>
+</li>
+<li class="flex items-start gap-4 py-4 border-b border-background-alt last:border-b-0 last:pb-0">
+<span class="font-stat-label text-stat-label text-primary bg-primary-fixed w-8 h-8 rounded-full flex items-center justify-center shrink-0">2</span>
+<span class="font-body-md text-body-md text-on-surface-variant pt-1">บัตรประชาชน + เซลฟี่คู่บัตร — ใช้กล้องมือถือถ่าย</span>
+</li>
+<li class="flex items-start gap-4 py-4 border-b border-background-alt last:border-b-0 last:pb-0">
+<span class="font-stat-label text-stat-label text-primary bg-primary-fixed w-8 h-8 rounded-full flex items-center justify-center shrink-0">3</span>
+<span class="font-body-md text-body-md text-on-surface-variant pt-1">รูป response เบอร์โทรจาก DGA — screenshot หน้าจอที่ระบบส่งกลับ</span>
+</li>
+<li class="flex items-start gap-4 py-4 border-b border-background-alt last:border-b-0 last:pb-0">
+<span class="font-stat-label text-stat-label text-primary bg-primary-fixed w-8 h-8 rounded-full flex items-center justify-center shrink-0">4</span>
+<span class="font-body-md text-body-md text-on-surface-variant pt-1">สมุดบัญชีธนาคาร — หน้าแรกที่มีชื่อบัญชี</span>
+</li>
+</ol>
+</section>
+<!-- CTA & Microcopy -->
+<section class="flex flex-col gap-4 mt-4">
+<button class="bg-primary hover:bg-surface-tint text-on-primary font-body-md text-body-md font-semibold h-[56px] rounded-xl px-8 w-full flex items-center justify-center gap-2 transition-colors duration-200">
+                เริ่มยืนยันตัวตน <span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<div class="text-center flex flex-col gap-2">
+<p class="font-caption text-caption text-ink-muted">ข้อมูลของคุณจะใช้เพื่อตรวจสอบกับฐาน DGA และส่งให้ payment gateway เท่านั้น</p>
+<a class="font-caption text-caption text-primary hover:underline transition-all" href="#">ต้องการความช่วยเหลือ → @basketplace (LINE)</a>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-container-lowest border-t border-warm dark:border-outline-variant flat no shadows mt-auto">
+<div class="max-w-[1200px] mx-auto px-margin-desktop py-section-v-desktop flex flex-col md:flex-row justify-between items-center gap-gutter">
+<div class="font-headline-sm text-headline-sm font-bold text-primary opacity-80 hover:opacity-100 transition-opacity">
+                Basketplace
+            </div>
+<div class="font-body-md text-body-md text-ink-muted dark:text-on-surface-variant text-center md:text-left">
+                © 2024 Thai SaaS Platform. Secured by Enterprise Grade Encryption.
+            </div>
+<nav class="flex gap-6 flex-wrap justify-center">
+<a class="text-ink-muted hover:text-primary transition-colors hover:underline decoration-primary font-body-md text-body-md opacity-80 hover:opacity-100 transition-opacity" href="#">Privacy Policy</a>
+<a class="text-ink-muted hover:text-primary transition-colors hover:underline decoration-primary font-body-md text-body-md opacity-80 hover:opacity-100 transition-opacity" href="#">Terms of Service</a>
+<a class="text-ink-muted hover:text-primary transition-colors hover:underline decoration-primary font-body-md text-body-md opacity-80 hover:opacity-100 transition-opacity" href="#">Compliance</a>
+<a class="text-ink-muted hover:text-primary transition-colors hover:underline decoration-primary font-body-md text-body-md opacity-80 hover:opacity-100 transition-opacity" href="#">Contact</a>
+</nav>
+</div>
+</footer>
+</body></html>

@@ -1,39 +1,40 @@
-import Link from "next/link";
+/**
+ * Marketplace shell — the brand-side chrome that wraps every page
+ * under `app/(marketplace)/*` (home, /signin, /signup, /apply,
+ * /create-store, /dashboard, etc.).
+ *
+ * Replaces the original 39-line MVP placeholder (text "Marketplace"
+ * logo + 2-link nav + dev-copy footer). The new shell pulls in:
+ *
+ *   - MarketplaceHeader  — sticky public-visitor header with brand
+ *                          logo, 4-item nav, ghost sign-in + coral
+ *                          "เปิดร้าน" CTA, mobile slide-right drawer.
+ *   - MarketplaceFooter  — forest-green brand-anchor footer with
+ *                          newsletter signup, 5-col grid, payment
+ *                          methods strip, legal links.
+ *
+ * The `theme-marketplace` class on the outer wrapper switches the
+ * page into the `--color-mp-*` token cascade (see globals.css block
+ * and lib/landing/marketplace.ts). Sub-pages opt in to brand styling
+ * automatically by using `bg-mp-*` / `text-mp-*` Tailwind utilities.
+ *
+ * Cart + checkout intentionally live per-store at /stores/[slug]/
+ * — see component comments for the per-store ownership model.
+ */
+import { MarketplaceHeader } from '@/components/marketplace/MarketplaceHeader';
+import { MarketplaceFooter } from '@/components/marketplace/MarketplaceFooter';
+import { MARKETPLACE_BODY_CLASS } from '@/lib/landing/marketplace';
 
-// Cart + checkout no longer live at marketplace level — they're
-// per-store at /stores/[slug]/cart and /stores/[slug]/checkout/*.
-// The CartIndicator that used to sit in this nav linked to /cart
-// (now deleted), so we removed it. Customers see their cart only
-// inside the store context, which matches our "each store is its
-// own checkout" model.
 export default function MarketplaceLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <header className="border-b">
-        <div className="container flex h-14 items-center justify-between">
-          <Link href="/" className="font-semibold">
-            Marketplace
-          </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/" className="hover:underline">
-              ค้นพบร้านค้า
-            </Link>
-            <Link href="/dashboard" className="hover:underline">
-              จัดการร้าน
-            </Link>
-            {/* Buyer "My orders" lives per-store at
-                /stores/[slug]/account/orders, not at marketplace level. */}
-          </nav>
-        </div>
-      </header>
-      <main className="container py-8">{children}</main>
-      <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-        Marketplace MVP — AnyPay (mock) · CJ + AliExpress
-      </footer>
-    </>
+    <div className={`${MARKETPLACE_BODY_CLASS} min-h-screen flex flex-col bg-mp-cream`}>
+      <MarketplaceHeader />
+      <main className="flex-1">{children}</main>
+      <MarketplaceFooter />
+    </div>
   );
 }

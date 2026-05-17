@@ -147,13 +147,13 @@ export function PhaseProducts({ state, onChange }: Props) {
   return (
     <div className="space-y-5">
       <header className="space-y-1">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-mp-ink-muted">
           ขั้นที่ 3 · เลือกสินค้า
         </p>
         <h2 className="text-xl font-semibold tracking-tight">
           เลือกสินค้าจริงจาก CJ Dropshipping
         </h2>
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-mp-ink-muted">
           ติ๊กสินค้าที่อยากให้อยู่ในร้านของคุณ ระบบจะ import + แปลภาษาไทย
           ให้อัตโนมัติหลังเปิดร้าน
         </p>
@@ -166,7 +166,7 @@ export function PhaseProducts({ state, onChange }: Props) {
             <span aria-hidden>{niche.emoji}</span> หมวด {niche.label}
           </span>
         )}
-        <span className="text-xs text-zinc-500">เป้าหมาย:</span>
+        <span className="text-xs text-mp-ink-muted">เป้าหมาย:</span>
         {(["10", "20", "50"] as const).map((t) => {
           const active = state.products.starterPack === t;
           return (
@@ -176,8 +176,8 @@ export function PhaseProducts({ state, onChange }: Props) {
               onClick={() => setStarter(t)}
               className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
                 active
-                  ? "border-zinc-900 bg-zinc-900 text-white"
-                  : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400"
+                  ? "border-mp-coral bg-mp-ink text-white"
+                  : "border-mp-border bg-white text-mp-ink hover:border-mp-coral/60"
               }`}
             >
               {t} ชิ้น
@@ -193,12 +193,12 @@ export function PhaseProducts({ state, onChange }: Props) {
           value={pendingSearch}
           onChange={(e) => setPendingSearch(e.target.value)}
           placeholder="ค้นหาสินค้า (ภาษาอังกฤษ — เช่น 'wireless earbuds')"
-          className="flex-1 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm focus:border-zinc-400 focus:outline-none"
+          className="flex-1 rounded-md border border-mp-border bg-white px-3 py-2 text-sm focus:border-mp-coral focus:outline-none"
         />
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="rounded-md bg-mp-ink px-4 py-2 text-sm font-medium text-white hover:bg-mp-ink disabled:opacity-50"
         >
           ค้นหา
         </button>
@@ -210,7 +210,7 @@ export function PhaseProducts({ state, onChange }: Props) {
           overTarget
             ? "border-amber-300 bg-amber-50 text-amber-900"
             : selectedIds.size === 0
-              ? "border-zinc-200 bg-zinc-50 text-zinc-600"
+              ? "border-mp-border bg-mp-cream-alt/40 text-mp-ink-muted"
               : "border-emerald-200 bg-emerald-50 text-emerald-800"
         }`}
       >
@@ -246,11 +246,11 @@ export function PhaseProducts({ state, onChange }: Props) {
               onClick={() => toggle(p)}
               className={`group relative overflow-hidden rounded-lg border bg-white text-left transition ${
                 isOn
-                  ? "border-zinc-900 ring-2 ring-zinc-900/15"
-                  : "border-zinc-200 hover:border-zinc-400"
+                  ? "border-mp-coral ring-2 ring-mp-coral/25"
+                  : "border-mp-border hover:border-mp-coral/60"
               }`}
             >
-              <div className="relative aspect-square w-full overflow-hidden bg-zinc-100">
+              <div className="relative aspect-square w-full overflow-hidden bg-mp-cream-alt/60">
                 {p.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -260,15 +260,15 @@ export function PhaseProducts({ state, onChange }: Props) {
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-400">
+                  <div className="flex h-full w-full items-center justify-center text-[10px] text-mp-ink-muted/70">
                     ไม่มีรูป
                   </div>
                 )}
                 <span
                   className={`absolute left-2 top-2 inline-flex h-5 w-5 items-center justify-center rounded border ${
                     isOn
-                      ? "border-zinc-900 bg-zinc-900 text-white"
-                      : "border-zinc-300 bg-white"
+                      ? "border-mp-coral bg-mp-ink text-white"
+                      : "border-mp-border bg-white"
                   }`}
                   aria-hidden
                 >
@@ -286,10 +286,10 @@ export function PhaseProducts({ state, onChange }: Props) {
                 </span>
               </div>
               <div className="space-y-0.5 p-2">
-                <p className="line-clamp-2 text-[11px] leading-tight text-zinc-700">
+                <p className="line-clamp-2 text-[11px] leading-tight text-mp-ink">
                   {p.title}
                 </p>
-                <p className="text-xs font-semibold text-zinc-900">
+                <p className="text-xs font-semibold text-mp-ink">
                   ฿ {p.priceTHB.toLocaleString("th-TH")}
                 </p>
               </div>
@@ -300,12 +300,12 @@ export function PhaseProducts({ state, onChange }: Props) {
           Array.from({ length: 8 }).map((_, i) => (
             <div
               key={`sk-${i}`}
-              className="animate-pulse rounded-lg border border-zinc-200 bg-white"
+              className="animate-pulse rounded-lg border border-mp-border bg-white"
             >
-              <div className="aspect-square w-full bg-zinc-100" />
+              <div className="aspect-square w-full bg-mp-cream-alt/60" />
               <div className="space-y-1 p-2">
-                <div className="h-2 w-3/4 rounded bg-zinc-100" />
-                <div className="h-2 w-1/3 rounded bg-zinc-100" />
+                <div className="h-2 w-3/4 rounded bg-mp-cream-alt/60" />
+                <div className="h-2 w-1/3 rounded bg-mp-cream-alt/60" />
               </div>
             </div>
           ))}
@@ -313,7 +313,7 @@ export function PhaseProducts({ state, onChange }: Props) {
 
       {/* Empty + load-more controls */}
       {!loading && items.length === 0 && (
-        <div className="rounded-md border border-dashed border-zinc-300 px-4 py-10 text-center text-sm text-zinc-500">
+        <div className="rounded-md border border-dashed border-mp-border px-4 py-10 text-center text-sm text-mp-ink-muted">
           ไม่พบสินค้า — ลองคำค้นหาอื่น
         </div>
       )}
@@ -322,14 +322,14 @@ export function PhaseProducts({ state, onChange }: Props) {
           <button
             type="button"
             onClick={() => void loadPage(false, search, page + 1)}
-            className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:border-zinc-400"
+            className="rounded-md border border-mp-border bg-white px-4 py-2 text-sm font-medium text-mp-ink hover:border-mp-coral/60"
           >
             โหลดเพิ่ม (หน้า {page + 1})
           </button>
         </div>
       )}
 
-      <p className="text-[11px] text-zinc-500">
+      <p className="text-[11px] text-mp-ink-muted">
         เพิ่ม / ลบ / แก้ไขสินค้าได้ใน Dashboard หลังจากเปิดร้าน — ระบบจะ
         import + แปลภาษาไทย + แยกหมวดสินค้าให้อัตโนมัติ (ใช้เวลา ~1 วินาที /
         ชิ้น)

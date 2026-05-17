@@ -13,7 +13,7 @@
  * files use `presignUpload` instead and let the browser PUT directly.
  */
 
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomBytes } from "crypto";
 
@@ -105,4 +105,16 @@ export async function presignUpload(args: {
     expiresIn: args.expiresIn ?? 300,
   });
   return { uploadUrl, publicUrl: publicUrlFor(key), key };
+}
+
+// Time-limited GET URL for previewing KYC evidence in the admin queue and
+// the vendor wizard. Works for both public-read and private objects; the
+// presigned URL embeds the auth, so the underlying ACL doesn't matter.
+export async function presignDownload(args: {
+  key: string;
+  expiresIn?: number;
+}): Promise<string> {
+  const c = getClient();
+  const command = new GetObjectCommand({ Bucket: bucket!, Key: args.key });
+  return getSignedUrl(c, command, { expiresIn: args.expiresIn ?? 600 });
 }
