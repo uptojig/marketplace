@@ -131,6 +131,26 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (v !== undefined) (data as Record<string, unknown>)[k] = v;
   }
 
+  // When an admin explicitly picks a theme variant (non-null), nuke the
+  // AI-generated landingBlocks JSON + title + generation timestamp so
+  // the storefront's theme detector takes over the homepage render.
+  // Without this, /stores/[slug]/page.tsx would fall through to the
+  // landingBlocks MultiPageRenderer branch BEFORE reaching the family
+  // detectors — operator picks "taobao" but still sees the old AI page.
+  // Clearing variant (back to null / auto) leaves landingBlocks alone
+  // so re-running the AI agent still works.
+  if (
+    parsed.data.landingThemeVariant !== undefined &&
+    parsed.data.landingThemeVariant !== null &&
+    parsed.data.landingThemeVariant.length > 0
+  ) {
+    (data as Record<string, unknown>).landingBlocks = null;
+    (data as Record<string, unknown>).landingTitle = null;
+    (data as Record<string, unknown>).landingGeneratedAt = null;
+    (data as Record<string, unknown>).landingStatus = null;
+    (data as Record<string, unknown>).landingError = null;
+  }
+
   // Capture before-state for platform email side-effect detection.
   const before = await prisma.store.findUnique({
     where: { id: params.id },
