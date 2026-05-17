@@ -757,54 +757,6 @@ function InfoColumn({
       </div>
 
       <Separator className="bg-[var(--shop-border)]" />
-
-      {/* Rectangular store card — squared, no decorative glow. */}
-      <Card
-        className="rounded-md border bg-white p-4 shadow-none"
-        style={{ borderColor: 'var(--shop-border)' }}
-      >
-        <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12 rounded-md">
-            {store.logoUrl && (
-              <AvatarImage src={store.logoUrl} alt={store.name} />
-            )}
-            <AvatarFallback className="rounded-md">
-              {store.name.slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div
-              className="truncate text-sm font-bold"
-              style={{
-                color: 'var(--shop-ink)',
-                fontFamily: TECH_DISPLAY_FONT,
-              }}
-            >
-              {store.name}
-            </div>
-            <div
-              data-tech-mono="true"
-              className="text-[11px] uppercase"
-              style={{
-                color: 'var(--shop-ink-muted)',
-                fontFamily: TECH_MONO_FONT,
-                letterSpacing: '0.16em',
-                fontWeight: 600,
-              }}
-            >
-              Authorized · Authentic
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="rounded-md border-[var(--shop-primary)] text-[var(--shop-primary)]"
-          >
-            <Link href={storeHref(store.slug)}>View store</Link>
-          </Button>
-        </div>
-      </Card>
     </div>
   );
 }
