@@ -58,6 +58,10 @@ type Family =
   | "lifestyle"
   | "electronics-tech"
   | "specialty"
+  | "everyday"
+  | "taobao"
+  | "packaging"
+  | "community"
   | "default";
 
 const FAMILY_BY_TEMPLATE: Record<TemplateId, Family> = {
@@ -84,9 +88,9 @@ const FAMILY_BY_TEMPLATE: Record<TemplateId, Family> = {
   "eco-pack": "business-model",
   "mega-store": "lifestyle",
   "bikini-beach": "fashion-beauty",
-  "everyday-retail": "default",
-  "taobao-style": "business-model",
-  "packaging-supply": "default",
+  "everyday-retail": "everyday",
+  "taobao-style": "taobao",
+  "packaging-supply": "packaging",
 };
 
 interface FamilyTheme {
@@ -199,6 +203,62 @@ const FAMILY_THEMES: Record<Family, FamilyTheme> = {
     mono: MONO_JET,
     sans: SANS_SYS,
     heading: "serif",
+    radius: "default",
+  },
+  everyday: {
+    bg: "#FAFAFA",
+    surface: "#ffffff",
+    primary: "#DC2626", // red — Shopee-style CTA
+    accent: "#0A0A0A", // dark accent
+    ink: "#0A0A0A",
+    inkMuted: "#737373",
+    border: "#E5E5E5",
+    serif: SERIF_PLAYFAIR,
+    mono: MONO_JET,
+    sans: SANS_SYS,
+    heading: "sans",
+    radius: "default",
+  },
+  taobao: {
+    bg: "#FAFAFA",
+    surface: "#ffffff",
+    primary: "#FF1A1A", // hot red
+    accent: "#FFD600", // golden yellow chip
+    ink: "#0F0F0F",
+    inkMuted: "#525252",
+    border: "#E5E5E5",
+    serif: SERIF_PLAYFAIR,
+    mono: MONO_JET,
+    sans: SANS_SYS,
+    heading: "sans",
+    radius: "default",
+  },
+  packaging: {
+    bg: "#FFFFFF",
+    surface: "#FFF0F6",
+    primary: "#FF4E8B", // vivid hot pink
+    accent: "#FFD93D", // sunshine yellow
+    ink: "#1A1A2E",
+    inkMuted: "#6B7280",
+    border: "#FFE0EC",
+    serif: SERIF_PLAYFAIR,
+    mono: MONO_JET,
+    sans: SANS_SYS,
+    heading: "sans",
+    radius: "round",
+  },
+  community: {
+    bg: "#FAFAFA",
+    surface: "#FAF5FF",
+    primary: "#9333EA", // vivid purple
+    accent: "#EC4899", // pink chip
+    ink: "#0A0A0A",
+    inkMuted: "#525252",
+    border: "#E5E5E5",
+    serif: SERIF_PLAYFAIR,
+    mono: MONO_JET,
+    sans: SANS_SYS,
+    heading: "sans",
     radius: "default",
   },
   default: {
@@ -665,7 +725,15 @@ function HomeMock({
                   ? "#e8dccc"
                   : family === "specialty"
                     ? "#e6d4ba"
-                    : `linear-gradient(135deg, ${t.primary} 0%, ${t.accent} 100%)`,
+                    : family === "taobao"
+                      ? "linear-gradient(135deg, #FF4D00 0%, #FF1A1A 50%, #FF3D8B 100%)"
+                      : family === "community"
+                        ? "linear-gradient(135deg, #9333EA 0%, #EC4899 100%)"
+                        : family === "packaging"
+                          ? t.primary
+                          : family === "everyday"
+                            ? "#0F0F0F"
+                            : `linear-gradient(135deg, ${t.primary} 0%, ${t.accent} 100%)`,
           borderRadius: radiusPx(t.radius, "lg"),
           color: family === "trust" ? t.ink : "#ffffff",
         }}
