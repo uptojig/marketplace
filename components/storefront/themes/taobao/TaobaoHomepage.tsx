@@ -7,12 +7,17 @@
 import type { Store } from '@prisma/client';
 import { SimpleHomepage } from '../_shared/SimpleHomepage';
 import { TAOBAO_TOKENS } from '@/lib/landing/taobao';
+import { templates as STORE_TEMPLATES } from '@/lib/templates/registry';
+import type { TemplateId } from '@/lib/templates/types';
 
 interface Props {
-  store: Pick<Store, 'id' | 'slug' | 'name'>;
+  store: Pick<Store, 'id' | 'slug' | 'name' | 'templateId'>;
 }
 
 export async function TaobaoHomepage({ store }: Props) {
+  const behavior = store.templateId
+    ? STORE_TEMPLATES[store.templateId as TemplateId]?.behavior
+    : undefined;
   return (
     <SimpleHomepage
       store={store}
@@ -21,6 +26,7 @@ export async function TaobaoHomepage({ store }: Props) {
       primaryColor={TAOBAO_TOKENS.primary}
       featuredLabel="🔥 BEST DEALS"
       featuredTitle="ลดทุกวัน · ดีลสุดคุ้ม"
+      behavior={behavior}
     />
   );
 }

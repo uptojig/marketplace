@@ -6,12 +6,17 @@
 
 import type { Store } from '@prisma/client';
 import { SimpleHomepage } from '../_shared/SimpleHomepage';
+import { templates as STORE_TEMPLATES } from '@/lib/templates/registry';
+import type { TemplateId } from '@/lib/templates/types';
 
 interface Props {
-  store: Pick<Store, 'id' | 'slug' | 'name'>;
+  store: Pick<Store, 'id' | 'slug' | 'name' | 'templateId'>;
 }
 
 export async function EverydayHomepage({ store }: Props) {
+  const behavior = store.templateId
+    ? STORE_TEMPLATES[store.templateId as TemplateId]?.behavior
+    : undefined;
   return (
     <SimpleHomepage
       store={store}
@@ -20,6 +25,7 @@ export async function EverydayHomepage({ store }: Props) {
       primaryColor="#DC2626"
       featuredLabel="★ ใหม่ล่าสุด"
       featuredTitle="สินค้ามาใหม่"
+      behavior={behavior}
     />
   );
 }
