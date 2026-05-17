@@ -14,6 +14,9 @@ import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { FashionBeautyCategoryGrid } from "@/components/storefront/themes/fashion-beauty/FashionBeautyCategoryGrid";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { SpecialtyCategoryGrid } from "@/components/storefront/themes/specialty/SpecialtyCategoryGrid";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 
 export const dynamic = "force-dynamic";
 
@@ -143,6 +146,71 @@ export default async function StoreCategoryPage({
             products.length,
         )
       : 0;
+
+  // ── Multi-page template dispatch ────────────────────────────
+  // When the active template ships its own `pages.catalog`
+  // component, defer to it for the single-category view too
+  // (selectedCats narrowed to this URL segment). Keeps the
+  // per-template visual language consistent across the
+  // /category index AND the /category/<name> deep link.
+  const effectiveTpl = effectiveTemplateId(store);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+  const TemplateCatalogPage = template?.pages?.catalog;
+  if (TemplateCatalogPage) {
+    // Build the same shape this file's per-family branching uses
+    // for the catalog template. `categoryCounts` includes both
+    // managed + legacy buckets so the chip rail can render either.
+    const categoryCounts: Record<string, number> = {};
+    for (const c of managedCategories) categoryCounts[c.name] = c.activeProductCount;
+    for (const [name, count] of legacyCountMap) categoryCounts[name] = count;
+    const categoryNames = Object.keys(categoryCounts).sort();
+    return (
+      <TemplateCatalogPage
+        store={{
+          id: store.id,
+          slug: store.slug,
+          name: store.name,
+          description: store.description,
+          tagline: store.tagline,
+          logoUrl: store.logoUrl,
+          bannerUrl: store.bannerUrl,
+          primaryColor: store.primaryColor,
+        }}
+        pageProducts={products.map((p) => ({
+          id: p.id,
+          title: p.titleTh ?? p.title,
+          imageUrl: p.imageUrl,
+          priceTHB: Number(p.priceTHB),
+          compareAtPriceTHB: p.compareAtPriceTHB
+            ? Number(p.compareAtPriceTHB)
+            : null,
+          categoryName: p.categoryName,
+        }))}
+        categoryNames={categoryNames}
+        categoryCounts={categoryCounts}
+        selectedCats={[headerName]}
+        sortKey={sort}
+        currentPage={1}
+        totalPages={1}
+        filteredCount={totalInCategory}
+        buildUrl={(toggleCat) => {
+          // Single-category page — toggling another category means
+          // navigating to that category's URL; clearing returns to
+          // the catalog index.
+          if (!toggleCat) return `/stores/${store.slug}/category`;
+          return `/stores/${store.slug}/category/${encodeURIComponent(toggleCat)}`;
+        }}
+        buildSortUrl={(s) => {
+          const sp = new URLSearchParams();
+          if (s) sp.set("sort", s);
+          const qs = sp.toString();
+          return `/stores/${store.slug}/category/${encodeURIComponent(segment)}${qs ? `?${qs}` : ""}`;
+        }}
+      />
+    );
+  }
 
   // Per-template design family. fashion-beauty (lookbook /
   // beauty-swatch / boutique) renders an editorial portrait grid

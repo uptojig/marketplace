@@ -39,6 +39,8 @@ import { BusinessModelCategoryPage } from "@/components/storefront/themes/busine
 import { LifestyleCategoryPage } from "@/components/storefront/themes/lifestyle/LifestyleCategoryPage";
 import { ElectronicsTechCategoryPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCategoryPage";
 import { SpecialtyCategoryPage } from "@/components/storefront/themes/specialty/SpecialtyCategoryPage";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
@@ -270,6 +272,44 @@ export default async function CategoryIndexPage({
     buildSortUrl,
     filteredCount: totalCount,
   };
+
+  // ── Multi-page template dispatch ────────────────────────────
+  // A template that ships its own `pages.catalog` component
+  // beats the family-bespoke pages below. We hand it the
+  // already-built `sharedCategoryProps` plus the store summary
+  // so the contract matches `CatalogProps` in
+  // lib/templates/types.ts.
+  const effectiveTpl = effectiveTemplateId(store);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+  const TemplateCatalogPage = template?.pages?.catalog;
+  if (TemplateCatalogPage) {
+    return (
+      <TemplateCatalogPage
+        store={{
+          id: store.id,
+          slug: store.slug,
+          name: store.name,
+          description: store.description,
+          tagline: store.tagline,
+          logoUrl: store.logoUrl,
+          bannerUrl: store.bannerUrl,
+          primaryColor: store.primaryColor,
+        }}
+        pageProducts={sharedCategoryProps.pageProducts}
+        categoryNames={sharedCategoryProps.categoryNames}
+        categoryCounts={sharedCategoryProps.categoryCounts}
+        selectedCats={sharedCategoryProps.selectedCats}
+        sortKey={sharedCategoryProps.sortKey}
+        currentPage={sharedCategoryProps.currentPage}
+        totalPages={sharedCategoryProps.totalPages}
+        filteredCount={sharedCategoryProps.filteredCount}
+        buildUrl={sharedCategoryProps.buildUrl}
+        buildSortUrl={sharedCategoryProps.buildSortUrl}
+      />
+    );
+  }
 
   if (isFB) {
     return <FashionBeautyCategoryPage {...sharedCategoryProps} />;

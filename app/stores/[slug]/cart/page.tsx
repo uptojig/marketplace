@@ -14,6 +14,8 @@ import { BusinessModelCartPage } from "@/components/storefront/themes/business-m
 import { LifestyleCartPage } from "@/components/storefront/themes/lifestyle/LifestyleCartPage";
 import { ElectronicsTechCartPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCartPage";
 import { SpecialtyCartPage } from "@/components/storefront/themes/specialty/SpecialtyCartPage";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,9 @@ export default async function StoreCartPage({
       id: true,
       slug: true,
       name: true,
+      description: true,
+      tagline: true,
+      bannerUrl: true,
       logoUrl: true,
       primaryColor: true,
       templateId: true,
@@ -35,6 +40,40 @@ export default async function StoreCartPage({
     },
   });
   if (!store) notFound();
+
+  // ── Multi-page template dispatch ────────────────────────────
+  // When the active template ships a bespoke cart page, defer to
+  // it. Items + totals live client-side in the zustand cart
+  // (lib/store/cart) so the template page is responsible for
+  // reading them via `useCart` exactly like StoreCartClient does.
+  // We only thread server data (store identity + thresholds) so
+  // the contract matches `CartProps` in lib/templates/types.ts.
+  const effectiveTpl = effectiveTemplateId(store);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+  const TemplateCartPage = template?.pages?.cart;
+  if (TemplateCartPage) {
+    return (
+      <TemplateCartPage
+        store={{
+          id: store.id,
+          slug: store.slug,
+          name: store.name,
+          description: store.description,
+          tagline: store.tagline,
+          logoUrl: store.logoUrl,
+          bannerUrl: store.bannerUrl,
+          primaryColor: store.primaryColor,
+        }}
+        // Client-side cart hydrates from zustand inside the
+        // template; server-side we have no items to seed with.
+        items={[]}
+        freeShippingThreshold={990}
+        flatShippingTHB={50}
+      />
+    );
+  }
 
   // Tell the cart client which design family to render under. The
   // .theme-fashion-beauty / .theme-trust / .theme-business-model /

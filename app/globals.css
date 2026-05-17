@@ -1391,6 +1391,60 @@
   aspect-ratio: 4 / 5 !important;
 }
 
+/* ── Bikini Beach template (multi-page template SKELETON) ─────
+   First consumer of the per-template chrome + per-route page
+   architecture. The token bag lives in
+   components/storefront/themes/bikini-beach/tokens.ts; page
+   agents will fill in the chrome + page components downstream.
+
+   Mirrors the structure of .theme-fashion-beauty above but is
+   intentionally sparse — the bespoke chrome / page components
+   own most of the visual treatment, so this block only carries
+   the body font + headline gradient slot that the template needs
+   to be globally available (so anywhere a sub-page lands before
+   the bespoke chrome is wired, the cascade still reads as
+   "bikini beach"). Empty rules are placeholders for the page
+   agents to fill. */
+.theme-bikini-beach {
+  /* TODO: page agents fill — token bag is already CSS-applied
+     via tokensToCssVars(bikiniBeachTokens) in the layout, so
+     no --shop-* slot needs to be re-declared here. */
+}
+
+/* Body font — Nunito (chunky rounded display) per the BIKINI551
+   reference. Falls back to system sans + Noto Sans Thai. */
+.theme-bikini-beach {
+  font-family: var(--font-bikini-body, "Nunito"), "Inter",
+    "Noto Sans Thai", system-ui, sans-serif;
+}
+
+/* Headlines lift into the same Nunito but heavier + tighter so
+   the "BIKINI" wordmark vibe carries to every h1/h2/h3. */
+.theme-bikini-beach h1,
+.theme-bikini-beach h2,
+.theme-bikini-beach h3 {
+  /* TODO: page agents fill — bespoke gradient text effect lives
+     in the per-route chrome / page components (.gradient-text
+     etc. from the reference design). Headline base styles below
+     are a safe default until those land. */
+  font-family: var(--font-bikini-display, "Nunito"), "Inter",
+    "Noto Sans Thai", system-ui, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+/* Headline gradient slot — bespoke components add `.gradient-text`
+   to opt in. Wired here so a page agent can drop in the class and
+   get the sky-to-coral fill without touching globals. */
+.theme-bikini-beach .gradient-text {
+  /* TODO: page agents fill — currently a no-op fallback so the
+     class is safe to use ahead of the full styling pass. */
+  background: var(--grad-summer);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
 /* ── Trust design family (DESIGN-B sibling) ───────────────────
    Activated when app/stores/[slug]/layout.tsx adds the
    `theme-trust` class for stores whose templateId is in

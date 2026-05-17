@@ -28,8 +28,10 @@
 import type { TemplateId } from "@/lib/templates/types";
 
 export const LEGACY_SLUG_TEMPLATE: Record<string, TemplateId> = {
-  // Swimwear / bikini boutique → editorial soft-feminine
-  bikini551: "lookbook",
+  // Swimwear / bikini boutique → first consumer of the
+  // multi-page template architecture (chrome + per-route page
+  // components). See lib/templates/types.ts for the contract.
+  bikini551: "bikini-beach",
   // Kids cartoon merch / playful tile-led → lifestyle kids-toys
   powerpuff678: "kids-toys",
   // Ergonomic body / wellness gear → lifestyle sport-active
