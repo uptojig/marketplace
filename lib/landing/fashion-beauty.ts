@@ -174,6 +174,7 @@ export const FASHION_BEAUTY_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<Temp
   'lookbook',
   'beauty-swatch',
   'boutique',
+  'bikini-beach',
 ]);
 
 /**

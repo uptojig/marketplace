@@ -194,6 +194,7 @@ export const BUSINESS_MODEL_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<Temp
   'wholesale-b2b',
   'flash-deal',
   'subscription',
+  'eco-pack',
 ]);
 
 /**
