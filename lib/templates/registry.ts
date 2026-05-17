@@ -357,6 +357,30 @@ export const templates: Record<TemplateId, Template> = {
     gating: {},
     customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
   },
+
+  // Bikini Beach — first consumer of the multi-page template
+  // architecture (chrome + per-route page components live on the
+  // Template). Page agents fill `chrome` + `pages` in a follow-up
+  // PR. Until then the registry entry is just the standard scaffold
+  // shape so the store renders via the existing block dispatcher.
+  'bikini-beach': {
+    id: 'bikini-beach',
+    name: 'Bikini Beach',
+    description: 'ชุดว่ายน้ำ ทะเลใส โทนสด',
+    group: 'fashion-beauty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'portrait', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'collection', variant: 'lookbook', data: { layout: 'magazine' }, id: 'collections' },
+      { type: 'product', variant: 'editorial', id: 'products' },
+    ],
+    desktopPattern: 'A',
+    theme: themePresets.lookbook,
+    behavior: { bottomNav: 'visible', hideRatingsCount: true },
+    gating: {},
+    customizable: { canReorder: true, canHideBlocks: ['collection'], canAddBlocks: ['story'] },
+    // chrome + pages intentionally absent — page agents own those.
+  },
 };
 
 export function getTemplate(id: TemplateId): Template {
@@ -392,7 +416,7 @@ export function getRecommendedTemplates(niche: string, limit = 3): Template[] {
 
 export const templateGroups: Record<string, TemplateId[]> = {
   trust: ['classic', 'official-brand', 'premium-luxury'],
-  'fashion-beauty': ['lookbook', 'beauty-swatch', 'boutique'],
+  'fashion-beauty': ['lookbook', 'beauty-swatch', 'boutique', 'bikini-beach'],
   'electronics-tech': ['catalog-dense', 'tech-compare', 'single-product'],
   lifestyle: ['home-living', 'sport-active', 'kids-toys'],
   community: ['live-commerce', 'video-feed', 'storyteller'],

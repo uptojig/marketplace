@@ -39,6 +39,8 @@ import { BusinessModelCategoryPage } from "@/components/storefront/themes/busine
 import { LifestyleCategoryPage } from "@/components/storefront/themes/lifestyle/LifestyleCategoryPage";
 import { ElectronicsTechCategoryPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCategoryPage";
 import { SpecialtyCategoryPage } from "@/components/storefront/themes/specialty/SpecialtyCategoryPage";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
