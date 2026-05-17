@@ -130,7 +130,29 @@ function TemplateCard({
   );
 }
 
+// Templates that ship a real designer-rendered preview PNG under
+// /public/templates/{id}-preview.png — picker shows the image instead
+// of the CSS schematic. Used for full mini-app templates where the
+// designer hands us a 4:3 hero shot. Other templates fall through to
+// the schematic <Thumb> switch below.
+const TEMPLATES_WITH_PREVIEW: ReadonlySet<TemplateId> = new Set<TemplateId>([
+  "bikini-beach",
+  "eco-pack",
+  "mega-store",
+]);
+
 function TemplateThumb({ id }: { id: TemplateId }) {
+  if (TEMPLATES_WITH_PREVIEW.has(id)) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- picker card thumbnails are user-uploaded assets served from /public; next/image's blur shimmer + sizing hurt more than it helps for a 200px schematic preview.
+      <img
+        src={`/templates/${id}-preview.png`}
+        alt=""
+        className="h-full w-full object-cover"
+        loading="lazy"
+      />
+    );
+  }
   // Schematic thumbnail showing the dominant pattern of each template.
   switch (id) {
     case "classic":
@@ -177,6 +199,14 @@ function TemplateThumb({ id }: { id: TemplateId }) {
       return <Thumb header band="lifestyle" body="grid-2" />;
     case "mega-store":
       return <Thumb header band="chips" body="grid-3-dense" />;
+    case "bikini-beach":
+      return <Thumb header band="portrait" body="grid-2-edit" />;
+    case "everyday-retail":
+      return <Thumb header band="cover" body="grid-2" />;
+    case "taobao-style":
+      return <Thumb header band="countdown" body="grid-3-dense" />;
+    case "packaging-supply":
+      return <Thumb header band="cover" body="grid-2" />;
   }
 }
 
