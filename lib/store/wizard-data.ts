@@ -63,7 +63,8 @@ export type TemplateId =
   | "handmade"
   | "vintage"
   | "eco-pack"
-  | "mega-store";
+  | "mega-store"
+  | "bikini-beach";
 
 export type TemplateGroup =
   | "trust"
@@ -329,6 +330,15 @@ export const TEMPLATES: Template[] = [
     desktopPattern: "B",
     theme: { spacing: "compact", radius: "default", titleScale: "compact", font: "sans" },
     behavior: { coverHidden: true, searchInTopBar: true, productGridDensity: "dense" },
+  },
+  {
+    id: "bikini-beach",
+    name: "BIKINI 551",
+    description: "ชุดว่ายน้ำ ทะเลใส โทนสด · บีกีนี่สำหรับสาวเอเชีย",
+    group: "fashion-beauty",
+    desktopPattern: "A",
+    theme: { spacing: "default", radius: "round", titleScale: "display", font: "sans-display" },
+    behavior: { heroSize: "portrait", hideRatingsCount: true },
   },
 ];
 

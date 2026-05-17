@@ -13,6 +13,19 @@ import {
   EcoPackHelpAdapter,
 } from '@/components/storefront/themes/eco-pack/adapters';
 import {
+  BikiniHeaderAdapter,
+  BikiniFooterAdapter,
+  BikiniStripAdapter,
+  BikiniHomepageAdapter,
+  BikiniCatalogAdapter,
+  BikiniProductDetailAdapter,
+  BikiniCartAdapter,
+  BikiniCheckoutAdapter,
+  BikiniLookbookAdapter,
+  BikiniAboutAdapter,
+  BikiniHelpAdapter,
+} from '@/components/storefront/themes/bikini-beach/adapters';
+import {
   MegaStoreHeaderAdapter,
   MegaStoreFooterAdapter,
   MegaStoreStripAdapter,
@@ -382,15 +395,15 @@ export const templates: Record<TemplateId, Template> = {
     customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
   },
 
-  // Bikini Beach — first consumer of the multi-page template
-  // architecture (chrome + per-route page components live on the
-  // Template). Page agents fill `chrome` + `pages` in a follow-up
-  // PR. Until then the registry entry is just the standard scaffold
-  // shape so the store renders via the existing block dispatcher.
+  // Bikini Beach — full multi-page template (chrome + every per-route
+  // page including the bespoke Lookbook editorial). BIKINI551 designer
+  // deliverable, fashion-beauty group. Adapters translate scaffold
+  // Props → designer Props; Cart + Checkout are client-side and read
+  // useCart() for items + handlers.
   'bikini-beach': {
     id: 'bikini-beach',
-    name: 'Bikini Beach',
-    description: 'ชุดว่ายน้ำ ทะเลใส โทนสด',
+    name: 'BIKINI 551',
+    description: 'ชุดว่ายน้ำ ทะเลใส โทนสด · บีกีนี่สำหรับสาวเอเชีย',
     group: 'fashion-beauty',
     mobileBlocks: [
       { type: 'hero', variant: 'portrait', id: 'hero' },
@@ -403,7 +416,21 @@ export const templates: Record<TemplateId, Template> = {
     behavior: { bottomNav: 'visible', hideRatingsCount: true },
     gating: {},
     customizable: { canReorder: true, canHideBlocks: ['collection'], canAddBlocks: ['story'] },
-    // chrome + pages intentionally absent — page agents own those.
+    chrome: {
+      Header: BikiniHeaderAdapter,
+      Footer: BikiniFooterAdapter,
+      AnnouncementStrip: BikiniStripAdapter,
+    },
+    pages: {
+      home: BikiniHomepageAdapter,
+      catalog: BikiniCatalogAdapter,
+      pdp: BikiniProductDetailAdapter,
+      cart: BikiniCartAdapter,
+      checkout: BikiniCheckoutAdapter,
+      lookbook: BikiniLookbookAdapter,
+      about: BikiniAboutAdapter,
+      help: BikiniHelpAdapter,
+    },
   },
 
   // Eco Pack — first full multi-page template (chrome + every per-route

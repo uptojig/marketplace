@@ -83,6 +83,7 @@ const FAMILY_BY_TEMPLATE: Record<TemplateId, Family> = {
   storyteller: "default",
   "eco-pack": "business-model",
   "mega-store": "lifestyle",
+  "bikini-beach": "fashion-beauty",
 };
 
 interface FamilyTheme {
