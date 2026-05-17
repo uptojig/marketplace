@@ -35,6 +35,11 @@ import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isEverydayStore } from "@/lib/landing/everyday";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { isPackagingStore } from "@/lib/landing/packaging";
+import { isCommunityStore } from "@/lib/landing/community";
+import { ThemeRibbon } from "@/components/storefront/themes/_shared/ThemeRibbon";
 import { SpecialtyStamp } from "@/components/storefront/themes/specialty/SpecialtyDivider";
 import { FashionBeautyOrderSuccessPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyOrderSuccessPage";
 import { TrustOrderSuccessPage } from "@/components/storefront/themes/trust/TrustOrderSuccessPage";
@@ -173,6 +178,16 @@ export default async function StoreOrderSuccess({
         landingThemeVariant: order.store.landingThemeVariant,
       })
     : false;
+  const slimKey = order.store
+    ? {
+        templateId: effectiveTemplateId(order.store),
+        landingThemeVariant: order.store.landingThemeVariant,
+      }
+    : { templateId: null, landingThemeVariant: null };
+  const isEveryday = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && isEverydayStore(slimKey);
+  const isTaobao = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && isTaobaoStore(slimKey);
+  const isPackaging = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && isPackagingStore(slimKey);
+  const isCommunity = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && !isPackaging && isCommunityStore(slimKey);
 
   const today = new Date();
   const eta1 = new Date(today.getTime() + 1 * 86400000);
@@ -223,6 +238,13 @@ export default async function StoreOrderSuccess({
 
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
+      <ThemeRibbon
+        variant="order-success"
+        isEveryday={isEveryday}
+        isTaobao={isTaobao}
+        isPackaging={isPackaging}
+        isCommunity={isCommunity}
+      />
       <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
         {/* Hero — success state. Seven flavors: default soft-rose, FB
             editorial italic, trust stamped heritage, business-model
