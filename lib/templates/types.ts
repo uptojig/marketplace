@@ -101,7 +101,9 @@ export type TemplateId =
   | 'subscription'
   | 'handmade'
   | 'vintage'
-  | 'bikini-beach';
+  | 'bikini-beach'
+  | 'eco-pack'
+  | 'mega-store';
 
 export type DesktopPattern = 'A' | 'B' | 'C' | 'D';
 

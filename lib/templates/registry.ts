@@ -1,5 +1,29 @@
 import type { Template, TemplateId } from './types';
 import { defaultTheme, themePresets } from './theme';
+import {
+  EcoPackHeaderAdapter,
+  EcoPackFooterAdapter,
+  EcoPackStripAdapter,
+  EcoPackHomepageAdapter,
+  EcoPackCatalogAdapter,
+  EcoPackProductDetailAdapter,
+  EcoPackCartAdapter,
+  EcoPackCheckoutAdapter,
+  EcoPackAboutAdapter,
+  EcoPackHelpAdapter,
+} from '@/components/storefront/themes/eco-pack/adapters';
+import {
+  MegaStoreHeaderAdapter,
+  MegaStoreFooterAdapter,
+  MegaStoreStripAdapter,
+  MegaStoreHomepageAdapter,
+  MegaStoreCatalogAdapter,
+  MegaStoreProductDetailAdapter,
+  MegaStoreCartAdapter,
+  MegaStoreCheckoutAdapter,
+  MegaStoreAboutAdapter,
+  MegaStoreHelpAdapter,
+} from '@/components/storefront/themes/mega-store/adapters';
 
 export const templates: Record<TemplateId, Template> = {
   classic: {
@@ -381,6 +405,77 @@ export const templates: Record<TemplateId, Template> = {
     customizable: { canReorder: true, canHideBlocks: ['collection'], canAddBlocks: ['story'] },
     // chrome + pages intentionally absent — page agents own those.
   },
+
+  // Eco Pack — first full multi-page template (chrome + every per-route
+  // page). Sustainable packaging vertical, business-model group. Adapters
+  // translate scaffold Props → designer Props; Cart + Checkout are
+  // client-side and read useCart() for items + handlers.
+  'eco-pack': {
+    id: 'eco-pack',
+    name: 'Eco Pack',
+    description: 'บรรจุภัณฑ์รักษ์โลก มินิมอล โทนธรรมชาติ และคราฟท์',
+    group: 'business-model',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'category', variant: 'anchor-circles', id: 'cats' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: themePresets.classic,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: EcoPackHeaderAdapter,
+      Footer: EcoPackFooterAdapter,
+      AnnouncementStrip: EcoPackStripAdapter,
+    },
+    pages: {
+      home: EcoPackHomepageAdapter,
+      catalog: EcoPackCatalogAdapter,
+      pdp: EcoPackProductDetailAdapter,
+      cart: EcoPackCartAdapter,
+      checkout: EcoPackCheckoutAdapter,
+      about: EcoPackAboutAdapter,
+      help: EcoPackHelpAdapter,
+    },
+  },
+
+  // Mega Store — Taobao-style high-density storefront, lifestyle group.
+  // Adapters translate scaffold Props → designer Props; Cart + Checkout
+  // are client-side and read useCart() for items + handlers.
+  'mega-store': {
+    id: 'mega-store',
+    name: 'Mega Store',
+    description: 'ร้านค้าสายช้อป อารมณ์ Taobao ของเยอะ โปรแน่น สีสันสดใส',
+    group: 'lifestyle',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'category', variant: 'chips', id: 'cats' },
+      { type: 'product', variant: 'grid-3-dense', id: 'products' },
+    ],
+    desktopPattern: 'B',
+    theme: themePresets.catalog,
+    behavior: { bottomNav: 'visible', searchInTopBar: true, productGridDensity: 'dense' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: MegaStoreHeaderAdapter,
+      Footer: MegaStoreFooterAdapter,
+      AnnouncementStrip: MegaStoreStripAdapter,
+    },
+    pages: {
+      home: MegaStoreHomepageAdapter,
+      catalog: MegaStoreCatalogAdapter,
+      pdp: MegaStoreProductDetailAdapter,
+      cart: MegaStoreCartAdapter,
+      checkout: MegaStoreCheckoutAdapter,
+      about: MegaStoreAboutAdapter,
+      help: MegaStoreHelpAdapter,
+    },
+  },
 };
 
 export function getTemplate(id: TemplateId): Template {
@@ -418,8 +513,8 @@ export const templateGroups: Record<string, TemplateId[]> = {
   trust: ['classic', 'official-brand', 'premium-luxury'],
   'fashion-beauty': ['lookbook', 'beauty-swatch', 'boutique', 'bikini-beach'],
   'electronics-tech': ['catalog-dense', 'tech-compare', 'single-product'],
-  lifestyle: ['home-living', 'sport-active', 'kids-toys'],
+  lifestyle: ['home-living', 'sport-active', 'kids-toys', 'mega-store'],
   community: ['live-commerce', 'video-feed', 'storyteller'],
-  'business-model': ['wholesale-b2b', 'flash-deal', 'subscription'],
+  'business-model': ['wholesale-b2b', 'flash-deal', 'subscription', 'eco-pack'],
   specialty: ['handmade', 'vintage'],
 };

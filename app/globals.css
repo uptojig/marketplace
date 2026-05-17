@@ -2145,3 +2145,85 @@
 .theme-mini-mops .bg-gray-50 {
   background-color: #f9fafb !important;
 }
+
+/* ── Eco Pack template ─────────────────────────────────────────
+   Kraft-brown + warm off-white + emerald accent for the
+   sustainable-packaging multi-page template. Token bag is
+   applied via tokensToCssVars(ecoPackTokens) in the layout —
+   the rules below only add the body-scoped vars + subtle
+   interactions the designer shipped in theme.css. */
+.theme-eco-pack {
+  --shop-primary: #8C6239;
+  --shop-bg: #FAFAF9;
+  --shop-card: #FFFFFF;
+  --shop-ink: #292524;
+  --shop-ink-muted: #78716C;
+  --shop-border: #E7E5E4;
+  --shop-accent: #10B981;
+
+  --eco-kraft: #D4A373;
+  --eco-kraft-dark: #5C4033;
+
+  background-color: var(--shop-bg);
+  color: var(--shop-ink);
+}
+
+.theme-eco-pack a {
+  transition: color 0.2s ease-in-out;
+}
+
+.theme-eco-pack button {
+  transition:
+    transform 0.1s ease-in-out,
+    opacity 0.2s ease-in-out;
+}
+
+.theme-eco-pack button:active {
+  transform: scale(0.98);
+}
+
+/* ── Mega Store template ───────────────────────────────────────
+   Vibrant Taobao orange + tmall red on light-gray surface for
+   the high-density storefront template. Token bag is applied via
+   tokensToCssVars(megaStoreTokens) in the layout. */
+.theme-mega-store {
+  --shop-primary: #FF5000;
+  --shop-bg: #F4F4F4;
+  --shop-card: #FFFFFF;
+  --shop-ink: #333333;
+  --shop-ink-muted: #999999;
+  --shop-border: #EEEEEE;
+  --shop-accent: #FF0036;
+
+  --mega-highlight: #FFF0E5;
+  --mega-gradient-btn: linear-gradient(90deg, #FF9000 0%, #FF5000 100%);
+  --mega-gradient-accent: linear-gradient(90deg, #FF5000 0%, #FF0036 100%);
+
+  background-color: var(--shop-bg);
+  color: var(--shop-ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-mega-store a {
+  transition: color 0.1s ease-in-out;
+}
+
+.theme-mega-store button {
+  transition:
+    transform 0.1s ease-in-out,
+    opacity 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+}
+
+.theme-mega-store button:active {
+  transform: scale(0.97);
+}
+
+/* Hide scrollbar for horizontal scrolling areas */
+.theme-mega-store .hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.theme-mega-store .hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

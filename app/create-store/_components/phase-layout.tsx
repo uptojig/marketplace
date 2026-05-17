@@ -30,7 +30,7 @@ export function PhaseLayout({ state, onChange }: Props) {
         <p className="text-sm text-zinc-600">
           {state.identity.niche
             ? "แนะนำตามหมวดที่คุณเลือก · ดูพรีวิวจริงด้านขวา"
-            : "เลือกได้ทั้งหมด 20 แบบ"}
+            : "เลือกได้ทั้งหมด 22 แบบ"}
         </p>
       </header>
 
@@ -65,7 +65,7 @@ export function PhaseLayout({ state, onChange }: Props) {
         >
           {showAll
             ? `↑ ซ่อนแม่แบบทั้งหมด`
-            : `↓ ดูทั้งหมด 20 เลย์เอาต์ (อีก ${others.length})`}
+            : `↓ ดูทั้งหมด 22 เลย์เอาต์ (อีก ${others.length})`}
         </button>
 
         {showAll && (
@@ -173,6 +173,10 @@ function TemplateThumb({ id }: { id: TemplateId }) {
       return <Thumb header band="portrait" body="story-grid" />;
     case "vintage":
       return <Thumb header band="cover" body="grid-2-badges" />;
+    case "eco-pack":
+      return <Thumb header band="lifestyle" body="grid-2" />;
+    case "mega-store":
+      return <Thumb header band="chips" body="grid-3-dense" />;
   }
 }
 

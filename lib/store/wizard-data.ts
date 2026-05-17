@@ -61,7 +61,9 @@ export type TemplateId =
   | "flash-deal"
   | "subscription"
   | "handmade"
-  | "vintage";
+  | "vintage"
+  | "eco-pack"
+  | "mega-store";
 
 export type TemplateGroup =
   | "trust"
@@ -309,6 +311,24 @@ export const TEMPLATES: Template[] = [
     desktopPattern: "B",
     theme: { spacing: "default", radius: "sharp", titleScale: "default", font: "serif" },
     behavior: { conditionBadges: true, uniqueItemMode: true },
+  },
+  {
+    id: "eco-pack",
+    name: "Eco Pack",
+    description: "บรรจุภัณฑ์รักษ์โลก มินิมอล โทนธรรมชาติ และคราฟท์",
+    group: "business-model",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { heroSize: "cover" },
+  },
+  {
+    id: "mega-store",
+    name: "Mega Store",
+    description: "ร้านค้าสายช้อป อารมณ์ Taobao ของเยอะ โปรแน่น สีสันสดใส",
+    group: "lifestyle",
+    desktopPattern: "B",
+    theme: { spacing: "compact", radius: "default", titleScale: "compact", font: "sans" },
+    behavior: { coverHidden: true, searchInTopBar: true, productGridDensity: "dense" },
   },
 ];
 

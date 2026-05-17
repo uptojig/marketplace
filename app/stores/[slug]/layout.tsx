@@ -71,6 +71,8 @@ import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
 import type { TemplateId } from "@/lib/templates/types";
 import { bikiniBeachTokens } from "@/components/storefront/themes/bikini-beach/tokens";
+import { ecoPackTokens } from "@/components/storefront/themes/eco-pack/tokens";
+import { megaStoreTokens } from "@/components/storefront/themes/mega-store/tokens";
 
 export const dynamic = "force-dynamic";
 
@@ -448,6 +450,28 @@ export default async function ShopLayout({
   const bikiniVars = isBikiniBeach ? bikiniBeachTokens : {};
   const bikiniClass = isBikiniBeach ? "theme-bikini-beach" : "";
 
+  // Eco Pack token bag — kraft brown + warm off-white + emerald accent.
+  // Layered the same way bikini-beach does: tokens flow into the wrapper
+  // div's style, and the `.theme-eco-pack` body class scopes the bespoke
+  // selectors in globals.css.
+  const isEcoPack = effectiveTemplateId(store) === "eco-pack";
+  const ecoPackVars = isEcoPack ? ecoPackTokens : {};
+  const ecoPackClass = isEcoPack ? "theme-eco-pack" : "";
+
+  // Mega Store token bag — Taobao orange + tmall red on light-gray surface.
+  const isMegaStore = effectiveTemplateId(store) === "mega-store";
+  const megaStoreVars = isMegaStore ? megaStoreTokens : {};
+  const megaStoreClass = isMegaStore ? "theme-mega-store" : "";
+
+  // Combined per-template-skin extras layered above the family vars so
+  // the bespoke `--eco-*` / `--mega-*` / `--bikini-*` accents win on the
+  // pages that consume them. Only one of these flags can be true since
+  // effectiveTemplateId returns a single value.
+  const templateSkinVars = { ...bikiniVars, ...ecoPackVars, ...megaStoreVars };
+  const templateSkinClass = [bikiniClass, ecoPackClass, megaStoreClass]
+    .filter(Boolean)
+    .join(" ");
+
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality
   //     comes from a token preset keyed off the template id (accent,
@@ -477,8 +501,8 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}${bikiniClass ? ` ${bikiniClass}` : ""}`}
-        style={{ ...tokensToCssVars(tokens), ...familyVars, ...bikiniVars, ...operatorPrimaryOverride }}
+        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}${templateSkinClass ? ` ${templateSkinClass}` : ""}`}
+        style={{ ...tokensToCssVars(tokens), ...familyVars, ...templateSkinVars, ...operatorPrimaryOverride }}
       >
         {TemplateStrip ? (
           <TemplateStrip storeName={store.name} />
@@ -576,8 +600,8 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass} ${bikiniClass}`.trim()}
-        style={{ ...tokensToCssVars(tokens), ...familyVars, ...bikiniVars, ...operatorPrimaryOverride }}
+        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass} ${templateSkinClass}`.trim()}
+        style={{ ...tokensToCssVars(tokens), ...familyVars, ...templateSkinVars, ...operatorPrimaryOverride }}
       >
         {TemplateStrip ? (
           <TemplateStrip storeName={store.name} />

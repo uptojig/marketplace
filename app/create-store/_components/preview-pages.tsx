@@ -81,6 +81,8 @@ const FAMILY_BY_TEMPLATE: Record<TemplateId, Family> = {
   "live-commerce": "default",
   "video-feed": "default",
   storyteller: "default",
+  "eco-pack": "business-model",
+  "mega-store": "lifestyle",
 };
 
 interface FamilyTheme {
