@@ -8,6 +8,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +21,31 @@ export default async function AboutPage({
 }) {
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
+
+  // ── Multi-page template dispatch ────────────────────────────
+  // Bespoke about page from the template registry beats the v12
+  // schema renderer + the simple fallback below.
+  const effectiveTpl = effectiveTemplateId(store);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+  const TemplateAboutPage = template?.pages?.about;
+  if (TemplateAboutPage) {
+    return (
+      <TemplateAboutPage
+        store={{
+          id: store.id,
+          slug: store.slug,
+          name: store.name,
+          description: store.description,
+          tagline: store.tagline,
+          logoUrl: store.logoUrl,
+          bannerUrl: store.bannerUrl,
+          primaryColor: store.primaryColor,
+        }}
+      />
+    );
+  }
 
   // Only render if store has v12 multi-page schema with an "about" page
   if (

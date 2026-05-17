@@ -11,6 +11,8 @@ import {
   slugify,
   type WizardState,
 } from "@/lib/store/wizard-data";
+import { templates as TEMPLATE_REGISTRY } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 
 /** Hard cap on Phase 3 picks. CJ throttles ~1 req/sec, so 20 selected
  *  → ~22s wizard submit. Anything bigger (e.g. the 50-pack) imports
@@ -84,6 +86,15 @@ export async function createStoreFromWizard(
 
   const palette = getPalette(state.identity.paletteId);
 
+  // Map the chosen template's group to landingThemeVariant so the store
+  // is explicitly committed to a theme at create time. The is<Theme>Store
+  // detectors already infer family from templateId, but writing the
+  // variant out lets the admin theme picker show "what theme are we on"
+  // and lets operators override later without changing templateId.
+  const templateGroup = state.layout.templateId
+    ? TEMPLATE_REGISTRY[state.layout.templateId as TemplateId]?.group ?? null
+    : null;
+
   const store = await prisma.store.create({
     data: {
       ownerId,
@@ -96,6 +107,7 @@ export async function createStoreFromWizard(
       niche: state.identity.niche,
       brandVoice: state.identity.brandVoice,
       templateId: state.layout.templateId,
+      landingThemeVariant: templateGroup,
       paletteId: state.identity.paletteId,
       contactPhone: nonEmpty(state.identity.contact.phone),
       contactEmail: nonEmpty(state.identity.contact.email),

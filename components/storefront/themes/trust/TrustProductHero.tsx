@@ -605,50 +605,6 @@ function InfoColumn({
 
       <Separator className="bg-[var(--shop-border)]" />
 
-      {/* Squared store card — no rounded glow. */}
-      <Card
-        className="rounded-sm border bg-white p-4 shadow-none"
-        style={{ borderColor: 'var(--shop-border)' }}
-      >
-        <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12 rounded-sm">
-            {store.logoUrl && <AvatarImage src={store.logoUrl} alt={store.name} />}
-            <AvatarFallback className="rounded-sm">
-              {store.name.slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div
-              className="truncate text-sm font-semibold"
-              style={{
-                color: 'var(--shop-ink)',
-                fontFamily: TRUST_DISPLAY_FONT,
-              }}
-            >
-              {store.name}
-            </div>
-            <div
-              className="text-xs uppercase"
-              style={{
-                color: 'var(--shop-ink-muted)',
-                letterSpacing: '0.22em',
-                fontWeight: 600,
-              }}
-            >
-              Maison · Heritage House
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="rounded-sm border-[var(--shop-ink)]"
-          >
-            <Link href={storeHref(store.slug)}>ดูร้าน</Link>
-          </Button>
-        </div>
-      </Card>
-
       {/* Serif-label trust strip — heritage department-store feel.
           Two-line address card and concierge note replace FB's italic
           row. Squared icons, no pill. */}

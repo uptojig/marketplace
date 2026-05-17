@@ -12,6 +12,7 @@ import {
   Outfit,
   Fraunces,
   Caveat,
+  Nunito,
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -160,6 +161,19 @@ const caveat = Caveat({
   display: "swap",
 });
 
+// Body font for the BIKINI 551 swimwear template (bikini-beach).
+// Designer reference (`/tmp/bikini-v2/bikini-551/README.md`) specifies
+// Nunito 400/600/700/800/900 — rounded sans, summery + friendly. Loaded
+// as a CSS variable so only `.theme-bikini-beach` opts in via the
+// `font-family: var(--font-bikini-body, …)` declaration in
+// `app/globals.css`; the rest of the app pays zero cost.
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800", "900"],
+  variable: "--font-bikini-body",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Marketplace",
   description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
@@ -171,7 +185,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="th"
       data-theme="marketplace-fantasy"
-      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, outfit.variable, jetBrainsMono.variable, interTight.variable, jetBrainsMonoTech.variable, fraunces.variable, caveat.variable, "font-sans", inter.variable)}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, outfit.variable, jetBrainsMono.variable, interTight.variable, jetBrainsMonoTech.variable, fraunces.variable, caveat.variable, nunito.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>

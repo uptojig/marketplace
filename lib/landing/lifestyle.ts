@@ -203,6 +203,7 @@ export const LIFESTYLE_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateI
   'home-living',
   'sport-active',
   'kids-toys',
+  'mega-store',
 ]);
 
 /**

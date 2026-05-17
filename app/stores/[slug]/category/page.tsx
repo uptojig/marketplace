@@ -29,6 +29,11 @@ import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isEverydayStore } from "@/lib/landing/everyday";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { isPackagingStore } from "@/lib/landing/packaging";
+import { isCommunityStore } from "@/lib/landing/community";
+import { ThemeRibbon } from "@/components/storefront/themes/_shared/ThemeRibbon";
 import { TrustCategoryGrid } from "@/components/storefront/themes/trust/TrustCategoryGrid";
 import { BusinessModelCategoryGrid } from "@/components/storefront/themes/business-model/BusinessModelCategoryGrid";
 import { LifestyleCategoryGrid } from "@/components/storefront/themes/lifestyle/LifestyleCategoryGrid";
@@ -39,6 +44,8 @@ import { BusinessModelCategoryPage } from "@/components/storefront/themes/busine
 import { LifestyleCategoryPage } from "@/components/storefront/themes/lifestyle/LifestyleCategoryPage";
 import { ElectronicsTechCategoryPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCategoryPage";
 import { SpecialtyCategoryPage } from "@/components/storefront/themes/specialty/SpecialtyCategoryPage";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
@@ -131,6 +138,22 @@ export default async function CategoryIndexPage({
     landingThemeVariant: store.landingThemeVariant,
   });
   const isElectronicsTech = !isFB && !isTrust && !isBM && !isLifestyle && isElectronicsTechStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isEveryday = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && isEverydayStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isTaobao = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isEveryday && isTaobaoStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isPackaging = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isEveryday && !isTaobao && isPackagingStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isCommunity = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isEveryday && !isTaobao && !isPackaging && isCommunityStore({
     templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
@@ -271,6 +294,44 @@ export default async function CategoryIndexPage({
     filteredCount: totalCount,
   };
 
+  // ── Multi-page template dispatch ────────────────────────────
+  // A template that ships its own `pages.catalog` component
+  // beats the family-bespoke pages below. We hand it the
+  // already-built `sharedCategoryProps` plus the store summary
+  // so the contract matches `CatalogProps` in
+  // lib/templates/types.ts.
+  const effectiveTpl = effectiveTemplateId(store);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+  const TemplateCatalogPage = template?.pages?.catalog;
+  if (TemplateCatalogPage) {
+    return (
+      <TemplateCatalogPage
+        store={{
+          id: store.id,
+          slug: store.slug,
+          name: store.name,
+          description: store.description,
+          tagline: store.tagline,
+          logoUrl: store.logoUrl,
+          bannerUrl: store.bannerUrl,
+          primaryColor: store.primaryColor,
+        }}
+        pageProducts={sharedCategoryProps.pageProducts}
+        categoryNames={sharedCategoryProps.categoryNames}
+        categoryCounts={sharedCategoryProps.categoryCounts}
+        selectedCats={sharedCategoryProps.selectedCats}
+        sortKey={sharedCategoryProps.sortKey}
+        currentPage={sharedCategoryProps.currentPage}
+        totalPages={sharedCategoryProps.totalPages}
+        filteredCount={sharedCategoryProps.filteredCount}
+        buildUrl={sharedCategoryProps.buildUrl}
+        buildSortUrl={sharedCategoryProps.buildSortUrl}
+      />
+    );
+  }
+
   if (isFB) {
     return <FashionBeautyCategoryPage {...sharedCategoryProps} />;
   }
@@ -296,6 +357,20 @@ export default async function CategoryIndexPage({
     return <SpecialtyCategoryPage {...sharedCategoryProps} />;
   }
 
+  // Slim themes (everyday / taobao / packaging / community) — render
+  // the default category UI prefixed with a theme-specific ribbon so
+  // the catalog still reads as the chosen theme without needing a
+  // fully bespoke <ThemeCategoryPage />.
+  const slimRibbon = (
+    <ThemeRibbon
+      variant="category"
+      isEveryday={isEveryday}
+      isTaobao={isTaobao}
+      isPackaging={isPackaging}
+      isCommunity={isCommunity}
+    />
+  );
+
   // Pet-house brand hero band — when fluffyhouse-style stores land on
   // the catalog with one of the 4 Shop-by-Type pseudo-slugs active,
   // surface the matching SVG icon + Thai name + result count above
@@ -310,6 +385,7 @@ export default async function CategoryIndexPage({
 
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">
+      {slimRibbon}
       {showPetHouseHero && (
         <PetHouseCategoryFilterHero
           selectedCats={selectedCats}

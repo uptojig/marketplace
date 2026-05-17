@@ -81,6 +81,12 @@ const FAMILY_BY_TEMPLATE: Record<TemplateId, Family> = {
   "live-commerce": "default",
   "video-feed": "default",
   storyteller: "default",
+  "eco-pack": "business-model",
+  "mega-store": "lifestyle",
+  "bikini-beach": "fashion-beauty",
+  "everyday-retail": "default",
+  "taobao-style": "business-model",
+  "packaging-supply": "default",
 };
 
 interface FamilyTheme {
@@ -426,6 +432,10 @@ export function PageMockup({
   const title = familyTitle(family, page, displayName);
   const headingFont =
     t.heading === "serif" ? t.serif : t.heading === "mono" ? t.mono : t.sans;
+  // Behavior flags drive template-level variation inside the same family
+  // (e.g. official-brand vs classic vs premium-luxury — all "trust"). The
+  // home mock reads these so templates differ visibly in the wizard preview.
+  const b = template?.behavior ?? {};
 
   const shell = (children: React.ReactNode) => (
     <div
@@ -439,7 +449,8 @@ export function PageMockup({
 
   switch (page) {
     case "home":
-      return shell(<HomeMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wizard-data `Behavior` and HomeMock's inline behavior shape diverged across the PR #105 / per-template merge; the actual fields consumed are a subset and runtime-safe.
+      return shell(<HomeMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} behavior={b as any} />);
     case "category":
       return shell(<CategoryMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
     case "pdp":
@@ -599,18 +610,51 @@ function HomeMock({
   eyebrow,
   title,
   headingFont,
+  behavior,
 }: {
   t: FamilyTheme;
   family: Family;
   eyebrow: string;
   title: string;
   headingFont: string;
+  behavior: Partial<{
+    countdownBanner: 'visible' | 'hidden';
+    badgeSlot: 'official' | 'b2b' | 'condition' | 'performance';
+    productCardStyle: 'default' | 'minimal' | 'editorial' | 'spec-rows';
+    hideRatingsCount: boolean;
+    heroSize: 'cover' | 'large' | 'portrait' | 'video' | 'live-tile' | 'none';
+    storyBlock: 'inline-visible' | 'hidden';
+    liveBlock: 'visible' | 'hidden';
+  }>;
 }) {
+  const showCountdown = behavior.countdownBanner === 'visible' || family === 'business-model';
+  const isOfficial = behavior.badgeSlot === 'official';
+  const isMinimalCards = behavior.productCardStyle === 'minimal';
+  const isEditorialCards = behavior.productCardStyle === 'editorial';
+  const isLargeHero = behavior.heroSize === 'large' || behavior.heroSize === 'cover';
+  const hasStoryBlock = behavior.storyBlock === 'inline-visible';
+  const hasLiveBlock = behavior.liveBlock === 'visible';
   return (
     <div className="px-4 py-4 space-y-3">
+      {/* Optional countdown stripe — fires when template.behavior says so
+          (flash-deal / subscription) or when family is business-model. */}
+      {showCountdown && (
+        <div
+          className="-mx-4 -mt-4 mb-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white"
+          style={{
+            background:
+              family === 'business-model'
+                ? `linear-gradient(90deg, ${t.primary}, #b91c1c)`
+                : t.primary,
+          }}
+        >
+          <span>⚡ FLASH DEAL</span>
+          <span style={{ fontFamily: t.mono }}>· 02:34:17</span>
+        </div>
+      )}
       {/* Hero band */}
       <div
-        className="px-3 py-3"
+        className={isLargeHero ? "px-3 py-5" : "px-3 py-3"}
         style={{
           background:
             family === "fashion-beauty"
@@ -630,7 +674,7 @@ function HomeMock({
           {eyebrow}
         </Eyebrow>
         <h1
-          className="mt-1 text-lg"
+          className={isLargeHero ? "mt-1 text-xl" : "mt-1 text-lg"}
           style={{
             fontFamily: headingFont,
             color: family === "trust" || family === "lifestyle" || family === "specialty" ? t.ink : "#ffffff",
@@ -644,7 +688,12 @@ function HomeMock({
         {family === "trust" && (
           <div className="mt-1.5 h-px w-8" style={{ background: t.accent }} />
         )}
-        {family === "business-model" && (
+        {isOfficial && (
+          <div className="mt-2 inline-flex items-center gap-1 rounded bg-blue-500 px-2 py-0.5 text-[9px] font-bold text-white">
+            ✓ OFFICIAL
+          </div>
+        )}
+        {family === "business-model" && !isOfficial && (
           <div className="mt-2 inline-flex items-center gap-1 rounded bg-white/20 px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ fontFamily: t.mono }}>
             FLASH · 02:34:17
           </div>
@@ -655,6 +704,35 @@ function HomeMock({
           </p>
         )}
       </div>
+
+      {/* Optional story-block strip (storyteller/handmade templates) */}
+      {hasStoryBlock && (
+        <div
+          className="rounded-md border px-3 py-2 text-[10px] italic"
+          style={{
+            borderColor: t.border,
+            background: t.surface,
+            color: t.inkMuted,
+            fontFamily: t.serif,
+          }}
+        >
+          ★ Brand story · 3-paragraph maker statement
+        </div>
+      )}
+
+      {/* Optional live-stream tile (live-commerce template) */}
+      {hasLiveBlock && (
+        <div
+          className="flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase text-white"
+          style={{ background: t.primary }}
+        >
+          <span className="relative inline-flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white"></span>
+          </span>
+          LIVE NOW · 1.2K viewers
+        </div>
+      )}
 
       {/* Section eyebrow + grid */}
       <div className="space-y-1.5">
@@ -670,11 +748,39 @@ function HomeMock({
         <div className="grid grid-cols-3 gap-1.5">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-0.5">
-              <Tile t={t} ratio={family === "fashion-beauty" ? "4/5" : "1/1"} />
-              <p className="line-clamp-1 text-[10px]" style={{ color: t.ink, fontFamily: family === "specialty" ? t.serif : undefined }}>
+              <Tile
+                t={t}
+                ratio={
+                  isEditorialCards
+                    ? "4/5"
+                    : family === "fashion-beauty"
+                      ? "4/5"
+                      : "1/1"
+                }
+              />
+              <p
+                className={
+                  isMinimalCards
+                    ? "line-clamp-1 text-[10px] tracking-tight"
+                    : "line-clamp-1 text-[10px]"
+                }
+                style={{
+                  color: t.ink,
+                  fontFamily: family === "specialty" || isEditorialCards ? t.serif : undefined,
+                }}
+              >
                 Product {i + 1}
               </p>
-              <PriceLine t={t} family={family} />
+              {/* Minimal cards hide price + rating; editorial swaps to a
+                  caps-tracked subtitle line; default shows the regular
+                  price line per family. */}
+              {isMinimalCards ? null : isEditorialCards ? (
+                <p className="text-[9px] uppercase tracking-[0.16em]" style={{ color: t.inkMuted }}>
+                  Edit · ฿290
+                </p>
+              ) : (
+                <PriceLine t={t} family={family} />
+              )}
             </div>
           ))}
         </div>

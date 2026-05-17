@@ -46,6 +46,14 @@ import { SpecialtyHomepage } from "@/components/storefront/themes/specialty/Spec
 import { PetHouseHomepage } from "@/components/storefront/themes/pet-house/PetHouseHomepage";
 import { isCaseStudioStore } from "@/lib/landing/case-studio";
 import { CaseStudioHomepage } from "@/components/storefront/themes/case-studio/CaseStudioHomepage";
+import { isEverydayStore } from "@/lib/landing/everyday";
+import { EverydayHomepage } from "@/components/storefront/themes/everyday/EverydayHomepage";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { TaobaoHomepage } from "@/components/storefront/themes/taobao/TaobaoHomepage";
+import { isPackagingStore } from "@/lib/landing/packaging";
+import { PackagingHomepage } from "@/components/storefront/themes/packaging/PackagingHomepage";
+import { isCommunityStore } from "@/lib/landing/community";
+import { CommunityHomepage } from "@/components/storefront/themes/community/CommunityHomepage";
 
 export const dynamic = "force-dynamic";
 
@@ -273,6 +281,18 @@ export default async function StorePage({
   }
   if (isSpecialtyStore(familyKey)) {
     return <SpecialtyHomepage store={baseStore} />;
+  }
+  if (isEverydayStore(familyKey)) {
+    return <EverydayHomepage store={baseStore} />;
+  }
+  if (isTaobaoStore(familyKey)) {
+    return <TaobaoHomepage store={baseStore} />;
+  }
+  if (isPackagingStore(familyKey)) {
+    return <PackagingHomepage store={baseStore} />;
+  }
+  if (isCommunityStore(familyKey)) {
+    return <CommunityHomepage store={baseStore} />;
   }
 
   // ── New scaffold-based template (vendor wizard v2) ──────────

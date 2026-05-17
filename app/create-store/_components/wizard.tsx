@@ -76,8 +76,8 @@ export function Wizard({ onSubmit }: WizardProps) {
       <BrandBar />
       <ProgressBar current={state.phase} />
 
-      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <section className="flex flex-col border-mp-border bg-white p-6 lg:border-r">
+      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
+        <section className="flex flex-col border-mp-border bg-white p-6 lg:border-r lg:min-h-[calc(100dvh-3.5rem)]">
           <div className="mx-auto w-full max-w-md flex-1">
             <PhaseContent
               state={state}
@@ -118,7 +118,7 @@ export function Wizard({ onSubmit }: WizardProps) {
           </div>
         </section>
 
-        <section className="bg-mp-cream-alt/60 p-4 sm:p-6 lg:p-8">
+        <section className="bg-mp-cream-alt/60 p-4 sm:p-6 lg:sticky lg:top-0 lg:max-h-[calc(100dvh-3.5rem)] lg:overflow-y-auto lg:p-8">
           <LivePreview state={state} />
         </section>
       </div>

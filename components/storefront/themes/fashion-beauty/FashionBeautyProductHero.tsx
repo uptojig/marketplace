@@ -423,44 +423,6 @@ function InfoColumn({
 
       <Separator className="bg-[var(--shop-border)]" />
 
-      {/* Boutique store card */}
-      <Card
-        className="rounded-2xl border bg-white p-4 shadow-none"
-        style={{ borderColor: 'var(--shop-border)' }}
-      >
-        <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12">
-            {store.logoUrl && <AvatarImage src={store.logoUrl} alt={store.name} />}
-            <AvatarFallback>{store.name.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div
-              className="truncate text-sm font-medium"
-              style={{ color: 'var(--shop-ink)' }}
-            >
-              {store.name}
-            </div>
-            {(store.rating != null || store.followers != null) && (
-              <div className="flex items-center gap-1 text-xs text-[var(--shop-ink-muted)]">
-                {store.rating != null && (
-                  <>
-                    <Star className="h-3 w-3 fill-[var(--shop-primary)] text-[var(--shop-primary)]" />
-                    {store.rating.toFixed(1)}
-                  </>
-                )}
-                {store.rating != null && store.followers != null && <span>·</span>}
-                {store.followers != null && (
-                  <span>{(store.followers / 1000).toFixed(1)}k followers</span>
-                )}
-              </div>
-            )}
-          </div>
-          <Button variant="outline" size="sm" asChild className="rounded-full">
-            <Link href={storeHref(store.slug)}>ดูร้าน</Link>
-          </Button>
-        </div>
-      </Card>
-
       {/* Italic-serif trust strip — softer than icon row. */}
       <ul
         className="space-y-2 border-t border-b py-4 text-sm italic"

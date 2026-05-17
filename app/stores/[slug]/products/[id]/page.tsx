@@ -19,11 +19,16 @@ import { BusinessModelRelatedProducts } from "@/components/storefront/themes/bus
 import { LifestyleRelatedProducts } from "@/components/storefront/themes/lifestyle/LifestyleRelatedProducts";
 import { ElectronicsTechRelatedProducts } from "@/components/storefront/themes/electronics-tech/ElectronicsTechRelatedProducts";
 import { SpecialtyRelatedProducts } from "@/components/storefront/themes/specialty/SpecialtyRelatedProducts";
+import { SimpleBrandStory } from "@/components/storefront/themes/_shared/SimpleBrandStory";
+import { SimpleRelatedProducts } from "@/components/storefront/themes/_shared/SimpleRelatedProducts";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
 import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
 import { ElectronicsTechProductHero } from "@/components/storefront/themes/electronics-tech/ElectronicsTechProductHero";
 import { SpecialtyProductHero } from "@/components/storefront/themes/specialty/SpecialtyProductHero";
+import { EverydayProductHero } from "@/components/storefront/themes/everyday/EverydayProductHero";
+import { TaobaoProductHero } from "@/components/storefront/themes/taobao/TaobaoProductHero";
+import { PackagingProductHero } from "@/components/storefront/themes/packaging/PackagingProductHero";
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
@@ -31,6 +36,13 @@ import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isEverydayStore } from "@/lib/landing/everyday";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { isPackagingStore } from "@/lib/landing/packaging";
+import { isCommunityStore } from "@/lib/landing/community";
+import { CommunityProductHero } from "@/components/storefront/themes/community/CommunityProductHero";
+import { templates as TEMPLATE_REGISTRY } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { PetHouseProductPage } from "@/components/storefront/themes/pet-house/PetHouseProductPage";
 import { cleanDescription } from "@/lib/format/cleanDescription";
@@ -39,6 +51,10 @@ import {
   RecentlyViewedRail,
   RecentlyViewedTracker,
 } from "@/components/storefront/RecentlyViewed";
+// Alias `templates` registry as `STORE_TEMPLATES` for the dispatcher block;
+// the file already imports it as `TEMPLATE_REGISTRY` (PR #105) — keep both
+// aliases so the merge resolution doesn't have to rewrite either side.
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
 
 export const dynamic = "force-dynamic";
 
@@ -89,6 +105,75 @@ export default async function ShopProductPage({
     take: 6,
     orderBy: { createdAt: "desc" },
   });
+
+  // ── Multi-page template dispatch ────────────────────────────
+  // When the active template ships a bespoke PDP, it wins over
+  // the pet-house / family-bespoke heroes below. Same data
+  // pipeline (product + variants + related list) is forwarded
+  // via the `ProductDetailProps` contract in
+  // lib/templates/types.ts.
+  const tplStore = product.store;
+  const effectiveTpl =
+    tplStore.templateId ??
+    (tplStore.slug ? null /* legacy slug remapping handled by family helpers */ : null);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+  const TemplatePdpPage = template?.pages?.pdp;
+  if (TemplatePdpPage) {
+    return (
+      <TemplatePdpPage
+        store={{
+          id: tplStore.id,
+          slug: tplStore.slug,
+          name: tplStore.name,
+          description: tplStore.description,
+          tagline: tplStore.tagline,
+          logoUrl: tplStore.logoUrl,
+          bannerUrl: tplStore.bannerUrl,
+          primaryColor: tplStore.primaryColor,
+        }}
+        product={{
+          id: product.id,
+          title: product.titleTh ?? product.title,
+          description: cleanDescription(product.descriptionTh ?? product.description),
+          priceTHB: Number(product.priceTHB),
+          originalPriceTHB: product.compareAtPriceTHB
+            ? Number(product.compareAtPriceTHB)
+            : null,
+          imageUrl: product.imageUrl,
+          images,
+          variants: product.variants.map((v) => ({
+            id: v.id,
+            attributes: v.attributes as Record<string, string>,
+            colorLabel: v.colorLabel,
+            sizeLabel: v.sizeLabel,
+            materialLabel: v.materialLabel,
+            priceTHB: Number(v.priceTHB),
+            imageUrl: v.imageUrl,
+            inventory: v.inventory,
+          })),
+          stockLeft: product.hasVariants
+            ? null
+            : product.stockTotal > 0
+              ? product.stockTotal
+              : null,
+          videoUrl: product.videoUrl,
+          categoryName: product.categoryName,
+        }}
+        related={related.map((r) => ({
+          id: r.id,
+          title: r.titleTh ?? r.title,
+          imageUrl: r.imageUrl,
+          priceTHB: Number(r.priceTHB),
+          compareAtPriceTHB: r.compareAtPriceTHB
+            ? Number(r.compareAtPriceTHB)
+            : null,
+          categoryName: r.categoryName,
+        }))}
+      />
+    );
+  }
 
   // ── pet-house custom PDP (fluffyhouse) ──────────────────────
   // Bespoke product detail layout for the pet-supplies store. Gated by
@@ -154,6 +239,29 @@ export default async function ShopProductPage({
     templateId: effectiveTemplateId(product.store),
     landingThemeVariant: product.store.landingThemeVariant,
   });
+  const isEveryday = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && isEverydayStore({
+    templateId: effectiveTemplateId(product.store),
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const isTaobao = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && isTaobaoStore({
+    templateId: effectiveTemplateId(product.store),
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const isPackaging = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && isPackagingStore({
+    templateId: effectiveTemplateId(product.store),
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  const isCommunity = !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && !isPackaging && isCommunityStore({
+    templateId: effectiveTemplateId(product.store),
+    landingThemeVariant: product.store.landingThemeVariant,
+  });
+  // Look up the template's behavior flags (hideRatingsCount, showTabs,
+  // productCardStyle, etc.) so the default ProductDetailHero can apply
+  // template-specific toggles. Falls through silently when templateId
+  // doesn't match the 20-template registry (legacy stores).
+  const tplId = effectiveTemplateId(product.store) as TemplateId | undefined;
+  const templateBehavior = tplId ? TEMPLATE_REGISTRY[tplId]?.behavior : undefined;
+
   const HeroComponent = isFB
     ? FashionBeautyProductHero
     : isTrust
@@ -166,7 +274,15 @@ export default async function ShopProductPage({
             ? ElectronicsTechProductHero
             : isSpecialty
               ? SpecialtyProductHero
-              : ProductDetailHero;
+              : isEveryday
+                ? EverydayProductHero
+                : isTaobao
+                  ? TaobaoProductHero
+                  : isPackaging
+                    ? PackagingProductHero
+                    : isCommunity
+                      ? CommunityProductHero
+                      : ProductDetailHero;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -241,6 +357,7 @@ export default async function ShopProductPage({
           logoUrl: product.store.logoUrl,
           // rating / followers also not in schema — hero hides them.
         }}
+        templateBehavior={templateBehavior}
       />
 
       {/* Each family gets its bespoke brand-story panel between the
@@ -293,6 +410,32 @@ export default async function ShopProductPage({
           storeName={product.store.name}
           tagline={product.store.tagline}
           description={product.store.description}
+        />
+      )}
+      {(isEveryday || isTaobao || isPackaging || isCommunity) && (
+        <SimpleBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+          accentColor={
+            isTaobao
+              ? '#FF1A1A'
+              : isPackaging
+                ? '#FF4E8B'
+                : isCommunity
+                  ? '#9333EA'
+                  : '#DC2626'
+          }
+          panelBg={
+            isPackaging
+              ? '#FFF0F6'
+              : isTaobao
+                ? '#FFEDED'
+                : isCommunity
+                  ? '#FAF5FF'
+                  : '#ffffff'
+          }
         />
       )}
 
@@ -425,8 +568,49 @@ export default async function ShopProductPage({
           }))}
         />
       )}
+      {related.length > 0 && (isEveryday || isTaobao || isPackaging || isCommunity) && (
+        <SimpleRelatedProducts
+          storeSlug={params.slug}
+          storeName={product.store.name}
+          primaryColor={
+            isTaobao
+              ? '#FF1A1A'
+              : isPackaging
+                ? '#FF4E8B'
+                : isCommunity
+                  ? '#9333EA'
+                  : '#DC2626'
+          }
+          accentColor={
+            isTaobao
+              ? '#FFD600'
+              : isPackaging
+                ? '#FFD93D'
+                : isCommunity
+                  ? '#EC4899'
+                  : '#DC2626'
+          }
+          eyebrow={
+            isTaobao
+              ? '🔥 BEST DEALS'
+              : isPackaging
+                ? '💝 NEW IN'
+                : isCommunity
+                  ? '📺 NOW TRENDING'
+                  : '★ ใหม่ล่าสุด'
+          }
+          products={related.map((r) => ({
+            id: r.id,
+            title: r.title,
+            titleTh: r.titleTh,
+            imageUrl: r.imageUrl,
+            priceTHB: Number(r.priceTHB),
+            compareAtPriceTHB: r.compareAtPriceTHB ? Number(r.compareAtPriceTHB) : null,
+          }))}
+        />
+      )}
 
-      {related.length > 0 && !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && (
+      {related.length > 0 && !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && !isPackaging && !isCommunity && (
         <section
           className={
             isFB || isTrust || isLifestyle || isElectronicsTech || isSpecialty
