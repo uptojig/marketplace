@@ -285,6 +285,64 @@ export default async function StorePage({
     return <SpecialtyHomepage store={baseStore} />;
   }
 
+  // ── Multi-page template — bespoke homepage from registry ────
+  // Last priority in the homepage chain before the wizard
+  // StoreRenderer fallback. Opt-in escape hatch: a template that
+  // registers a `pages.home` component takes over rendering;
+  // templates without it still flow through the existing block
+  // dispatcher. Family-driven and bespoke homepages (PetHouse /
+  // CaseStudio / FB / etc.) above already won by this point.
+  if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
+    const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
+    const TemplateHomePage = template.pages?.home;
+    if (TemplateHomePage) {
+      const dbProducts = await prisma.product.findMany({
+        where: { storeId: baseStore.id, active: true },
+        orderBy: { createdAt: "desc" },
+        take: 60,
+      });
+      const categoryRows = await prisma.product.findMany({
+        where: {
+          storeId: baseStore.id,
+          active: true,
+          categoryName: { not: null },
+        },
+        select: { categoryName: true },
+        distinct: ["categoryName"],
+        orderBy: { categoryName: "asc" },
+        take: 12,
+      });
+      const categories = categoryRows
+        .map((r) => r.categoryName)
+        .filter((c): c is string => !!c);
+      return (
+        <TemplateHomePage
+          store={{
+            id: baseStore.id,
+            slug: baseStore.slug,
+            name: baseStore.name,
+            description: baseStore.description,
+            tagline: baseStore.tagline,
+            logoUrl: baseStore.logoUrl,
+            bannerUrl: baseStore.bannerUrl,
+            primaryColor: baseStore.primaryColor,
+          }}
+          products={dbProducts.map((p) => ({
+            id: p.id,
+            title: p.titleTh ?? p.title,
+            imageUrl: p.imageUrl,
+            priceTHB: Number(p.priceTHB),
+            compareAtPriceTHB: p.compareAtPriceTHB
+              ? Number(p.compareAtPriceTHB)
+              : null,
+            categoryName: p.categoryName,
+          }))}
+          categories={categories}
+        />
+      );
+    }
+  }
+
   // ── New scaffold-based template (vendor wizard v2) ──────────
   // Stores created via the new /create-store wizard set `templateId` to
   // one of the 20 registry entries. Render via StoreRenderer (block

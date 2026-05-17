@@ -67,6 +67,10 @@ import {
   resolveChromeTokens,
   tokensToCssVars,
 } from "@/components/storefront/chrome/tokens";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
+import { bikiniBeachTokens } from "@/components/storefront/themes/bikini-beach/tokens";
 
 export const dynamic = "force-dynamic";
 
@@ -412,6 +416,38 @@ export default async function ShopLayout({
             ? "square"
             : null;
 
+  // Multi-page template chrome — resolve once and reuse in every
+  // render branch below. When the active template registers its
+  // own `chrome.Header` / `chrome.Footer` / `chrome.AnnouncementStrip`,
+  // the layout swaps the default ShopHeader / ShopFooter for those
+  // components instead. Token bag + family CSS class still cascade
+  // through the wrapper div so the template's bespoke chrome
+  // inherits the same --shop-* vars as everything else.
+  //
+  // `effectiveTemplateId()` covers legacy stores whose templateId
+  // column is null but whose slug is mapped in
+  // lib/landing/legacy-slug-template.ts (e.g. bikini551 → bikini-beach).
+  // Stores not in the registry simply skip the bespoke chrome path.
+  const templateForChrome = (() => {
+    const tpl = effectiveTemplateId(store);
+    return tpl && tpl in STORE_TEMPLATES
+      ? STORE_TEMPLATES[tpl as TemplateId]
+      : null;
+  })();
+  const TemplateHeader = templateForChrome?.chrome?.Header;
+  const TemplateFooter = templateForChrome?.chrome?.Footer;
+  const TemplateStrip = templateForChrome?.chrome?.AnnouncementStrip;
+
+  // Bikini-beach token bag — when the active templateId is
+  // `bikini-beach`, layer the bespoke palette (sky / coral / sand
+  // + summer gradients) over the family vars. This is harmless
+  // before the chrome lands because the bespoke `--bikini-*` and
+  // `--grad-*` vars are only consumed by the future bespoke
+  // pages; the `--shop-*` slots stay in sync with the FB family.
+  const isBikiniBeach = effectiveTemplateId(store) === "bikini-beach";
+  const bikiniVars = isBikiniBeach ? bikiniBeachTokens : {};
+  const bikiniClass = isBikiniBeach ? "theme-bikini-beach" : "";
+
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality
   //     comes from a token preset keyed off the template id (accent,
@@ -441,28 +477,49 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
-        style={{ ...tokensToCssVars(tokens), ...familyVars, ...operatorPrimaryOverride }}
+        className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}${bikiniClass ? ` ${bikiniClass}` : ""}`}
+        style={{ ...tokensToCssVars(tokens), ...familyVars, ...bikiniVars, ...operatorPrimaryOverride }}
       >
-        <ShopHeader
-          storeSlug={store.slug}
-          storeName={store.name}
-          storeLogoUrl={store.logoUrl}
-          categories={categories}
-          accent={familyAccent ?? tokens.accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-          announcement={tokens.announcement}
-          buttonShape={familyButtonShape ?? tokens.buttonShape}
-        />
+        {TemplateStrip ? (
+          <TemplateStrip storeName={store.name} />
+        ) : null /* default chrome has no strip */}
+        {TemplateHeader ? (
+          <TemplateHeader
+            storeSlug={store.slug}
+            storeName={store.name}
+            storeLogoUrl={store.logoUrl}
+            categories={categories}
+            accent={familyAccent ?? tokens.accent}
+          />
+        ) : (
+          <ShopHeader
+            storeSlug={store.slug}
+            storeName={store.name}
+            storeLogoUrl={store.logoUrl}
+            categories={categories}
+            accent={familyAccent ?? tokens.accent}
+            decorationGlyph={tokens.decorationGlyph}
+            glyphStyle={tokens.glyphStyle}
+            announcement={tokens.announcement}
+            buttonShape={familyButtonShape ?? tokens.buttonShape}
+          />
+        )}
         <main className="flex-1">{children}</main>
-        <ShopFooter
-          store={store}
-          categories={categories}
-          accent={familyAccent ?? tokens.accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-        />
+        {TemplateFooter ? (
+          <TemplateFooter
+            store={store}
+            categories={categories}
+            accent={familyAccent ?? tokens.accent}
+          />
+        ) : (
+          <ShopFooter
+            store={store}
+            categories={categories}
+            accent={familyAccent ?? tokens.accent}
+            decorationGlyph={tokens.decorationGlyph}
+            glyphStyle={tokens.glyphStyle}
+          />
+        )}
       </div>
     );
   }
@@ -519,28 +576,49 @@ export default async function ShopLayout({
 
     return (
       <div
-        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass}`.trim()}
-        style={{ ...tokensToCssVars(tokens), ...familyVars, ...operatorPrimaryOverride }}
+        className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass} ${bikiniClass}`.trim()}
+        style={{ ...tokensToCssVars(tokens), ...familyVars, ...bikiniVars, ...operatorPrimaryOverride }}
       >
-        <ShopHeader
-          storeSlug={store.slug}
-          storeName={store.name}
-          storeLogoUrl={store.logoUrl}
-          categories={navCategories}
-          accent={familyAccent ?? tokens.accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-          announcement={tokens.announcement}
-          buttonShape={familyButtonShape ?? tokens.buttonShape}
-        />
+        {TemplateStrip ? (
+          <TemplateStrip storeName={store.name} />
+        ) : null /* default chrome has no strip */}
+        {TemplateHeader ? (
+          <TemplateHeader
+            storeSlug={store.slug}
+            storeName={store.name}
+            storeLogoUrl={store.logoUrl}
+            categories={navCategories}
+            accent={familyAccent ?? tokens.accent}
+          />
+        ) : (
+          <ShopHeader
+            storeSlug={store.slug}
+            storeName={store.name}
+            storeLogoUrl={store.logoUrl}
+            categories={navCategories}
+            accent={familyAccent ?? tokens.accent}
+            decorationGlyph={tokens.decorationGlyph}
+            glyphStyle={tokens.glyphStyle}
+            announcement={tokens.announcement}
+            buttonShape={familyButtonShape ?? tokens.buttonShape}
+          />
+        )}
         <main className="flex-1">{children}</main>
-        <ShopFooter
-          store={store}
-          categories={navCategories}
-          accent={familyAccent ?? tokens.accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-        />
+        {TemplateFooter ? (
+          <TemplateFooter
+            store={store}
+            categories={navCategories}
+            accent={familyAccent ?? tokens.accent}
+          />
+        ) : (
+          <ShopFooter
+            store={store}
+            categories={navCategories}
+            accent={familyAccent ?? tokens.accent}
+            decorationGlyph={tokens.decorationGlyph}
+            glyphStyle={tokens.glyphStyle}
+          />
+        )}
         <CookiesBar />
         <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
       </div>
@@ -577,28 +655,49 @@ export default async function ShopLayout({
 
   return (
     <div
-      className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
-      style={{ ...tokensToCssVars(tokens), ...familyVars, ...operatorPrimaryOverride }}
+      className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}${bikiniClass ? ` ${bikiniClass}` : ""}`}
+      style={{ ...tokensToCssVars(tokens), ...familyVars, ...bikiniVars, ...operatorPrimaryOverride }}
     >
-      <ShopHeader
-        storeSlug={store.slug}
-        storeName={store.name}
-        storeLogoUrl={store.logoUrl}
-        categories={categories}
-        accent={familyAccent ?? tokens.accent}
-        decorationGlyph={tokens.decorationGlyph}
-        glyphStyle={tokens.glyphStyle}
-        announcement={tokens.announcement}
-        buttonShape={familyButtonShape ?? tokens.buttonShape}
-      />
+      {TemplateStrip ? (
+        <TemplateStrip storeName={store.name} />
+      ) : null /* default chrome has no strip */}
+      {TemplateHeader ? (
+        <TemplateHeader
+          storeSlug={store.slug}
+          storeName={store.name}
+          storeLogoUrl={store.logoUrl}
+          categories={categories}
+          accent={familyAccent ?? tokens.accent}
+        />
+      ) : (
+        <ShopHeader
+          storeSlug={store.slug}
+          storeName={store.name}
+          storeLogoUrl={store.logoUrl}
+          categories={categories}
+          accent={familyAccent ?? tokens.accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+          announcement={tokens.announcement}
+          buttonShape={familyButtonShape ?? tokens.buttonShape}
+        />
+      )}
       <main className="flex-1">{children}</main>
-      <ShopFooter
-        store={store}
-        categories={categories}
-        accent={familyAccent ?? tokens.accent}
-        decorationGlyph={tokens.decorationGlyph}
-        glyphStyle={tokens.glyphStyle}
-      />
+      {TemplateFooter ? (
+        <TemplateFooter
+          store={store}
+          categories={categories}
+          accent={familyAccent ?? tokens.accent}
+        />
+      ) : (
+        <ShopFooter
+          store={store}
+          categories={categories}
+          accent={familyAccent ?? tokens.accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+        />
+      )}
       <CookiesBar />
       <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
     </div>

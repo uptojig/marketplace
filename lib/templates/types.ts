@@ -332,7 +332,8 @@ export interface ProductDetailProps {
       materialLabel?: string | null;
       priceTHB: number;
       imageUrl?: string | null;
-      inventory: number;
+      /** Variant inventory; null when the supplier doesn't expose stock. */
+      inventory: number | null;
     }[];
     stockLeft?: number | null;
     videoUrl?: string | null;
