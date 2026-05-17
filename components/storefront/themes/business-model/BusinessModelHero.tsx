@@ -68,10 +68,10 @@ export function BusinessModelHero({
   description,
 }: Props) {
   const countdown = stubFlashCountdown(storeSlug);
-  const headline = tagline?.trim() || 'ร้านขายอุปกรณ์ทำความสะอาด';
+  const headline = tagline?.trim() || storeName;
   const subhead =
     description?.trim() ||
-    'มิติใหม่ของการทำความสะอาดบ้าน ด้วยอุปกรณ์คุณภาพจากเรา ที่ช่วยเบาแรง ประหยัดเวลา ให้บ้านคุณสะอาดหมดจดในพริบตา';
+    'ส่วนลดตามจำนวน · เครดิต Net-30 สำหรับลูกค้าผ่านการตรวจสอบ · จัดส่งทั่วประเทศ';
 
   return (
     <section

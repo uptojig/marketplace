@@ -6,6 +6,11 @@ import { getHelpPage, HELP_PAGES, HELP_CATEGORY_LABEL } from "@/lib/helpPages";
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
 import type { TemplateId } from "@/lib/templates/types";
+import { isEverydayStore } from "@/lib/landing/everyday";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { isPackagingStore } from "@/lib/landing/packaging";
+import { isCommunityStore } from "@/lib/landing/community";
+import { ThemeRibbon } from "@/components/storefront/themes/_shared/ThemeRibbon";
 
 export const dynamic = "force-static";
 
@@ -146,6 +151,7 @@ export default async function StoreHelpPage({
       logoUrl: true,
       primaryColor: true,
       templateId: true,
+      landingThemeVariant: true,
     },
   });
   if (!store) notFound();
@@ -179,7 +185,24 @@ export default async function StoreHelpPage({
     );
   }
 
+  // Skin-only family detectors (everyday / taobao / packaging /
+  // community from PR #105) — render the markdown body wrapped with
+  // a family-tinted policy ribbon.
+  const slimKey = { templateId: store.templateId, landingThemeVariant: store.landingThemeVariant };
+  const isEveryday = isEverydayStore(slimKey);
+  const isTaobao = !isEveryday && isTaobaoStore(slimKey);
+  const isPackaging = !isEveryday && !isTaobao && isPackagingStore(slimKey);
+  const isCommunity = !isEveryday && !isTaobao && !isPackaging && isCommunityStore(slimKey);
+
   return (
+    <>
+      <ThemeRibbon
+        variant="policy"
+        isEveryday={isEveryday}
+        isTaobao={isTaobao}
+        isPackaging={isPackaging}
+        isCommunity={isCommunity}
+      />
     <div className="container max-w-3xl py-8">
       <nav className="mb-4 flex items-center gap-1 text-xs" style={{ color: 'var(--shop-ink-muted)' }}>
         <Link href={`/stores/${params.slug}`} className="hover:underline">
@@ -193,5 +216,6 @@ export default async function StoreHelpPage({
       <h1 className="text-2xl font-bold">{page.title}</h1>
       <article className="text-sm" style={{ color: 'var(--shop-ink)' }}>{renderContent(page.content)}</article>
     </div>
+    </>
   );
 }

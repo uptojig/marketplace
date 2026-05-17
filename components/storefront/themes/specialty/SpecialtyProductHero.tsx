@@ -458,35 +458,6 @@ function InfoColumn({
 
       <SpecialtyDivider />
 
-      {/* Maker / shop card. Kraft-tinted, rounded-md, with a tiny
-          italic "Est. 19xx" handwritten subtitle. */}
-      <Card
-        data-specialty-kraft="true"
-        className="rounded-md border p-4 shadow-none"
-        style={{ borderColor: 'var(--shop-border)' }}
-      >
-        <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12 rounded-md">
-            {store.logoUrl && <AvatarImage src={store.logoUrl} alt={store.name} />}
-            <AvatarFallback className="rounded-md">{store.name.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div
-              className="truncate text-sm font-medium"
-              style={{ color: 'var(--shop-ink)' }}
-            >
-              {store.name}
-            </div>
-            <SpecialtyHandLabel size="xs" className="block">
-              Est. crafted-to-order
-            </SpecialtyHandLabel>
-          </div>
-          <Button variant="outline" size="sm" asChild className="rounded-md">
-            <Link href={storeHref(store.slug)}>ดูร้าน</Link>
-          </Button>
-        </div>
-      </Card>
-
       {/* Italic-serif trust strip — softer than the icon row, paired
           with a handwritten footnote. */}
       <ul

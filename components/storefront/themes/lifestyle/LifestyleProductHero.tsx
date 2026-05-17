@@ -553,46 +553,6 @@ function InfoColumn({
 
       <Separator className="bg-[var(--shop-border)]" />
 
-      {/* Store card — rounded-3xl with peach muted backdrop. */}
-      <Card
-        className="rounded-3xl border bg-white p-4 shadow-none"
-        style={{ borderColor: 'var(--shop-border)' }}
-      >
-        <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12 rounded-2xl">
-            {store.logoUrl && <AvatarImage src={store.logoUrl} alt={store.name} />}
-            <AvatarFallback className="rounded-2xl">
-              {store.name.slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div
-              className="truncate text-sm font-semibold"
-              style={{
-                color: 'var(--shop-ink)',
-                fontFamily: LIFESTYLE_DISPLAY_FONT,
-              }}
-            >
-              {store.name}
-            </div>
-            <div
-              className="text-xs"
-              style={{ color: 'var(--shop-ink-muted)' }}
-            >
-              Trusted by our community
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="rounded-full border-[var(--shop-ink)]"
-          >
-            <Link href={storeHref(store.slug)}>ดูร้าน</Link>
-          </Button>
-        </div>
-      </Card>
-
       {/* Soft trust strip — icon row with sage pictograms. */}
       <ul
         className="grid grid-cols-1 gap-3 pt-2 text-sm sm:grid-cols-3"

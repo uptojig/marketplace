@@ -78,7 +78,10 @@ export type TemplateGroup =
   | 'lifestyle'
   | 'community'
   | 'business-model'
-  | 'specialty';
+  | 'specialty'
+  | 'everyday'
+  | 'taobao'
+  | 'packaging';
 
 export type TemplateId =
   | 'classic'
@@ -103,7 +106,10 @@ export type TemplateId =
   | 'vintage'
   | 'bikini-beach'
   | 'eco-pack'
-  | 'mega-store';
+  | 'mega-store'
+  | 'everyday-retail'
+  | 'taobao-style'
+  | 'packaging-supply';
 
 export type DesktopPattern = 'A' | 'B' | 'C' | 'D';
 
@@ -130,6 +136,10 @@ export interface BehaviorFlags {
   storyBlock?: 'inline-visible' | 'hidden';
   b2bMode?: boolean;
   singleProductMode?: boolean;
+  // Per-template/PDP visual flags (extended for fashion / consumer themes).
+  heroSize?: 'cover' | 'large' | 'portrait' | 'video' | 'live-tile' | 'none';
+  badgeSlot?: 'official' | 'b2b' | 'condition' | 'performance';
+  productCardStyle?: 'default' | 'minimal' | 'editorial' | 'spec-rows';
 }
 
 export interface GatingConfig {
