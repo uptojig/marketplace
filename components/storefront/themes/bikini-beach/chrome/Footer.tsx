@@ -46,41 +46,15 @@ export interface FooterProps {
   bottomLinks?: { label: string; href: string }[];
 }
 
-const DEFAULT_NAV: FooterNavColumn[] = [
-  {
-    heading: 'Shop',
-    links: [
-      { label: 'Bikini Sets', href: '/shop?cat=bikini' },
-      { label: 'One-Piece', href: '/shop?cat=one-piece' },
-      { label: 'Tankini', href: '/shop?cat=tankini' },
-      { label: 'Cover-Ups', href: '/shop?cat=cover-up' },
-      { label: 'Accessories', href: '/shop?cat=accessories' },
-      { label: 'Sale 50%', href: '/shop?filter=sale' },
-    ],
-  },
-  {
-    heading: 'Help',
-    links: [
-      { label: 'Size Guide', href: '/help#size-guide' },
-      { label: 'Shipping Info', href: '/help#shipping' },
-      { label: 'Returns', href: '/help#returns' },
-      { label: 'Care Guide', href: '/help#care' },
-      { label: 'FAQ', href: '/help#faq' },
-      { label: 'Contact', href: '/help#contact' },
-    ],
-  },
-  {
-    heading: 'Brand',
-    links: [
-      { label: 'Our Story', href: '/about' },
-      { label: 'Sustainability', href: '/about#sustainability' },
-      { label: 'Lookbook', href: '/lookbook' },
-      { label: 'Press', href: '/about#press' },
-      { label: 'Ambassador', href: '/about#ambassador' },
-      { label: 'Wholesale', href: '/about#wholesale' },
-    ],
-  },
-];
+// Empty defaults — the adapter (`adapters.tsx`) is the single source of
+// truth for nav columns + bottom links, threading per-store URLs from
+// `storeUrls(slug)`. Previously this file shipped `DEFAULT_NAV` with
+// hardcoded `/shop?cat=...` / `/help#...` / `/about` paths that worked
+// for the designer's standalone preview but would have routed to wrong
+// (non-existent) marketplace routes if ever rendered without an adapter.
+// Kept empty so a missing-adapter bug renders a visibly empty footer
+// instead of silently broken links.
+const DEFAULT_NAV: FooterNavColumn[] = [];
 
 const DEFAULT_SOCIAL: SocialLink[] = [
   { network: 'instagram', href: 'https://instagram.com/bikini551' },
@@ -125,11 +99,7 @@ export function Footer({
   },
   showAppButtons = true,
   copyright,
-  bottomLinks = [
-    { label: 'Privacy', href: '/privacy' },
-    { label: 'Terms', href: '/terms' },
-    { label: 'Cookies', href: '/cookies' },
-  ],
+  bottomLinks = [],
 }: FooterProps) {
   const year = new Date().getFullYear() + 543; // Buddhist year
   const copyText =
