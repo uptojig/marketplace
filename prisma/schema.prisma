@@ -80,6 +80,7 @@ model User {
   addresses    Address[]
   couponUsages CouponUsage[]
   paymentIntents PaymentIntent[]
+  kycSessions  WizardSession[]
 }
 
 // --- Marketplace ---
@@ -878,4 +879,153 @@ model ContactMessage {
 
   @@index([storeId, createdAt])
   @@index([storeId, readAt])
+}
+
+// ============================================================================
+// Upload-based KYC wizard
+// ============================================================================
+// Evidence-first vendor onboarding flow. DGA remains a vendor-controlled browser
+// step; the server only receives uploads, runs OCR/matching, and writes audit
+// records for every transition.
+
+model WizardSession {
+  id             String    @id @default(uuid()) @db.Uuid
+  state          String    @default("INIT")
+  userId         String?   @map("user_id")
+  citizenId      String?   @map("citizen_id") @db.VarChar(13)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  expiresAt      DateTime  @map("expires_at")
+  terminalAt     DateTime? @map("terminal_at")
+  finalDecision  String?   @map("final_decision")
+  pwContextId    String?   @map("pw_context_id")
+  metadata       Json      @default("{}")
+
+  user                User?                     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  evidence            WizardEvidence[]
+  ocrResults          WizardOcrResult[]
+  matchResults        WizardMatchResult[]
+  auditLogs           WizardAuditLog[]
+  costLogs            WizardCostLog[]
+  outlookCredentials  WizardOutlookCredential[] @relation("WizardOutlookLease")
+
+  @@index([state, expiresAt])
+  @@index([citizenId])
+  @@index([userId])
+  @@map("wizard_sessions")
+}
+
+model WizardEvidence {
+  id          String   @id @default(uuid()) @db.Uuid
+  sessionId   String   @map("session_id") @db.Uuid
+  step        String
+  storageKey  String   @map("storage_key")
+  sha256      String   @db.Char(64)
+  bytes       Int
+  mime        String
+  width       Int?
+  height      Int?
+  source      String
+  capturedAt  DateTime @default(now()) @map("captured_at")
+
+  session     WizardSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  ocrResults  WizardOcrResult[]
+
+  @@index([sessionId, capturedAt])
+  @@index([step])
+  @@map("evidence")
+}
+
+model WizardOcrResult {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionId    String   @map("session_id") @db.Uuid
+  evidenceId   String   @map("evidence_id") @db.Uuid
+  provider     String
+  rawResponse  Json     @map("raw_response")
+  extracted    Json
+  confidence   Decimal? @db.Decimal(4, 3)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  session   WizardSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  evidence  WizardEvidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, provider])
+  @@index([evidenceId])
+  @@map("ocr_results")
+}
+
+model WizardMatchResult {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionId    String   @map("session_id") @db.Uuid
+  matchType    String   @map("match_type")
+  leftSource   String   @map("left_source")
+  rightSource  String   @map("right_source")
+  leftValue    String?  @map("left_value")
+  rightValue   String?  @map("right_value")
+  score        Decimal? @db.Decimal(6, 3)
+  threshold    Decimal? @db.Decimal(6, 3)
+  matched      Boolean
+  reason       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  session WizardSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, matchType])
+  @@index([matched])
+  @@map("match_results")
+}
+
+model WizardAuditLog {
+  id          BigInt   @id @default(autoincrement())
+  sessionId   String?  @map("session_id") @db.Uuid
+  ts          DateTime @default(now())
+  actor       String
+  event       String
+  fromState   String?  @map("from_state")
+  toState     String?  @map("to_state")
+  payload     Json     @default("{}")
+
+  session WizardSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId, ts])
+  @@index([event, ts])
+  @@map("audit_log")
+}
+
+model WizardCostLog {
+  id           BigInt   @id @default(autoincrement())
+  sessionId    String?  @map("session_id") @db.Uuid
+  ts           DateTime @default(now())
+  provider     String
+  endpoint     String
+  units        Decimal  @db.Decimal(8, 4)
+  unitType     String   @map("unit_type")
+  unitCostThb  Decimal  @map("unit_cost_thb") @db.Decimal(8, 4)
+  costThb      Decimal  @map("cost_thb") @db.Decimal(10, 4)
+  durationMs   Int      @map("duration_ms")
+  httpStatus   Int?     @map("http_status")
+
+  session WizardSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId, ts])
+  @@index([provider, endpoint])
+  @@map("cost_log")
+}
+
+model WizardOutlookCredential {
+  id                 String    @id @default(uuid()) @db.Uuid
+  email              String    @unique
+  passwordEncrypted  String    @map("password_encrypted")
+  status             String    @default("available")
+  leasedTo           String?   @map("leased_to") @db.Uuid
+  leasedAt           DateTime? @map("leased_at")
+  usedAt             DateTime? @map("used_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  session WizardSession? @relation("WizardOutlookLease", fields: [leasedTo], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([leasedTo])
+  @@map("outlook_pool")
 }

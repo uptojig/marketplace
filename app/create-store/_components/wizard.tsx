@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import {
   INITIAL_STATE,
@@ -65,14 +66,18 @@ export function Wizard({ onSubmit }: WizardProps) {
     ? state.launch.status === "live"
       ? "🚀 เปิดร้าน"
       : "📝 บันทึกแบบร่าง"
-    : "ถัดไป →";
+    : "ดำเนินการต่อ →";
+
+  // Primary CTA color: forest for "draft" choice on phase 5, coral elsewhere
+  const isDraftCta = state.phase === 5 && state.launch.status !== "live";
 
   return (
-    <div className="flex min-h-dvh flex-col bg-zinc-50">
+    <div className="theme-marketplace flex min-h-dvh flex-col bg-mp-cream">
+      <BrandBar />
       <ProgressBar current={state.phase} />
 
       <div className="grid flex-1 grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <section className="flex flex-col border-zinc-200 bg-white p-6 lg:border-r">
+        <section className="flex flex-col border-mp-border bg-white p-6 lg:border-r">
           <div className="mx-auto w-full max-w-md flex-1">
             <PhaseContent
               state={state}
@@ -84,17 +89,17 @@ export function Wizard({ onSubmit }: WizardProps) {
           </div>
 
           {error && (
-            <div className="mx-auto mt-4 w-full max-w-md rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+            <div className="mx-auto mt-4 w-full max-w-md rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
-          <div className="mx-auto mt-8 flex w-full max-w-md items-center justify-between gap-3 border-t border-zinc-100 pt-4">
+          <div className="mx-auto mt-8 flex w-full max-w-md items-center justify-between gap-3 border-t border-mp-border pt-4">
             <button
               type="button"
               onClick={goBack}
               disabled={state.phase === 1 || pending}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-40"
+              className="rounded-xl px-3 py-2 text-sm font-medium text-mp-ink-muted transition hover:bg-mp-cream-alt/50 hover:text-mp-ink disabled:opacity-40"
             >
               ← ย้อนกลับ
             </button>
@@ -102,14 +107,18 @@ export function Wizard({ onSubmit }: WizardProps) {
               type="button"
               onClick={goNext}
               disabled={!canAdvance}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className={`inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:transform-none ${
+                isDraftCta
+                  ? "bg-mp-forest hover:bg-mp-forest/90"
+                  : "bg-mp-coral hover:bg-mp-coral-dark"
+              }`}
             >
               {ctaLabel}
             </button>
           </div>
         </section>
 
-        <section className="bg-zinc-100 p-4 sm:p-6 lg:p-8">
+        <section className="bg-mp-cream-alt/60 p-4 sm:p-6 lg:p-8">
           <LivePreview state={state} />
         </section>
       </div>
@@ -132,9 +141,34 @@ function validate(state: WizardState): boolean {
   }
 }
 
+function BrandBar() {
+  return (
+    <div className="border-b border-mp-border bg-white">
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3">
+        <Link
+          href="/"
+          className="text-[15px] font-bold text-mp-coral-dark hover:opacity-80 transition-opacity"
+          style={{ fontFamily: "var(--mp-font-display)" }}
+        >
+          Basketplace
+          <span className="ml-2 text-[12px] font-medium uppercase tracking-[0.12em] text-mp-ink-muted">
+            สร้างร้านใหม่
+          </span>
+        </Link>
+        <Link
+          href="/dashboard"
+          className="text-[13px] text-mp-ink-muted hover:text-mp-coral transition-colors"
+        >
+          บันทึกแบบร่าง · ออก
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function ProgressBar({ current }: { current: PhaseId }) {
   return (
-    <div className="border-b border-zinc-200 bg-white px-4 py-3">
+    <div className="border-b border-mp-border bg-white px-4 py-4">
       <div className="mx-auto flex w-full max-w-5xl items-center gap-2">
         {PHASES.map((s, i) => {
           const isActive = s.id === current;
@@ -142,19 +176,23 @@ function ProgressBar({ current }: { current: PhaseId }) {
           return (
             <div key={s.id} className="flex flex-1 items-center gap-2">
               <div
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition ${
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold transition ${
                   isActive
-                    ? "bg-zinc-900 text-white"
+                    ? "bg-mp-coral text-white shadow-sm"
                     : isDone
-                    ? "bg-zinc-700 text-white"
-                    : "bg-zinc-200 text-zinc-600"
+                    ? "bg-mp-forest text-white"
+                    : "bg-mp-cream-alt text-mp-ink-muted"
                 }`}
               >
                 {isDone ? "✓" : s.id}
               </div>
               <span
-                className={`hidden truncate text-xs sm:inline ${
-                  isActive ? "font-medium text-zinc-900" : "text-zinc-500"
+                className={`hidden truncate text-[13px] sm:inline ${
+                  isActive
+                    ? "font-semibold text-mp-ink"
+                    : isDone
+                    ? "text-mp-forest font-medium"
+                    : "text-mp-ink-muted"
                 }`}
               >
                 {s.title}
@@ -162,7 +200,7 @@ function ProgressBar({ current }: { current: PhaseId }) {
               {i < PHASES.length - 1 && (
                 <div
                   className={`ml-1 h-px flex-1 ${
-                    isDone ? "bg-zinc-700" : "bg-zinc-200"
+                    isDone ? "bg-mp-forest" : "bg-mp-border"
                   }`}
                 />
               )}

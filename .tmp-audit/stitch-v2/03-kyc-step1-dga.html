@@ -1,0 +1,272 @@
+<!DOCTYPE html><html lang="th"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>SaaS KYC - DGA Profile Upload</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&amp;family=Prompt:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "ink-muted": "#6B6B6B",
+                      "outline": "#8d716a",
+                      "surface-container-high": "#eae7e7",
+                      "on-secondary-container": "#396c5b",
+                      "background-alt": "#F0EBE2",
+                      "inverse-primary": "#ffb4a3",
+                      "surface-dim": "#dcd9d9",
+                      "success": "#4A7C59",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed": "#e5e2dd",
+                      "surface-tint": "#ad3315",
+                      "on-surface": "#1c1b1b",
+                      "on-primary-fixed": "#3d0700",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed": "#1c1c19",
+                      "on-primary-fixed-variant": "#8a1b00",
+                      "on-error-container": "#93000a",
+                      "outline-variant": "#e1bfb7",
+                      "primary-fixed": "#ffdad2",
+                      "secondary": "#356857",
+                      "on-secondary-fixed-variant": "#1b4f40",
+                      "error": "#ba1a1a",
+                      "warning": "#D49C3D",
+                      "inverse-surface": "#313030",
+                      "primary-fixed-dim": "#ffb4a3",
+                      "secondary-fixed": "#b8eed9",
+                      "inverse-on-surface": "#f3f0ef",
+                      "primary-container": "#cb4829",
+                      "on-tertiary-container": "#fbffe4",
+                      "surface-container-highest": "#e5e2e1",
+                      "background": "#fcf9f8",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-variant": "#e5e2e1",
+                      "surface-container-low": "#f6f3f2",
+                      "tertiary-fixed-dim": "#c8c6c2",
+                      "secondary-container": "#b5ebd6",
+                      "on-surface-variant": "#59413c",
+                      "tertiary": "#5d5c58",
+                      "error-container": "#ffdad6",
+                      "primary": "#a93013",
+                      "secondary-fixed-dim": "#9cd2bd",
+                      "surface-bright": "#fcf9f8",
+                      "tertiary-container": "#767471",
+                      "border-warm": "#E5DDD0",
+                      "on-secondary-fixed": "#002118",
+                      "surface": "#fcf9f8",
+                      "on-primary-container": "#fffbff",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#474743",
+                      "on-error": "#ffffff",
+                      "surface-container": "#f0eded",
+                      "on-background": "#1c1b1b",
+                      "danger": "#C5443B"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "container-max": "1200px",
+                      "section-v-mobile": "48px",
+                      "margin-desktop": "24px",
+                      "section-v-desktop": "80px",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "IBM Plex Sans Thai"
+                      ],
+                      "headline-lg": [
+                              "IBM Plex Sans Thai"
+                      ],
+                      "body-md": [
+                              "Prompt"
+                      ],
+                      "caption": [
+                              "Prompt"
+                      ],
+                      "headline-md": [
+                              "IBM Plex Sans Thai"
+                      ],
+                      "stat-label": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-sm": [
+                              "IBM Plex Sans Thai"
+                      ],
+                      "body-lg": [
+                              "Prompt"
+                      ],
+                      "display": [
+                              "IBM Plex Sans Thai"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "caption": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0.08em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "stat-label": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display": [
+                              "56px",
+                              {
+                                      "lineHeight": "64px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col items-center">
+<!-- TopAppBar Semantic Shell (Hidden for focused journey) -->
+<header class="hidden sticky top-0 z-50 flex flex-col w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop bg-surface dark:bg-surface-dim border-b border-warm dark:border-outline-variant">
+<div class="flex items-center justify-between py-4">
+<span class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">SaaS KYC</span>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-colors opacity-80 duration-150 cursor-pointer p-2 rounded-full" data-icon="help">help</span>
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-colors opacity-80 duration-150 cursor-pointer p-2 rounded-full" data-icon="close">close</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-[640px] px-margin-desktop py-section-v-desktop mx-auto bg-surface-container-lowest rounded-xl border border-warm shadow-sm my-section-v-desktop relative flex flex-col gap-8">
+<!-- Sticky Stepper Header -->
+<div class="sticky top-0 bg-surface-container-lowest z-10 pb-4 border-b border-warm mb-4">
+<div class="flex justify-between items-center mb-6 px-2">
+<div class="flex flex-col items-center relative group w-1/5">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-caption text-caption z-10 relative shadow-sm">1</div>
+<span class="font-caption text-caption text-primary mt-2 text-center break-words w-full">DGA</span>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-primary z-0"></div>
+</div>
+<div class="flex flex-col items-center relative group w-1/5">
+<div class="w-8 h-8 rounded-full bg-background-alt text-ink-muted flex items-center justify-center font-caption text-caption z-10 relative border border-warm">2</div>
+<span class="font-caption text-caption text-ink-muted mt-2 text-center break-words w-full">บัตร+เซลฟี่</span>
+<div class="absolute top-4 right-1/2 w-full h-[2px] bg-primary z-0"></div>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-background-alt z-0"></div>
+</div>
+<div class="flex flex-col items-center relative group w-1/5">
+<div class="w-8 h-8 rounded-full bg-background-alt text-ink-muted flex items-center justify-center font-caption text-caption z-10 relative border border-warm">3</div>
+<span class="font-caption text-caption text-ink-muted mt-2 text-center break-words w-full">SMS</span>
+<div class="absolute top-4 right-1/2 w-full h-[2px] bg-background-alt z-0"></div>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-background-alt z-0"></div>
+</div>
+<div class="flex flex-col items-center relative group w-1/5">
+<div class="w-8 h-8 rounded-full bg-background-alt text-ink-muted flex items-center justify-center font-caption text-caption z-10 relative border border-warm">4</div>
+<span class="font-caption text-caption text-ink-muted mt-2 text-center break-words w-full">สมุดบัญชี</span>
+<div class="absolute top-4 right-1/2 w-full h-[2px] bg-background-alt z-0"></div>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-background-alt z-0"></div>
+</div>
+<div class="flex flex-col items-center relative group w-1/5">
+<div class="w-8 h-8 rounded-full bg-background-alt text-ink-muted flex items-center justify-center font-caption text-caption z-10 relative border border-warm">5</div>
+<span class="font-caption text-caption text-ink-muted mt-2 text-center break-words w-full">ตรวจสอบ</span>
+<div class="absolute top-4 right-1/2 w-full h-[2px] bg-background-alt z-0"></div>
+</div>
+</div>
+<div class="px-2">
+<span class="font-caption text-caption text-primary uppercase tracking-wider block mb-2">ขั้นตอน 1 จาก 4</span>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">อัปโหลดรูปจากแอป D.GA</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">เปิดแอป D.GA หรือ ThaID → ไปที่หน้าโปรไฟล์ที่แสดงข้อมูลส่วนตัว → ถ่ายภาพหน้าจอ</p>
+</div>
+</div>
+<!-- Content Area -->
+<div class="flex flex-col gap-6 px-2 pb-24">
+<!-- Instruction Card -->
+<div class="bg-background-alt p-6 rounded-xl border border-warm">
+<div class="flex gap-3 items-start">
+<span class="material-symbols-outlined text-secondary mt-1" data-icon="info">info</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+<strong class="font-semibold text-on-surface">ข้อมูลที่ต้องเห็นในภาพ:</strong> ชื่อ-นามสกุล, เลขบัตรประชาชน, วันเกิด, ที่อยู่, เบอร์มือถือ, อีเมล. 
+                        <br><br>
+                        ถ้า screenshot ยาว → แบ่งเป็น 2 รูปได้ (รูปที่ 2 เป็นทางเลือก)
+                    </p>
+</div>
+</div>
+<!-- Upload Zone 1 -->
+<div class="h-[280px] border-2 border-dashed border-secondary bg-background-alt rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-secondary-container transition-colors duration-200 group">
+<span class="material-symbols-outlined text-secondary text-4xl mb-4 group-hover:-translate-y-1 transition-transform" data-icon="cloud_upload" style="font-size: 48px;">cloud_upload</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold mb-2">ลากภาพมาวางที่นี่ หรือ เลือกไฟล์</span>
+<span class="font-caption text-caption text-ink-muted">รูปที่ 1 (จำเป็น) · JPG, PNG · สูงสุด 5MB</span>
+</div>
+<!-- Upload Zone 2 -->
+<div class="h-[200px] border-2 border-dashed border-outline-variant bg-surface-container-lowest rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors duration-200 opacity-60 hover:opacity-100 group">
+<span class="material-symbols-outlined text-on-surface-variant text-4xl mb-4 group-hover:-translate-y-1 transition-transform" data-icon="add_photo_alternate" style="font-size: 32px;">add_photo_alternate</span>
+<span class="font-body-md text-body-md text-on-surface-variant font-medium mb-2">รูปที่ 2 (ทางเลือก)</span>
+<span class="font-caption text-caption text-ink-muted text-center px-4">ใช้เมื่อหน้าจอ D.GA ยาวเกินกว่าจะถ่ายเป็นภาพเดียว</span>
+</div>
+</div>
+<!-- Sticky Footer Actions -->
+<div class="absolute bottom-0 left-0 w-full bg-surface-container-lowest border-t border-warm p-6 rounded-b-xl flex justify-between items-center z-10">
+<button class="font-body-md text-body-md text-ink-muted hover:text-on-surface transition-colors flex items-center gap-2 h-[44px] px-4 font-semibold">
+                ← ย้อนกลับ
+            </button>
+<button class="bg-primary text-on-primary font-body-md text-body-md h-[44px] px-8 rounded-lg font-semibold hover:bg-on-primary-fixed-variant transition-colors shadow-sm hover:shadow-md hover:-translate-y-[2px] flex items-center gap-2">
+                ดำเนินการต่อ →
+            </button>
+</div>
+</main>
+</body></html>

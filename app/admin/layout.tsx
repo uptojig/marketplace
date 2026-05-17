@@ -11,6 +11,7 @@ import {
   FlaskConical,
   Mail,
   Shield,
+  ShieldCheck,
   LogOut,
   Server,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const NAV = [
   { href: "/admin", label: "ภาพรวม", icon: LayoutDashboard, exact: true },
   { href: "/admin/stores", label: "ร้านค้า", icon: Store },
   { href: "/admin/provisioning", label: "Provisioning", icon: Server },
+  { href: "/admin/kyc", label: "KYC", icon: ShieldCheck },
   { href: "/admin/users", label: "ผู้ใช้", icon: Users },
   { href: "/admin/orders", label: "คำสั่งซื้อ", icon: ShoppingCart },
   { href: "/admin/messages", label: "ข้อความ", icon: Mail },

@@ -30,6 +30,15 @@ const nextConfig = {
       // logo + 4K banner pairs; Spaces upload happens server-side after.
       bodySizeLimit: "10mb",
     },
+    // Native binaries / WASM modules used by the KYC pipeline that webpack
+    // can't bundle (would surface as "Module parse failed: Unexpected
+    // character" on .node / .wasm files). Letting Next.js leave them as
+    // runtime require()s avoids the bundling crash.
+    serverComponentsExternalPackages: [
+      "onnxruntime-node",
+      "@techstark/opencv-js",
+      "sharp",
+    ],
   },
 };
 

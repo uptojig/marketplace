@@ -6,13 +6,19 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* daisyUI 5 plugin — `themes: all` enables all 35 built-in themes
-   so the storefront can switch via <input class="theme-controller"
-   value="..."> on any page. Cost: ~30KB extra CSS shipped to the
-   client; can be narrowed to a subset later via
-   `themes: light --default, dark --prefersdark, fantasy, ...`. */
+/* daisyUI 5 plugin — narrowed to just the themes we actually render.
+   Originally `themes: all` (35 themes, ~30KB) but only one is wired
+   in <html data-theme>: our custom `marketplace-fantasy` defined
+   below. Vendor stores use `--shop-*` CSS vars (not data-theme),
+   marketplace shell uses `--mp-*` (not data-theme), so no other
+   daisyUI theme can ever be active at runtime. The few legacy
+   `components/blocks/*` components (cta, hero-banner, features,
+   ...) still need daisyUI for `btn`, `btn-primary`, `btn-outline`
+   class definitions — those come from the plugin core itself, not
+   from any specific theme, so narrowing to one theme keeps them
+   working while shaving ~28KB off the shipped CSS. */
 @plugin "daisyui" {
-  themes: all;
+  themes: false;
 }
 
 /* Custom marketplace-fantasy theme — operator-tweaked variant of
@@ -116,6 +122,22 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
+  /* Marketplace shell brand tokens (Editorial Merchant — Stitch DESIGN.md).
+     Used by basketplace.co/, /apply, /signin, /create-store, dashboard +
+     admin chrome. Vendor storefronts use `--shop-*` instead — keep the
+     namespaces separate so a theme swap on either side can never bleed
+     into the other. Source: lib/landing/marketplace.ts. */
+  --color-mp-coral: #e85d3c;
+  --color-mp-coral-dark: #a93013;
+  --color-mp-forest: #2c5f4f;
+  --color-mp-cream: #faf7f2;
+  --color-mp-cream-alt: #f0ebe2;
+  --color-mp-surface: #fcf9f8;
+  --color-mp-ink: #1a1a1a;
+  --color-mp-ink-muted: #6b6b6b;
+  --color-mp-border: #e5ddd0;
+  --color-mp-warning: #d49c3d;
 
   /* Sidebar tokens — wired so dashboard chrome (sidebar-shell-style
      blocks) gets bg-sidebar / text-sidebar-foreground utilities.
@@ -2090,4 +2112,71 @@
 .theme-mini-mops .bg-zinc-50,
 .theme-mini-mops .bg-gray-50 {
   background-color: #f9fafb !important;
+}
+
+/* ── Marketplace shell (Editorial Merchant — Stitch DESIGN.md) ──────
+   Activated when app/(marketplace)/layout.tsx adds the
+   `theme-marketplace` class for the platform-side pages:
+     /, /apply, /signin, /signup, /create-store,
+     /dashboard chrome, /admin chrome.
+
+   Token namespace is `--mp-*` (vs `--shop-*` for vendor templates) so
+   touching one cascade cannot leak into the other. Brand source of
+   truth lives in lib/landing/marketplace.ts; the `--color-mp-*`
+   utilities are exported via @theme inline above so components can
+   write `bg-mp-coral`, `text-mp-ink`, etc. directly. */
+.theme-marketplace {
+  background-color: var(--color-mp-cream);
+  color: var(--color-mp-ink);
+  /* IBM Plex Sans Thai for editorial headings (h1/h2/h3 only — body
+     keeps Prompt to maximize Thai legibility at small sizes). */
+  --mp-font-display: var(--font-ibm-thai), "IBM Plex Sans Thai", "Prompt",
+    system-ui, sans-serif;
+}
+
+.theme-marketplace h1,
+.theme-marketplace h2,
+.theme-marketplace h3 {
+  font-family: var(--mp-font-display);
+  letter-spacing: -0.015em;
+}
+
+/* Selection color follows the brand coral instead of the default
+   browser blue — small touch but high-impact on perceived brand. */
+.theme-marketplace ::selection {
+  background-color: color-mix(in srgb, var(--color-mp-coral) 18%, transparent);
+  color: var(--color-mp-ink);
+}
+
+/* Subtle card lift on hover — matches Stitch DESIGN.md guidance.
+   Only triggers when a marketplace-section card explicitly opts in
+   via the `mp-card-lift` utility, so non-interactive cards stay still. */
+.theme-marketplace .mp-card-lift {
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-marketplace .mp-card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 15px -3px rgba(26, 26, 26, 0.06),
+    0 4px 6px -2px rgba(26, 26, 26, 0.04);
+}
+
+/* Container — centered, 1200px max-width, edge gutters match
+   Stitch DESIGN.md (margin-mobile 16px / margin-desktop 24px). */
+.theme-marketplace .mp-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (min-width: 768px) {
+  .theme-marketplace .mp-container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
 }
