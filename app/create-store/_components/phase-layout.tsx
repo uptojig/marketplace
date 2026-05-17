@@ -173,6 +173,12 @@ function TemplateThumb({ id }: { id: TemplateId }) {
       return <Thumb header band="portrait" body="story-grid" />;
     case "vintage":
       return <Thumb header band="cover" body="grid-2-badges" />;
+    case "everyday-retail":
+      return <Thumb header band="everyday-red" body="grid-2-bold" />;
+    case "taobao-style":
+      return <Thumb header={false} band="taobao-gradient" body="grid-3-dense" />;
+    case "packaging-supply":
+      return <Thumb header band="packaging-pink" body="grid-2-pastel" />;
   }
 }
 
@@ -237,6 +243,29 @@ function Band({ kind }: { kind: string }) {
     return (
       <div className="flex h-2 items-center justify-center rounded-sm bg-red-500">
         <span className="h-0.5 w-6 rounded bg-white/70" />
+      </div>
+    );
+  if (kind === "everyday-red")
+    return (
+      <div className="flex h-4 items-center justify-center rounded-sm bg-zinc-900 px-1">
+        <span className="h-0.5 w-8 rounded bg-red-500" />
+      </div>
+    );
+  if (kind === "taobao-gradient")
+    return (
+      <div
+        className="flex h-5 items-center justify-end rounded-sm px-1"
+        style={{ background: 'linear-gradient(135deg, #FF4D00 0%, #FF1A1A 50%, #FF3D8B 100%)' }}
+      >
+        <span className="h-1 w-4 rounded bg-yellow-300" />
+      </div>
+    );
+  if (kind === "packaging-pink")
+    return (
+      <div className="flex h-4 items-center justify-center gap-0.5 rounded-sm px-1" style={{ background: '#FFF0F6' }}>
+        <span className="h-0.5 w-3 rounded" style={{ background: '#FF4E8B' }} />
+        <span className="h-0.5 w-3 rounded" style={{ background: '#FFD93D' }} />
+        <span className="h-0.5 w-3 rounded" style={{ background: '#3B82F6' }} />
       </div>
     );
   return <div className="h-3 rounded-sm bg-zinc-200" />;
@@ -338,6 +367,28 @@ function Body({ kind }: { kind: string }) {
       <div className={`${baseGrid} grid-cols-2`}>
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className={tile} />
+        ))}
+      </div>
+    );
+  if (kind === "grid-2-bold")
+    return (
+      <div className={`${baseGrid} grid-cols-2`}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-sm" style={{ background: i % 2 === 0 ? '#1f2937' : '#FCA5A5' }} />
+        ))}
+      </div>
+    );
+  if (kind === "grid-2-pastel")
+    return (
+      <div className={`${baseGrid} grid-cols-2`}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-md"
+            style={{
+              background: ['#FFE0EC', '#FFF3B5', '#BFDBFE', '#FFE0EC'][i],
+            }}
+          />
         ))}
       </div>
     );
