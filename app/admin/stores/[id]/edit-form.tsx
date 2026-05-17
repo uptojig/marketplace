@@ -337,7 +337,7 @@ export function StoreEditForm({ store }: { store: StoreData }) {
         <Section title="ธีมหน้าร้าน (Storefront theme)">
           <Field
             label="Theme variant"
-            hint="กำหนดดีไซน์หน้าร้าน — PDP / cart / homepage จะ render ตามธีมที่เลือก ค่าว่าง = auto ตาม templateId"
+            hint="กำหนดดีไซน์หน้าร้าน — PDP / cart / homepage จะ render ตามธีมที่เลือก ค่าว่าง = auto ตาม templateId · เลือก theme (non-auto) จะลบ AI-generated landing JSON ออก (เพื่อให้ theme render แทน)"
           >
             <select
               value={form.landingThemeVariant}
