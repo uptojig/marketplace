@@ -45,7 +45,7 @@ import { LifestyleCategoryPage } from "@/components/storefront/themes/lifestyle/
 import { ElectronicsTechCategoryPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCategoryPage";
 import { SpecialtyCategoryPage } from "@/components/storefront/themes/specialty/SpecialtyCategoryPage";
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
-import type { TemplateId } from "@/lib/templates/types";
+import type { TemplateId, BehaviorFlags } from "@/lib/templates/types";
 
 const TRUST_DISPLAY_FONT =
   'var(--font-trust-display, "Playfair Display"), Georgia, "Noto Serif Thai", serif';
@@ -157,6 +157,14 @@ export default async function CategoryIndexPage({
     templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
+
+  // Behavior flags from the picked template — drive the default
+  // ProductCard's variant (minimal / editorial / spec-rows), grid
+  // density, condition badges, unique-item chip. Falls through to
+  // undefined for stores whose templateId isn't in the 20-template
+  // registry (legacy stores) → ProductCard renders its default look.
+  const tplId = effectiveTemplateId(store) as TemplateId | undefined;
+  const templateBehavior = tplId ? STORE_TEMPLATES[tplId]?.behavior : undefined;
 
   // Counts per category. Look at BOTH `Product.categoryName` (legacy
   // denormalized text) AND `Product.category.name` (FK relation). A
@@ -681,12 +689,19 @@ export default async function CategoryIndexPage({
                       }))}
                     />
                   ) : (
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:gap-x-8">
+                    <div
+                      className={
+                        templateBehavior?.productGridDensity === 'dense'
+                          ? "grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                          : "grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:gap-x-8"
+                      }
+                    >
                       {pageProducts.map((product) => (
                         <ProductCard
                           key={product.id}
                           product={product}
                           storeSlug={store.slug}
+                          templateBehavior={templateBehavior}
                         />
                       ))}
                     </div>
@@ -864,14 +879,22 @@ function SortDropdown({
 function ProductCard({
   product,
   storeSlug,
+  templateBehavior,
 }: {
   product: any;
   storeSlug: string;
+  templateBehavior?: BehaviorFlags;
 }) {
   const title = product.titleTh || product.title;
   const price = Number(product.priceTHB);
   const imageUrl = product.imageUrl;
-  const subtitle = product.categoryName ?? null;
+  const cardStyle = templateBehavior?.productCardStyle;
+  const isMinimal = cardStyle === 'minimal';
+  const isEditorial = cardStyle === 'editorial';
+  const isSpecRows = cardStyle === 'spec-rows';
+  const subtitle = isMinimal ? null : product.categoryName ?? null;
+  const showCondition = templateBehavior?.conditionBadges === 'visible';
+  const showUnique = templateBehavior?.uniqueItemMode === true;
 
   return (
     <div className="group relative">
@@ -911,8 +934,33 @@ function ProductCard({
         />
       </div>
 
+      {/* Theme-driven status chips top-left under the StoryQuickView slot. */}
+      {(showCondition || showUnique) && (
+        <div className="absolute top-2 left-12 z-10 flex gap-1">
+          {showUnique && (
+            <span
+              className="rounded-sm bg-zinc-900 px-1.5 py-0.5 text-[9px] font-extrabold uppercase text-white"
+              style={{ letterSpacing: '0.06em' }}
+            >
+              1 of 1
+            </span>
+          )}
+          {showCondition && (
+            <span
+              className="rounded-sm bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold uppercase text-white"
+              style={{ letterSpacing: '0.06em' }}
+            >
+              Pre-owned
+            </span>
+          )}
+        </div>
+      )}
       <div
-        className="aspect-square w-full overflow-hidden rounded-md"
+        className={
+          isEditorial
+            ? "aspect-[4/5] w-full overflow-hidden rounded-md"
+            : "aspect-square w-full overflow-hidden rounded-md"
+        }
         style={{
           background:
             "color-mix(in srgb, var(--shop-card) 88%, transparent)",
@@ -936,36 +984,68 @@ function ProductCard({
           </div>
         )}
       </div>
-      <div className="mt-4 flex justify-between gap-2">
-        <div className="min-w-0">
-          <h3
-            className="text-sm line-clamp-2"
+      <div className={isMinimal ? "mt-2" : "mt-4"}>
+        {isEditorial && product.categoryName && (
+          <p
+            className="mb-1 text-[10px] font-bold uppercase tracking-[0.16em]"
             style={{ color: "var(--shop-ink-muted)" }}
           >
-            <Link
-              href={`/stores/${storeSlug}/products/${product.id}`}
-              className="hover:underline"
+            {product.categoryName}
+          </p>
+        )}
+        <div className="flex justify-between gap-2">
+          <div className="min-w-0">
+            <h3
+              className={
+                isMinimal
+                  ? "text-xs line-clamp-1"
+                  : isEditorial
+                    ? "text-sm font-medium italic"
+                    : "text-sm line-clamp-2"
+              }
+              style={{
+                color: isMinimal ? "var(--shop-ink-muted)" : "var(--shop-ink)",
+              }}
+            >
+              <Link
+                href={`/stores/${storeSlug}/products/${product.id}`}
+                className="hover:underline"
+                style={{ color: "var(--shop-ink)" }}
+              >
+                <span aria-hidden="true" className="absolute inset-0" />
+                {title}
+              </Link>
+            </h3>
+            {subtitle && !isEditorial && (
+              <p
+                className="mt-1 text-sm truncate"
+                style={{ color: "var(--shop-ink-muted)" }}
+              >
+                {subtitle}
+              </p>
+            )}
+            {/* spec-rows variant — 2 spec lines under title for tech feel */}
+            {isSpecRows && (
+              <ul className="mt-1.5 space-y-0.5 text-[10px]" style={{ color: "var(--shop-ink-muted)" }}>
+                <li>SKU · {product.id.slice(0, 8).toUpperCase()}</li>
+                <li>{product.categoryName ?? 'Spec sheet'}</li>
+              </ul>
+            )}
+          </div>
+          {!isMinimal && (
+            <p
+              className="text-sm font-medium whitespace-nowrap shrink-0"
               style={{ color: "var(--shop-ink)" }}
             >
-              <span aria-hidden="true" className="absolute inset-0" />
-              {title}
-            </Link>
-          </h3>
-          {subtitle && (
-            <p
-              className="mt-1 text-sm truncate"
-              style={{ color: "var(--shop-ink-muted)" }}
-            >
-              {subtitle}
+              {formatTHB(price)}
             </p>
           )}
         </div>
-        <p
-          className="text-sm font-medium whitespace-nowrap shrink-0"
-          style={{ color: "var(--shop-ink)" }}
-        >
-          {formatTHB(price)}
-        </p>
+        {isMinimal && (
+          <p className="mt-1 text-sm font-medium" style={{ color: "var(--shop-ink)" }}>
+            {formatTHB(price)}
+          </p>
+        )}
       </div>
     </div>
   );
