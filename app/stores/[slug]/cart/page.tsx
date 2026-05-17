@@ -7,6 +7,10 @@ import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isEverydayStore } from "@/lib/landing/everyday";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { isPackagingStore } from "@/lib/landing/packaging";
+import { isCommunityStore } from "@/lib/landing/community";
 import { StoreCartClient } from "./cart-client";
 import { FashionBeautyCartPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyCartPage";
 import { TrustCartPage } from "@/components/storefront/themes/trust/TrustCartPage";
@@ -14,6 +18,10 @@ import { BusinessModelCartPage } from "@/components/storefront/themes/business-m
 import { LifestyleCartPage } from "@/components/storefront/themes/lifestyle/LifestyleCartPage";
 import { ElectronicsTechCartPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCartPage";
 import { SpecialtyCartPage } from "@/components/storefront/themes/specialty/SpecialtyCartPage";
+import { EverydayCartPage } from "@/components/storefront/themes/everyday/EverydayCartPage";
+import { TaobaoCartPage } from "@/components/storefront/themes/taobao/TaobaoCartPage";
+import { PackagingCartPage } from "@/components/storefront/themes/packaging/PackagingCartPage";
+import { CommunityCartPage } from "@/components/storefront/themes/community/CommunityCartPage";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +76,22 @@ export default async function StoreCartPage({
     templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   });
+  const isEveryday = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && !isSpecialty && isEverydayStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isTaobao = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && isTaobaoStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isPackaging = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && isPackagingStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
+  const isCommunity = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && !isPackaging && isCommunityStore({
+    templateId: effectiveTemplateId(store),
+    landingThemeVariant: store.landingThemeVariant,
+  });
 
   // Each design family now has a fully bespoke cart page with a
   // structurally distinct layout (not just palette / typography swaps).
@@ -91,6 +115,18 @@ export default async function StoreCartPage({
   }
   if (isSpecialty) {
     return <SpecialtyCartPage store={store} />;
+  }
+  if (isEveryday) {
+    return <EverydayCartPage store={store} />;
+  }
+  if (isTaobao) {
+    return <TaobaoCartPage store={store} />;
+  }
+  if (isPackaging) {
+    return <PackagingCartPage store={store} />;
+  }
+  if (isCommunity) {
+    return <CommunityCartPage store={store} />;
   }
 
   return (

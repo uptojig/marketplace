@@ -19,6 +19,8 @@ import { BusinessModelRelatedProducts } from "@/components/storefront/themes/bus
 import { LifestyleRelatedProducts } from "@/components/storefront/themes/lifestyle/LifestyleRelatedProducts";
 import { ElectronicsTechRelatedProducts } from "@/components/storefront/themes/electronics-tech/ElectronicsTechRelatedProducts";
 import { SpecialtyRelatedProducts } from "@/components/storefront/themes/specialty/SpecialtyRelatedProducts";
+import { SimpleBrandStory } from "@/components/storefront/themes/_shared/SimpleBrandStory";
+import { SimpleRelatedProducts } from "@/components/storefront/themes/_shared/SimpleRelatedProducts";
 import { TrustProductHero } from "@/components/storefront/themes/trust/TrustProductHero";
 import { BusinessModelProductHero } from "@/components/storefront/themes/business-model/BusinessModelProductHero";
 import { LifestyleProductHero } from "@/components/storefront/themes/lifestyle/LifestyleProductHero";
@@ -337,6 +339,32 @@ export default async function ShopProductPage({
           description={product.store.description}
         />
       )}
+      {(isEveryday || isTaobao || isPackaging || isCommunity) && (
+        <SimpleBrandStory
+          storeSlug={product.store.slug}
+          storeName={product.store.name}
+          tagline={product.store.tagline}
+          description={product.store.description}
+          accentColor={
+            isTaobao
+              ? '#FF1A1A'
+              : isPackaging
+                ? '#FF4E8B'
+                : isCommunity
+                  ? '#9333EA'
+                  : '#DC2626'
+          }
+          panelBg={
+            isPackaging
+              ? '#FFF0F6'
+              : isTaobao
+                ? '#FFEDED'
+                : isCommunity
+                  ? '#FAF5FF'
+                  : '#ffffff'
+          }
+        />
+      )}
 
       <ProductDetailTabs
         product={{
@@ -467,8 +495,49 @@ export default async function ShopProductPage({
           }))}
         />
       )}
+      {related.length > 0 && (isEveryday || isTaobao || isPackaging || isCommunity) && (
+        <SimpleRelatedProducts
+          storeSlug={params.slug}
+          storeName={product.store.name}
+          primaryColor={
+            isTaobao
+              ? '#FF1A1A'
+              : isPackaging
+                ? '#FF4E8B'
+                : isCommunity
+                  ? '#9333EA'
+                  : '#DC2626'
+          }
+          accentColor={
+            isTaobao
+              ? '#FFD600'
+              : isPackaging
+                ? '#FFD93D'
+                : isCommunity
+                  ? '#EC4899'
+                  : '#DC2626'
+          }
+          eyebrow={
+            isTaobao
+              ? '🔥 BEST DEALS'
+              : isPackaging
+                ? '💝 NEW IN'
+                : isCommunity
+                  ? '📺 NOW TRENDING'
+                  : '★ ใหม่ล่าสุด'
+          }
+          products={related.map((r) => ({
+            id: r.id,
+            title: r.title,
+            titleTh: r.titleTh,
+            imageUrl: r.imageUrl,
+            priceTHB: Number(r.priceTHB),
+            compareAtPriceTHB: r.compareAtPriceTHB ? Number(r.compareAtPriceTHB) : null,
+          }))}
+        />
+      )}
 
-      {related.length > 0 && !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && (
+      {related.length > 0 && !isFB && !isTrust && !isBM && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && !isPackaging && !isCommunity && (
         <section
           className={
             isFB || isTrust || isLifestyle || isElectronicsTech || isSpecialty
