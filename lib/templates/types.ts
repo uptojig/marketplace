@@ -4,7 +4,17 @@
  * A Template is a config that lists which Blocks to render in what order.
  * Adding a template = new config (no new code).
  * Adding a block type = new component + register in renderer.
+ *
+ * As of the multi-page-template refactor, a Template can ALSO ship its
+ * own chrome (`Header` / `Footer` / `AnnouncementStrip`) and per-route
+ * page components (`home` / `catalog` / `pdp` / `cart` / ...). When a
+ * field is present, the per-store layout + route dispatchers defer to
+ * it. When absent (the back-compat case for all 20 registry entries),
+ * the generic `ShopHeader` / `ShopFooter` + per-route React UI keeps
+ * rendering, so existing stores are untouched.
  */
+
+import type { ComponentType } from 'react';
 
 // ============================================================================
 // Block primitives
@@ -90,7 +100,8 @@ export type TemplateId =
   | 'flash-deal'
   | 'subscription'
   | 'handmade'
-  | 'vintage';
+  | 'vintage'
+  | 'bikini-beach';
 
 export type DesktopPattern = 'A' | 'B' | 'C' | 'D';
 
