@@ -68,7 +68,10 @@ export type TemplateGroup =
   | 'lifestyle'
   | 'community'
   | 'business-model'
-  | 'specialty';
+  | 'specialty'
+  | 'everyday'
+  | 'taobao'
+  | 'packaging';
 
 export type TemplateId =
   | 'classic'
@@ -90,7 +93,10 @@ export type TemplateId =
   | 'flash-deal'
   | 'subscription'
   | 'handmade'
-  | 'vintage';
+  | 'vintage'
+  | 'everyday-retail'
+  | 'taobao-style'
+  | 'packaging-supply';
 
 export type DesktopPattern = 'A' | 'B' | 'C' | 'D';
 
