@@ -148,16 +148,90 @@ export function ProductDetailHero({
   product: ProductDetailHeroProduct;
   store: ProductDetailHeroStore;
   /** When set, drives template-specific visual toggles (hideRatingsCount,
-   *  showTabs, productCardStyle, etc.). Wired up by app/stores/[slug]/
-   *  products/[id]/page.tsx from getTemplate(effectiveTemplateId).behavior. */
+   *  heroSize, badgeSlot, countdownBanner, stickyCTA, etc.). Wired up by
+   *  app/stores/[slug]/products/[id]/page.tsx from
+   *  getTemplate(effectiveTemplateId).behavior. */
   templateBehavior?: BehaviorFlags;
 }) {
+  const heroLarge = templateBehavior?.heroSize === 'large' || templateBehavior?.heroSize === 'cover';
   return (
-    <div className="lg:p-6">
-      <div className="lg:grid lg:grid-cols-[60%_40%] lg:gap-8">
+    <div className={heroLarge ? "lg:p-8" : "lg:p-6"}>
+      {/* Countdown stripe — fires when template.behavior.countdownBanner
+          is "visible" (flash-deal / subscription templates). */}
+      {templateBehavior?.countdownBanner === 'visible' && (
+        <div
+          className="mb-4 flex flex-wrap items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold uppercase tracking-[0.06em] text-white"
+          style={{ background: 'var(--shop-primary, #DC2626)' }}
+        >
+          <span>⚡ Flash deal · เหลือเวลา 02:34:17</span>
+        </div>
+      )}
+      <div className={heroLarge ? "lg:grid lg:grid-cols-[55%_45%] lg:gap-10" : "lg:grid lg:grid-cols-[60%_40%] lg:gap-8"}>
         <Gallery product={product} />
         <InfoColumn product={product} store={store} templateBehavior={templateBehavior} />
       </div>
+    </div>
+  );
+}
+
+/** Tiny badge chip rendered above the product title when behavior.
+ *  badgeSlot is set. One of four flavours: official (blue ✓) / b2b
+ *  (slate B2B) / condition (amber USED) / performance (purple PERF). */
+function BadgeSlotChip({ slot }: { slot: 'official' | 'b2b' | 'condition' | 'performance' }) {
+  const palette = {
+    official: { bg: '#1D4ED8', label: '✓ OFFICIAL' },
+    b2b: { bg: '#475569', label: 'B2B ONLY' },
+    condition: { bg: '#D97706', label: 'PRE-OWNED' },
+    performance: { bg: '#7C3AED', label: 'HIGH PERFORMANCE' },
+  }[slot];
+  return (
+    <span
+      className="inline-flex items-center gap-1 self-start rounded px-2 py-0.5 text-[10px] font-extrabold uppercase text-white"
+      style={{ background: palette.bg, letterSpacing: '0.08em' }}
+    >
+      {palette.label}
+    </span>
+  );
+}
+
+/** Sticky bottom CTA bar for mobile — rendered when behavior.stickyCTA
+ *  is set on a template (e.g. single-product mode). Desktop hidden. */
+function StickyCtaBar({
+  mode,
+  onAdd,
+  onBuyNow,
+  disabled,
+}: {
+  mode: 'buy-now' | 'add-to-cart';
+  onAdd: () => void;
+  onBuyNow: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white p-3 shadow-lg lg:hidden"
+      style={{ borderColor: 'var(--shop-border, #E5E5E5)' }}
+    >
+      {mode === 'buy-now' ? (
+        <Button
+          type="button"
+          onClick={onBuyNow}
+          disabled={disabled}
+          className="w-full text-white"
+          style={{ background: 'var(--shop-primary, #DC2626)' }}
+        >
+          ซื้อเลย
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          onClick={onAdd}
+          disabled={disabled}
+          className="w-full text-white"
+          style={{ background: 'var(--shop-primary, #DC2626)' }}
+        >
+          ใส่ตะกร้า
+        </Button>
+      )}
     </div>
   );
 }
@@ -303,8 +377,11 @@ function InfoColumn({
     router.push(cartHref(store.slug));
   };
 
+  const heroLarge = templateBehavior?.heroSize === 'large' || templateBehavior?.heroSize === 'cover';
+  const badgeSlot = templateBehavior?.badgeSlot;
   return (
     <div className="space-y-4 p-4 lg:p-0">
+      {badgeSlot && <BadgeSlotChip slot={badgeSlot} />}
       {product.badges.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           {product.badges.includes('hot') && <Badge variant="destructive">Hot</Badge>}
@@ -316,7 +393,15 @@ function InfoColumn({
         </div>
       )}
 
-      <h1 className="text-xl font-semibold leading-tight lg:text-2xl">{product.title}</h1>
+      <h1
+        className={
+          heroLarge
+            ? "text-2xl font-bold leading-tight tracking-tight lg:text-4xl"
+            : "text-xl font-semibold leading-tight lg:text-2xl"
+        }
+      >
+        {product.title}
+      </h1>
 
       {!templateBehavior?.hideRatingsCount &&
         (product.rating != null || product.reviewCount != null || product.soldCount != null) && (
@@ -465,6 +550,17 @@ function InfoColumn({
           <span>คืนสินค้าได้ภายใน 7 วัน</span>
         </div>
       </div>
+      {/* Sticky-CTA bar (mobile only) — fires when template.behavior.
+          stickyCTA is set. "buy-now" jumps straight to cart; "add-to-
+          cart" performs the same add+toast as the inline button. */}
+      {templateBehavior?.stickyCTA && templateBehavior.stickyCTA !== 'none' && (
+        <StickyCtaBar
+          mode={templateBehavior.stickyCTA}
+          onAdd={handleAdd}
+          onBuyNow={handleBuyNow}
+          disabled={!canAdd}
+        />
+      )}
     </div>
   );
 }
