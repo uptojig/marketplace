@@ -34,6 +34,7 @@ import { isTaobaoStore } from "@/lib/landing/taobao";
 import { isPackagingStore } from "@/lib/landing/packaging";
 import { isCommunityStore } from "@/lib/landing/community";
 import { ThemeRibbon } from "@/components/storefront/themes/_shared/ThemeRibbon";
+import { SimpleBespokeCategory } from "@/components/storefront/themes/_shared/SimpleBespokeCategory";
 import { TrustCategoryGrid } from "@/components/storefront/themes/trust/TrustCategoryGrid";
 import { BusinessModelCategoryGrid } from "@/components/storefront/themes/business-model/BusinessModelCategoryGrid";
 import { LifestyleCategoryGrid } from "@/components/storefront/themes/lifestyle/LifestyleCategoryGrid";
@@ -365,19 +366,77 @@ export default async function CategoryIndexPage({
     return <SpecialtyCategoryPage {...sharedCategoryProps} />;
   }
 
-  // Slim themes (everyday / taobao / packaging / community) — render
-  // the default category UI prefixed with a theme-specific ribbon so
-  // the catalog still reads as the chosen theme without needing a
-  // fully bespoke <ThemeCategoryPage />.
-  const slimRibbon = (
-    <ThemeRibbon
-      variant="category"
-      isEveryday={isEveryday}
-      isTaobao={isTaobao}
-      isPackaging={isPackaging}
-      isCommunity={isCommunity}
-    />
-  );
+  // Slim themes (everyday / taobao / packaging / community) — bespoke
+  // CategoryPage scaffold (PR #117). The shared SimpleBespokeCategory
+  // takes a tokens config so each theme reads as a fully-distinct
+  // catalog (large hero band + chip filters + theme-tuned grid). Falls
+  // back to ribbon + default if no theme matched (legacy stores).
+  if (isEveryday || isTaobao || isPackaging || isCommunity) {
+    const tokens = isTaobao
+      ? {
+          heroBg: 'linear-gradient(135deg, #FF4D00 0%, #FF1A1A 50%, #FF3D8B 100%)',
+          heroFg: '#ffffff',
+          accent: '#FFD600',
+          primary: '#FF1A1A',
+          eyebrow: '🔥 TAOBAO MARKETPLACE',
+          heading: `แคตตาล็อก · ${store.name}`,
+          subheading: 'ดีลทุกชั่วโมง · ลดสูงสุด 80%',
+        }
+      : isPackaging
+        ? {
+            heroBg: '#FF4E8B',
+            heroFg: '#ffffff',
+            accent: '#FFD93D',
+            primary: '#FF4E8B',
+            eyebrow: '✨ PACKAGING SUPPLY',
+            heading: `บรรจุภัณฑ์ครบวงจร · ${store.name}`,
+            subheading: 'ส่งฟรี ฿590+ · ภายใน 24 ชม.',
+          }
+        : isCommunity
+          ? {
+              heroBg: 'linear-gradient(135deg, #9333EA 0%, #EC4899 100%)',
+              heroFg: '#ffffff',
+              accent: '#EC4899',
+              primary: '#9333EA',
+              eyebrow: '📺 LIVE COMMERCE',
+              heading: `สินค้าที่ KOL พรีวิว · ${store.name}`,
+              subheading: 'ราคาไลฟ์เท่านั้น · 1.2K viewers',
+            }
+          : {
+              heroBg: '#0F0F0F',
+              heroFg: '#ffffff',
+              accent: '#DC2626',
+              primary: '#DC2626',
+              eyebrow: '★ EVERYDAY RETAIL',
+              heading: `สินค้าทั้งหมด · ${store.name}`,
+              subheading: 'ลดสูงสุด 30% · ส่งฟรีทั่วประเทศ',
+            };
+    return (
+      <SimpleBespokeCategory
+        storeSlug={store.slug}
+        storeName={store.name}
+        pageProducts={sharedCategoryProps.pageProducts.map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          titleTh: p.titleTh ?? null,
+          imageUrl: p.imageUrl ?? null,
+          priceTHB: Number(p.priceTHB),
+          compareAtPriceTHB: p.compareAtPriceTHB ? Number(p.compareAtPriceTHB) : null,
+        }))}
+        totalCount={sharedCategoryProps.filteredCount}
+        selectedCats={sharedCategoryProps.selectedCats}
+        sortKey={sharedCategoryProps.sortKey}
+        currentPage={sharedCategoryProps.currentPage}
+        totalPages={sharedCategoryProps.totalPages}
+        buildUrl={sharedCategoryProps.buildUrl}
+        buildSortUrl={sharedCategoryProps.buildSortUrl}
+        categoryNames={sharedCategoryProps.categoryNames}
+        tokens={tokens}
+      />
+    );
+  }
+
+  const slimRibbon = null;
 
   // Pet-house brand hero band — when fluffyhouse-style stores land on
   // the catalog with one of the 4 Shop-by-Type pseudo-slugs active,
