@@ -40,6 +40,7 @@ import { isTaobaoStore } from "@/lib/landing/taobao";
 import { isPackagingStore } from "@/lib/landing/packaging";
 import { isCommunityStore } from "@/lib/landing/community";
 import { ThemeRibbon } from "@/components/storefront/themes/_shared/ThemeRibbon";
+import { SimpleBespokeOrderSuccess } from "@/components/storefront/themes/_shared/SimpleBespokeOrderSuccess";
 import { SpecialtyStamp } from "@/components/storefront/themes/specialty/SpecialtyDivider";
 import { FashionBeautyOrderSuccessPage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyOrderSuccessPage";
 import { TrustOrderSuccessPage } from "@/components/storefront/themes/trust/TrustOrderSuccessPage";
@@ -234,6 +235,66 @@ export default async function StoreOrderSuccess({
   }
   if (isSpecialty) {
     return <SpecialtyOrderSuccessPage {...sharedSuccessProps} />;
+  }
+
+  // Slim themes — bespoke order-success scaffold (PR #117).
+  if (isEveryday || isTaobao || isPackaging || isCommunity) {
+    const tokens = isTaobao
+      ? {
+          heroBg: 'linear-gradient(135deg, #FF4D00 0%, #FF1A1A 50%, #FF3D8B 100%)',
+          heroFg: '#ffffff',
+          accent: '#FFD600',
+          primary: '#FF1A1A',
+          eyebrow: '🎉 ORDER CONFIRMED',
+          heading: 'สั่งซื้อสำเร็จแล้ว!',
+          subheading: 'ออเดอร์เข้าระบบ · ส่งทันทีพรุ่งนี้',
+        }
+      : isPackaging
+        ? {
+            heroBg: '#FF4E8B',
+            heroFg: '#ffffff',
+            accent: '#FFD93D',
+            primary: '#FF4E8B',
+            eyebrow: '💝 ขอบคุณค่ะ',
+            heading: 'รับออเดอร์เรียบร้อย',
+            subheading: 'เตรียมแพ็คให้ทันที · ส่งภายใน 24 ชม.',
+          }
+        : isCommunity
+          ? {
+              heroBg: 'linear-gradient(135deg, #9333EA 0%, #EC4899 100%)',
+              heroFg: '#ffffff',
+              accent: '#EC4899',
+              primary: '#9333EA',
+              eyebrow: '🎊 LIVE DEAL CONFIRMED',
+              heading: 'ยินดีด้วย!',
+              subheading: 'ออเดอร์จากไลฟ์ · ได้ลด 15% แล้ว',
+            }
+          : {
+              heroBg: '#0F0F0F',
+              heroFg: '#ffffff',
+              accent: '#DC2626',
+              primary: '#DC2626',
+              eyebrow: '★ ORDER PLACED',
+              heading: 'สั่งซื้อสำเร็จ',
+              subheading: 'ขอบคุณที่ช้อปกับเรา · ติดตามได้ที่อีเมล',
+            };
+    return (
+      <SimpleBespokeOrderSuccess
+        storeSlug={params.slug}
+        storeName={storeName}
+        orderId={order.id}
+        orderNumber={shortCode}
+        totalTHB={Number(order.totalTHB)}
+        lines={sharedSuccessProps.items.map((it) => ({
+          productId: it.id,
+          title: it.title,
+          imageUrl: it.imageUrl ?? undefined,
+          priceTHB: it.lineTotalTHB / Math.max(1, it.qty),
+          qty: it.qty,
+        }))}
+        tokens={tokens}
+      />
+    );
   }
 
   return (
