@@ -16,9 +16,13 @@ export interface CartLineDisplay {
 interface CartState {
   lines: CartLineDisplay[];
   add: (line: Omit<CartLineDisplay, "qty">, qty?: number) => void;
-  setQty: (productId: string, qty: number) => void;
-  remove: (productId: string) => void;
-  clear: () => void;
+  // `_storeSlug` accepted for theme call-sites that target per-store cart
+  // scoping. It's currently a no-op on this single-cart implementation —
+  // operations apply to the only cart. Kept in the signature so themes
+  // built against the per-store API type-check.
+  setQty: (productId: string, qty: number, _storeSlug?: string) => void;
+  remove: (productId: string, _storeSlug?: string) => void;
+  clear: (_storeSlug?: string) => void;
   subtotalTHB: () => number;
   count: () => number;
 }
@@ -39,15 +43,15 @@ export const useCart = create<CartState>()(
           set({ lines: [...get().lines, { ...line, qty }] });
         }
       },
-      setQty: (productId, qty) => {
+      setQty: (productId, qty, _storeSlug) => {
         if (qty <= 0) {
           set({ lines: get().lines.filter((l) => l.productId !== productId) });
           return;
         }
         set({ lines: get().lines.map((l) => (l.productId === productId ? { ...l, qty } : l)) });
       },
-      remove: (productId) => set({ lines: get().lines.filter((l) => l.productId !== productId) }),
-      clear: () => set({ lines: [] }),
+      remove: (productId, _storeSlug) => set({ lines: get().lines.filter((l) => l.productId !== productId) }),
+      clear: (_storeSlug) => set({ lines: [] }),
       subtotalTHB: () => get().lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0),
       count: () => get().lines.reduce((acc, l) => acc + l.qty, 0),
     }),
