@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma, StoreApprovalStatus } from "@prisma/client";
 import { getStoreQualitySnapshot } from "@/lib/admin/enrich-products";
 import { StoreRowActions } from "./row-actions";
+import { BulkThemeBar } from "./bulk-theme-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -160,6 +161,7 @@ export default async function AdminStoresPage({
         createdAt: true,
         approvalStatus: true,
         approvalNote: true,
+        landingThemeVariant: true,
         owner: { select: { email: true, name: true } },
         _count: { select: { products: true } },
       },
@@ -229,6 +231,16 @@ export default async function AdminStoresPage({
           สร้างร้านใหม่
         </Link>
       </div>
+
+      {/* ── Bulk theme picker (collapsed by default) ─────────────── */}
+      <BulkThemeBar
+        stores={stores.map((s) => ({
+          id: s.id,
+          slug: s.slug,
+          name: s.name,
+          landingThemeVariant: s.landingThemeVariant,
+        }))}
+      />
 
       {/* ── Status filter tabs ───────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-0 overflow-x-auto border-b">
