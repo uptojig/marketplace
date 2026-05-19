@@ -25,6 +25,31 @@ import {
   isReactTemplateSchema,
   type ReactTemplateSchema,
 } from "@/components/storefront/templates/registry";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
+import { isPetHouseStore } from "@/lib/landing/pet-house";
+import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
+import { isTrustStore } from "@/lib/landing/trust";
+import { isBusinessModelStore } from "@/lib/landing/business-model";
+import { isLifestyleStore } from "@/lib/landing/lifestyle";
+import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
+import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isCaseStudioStore } from "@/lib/landing/case-studio";
+import { isEverydayStore } from "@/lib/landing/everyday";
+import { isTaobaoStore } from "@/lib/landing/taobao";
+import { isPackagingStore } from "@/lib/landing/packaging";
+import { isCommunityStore } from "@/lib/landing/community";
+import { PetHouseHomepage } from "@/components/storefront/themes/pet-house/PetHouseHomepage";
+import { FashionBeautyHomepage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyHomepage";
+import { TrustHomepage } from "@/components/storefront/themes/trust/TrustHomepage";
+import { BusinessModelHomepage } from "@/components/storefront/themes/business-model/BusinessModelHomepage";
+import { LifestyleHomepage } from "@/components/storefront/themes/lifestyle/LifestyleHomepage";
+import { ElectronicsTechHomepage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechHomepage";
+import { SpecialtyHomepage } from "@/components/storefront/themes/specialty/SpecialtyHomepage";
+import { CaseStudioHomepage } from "@/components/storefront/themes/case-studio/CaseStudioHomepage";
+import { EverydayHomepage } from "@/components/storefront/themes/everyday/EverydayHomepage";
+import { TaobaoHomepage } from "@/components/storefront/themes/taobao/TaobaoHomepage";
+import { PackagingHomepage } from "@/components/storefront/themes/packaging/PackagingHomepage";
+import { CommunityHomepage } from "@/components/storefront/themes/community/CommunityHomepage";
 
 export const dynamic = "force-dynamic";
 
@@ -181,6 +206,56 @@ export default async function StorePage({
   // ── React template (curated designs, e.g. Mini Mops) ────────
   if (baseStore.landingBlocks && isReactTemplateSchema(baseStore.landingBlocks)) {
     return renderReactTemplate(baseStore, baseStore.landingBlocks);
+  }
+
+  // ── Per-template bespoke homepages ───────────────────────────
+  // Dispatches by `effectiveTemplateId` (own column → slug-map fallback)
+  // and `landingThemeVariant`. Each family helper returns true when
+  // its bespoke `XxxHomepage` should render. Falls through if no
+  // family claims the store.
+  {
+    const templateId = effectiveTemplateId(baseStore);
+    const familyInput = {
+      slug: baseStore.slug,
+      templateId: templateId ?? null,
+      landingThemeVariant: baseStore.landingThemeVariant ?? null,
+    };
+    if (isPetHouseStore(familyInput)) {
+      return <PetHouseHomepage store={baseStore} />;
+    }
+    if (isCaseStudioStore(familyInput)) {
+      return <CaseStudioHomepage store={baseStore} />;
+    }
+    if (isFashionBeautyStore(familyInput)) {
+      return <FashionBeautyHomepage store={baseStore} />;
+    }
+    if (isTrustStore(familyInput)) {
+      return <TrustHomepage store={baseStore} />;
+    }
+    if (isBusinessModelStore(familyInput)) {
+      return <BusinessModelHomepage store={baseStore} />;
+    }
+    if (isLifestyleStore(familyInput)) {
+      return <LifestyleHomepage store={baseStore} />;
+    }
+    if (isElectronicsTechStore(familyInput)) {
+      return <ElectronicsTechHomepage store={baseStore} />;
+    }
+    if (isSpecialtyStore(familyInput)) {
+      return <SpecialtyHomepage store={baseStore} />;
+    }
+    if (isEverydayStore(familyInput)) {
+      return <EverydayHomepage store={baseStore} />;
+    }
+    if (isTaobaoStore(familyInput)) {
+      return <TaobaoHomepage store={baseStore} />;
+    }
+    if (isPackagingStore(familyInput)) {
+      return <PackagingHomepage store={baseStore} />;
+    }
+    if (isCommunityStore(familyInput)) {
+      return <CommunityHomepage store={baseStore} />;
+    }
   }
 
   // ── block_registry_v1 (AI block system) ─────────────────────

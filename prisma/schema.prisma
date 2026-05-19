@@ -101,6 +101,15 @@ model Store {
   // that bundled too many decisions. Replaced by per-element toggles above.
   // Column kept to avoid a destructive migration; safe to drop in a future cleanup.
   themeId      String?  @default("modern")
+  // ── Vendor wizard (5-phase) ──
+  // niche drives template recommendations and product warehouse filtering.
+  // brandVoice is one of: "casual" | "formal" | "playful".
+  // templateId references the 20-template registry in lib/store/wizard-data.ts.
+  // paletteId references the preset palette registry; falls back to primaryColor for legacy stores.
+  niche        String?
+  brandVoice   String?  @default("casual")
+  templateId   String?
+  paletteId    String?
   // Custom domain (vendor brings their own); subdomain is derived from slug
   customDomain String?  @unique
   // Legal/business info shown on contact page + footer
@@ -197,6 +206,33 @@ model Product {
   categoryId        String?
   hasVariants       Boolean  @default(false)
   active            Boolean  @default(true)
+  // Stock tracking — stockReserved counts un-paid orders that have
+  // locked inventory but not yet decremented stockTotal. Available =
+  // stockTotal - stockReserved.
+  stockTotal        Int      @default(0)
+  stockReserved     Int      @default(0)
+  // Multi-category cache (vendor-template parity). Primary
+  // categorization still flows through categoryId/categoryName.
+  categorySlugs     Json?
+  // ── Rich supplier metadata (CJ `productWeight`, `productKeyAttribute`,
+  // `productMaterials`, `videoUrl`, `hsCode`, `originCountry`) ──
+  // All nullable so the migration is purely additive and legacy rows
+  // continue to load. Enrich + backfill fill these from externalPayload.
+  weightGrams       Int?
+  originCountry     String?
+  /// String[] of feature bullets (CJ `productKeyAttribute`). Rendered
+  /// as a bulleted list under the PDP description tab.
+  keyAttributes     Json?
+  /// Record<string, string> of spec key/value pairs (CJ `productMaterials`
+  /// / `productProperties`). Renders in the PDP "ข้อมูลจำเพาะ" tab so it
+  /// stops being empty for rich CJ products.
+  materials         Json?
+  /// CJ `videoUrl` / `productVideoUrl`. Surfaced as a "ดูวิดีโอ" link
+  /// under the PDP gallery — NOT auto-embedded.
+  videoUrl          String?
+  /// HS / customs code from CJ `hsCode` / `customsCode`. Used by future
+  /// cross-border shipping setup.
+  hsCode            String?
   // Per-product moderation. Defaults to APPROVED so existing flow
   // isn't disrupted; new vendor uploads can be set to PENDING via
   // a settings flag (admin can toggle "require product moderation"
@@ -295,9 +331,20 @@ model ProductVariant {
   externalVariantId String
   sku               String?
   attributes        Json     // { "Size": "M", "Color": "Black" }
+  /// Split-out variant labels so the PDP picker can render Color +
+  /// Size + Material as separate UI rows. Populated alongside
+  /// `attributes` (which is kept for back-compat with existing rows
+  /// + callers that expect the flat blob).
+  colorLabel        String?
+  sizeLabel         String?
+  materialLabel     String?
   priceTHB          Decimal  @db.Decimal(12, 2)
   imageUrl          String?
+  // Legacy single-counter inventory. Kept for back-compat with
+  // existing reads; new code should use stockTotal/stockReserved.
   inventory         Int?
+  stockTotal        Int      @default(0)
+  stockReserved     Int      @default(0)
   createdAt         DateTime @default(now())
 
   product Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
