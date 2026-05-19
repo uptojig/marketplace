@@ -54,9 +54,15 @@ const FIXTURES = {
   },
 };
 
+// S1 is now incremental multi-image (S1 v2): N add-image calls then a
+// finalize call. Bench treats the total HTTP wall time across all calls
+// as the S1 duration, comparable to the legacy single-shot 2-image flow.
 const STEPS = [
-  { key: "s1", label: "S1 DGA_CAPTURE", path: "s3/dga-capture",
-    fields: (f) => ({ image1: readImg(f.dir, f.files.image1), image2: readImg(f.dir, f.files.image2) }) },
+  { key: "s1", label: "S1 DGA_CAPTURE (multi)",
+    multi: true,
+    addPath: "s1/dga-add-image",
+    finalizePath: "s1/dga-finalize",
+    images: (f) => [readImg(f.dir, f.files.image1), readImg(f.dir, f.files.image2)] },
   { key: "s2", label: "S2 ID_SELFIE",   path: "s1/id-card",
     fields: (f) => ({ id_front: readImg(f.dir, f.files.id_front), selfie: readImg(f.dir, f.files.selfie) }) },
   { key: "s3", label: "S3 PHONE",       path: "s4/ussd",
@@ -94,6 +100,36 @@ async function createSession() {
 }
 
 async function callStep(sid, step, fixture) {
+  // S1 v2 multi-image path: POST each image to /s1/dga-add-image, then
+  // /s1/dga-finalize. Bench treats the sum of HTTP wall times as the
+  // total S1 duration (comparable to old single-shot 2-image flow).
+  if (step.multi) {
+    const images = step.images(fixture);
+    const t0 = Date.now();
+    let lastJson = null;
+    try {
+      for (const img of images) {
+        const form = new FormData();
+        form.append("image", new Blob([img.buf], { type: img.mime }), img.name);
+        const r = await fetch(`${BASE}/api/wizard/${sid}/${step.addPath}`, { method: "POST", body: form });
+        lastJson = await r.json().catch(() => null);
+        if (!r.ok) {
+          return { httpMs: Date.now() - t0, status: r.status, error: lastJson?.error, timings: null, body: lastJson };
+        }
+      }
+      const fr = await fetch(`${BASE}/api/wizard/${sid}/${step.finalizePath}`, { method: "POST" });
+      const fj = await fr.json().catch(() => null);
+      return {
+        httpMs: Date.now() - t0,
+        status: fr.status,
+        timings: fj?._timings_ms ?? lastJson?._timings_ms ?? null,
+        body: fj,
+      };
+    } catch (e) {
+      return { httpMs: Date.now() - t0, status: 0, error: e.message, timings: null };
+    }
+  }
+
   const form = new FormData();
   for (const [k, v] of Object.entries(step.fields(fixture))) {
     form.append(k, new Blob([v.buf], { type: v.mime }), v.name);

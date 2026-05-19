@@ -907,6 +907,7 @@ model WizardSession {
   matchResults        WizardMatchResult[]
   auditLogs           WizardAuditLog[]
   costLogs            WizardCostLog[]
+  dgaFields           WizardDgaField[]
   outlookCredentials  WizardOutlookCredential[] @relation("WizardOutlookLease")
 
   @@index([state, expiresAt])
@@ -930,10 +931,52 @@ model WizardEvidence {
 
   session     WizardSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   ocrResults  WizardOcrResult[]
+  dgaFields   WizardDgaField[]
 
   @@index([sessionId, capturedAt])
   @@index([step])
   @@map("evidence")
+}
+
+// Accumulating label→value checklist for S1 v2 (incremental multi-image DGA
+// capture). Each row = one OCR'd field from one screenshot. UPSERT on
+// (sessionId, fieldKey) implements last-write-wins so user can override a
+// stale value by re-uploading a better screenshot.
+//
+// On finalize, the route reads all rows for the session, builds the canonical
+// Identity, and writes a single `dga` provider row to wizard_ocr_results so
+// downstream S2/S3/S4 cross-match lookups stay unchanged.
+//
+// Cascade on evidence deletion: removing an image deletes only the fields
+// contributed by that evidenceId — other images' contributions survive.
+model WizardDgaField {
+  id          String   @id @default(uuid()) @db.Uuid
+  sessionId   String   @map("session_id") @db.Uuid
+  fieldKey    String   @map("field_key")
+  value       String
+  evidenceId  String   @map("evidence_id") @db.Uuid
+  confidence  Decimal? @db.Decimal(4, 3)
+  // false = value was captured but fails Level-1 structural sanity check
+  // (UI surfaces a ⚠️ warning; does NOT block finalize).
+  shapeOk     Boolean  @default(true) @map("shape_ok")
+  warning     String?  // human-readable Thai warning when shapeOk = false
+  // S1_DGA_REVIEW provenance — when the vendor edits a value in the
+  // review step, `originalValue` captures the FIRST OCR-extracted form
+  // (one-shot, never overwritten on subsequent edits) and `editedByUser`
+  // flips to true. Cross-match continues to use `value` (post-edit).
+  originalValue String?   @map("original_value")
+  editedByUser  Boolean   @default(false) @map("edited_by_user")
+  editedAt      DateTime? @map("edited_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt        @map("updated_at")
+
+  session  WizardSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  evidence WizardEvidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, fieldKey])
+  @@index([sessionId])
+  @@index([evidenceId])
+  @@map("dga_fields")
 }
 
 model WizardOcrResult {

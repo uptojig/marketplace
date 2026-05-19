@@ -109,3 +109,15 @@ DEFAULT_SUPPLIER="CJ"
 # ─── Domain-IP registry ─────────────────────────────────────────────────────
 # JSON array — provisioner overwrites this at runtime per shop.
 DOMAIN_IP_REGISTRY="[]"
+
+# ─── iApp KYC (Thai ID OCR + Face Verification + Liveness) ──────────────────
+# Get from https://iapp.co.th — used by the apply/KYC wizard.
+IAPP_API_KEY=""
+IAPP_BASE_URL="https://api.iapp.co.th"
+IAPP_REQUEST_TIMEOUT_MS="10000"
+IAPP_RETRIES="1"
+IAPP_IC_COST_THB="1.25"
+
+# ─── shadcn Studio registry (build-time) ────────────────────────────────────
+# License key required to pull premium components during `next build`.
+SHADCN_STUDIO_LICENSE_KEY=""

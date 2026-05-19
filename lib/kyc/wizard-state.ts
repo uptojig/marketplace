@@ -3,7 +3,13 @@ import type { Prisma } from "@prisma/client";
 
 export const WIZARD_STATES = [
   "INIT",
+  "S1_ID_CARD_REF",
+  "S1_ID_CARD_REVIEW",
+  "S2_EMAIL_PENDING",
+  "S3_OTP_VERIFIED",
+  "S4_EVIDENCE_UPLOAD",
   "S1_DGA_CAPTURE",
+  "S1_DGA_REVIEW",
   "S2_ID_SELFIE",
   "S3_PHONE_RESPONSE",
   "S4_BANKBOOK_UPLOAD",
@@ -25,8 +31,24 @@ export type WizardActor = "vendor" | "system";
 const TERMINAL_STATES = new Set<WizardState>(["AUTO_APPROVED", "REJECTED", "MANUAL_REVIEW"]);
 
 const ALLOWED_TRANSITIONS: Record<WizardState, WizardState[]> = {
-  INIT: ["S1_DGA_CAPTURE", "S1_ID_CARD"],
-  S1_DGA_CAPTURE: ["S1_DGA_CAPTURE", "S2_ID_SELFIE", "MANUAL_REVIEW"],
+  INIT: ["S1_ID_CARD_REF", "S1_DGA_CAPTURE", "S1_ID_CARD"],
+  // After OCR runs the session lands in REVIEW (not directly in
+  // S2_EMAIL_PENDING) — vendor must visually confirm the extracted
+  // anchor fields. Self-loop retains for retry-when-iApp-503 cases.
+  S1_ID_CARD_REF: ["S1_ID_CARD_REF", "S1_ID_CARD_REVIEW", "MANUAL_REVIEW", "REJECTED"],
+  // Read-only review of the OCR anchor. "ถ่ายใหม่" loops back to
+  // S1_ID_CARD_REF so the vendor can re-upload; "ยืนยัน" proceeds.
+  S1_ID_CARD_REVIEW: ["S1_ID_CARD_REF", "S2_EMAIL_PENDING", "MANUAL_REVIEW", "REJECTED"],
+  S2_EMAIL_PENDING: ["S2_EMAIL_PENDING", "S3_OTP_VERIFIED", "MANUAL_REVIEW", "REJECTED"],
+  S3_OTP_VERIFIED: ["S1_DGA_CAPTURE", "MANUAL_REVIEW", "REJECTED"],
+  S4_EVIDENCE_UPLOAD: ["MANUAL_REVIEW", "REJECTED"],
+  // S1_DGA_CAPTURE → S1_DGA_REVIEW once all 9 required fields captured;
+  // → MANUAL_REVIEW for stuck sessions; self-loop for retries.
+  S1_DGA_CAPTURE: ["S1_DGA_CAPTURE", "S1_DGA_REVIEW", "MANUAL_REVIEW"],
+  // S1_DGA_REVIEW shows the vendor the OCR-extracted fields editable
+  // (except citizenId + dob which lock S2/S5 cross-match anchors).
+  // Confirm → S2_ID_SELFIE; back button → CAPTURE (preserves edits).
+  S1_DGA_REVIEW: ["S2_ID_SELFIE", "S1_DGA_CAPTURE", "MANUAL_REVIEW"],
   S2_ID_SELFIE: ["S2_ID_SELFIE", "S3_PHONE_RESPONSE", "REJECTED", "MANUAL_REVIEW"],
   S3_PHONE_RESPONSE: ["S3_PHONE_RESPONSE", "S4_BANKBOOK_UPLOAD", "REJECTED", "MANUAL_REVIEW"],
   S4_BANKBOOK_UPLOAD: ["AUTO_APPROVED", "REJECTED", "MANUAL_REVIEW"],
@@ -64,7 +86,7 @@ export async function createWizardSession(
 
   return prisma.wizardSession.create({
     data: {
-      state: "S1_DGA_CAPTURE",
+      state: "S1_ID_CARD_REF",
       userId: args.userId ?? null,
       expiresAt,
       metadata: metadata as Prisma.InputJsonValue,
@@ -73,7 +95,7 @@ export async function createWizardSession(
           actor: "system",
           event: "session.create",
           fromState: "INIT",
-          toState: "S1_DGA_CAPTURE",
+          toState: "S1_ID_CARD_REF",
           payload: { ...metadata, userId: args.userId ?? null } as Prisma.InputJsonValue,
         },
       },

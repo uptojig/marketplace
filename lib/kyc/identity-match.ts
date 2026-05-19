@@ -320,3 +320,48 @@ export function hasCriticalMismatch(results: IdentityMatchResult[]): boolean {
       (result.matchType === "citizenId" || result.matchType === "phoneLast4"),
   );
 }
+
+/**
+ * Extract the house number from a Thai address line.
+ *
+ * House number is by convention the first numeric token (optionally with
+ * "/" or "-" separators, e.g. "99/111", "118", "6") at the start of the
+ * address line — distinct from later numbers like หมู่ 2, ซอย 16, postal.
+ *
+ * Tolerates a "บ้านเลขที่ " prefix some DGA renderings use.
+ */
+export function extractHouseNumber(addr: string | null | undefined): string | null {
+  if (!addr) return null;
+  const cleaned = addr.replace(/บ้านเลขที่\s*/g, "").trim();
+  const match = cleaned.match(/^\s*(\d+(?:[/\-]\d+)*)/);
+  return match ? match[1].trim() : null;
+}
+
+/**
+ * Verify the DGA business rule: ที่อยู่ตามบัตร and ที่อยู่ที่ติดต่อได้
+ * should be the same physical address. Because DGA renders these two
+ * fields with different formats (abbreviations vs full words, postal
+ * code only on contact, optional village name, etc.), full-string
+ * comparison is too brittle. Instead we extract the house number from
+ * each side and require it to match — the strongest single anchor that
+ * a person filling DGA correctly would not change between the two
+ * fields. Mismatch flags the session for admin review.
+ *
+ * Returns null when one side is missing a parseable house number — the
+ * caller should treat that as a soft "can't check" advisory rather than
+ * a hard fail (different from a confirmed mismatch).
+ */
+export function compareDgaAddressesByHouseNumber(
+  registered: string | null | undefined,
+  contact: string | null | undefined,
+): { matched: boolean; reason: string; left: string | null; right: string | null } | null {
+  const left = extractHouseNumber(registered);
+  const right = extractHouseNumber(contact);
+  if (!left || !right) {
+    return { matched: false, reason: "house_number_unparseable", left, right };
+  }
+  if (left === right) {
+    return { matched: true, reason: "house_number_match", left, right };
+  }
+  return { matched: false, reason: "house_number_mismatch", left, right };
+}

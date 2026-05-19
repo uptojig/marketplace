@@ -12,8 +12,18 @@
  *
  * Logic preserved from the original:
  *   - WizardState enum + STEPS array
- *   - API endpoints (/api/wizard, /s3/dga-capture, /s1/id-card,
+ *   - API endpoints (/api/wizard, /s1/dga-* (multi), /s1/id-card,
  *     /s4/ussd, /s6/bankbook) called via FormData
+ *
+ * S1 v2 (this revision):
+ *   Step 1 is now incremental multi-image. The user uploads as many DGA
+ *   screenshots as needed (short phones can't fit all 9 labels in one shot).
+ *   Each upload POSTs to /s1/dga-add-image which OCRs the image and UPSERTs
+ *   the label/value pairs server-side. A checklist of required fields lights
+ *   up as values accumulate; finalize fires /s1/dga-finalize once all 9
+ *   required fields are captured. The user can also DELETE individual
+ *   images via /s1/dga-image/{evidenceId} — their contributions drop out of
+ *   the checklist.
  *   - createHeldIdCropFromSelfie() canvas crop on selfie before submit
  *   - GET /api/wizard/{sid} snapshot polling after each step
  *
@@ -35,6 +45,7 @@ import {
   CheckCircle2,
   IdCard,
   Loader2,
+  Lock,
   RefreshCcw,
   Smartphone,
   Trash2,
@@ -47,6 +58,7 @@ import {
 type WizardState =
   | "INIT"
   | "S1_DGA_CAPTURE"
+  | "S1_DGA_REVIEW"
   | "S2_ID_SELFIE"
   | "S3_PHONE_RESPONSE"
   | "S4_BANKBOOK_UPLOAD"
@@ -61,13 +73,67 @@ interface SnapshotPayload {
   finalDecision?: WizardState | null;
 }
 
-type StepKey = "S1_DGA_CAPTURE" | "S2_ID_SELFIE" | "S3_PHONE_RESPONSE" | "S4_BANKBOOK_UPLOAD";
+type StepKey =
+  | "S1_ID_CARD_REF"
+  | "S2_EMAIL_PENDING"
+  | "S3_OTP_VERIFIED"
+  | "S1_DGA_CAPTURE"
+  | "S2_ID_SELFIE"
+  | "S3_PHONE_RESPONSE"
+  | "S4_BANKBOOK_UPLOAD";
 
+// S1 v2 checklist — mirrors /lib/kyc/dga-fields.ts (kept local so the
+// frontend doesn't pull server-only imports). Server is source of truth;
+// these shapes match the JSON the /s1/dga-* endpoints return.
+type DgaFieldState = "missing" | "captured" | "captured_warn";
+
+interface DgaChecklistEntry {
+  key: string;
+  label: string;
+  required: boolean;
+  state: DgaFieldState;
+  value: string | null;
+  warning: string | null;
+  evidenceId: string | null;
+  // S1_DGA_REVIEW additions. `locked` = field cannot be edited (citizenId
+  // + dob — strict cross-match anchors). `originalValue` = the first OCR
+  // value, populated once the vendor edits the field so the UI can show
+  // "OCR อ่านได้: <X>" as a faint hint beside the corrected current value.
+  locked: boolean;
+  originalValue: string | null;
+  editedByUser: boolean;
+}
+
+interface DgaUploadedImage {
+  id: string;
+  fieldsContributed: string[];
+  bytes: number;
+  mime: string;
+  // Set when the user uploaded in this browser session (blob: URL we
+  // own and must revoke). Once the server returns the redacted evidence URL,
+  // we drop this local raw preview and render the persisted image instead.
+  previewUrl: string | null;
+  url: string | null;
+  filename: string | null;
+}
+
+function revokeBlobPreview(url: string | null | undefined) {
+  if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+}
+
+// Full 7-step view shared with kyc-wizard-v3.tsx — the stepper renders
+// the entire flow so a vendor handed off from v3 (state has advanced
+// past S3_OTP_VERIFIED into S1_DGA_CAPTURE) sees a continuous progress
+// bar instead of a new 1/4-style stepper resetting from zero. Labels
+// mirror the LandingScreen list in app/(marketplace)/apply/page.tsx.
 const STEPS: Array<{ state: StepKey; label: string }> = [
+  { state: "S1_ID_CARD_REF", label: "บัตร" },
+  { state: "S2_EMAIL_PENDING", label: "อีเมล" },
+  { state: "S3_OTP_VERIFIED", label: "OTP" },
   { state: "S1_DGA_CAPTURE", label: "D.GA" },
-  { state: "S2_ID_SELFIE", label: "บัตร + เซลฟี่" },
-  { state: "S3_PHONE_RESPONSE", label: "SMS" },
-  { state: "S4_BANKBOOK_UPLOAD", label: "สมุดบัญชี" },
+  { state: "S2_ID_SELFIE", label: "เซลฟี่" },
+  { state: "S3_PHONE_RESPONSE", label: "เบอร์" },
+  { state: "S4_BANKBOOK_UPLOAD", label: "บัญชี" },
 ];
 
 const TERMINAL_STATES = new Set<WizardState>(["AUTO_APPROVED", "REJECTED", "MANUAL_REVIEW"]);
@@ -133,6 +199,88 @@ async function postJson<T>(url: string, init?: RequestInit): Promise<FetchResult
   return { ok: res.ok && payload.ok !== false, status: res.status, payload };
 }
 
+// ── SSE streaming ──────────────────────────────────────────────────
+// Wizard verification routes emit progress events as work proceeds.
+// Wall time is unchanged from JSON mode, but the user sees stage-by-
+// stage feedback instead of a 10-second blank spinner.
+
+export interface SSEStage {
+  name: string;
+  label?: string;
+  ms: number;
+  total_ms: number;
+}
+
+// fetch() reads body as a ReadableStream of Uint8Array. We parse the
+// W3C SSE format ourselves rather than using EventSource because EventSource
+// doesn't support POST + FormData (it always GETs). The parser is small:
+// split on "\n\n" (event delimiter), then on "\n" (field per event).
+async function postSSE<T>(
+  url: string,
+  init: RequestInit,
+  opts: { onStage?: (stage: SSEStage) => void },
+): Promise<FetchResult<T>> {
+  const res = await fetch(url, {
+    ...init,
+    headers: {
+      ...(init.headers ?? {}),
+      Accept: "text/event-stream",
+    },
+  });
+  // Server rejected before stream started (4xx) → fall back to JSON parse
+  // of the error body so callers see a real message.
+  const ct = res.headers.get("content-type") ?? "";
+  if (!ct.includes("text/event-stream")) {
+    const payload = (await res.json()) as T & { ok?: boolean; error?: string };
+    return { ok: res.ok && payload.ok !== false, status: res.status, payload };
+  }
+  if (!res.body) {
+    return { ok: false, status: res.status, payload: { error: "no SSE body" } as T & { error?: string } };
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let finalResult: (T & { ok?: boolean; error?: string }) | null = null;
+  let errorPayload: { message?: string } | null = null;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    // SSE events are separated by blank line ("\n\n")
+    const splitIdx = (): number => buffer.indexOf("\n\n");
+    while (splitIdx() >= 0) {
+      const event = buffer.slice(0, splitIdx());
+      buffer = buffer.slice(splitIdx() + 2);
+      const lines = event.split("\n");
+      let eventType = "message";
+      let dataLine = "";
+      for (const line of lines) {
+        if (line.startsWith("event:")) eventType = line.slice(6).trim();
+        else if (line.startsWith("data:")) dataLine = line.slice(5).trim();
+      }
+      if (!dataLine) continue;
+      let parsed: unknown;
+      try { parsed = JSON.parse(dataLine); } catch { continue; }
+      if (eventType === "stage") {
+        opts.onStage?.(parsed as SSEStage);
+      } else if (eventType === "result") {
+        finalResult = parsed as T & { ok?: boolean; error?: string };
+      } else if (eventType === "error") {
+        errorPayload = parsed as { message?: string };
+      }
+    }
+  }
+  if (finalResult) {
+    return { ok: finalResult.ok !== false, status: res.status, payload: finalResult };
+  }
+  return {
+    ok: false,
+    status: res.status,
+    payload: { error: errorPayload?.message ?? "stream ended without result" } as T & { error?: string },
+  };
+}
+
 // ────────────────────────────────────────────────────────────────────
 // Main component
 // ────────────────────────────────────────────────────────────────────
@@ -150,14 +298,42 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
   const [info, setInfo] = useState<string | null>(null);
   const terminalRefreshRequested = useRef(false);
 
-  // Files held in state per step
-  const [dga1, setDga1] = useState<File | null>(null);
-  const [dga2, setDga2] = useState<File | null>(null);
-  const [idFront, setIdFront] = useState<File | null>(null);
+  // S1 v2 — server-tracked checklist + uploaded image list. Images are
+  // accumulated incrementally; finalize gates on the checklist being
+  // complete for all 9 required fields.
+  const [dgaImages, setDgaImages] = useState<DgaUploadedImage[]>([]);
+  const [dgaChecklist, setDgaChecklist] = useState<DgaChecklistEntry[]>([]);
+  const [dgaReady, setDgaReady] = useState(false);
+  // Separate from `busy` (which gates the finalize button) — set while
+  // a per-image upload is in flight so we can show progress without
+  // disabling delete/reupload on already-uploaded thumbnails.
+  const [dgaUploading, setDgaUploading] = useState(false);
+
+  // Hard-block modal: DGA registered address vs contact address have
+  // different house numbers. Vendor must fix in DGA itself and re-upload.
+  const [dgaAddressMismatch, setDgaAddressMismatch] = useState<{
+    registered: string | null;
+    contact: string | null;
+    registeredHouseNumber: string | null;
+    contactHouseNumber: string | null;
+  } | null>(null);
+
+  // S2-S4 file slots (unchanged)
+  // Step 5 (S2_ID_SELFIE) reuses the Step 1 (S1_ID_CARD_REF) ID-card
+  // upload; the vendor only picks a selfie here. No idFront state.
   const [selfie, setSelfie] = useState<File | null>(null);
   const [selfieCrop, setSelfieCrop] = useState<File | null>(null);
   const [phoneShot, setPhoneShot] = useState<File | null>(null);
   const [bankbook, setBankbook] = useState<File | null>(null);
+
+  // Streaming progress — populated while a wizard step is in flight.
+  // Each stage is pushed when the server emits its SSE "stage" event;
+  // cleared back to [] when the step starts the next time.
+  const [progressStages, setProgressStages] = useState<SSEStage[]>([]);
+  const handleStage = (stage: SSEStage) => {
+    setProgressStages((prev) => [...prev, stage]);
+  };
+  const beginProgress = () => setProgressStages([]);
 
   // Auto-load snapshot if we were handed a sid (anonymous resume)
   useEffect(() => {
@@ -179,7 +355,13 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
   async function refresh(sid: string) {
     try {
       const res = await postJson<SnapshotPayload>(`/api/wizard/${sid}`);
-      if (res.ok && res.payload?.state) setState(res.payload.state);
+      if (res.ok && res.payload?.state) {
+        setState(res.payload.state);
+        // Resume case — rebuild S1 checklist from server if we land in S1.
+        if (res.payload.state === "S1_DGA_CAPTURE") {
+          await hydrateDgaChecklist(sid);
+        }
+      }
     } catch {
       /* ignore — snapshot refresh is best-effort */
     }
@@ -207,31 +389,292 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     }
   }
 
-  async function submitDga() {
-    if (!sessionId || !dga1) {
-      setError("กรุณาอัปโหลดรูปที่ 1 ก่อน");
-      return;
+  // S1 v2 — hydrate the checklist + image list from the server.
+  // Called on resume (when initialSessionId is supplied) and after the
+  // session first lands on S1. Server is source of truth.
+  async function hydrateDgaChecklist(sid: string) {
+    try {
+      const res = await fetch(`/api/wizard/${sid}/s1/dga-checklist`);
+      if (!res.ok) return;
+      const data = (await res.json()) as {
+        ok?: boolean;
+        checklist?: DgaChecklistEntry[];
+        images?: Array<{
+          id: string;
+          mime: string;
+          bytes: number;
+          url?: string | null;
+          fieldsContributed: string[];
+        }>;
+        ready_to_finalize?: boolean;
+      };
+      if (!data.ok) return;
+      setDgaChecklist(data.checklist ?? []);
+      setDgaImages((prev) => {
+        const previousById = new Map(prev.map((img) => [img.id, img]));
+        const serverImages = data.images ?? [];
+        const serverIds = new Set(serverImages.map((img) => img.id));
+
+        prev.forEach((img) => {
+          if (!serverIds.has(img.id)) revokeBlobPreview(img.previewUrl);
+        });
+
+        return serverImages.map((img) => {
+          const previous = previousById.get(img.id);
+          const serverUrl = img.url ?? null;
+          if (serverUrl) revokeBlobPreview(previous?.previewUrl);
+
+          return {
+            id: img.id,
+            fieldsContributed: img.fieldsContributed,
+            bytes: img.bytes,
+            mime: img.mime,
+            previewUrl: serverUrl ? null : previous?.previewUrl ?? null,
+            url: serverUrl,
+            filename: previous?.filename ?? null,
+          };
+        });
+      });
+      setDgaReady(data.ready_to_finalize ?? false);
+    } catch {
+      /* best-effort hydration */
     }
-    if (!dga2) {
-      setError("กรุณาอัปโหลดรูปที่ 2 เพื่อให้ระบบปิดข้อมูล Username ก่อนเก็บหลักฐาน");
-      return;
+  }
+
+  // S1 v2 — POST one screenshot to /s1/dga-add-image. Updates the
+  // checklist + image list from the server response so the UI stays in
+  // lock-step with persisted state.
+  async function addDgaImage(file: File) {
+    if (!sessionId) return;
+    setError(null);
+    setDgaUploading(true);
+    beginProgress();
+    const previewUrl = URL.createObjectURL(file);
+    try {
+      const form = new FormData();
+      form.append("image", file);
+      const res = await postSSE<{
+        ok: boolean;
+        error?: string;
+        evidenceId?: string;
+        imageUrl?: string | null;
+        imageNumber?: number;
+        redacted?: boolean;
+        fieldsCaptured?: number;
+        checklist?: DgaChecklistEntry[];
+        imageCount?: number;
+        readyToFinalize?: boolean;
+      }>(
+        `/api/wizard/${sessionId}/s1/dga-add-image`,
+        { method: "POST", body: form },
+        { onStage: handleStage },
+      );
+      if (!res.ok || !res.payload.evidenceId) {
+        revokeBlobPreview(previewUrl);
+        throw new Error(res.payload.error ?? `อัปโหลดภาพ DGA ไม่สำเร็จ (${res.status})`);
+      }
+      setDgaChecklist(res.payload.checklist ?? []);
+      setDgaReady(res.payload.readyToFinalize ?? false);
+      const serverUrl = res.payload.imageUrl ?? null;
+      if (serverUrl) revokeBlobPreview(previewUrl);
+      setDgaImages((prev) => [
+        ...prev,
+        {
+          id: res.payload.evidenceId!,
+          fieldsContributed: [], // server didn't include this; will refresh on next checklist call
+          bytes: file.size,
+          mime: file.type || "image/jpeg",
+          previewUrl: serverUrl ? null : previewUrl,
+          url: serverUrl,
+          filename: file.name,
+        },
+      ]);
+      // Best-effort re-hydrate to pick up fieldsContributed per image
+      void hydrateDgaChecklist(sessionId);
+    } catch (e) {
+      revokeBlobPreview(previewUrl);
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDgaUploading(false);
     }
+  }
+
+  async function removeDgaImage(evidenceId: string) {
+    if (!sessionId) return;
+    setError(null);
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/wizard/${sessionId}/s1/dga-image/${evidenceId}`, {
+        method: "DELETE",
+      });
+      const payload = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        checklist?: DgaChecklistEntry[];
+        ready_to_finalize?: boolean;
+      };
+      if (!res.ok || !payload.ok) {
+        throw new Error(payload.error ?? `ลบภาพไม่สำเร็จ (${res.status})`);
+      }
+      // Revoke the local blob URL for this image before removing it
+      setDgaImages((prev) => {
+        const target = prev.find((img) => img.id === evidenceId);
+        revokeBlobPreview(target?.previewUrl);
+        return prev.filter((img) => img.id !== evidenceId);
+      });
+      setDgaChecklist(payload.checklist ?? []);
+      setDgaReady(payload.ready_to_finalize ?? false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function finalizeDga() {
+    if (!sessionId) return;
+    setBusy(true);
+    setError(null);
+    beginProgress();
+    try {
+      const res = await postSSE<{
+        ok: boolean;
+        state: WizardState;
+        error?: string;
+        missing?: string[];
+        checklist?: DgaChecklistEntry[];
+      }>(
+        `/api/wizard/${sessionId}/s1/dga-finalize`,
+        { method: "POST" },
+        { onStage: handleStage },
+      );
+      if (!res.ok) {
+        if (res.payload.missing && res.payload.checklist) {
+          setDgaChecklist(res.payload.checklist);
+          throw new Error(
+            `ยังขาด ${res.payload.missing.length} ฟิลด์ — โปรดอัปภาพเพิ่ม`,
+          );
+        }
+        throw new Error(res.payload.error ?? `ส่ง DGA ไม่สำเร็จ (${res.status})`);
+      }
+      // Stays inside S1 (CAPTURE → REVIEW). Don't clear images/checklist —
+      // REVIEW needs the checklist, and if the vendor hits "ย้อนกลับ" we
+      // want the thumbnails + their blob URLs still alive.
+      if (res.payload.checklist) setDgaChecklist(res.payload.checklist);
+      setState(res.payload.state);
+      setInfo("รวบรวมข้อมูลครบแล้ว — โปรดตรวจสอบความถูกต้องก่อนยืนยัน");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // S1_DGA_REVIEW — patch a single editable field. Server validates that
+  // the field key isn't locked (citizenId/dob) and re-runs the structural
+  // sanity check, returning the updated checklist for the client to merge.
+  async function editDgaField(fieldKey: string, value: string) {
+    if (!sessionId) return;
+    setError(null);
+    try {
+      const res = await fetch(`/api/wizard/${sessionId}/s1/dga-review/${fieldKey}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ value }),
+      });
+      const payload = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        checklist?: DgaChecklistEntry[];
+      };
+      if (!res.ok || !payload.ok) {
+        throw new Error(payload.error ?? `แก้ไขฟิลด์ไม่สำเร็จ (${res.status})`);
+      }
+      if (payload.checklist) setDgaChecklist(payload.checklist);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  // S1_DGA_REVIEW → S2_ID_SELFIE. Vendor confirms reviewed values; server
+  // writes the canonical `dga` provider row and transitions the session.
+  async function confirmDgaReview() {
+    if (!sessionId) return;
+    setBusy(true);
+    setError(null);
+    setDgaAddressMismatch(null);
+    beginProgress();
+    try {
+      const res = await postSSE<{
+        ok: boolean;
+        state: WizardState;
+        error?: string;
+        missing?: string[];
+        checklist?: DgaChecklistEntry[];
+        addressMismatch?: {
+          registered: string | null;
+          contact: string | null;
+          registeredHouseNumber: string | null;
+          contactHouseNumber: string | null;
+        };
+      }>(
+        `/api/wizard/${sessionId}/s1/dga-review-confirm`,
+        { method: "POST" },
+        { onStage: handleStage },
+      );
+      if (!res.ok) {
+        if (res.payload.addressMismatch) {
+          if (res.payload.checklist) setDgaChecklist(res.payload.checklist);
+          setDgaAddressMismatch(res.payload.addressMismatch);
+          return;
+        }
+        if (res.payload.missing && res.payload.checklist) {
+          setDgaChecklist(res.payload.checklist);
+          throw new Error(
+            `ฟิลด์บางตัวว่างเปล่าหลังจากแก้ไข — โปรดกรอกให้ครบ`,
+          );
+        }
+        throw new Error(res.payload.error ?? `ยืนยัน DGA ไม่สำเร็จ (${res.status})`);
+      }
+      // Leaving S1 — safe to revoke blob URLs + clear thumbnails.
+      setDgaImages((prev) => {
+        prev.forEach((img) => revokeBlobPreview(img.previewUrl));
+        return [];
+      });
+      setDgaChecklist([]);
+      setDgaReady(false);
+      setState(res.payload.state);
+      setInfo("ยืนยันข้อมูล DGA สำเร็จ — ไปขั้นตอนถัดไป");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // S1_DGA_REVIEW → S1_DGA_CAPTURE. Vendor wants to re-upload an image.
+  // Preserves the checklist + thumbnails so any edits made in REVIEW survive
+  // (only re-OCR'd fields from a new image will overwrite them).
+  async function backToCapture() {
+    if (!sessionId) return;
     setBusy(true);
     setError(null);
     try {
-      const form = new FormData();
-      form.append("image1", dga1);
-      form.append("image2", dga2);
-      const res = await postJson<SnapshotPayload>(
-        `/api/wizard/${sessionId}/s3/dga-capture`,
-        { method: "POST", body: form },
-      );
-      if (!res.ok)
-        throw new Error(res.payload.error ?? `ส่ง DGA ไม่สำเร็จ (${res.status})`);
-      setState(res.payload.state);
-      setInfo("ตรวจ DGA สำเร็จ — ไปขั้นตอนถัดไป");
-      setDga1(null);
-      setDga2(null);
+      const res = await fetch(`/api/wizard/${sessionId}/s1/dga-review-back`, {
+        method: "POST",
+      });
+      const payload = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        state?: WizardState;
+        checklist?: DgaChecklistEntry[];
+      };
+      if (!res.ok || !payload.ok) {
+        throw new Error(payload.error ?? `ย้อนกลับไม่สำเร็จ (${res.status})`);
+      }
+      if (payload.checklist) setDgaChecklist(payload.checklist);
+      if (payload.state) setState(payload.state);
+      setInfo(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -254,26 +697,72 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
   }
 
   async function submitIdSelfie() {
-    if (!sessionId || !idFront || !selfie) {
-      setError("กรุณาอัปโหลดทั้งบัตรประชาชนและเซลฟี่");
+    if (!sessionId || !selfie) {
+      setError("กรุณาอัปโหลดเซลฟี่ถือบัตร");
       return;
     }
     setBusy(true);
     setError(null);
+    beginProgress();
     try {
       const form = new FormData();
-      form.append("id_front", idFront);
       form.append("selfie", selfie);
       if (selfieCrop) form.append("selfie_held_id_crop", selfieCrop);
-      const res = await postJson<SnapshotPayload>(
+      const res = await postSSE<
+        SnapshotPayload & {
+          decision?: "AUTO_APPROVED" | "RETRY_SELFIE" | "REJECTED";
+          advisory?: string | null;
+          failed_checks?: string[];
+        }
+      >(
         `/api/wizard/${sessionId}/s1/id-card`,
         { method: "POST", body: form },
+        { onStage: handleStage },
       );
       if (!res.ok)
-        throw new Error(res.payload.error ?? `ตรวจบัตร+เซลฟี่ไม่สำเร็จ (${res.status})`);
+        throw new Error(res.payload.error ?? `ตรวจเซลฟี่ไม่สำเร็จ (${res.status})`);
+
+      // Three outcomes here:
+      // 1. Server stays in S2_ID_SELFIE → genuine RETRY_SELFIE without
+      //    document evidence to back the seller up. Surface failed checks.
+      // 2. Server advances despite face fail (advisory != null) →
+      //    document identity matched DGA, so we softened to S3. Tell the
+      //    user honestly: "ส่งให้ทีมงานตรวจในตอนท้าย".
+      // 3. Clean pass → "ตรวจเซลฟี่สำเร็จ".
+      const decision = res.payload.decision;
+      const advisory = res.payload.advisory;
+      const failed = res.payload.failed_checks ?? [];
+
+      if (res.payload.state === "S2_ID_SELFIE") {
+        const reasons: string[] = [];
+        if (failed.some((c) => c.startsWith("face_mismatch"))) {
+          reasons.push("ใบหน้าในเซลฟี่ไม่ตรงกับรูปในบัตร");
+        }
+        if (failed.includes("retake_selfie_required") || failed.includes("liveness_spoof_advisory")) {
+          reasons.push("ระบบตรวจ liveness ไม่ผ่าน (โปรดถ่ายในที่แสงสว่างชัด ไม่ใส่แว่น/หมวก)");
+        }
+        if (failed.includes("held_id_unreadable")) {
+          reasons.push("ระบบอ่านบัตรในมือไม่ออก (โปรดถือบัตรให้ชัด ใต้คาง)");
+        }
+        const message =
+          reasons.length > 0
+            ? reasons.join(" · ")
+            : "เซลฟี่ไม่ผ่านการตรวจสอบ กรุณาถ่ายใหม่";
+        setError(`ไม่ผ่านการตรวจสอบ — ${message}`);
+        setState(res.payload.state);
+        setSelfie(null);
+        setSelfieCrop(null);
+        return;
+      }
+
       setState(res.payload.state);
-      setInfo("ตรวจบัตร + เซลฟี่สำเร็จ");
-      setIdFront(null);
+      if (advisory && decision !== "AUTO_APPROVED") {
+        setInfo(
+          "บันทึกเซลฟี่แล้ว — ระบบจะส่งให้ทีมงานตรวจในตอนท้าย เนื่องจากระบบเทียบใบหน้าอัตโนมัติไม่ผ่าน",
+        );
+      } else {
+        setInfo("ตรวจเซลฟี่สำเร็จ");
+      }
       setSelfie(null);
       setSelfieCrop(null);
     } catch (e) {
@@ -295,12 +784,14 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     }
     setBusy(true);
     setError(null);
+    beginProgress();
     try {
       const form = new FormData();
       form.append(field, file);
-      const res = await postJson<SnapshotPayload>(
+      const res = await postSSE<SnapshotPayload>(
         `/api/wizard/${sessionId}/${endpoint}`,
         { method: "POST", body: form },
+        { onStage: handleStage },
       );
       if (!res.ok) throw new Error(res.payload.error ?? `อัปโหลดไม่สำเร็จ (${res.status})`);
       setState(res.payload.state);
@@ -319,6 +810,11 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
 
   const currentIdx = useMemo(() => {
     if (TERMINAL_STATES.has(state)) return STEPS.length - 1;
+    // S1_DGA_REVIEW is still part of the "Step 1: D.GA" visual step in the
+    // stepper — the review screen is just a second phase within Step 1.
+    if (state === "S1_DGA_REVIEW") {
+      return STEPS.findIndex((s) => s.state === "S1_DGA_CAPTURE");
+    }
     const i = STEPS.findIndex((s) => s.state === state);
     return i < 0 ? -1 : i;
   }, [state]);
@@ -362,23 +858,36 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
             <p>{error}</p>
           </div>
         )}
+        {busy && progressStages.length > 0 && (
+          <ProgressCard stages={progressStages} />
+        )}
 
         {state === "S1_DGA_CAPTURE" && (
           <StepDga
-            dga1={dga1}
-            dga2={dga2}
-            onPickDga1={setDga1}
-            onPickDga2={setDga2}
+            images={dgaImages}
+            checklist={dgaChecklist}
+            ready={dgaReady}
+            uploading={dgaUploading}
             busy={busy}
-            onSubmit={submitDga}
+            onAdd={addDgaImage}
+            onRemove={removeDgaImage}
+            onSubmit={finalizeDga}
+          />
+        )}
+
+        {state === "S1_DGA_REVIEW" && (
+          <StepDgaReview
+            checklist={dgaChecklist}
+            busy={busy}
+            onEdit={editDgaField}
+            onConfirm={confirmDgaReview}
+            onBack={backToCapture}
           />
         )}
 
         {state === "S2_ID_SELFIE" && (
           <StepIdSelfie
-            idFront={idFront}
             selfie={selfie}
-            onPickId={setIdFront}
             onPickSelfie={handleSelfieChange}
             busy={busy}
             onSubmit={submitIdSelfie}
@@ -404,6 +913,54 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
           />
         )}
       </div>
+
+      {dgaAddressMismatch && (
+        <DgaAddressMismatchModal
+          mismatch={dgaAddressMismatch}
+          busy={busy}
+          onClose={() => setDgaAddressMismatch(null)}
+          onReupload={async () => {
+            setDgaAddressMismatch(null);
+            await backToCapture();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Streaming progress card — populated as the SSE backend emits stage
+// events. Each completed stage gets a ✓ + label + elapsed ms; the
+// most-recent stage shows a spinner to signal "still working".
+// ────────────────────────────────────────────────────────────────────
+
+function ProgressCard({ stages }: { stages: SSEStage[] }) {
+  if (stages.length === 0) return null;
+  const last = stages[stages.length - 1];
+  return (
+    <div className="mb-4 max-w-[680px] mx-auto rounded-xl border border-mp-border bg-mp-cream-alt/40 px-4 py-3">
+      <p className="text-[13px] font-semibold text-mp-ink-muted mb-2">
+        กำลังประมวลผล… ({(last.total_ms / 1000).toFixed(1)} วินาที)
+      </p>
+      <ul className="space-y-1.5">
+        {stages.map((s, idx) => {
+          const isLast = idx === stages.length - 1;
+          return (
+            <li key={`${s.name}-${idx}`} className="flex items-center gap-2 text-[14px]">
+              {isLast ? (
+                <Loader2 className="w-4 h-4 text-mp-coral animate-spin shrink-0" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 text-mp-forest shrink-0" />
+              )}
+              <span className="flex-1 text-mp-ink">{s.label ?? s.name}</span>
+              <span className="text-xs text-mp-ink-muted tabular-nums">
+                {(s.ms / 1000).toFixed(1)}s
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
@@ -703,73 +1260,434 @@ function StickyFooter({
   );
 }
 
-// ── Step 1: DGA Capture ────────────────────────────────────────────
+// ── Step 1: DGA Capture (v2 — incremental multi-image) ──────────────
+//
+// User uploads as many screenshots as needed. Short-screen phones can
+// split the 9 required labels across 2-3 screenshots. After each upload
+// the server-side checklist updates (lit up via the dga-add-image API
+// response) and the user sees which labels are still missing. The
+// finalize button is gated on all 9 required labels being captured.
 
 function StepDga({
-  dga1,
-  dga2,
-  onPickDga1,
-  onPickDga2,
+  images,
+  checklist,
+  ready,
+  uploading,
   busy,
+  onAdd,
+  onRemove,
   onSubmit,
 }: {
-  dga1: File | null;
-  dga2: File | null;
-  onPickDga1: (f: File | null) => void;
-  onPickDga2: (f: File | null) => void;
+  images: DgaUploadedImage[];
+  checklist: DgaChecklistEntry[];
+  ready: boolean;
+  uploading: boolean;
   busy: boolean;
+  onAdd: (file: File) => void;
+  onRemove: (evidenceId: string) => void;
   onSubmit: () => void;
 }) {
+  const requiredEntries = checklist.filter((e) => e.required);
+  const capturedCount = requiredEntries.filter((e) => e.state !== "missing").length;
+  const totalRequired = requiredEntries.length || 9;
+  const optionalCaptured = checklist.filter(
+    (e) => !e.required && e.state !== "missing",
+  );
+
+  const inputId = "dga-add-image-input";
+  const handlePick = (ev: ChangeEvent<HTMLInputElement>) => {
+    const file = ev.target.files?.[0] ?? null;
+    // Reset the input value so picking the same file again still fires.
+    ev.target.value = "";
+    if (file) onAdd(file);
+  };
+
   return (
     <div>
       <StepHeader
-        step={1}
-        total={4}
+        step={4}
+        total={7}
         title="อัปโหลดรูปจากแอป D.GA"
-        body="เปิดแอป D.GA หรือ ThaID → ไปที่หน้าโปรไฟล์ที่แสดงข้อมูลส่วนตัว → ถ่ายภาพหน้าจอ"
+        body="เปิดแอป D.GA หรือ ThaID → ไปที่หน้าโปรไฟล์ → ถ่ายภาพหน้าจอ (อัปได้หลายภาพถ้าจอเตี้ย)"
       />
 
       <div className="max-w-[640px] mx-auto rounded-xl bg-mp-cream-alt/60 border border-mp-border p-5 mb-6">
-        <p className="text-[14px] font-semibold text-mp-ink mb-2">ข้อมูลที่ต้องเห็นในภาพ:</p>
+        <p className="text-[14px] font-semibold text-mp-ink mb-2">ข้อมูลที่ต้องเห็นในภาพ (รวมจากกี่ภาพก็ได้):</p>
         <p className="text-[13px] text-mp-ink-muted leading-relaxed">
-          ชื่อ-นามสกุล, เลขบัตรประชาชน, วันเกิด, ที่อยู่, เบอร์มือถือ, อีเมล
+          ชื่อ-นามสกุล, เลขบัตรประชาชน, วันเกิด, ที่อยู่ตามบัตร, ที่อยู่ที่ติดต่อได้, เบอร์โทร, เบอร์มือถือ, อีเมล
         </p>
         <p className="mt-2 text-[12px] text-mp-ink-muted/80 italic">
-          รูปที่ 2 จำเป็นสำหรับปิดข้อมูล Username ก่อนเก็บหลักฐาน
+          ระบบจะปกปิด Username อัตโนมัติทุกภาพที่มี
         </p>
       </div>
 
-      <div className="max-w-[920px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <p className="text-[13px] font-semibold text-mp-ink mb-2">รูปที่ 1 (จำเป็น)</p>
-          <UploadZone
-            file={dga1}
-            onPick={onPickDga1}
-            label="ลากภาพมาวางที่นี่ หรือ เลือกไฟล์"
-            sub="JPG, PNG · สูงสุด 5MB"
-            required
-            height="min-h-[280px] md:min-h-[320px]"
-            previewLayout="full"
-            previewFit="contain"
-          />
-        </div>
+      {/* Uploader */}
+      <div className="max-w-[680px] mx-auto mb-6">
+        <input
+          id={inputId}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={handlePick}
+          disabled={uploading}
+        />
+        <label
+          htmlFor={inputId}
+          className={
+            "block cursor-pointer rounded-xl border-2 border-dashed transition min-h-[140px] flex items-center justify-center text-center p-6 " +
+            (uploading
+              ? "border-mp-border bg-mp-cream-alt/40 cursor-wait"
+              : "border-mp-coral/40 bg-mp-cream-alt/40 hover:bg-mp-cream-alt/60 hover:border-mp-coral")
+          }
+        >
+          <div>
+            {uploading ? (
+              <Loader2 className="w-8 h-8 text-mp-coral mb-2 animate-spin mx-auto" />
+            ) : (
+              <Upload className="w-8 h-8 text-mp-forest mb-2 mx-auto" strokeWidth={1.5} />
+            )}
+            <p className="text-[15px] font-semibold text-mp-ink mb-1">
+              {uploading ? "กำลังอัปโหลด…" : images.length === 0 ? "เริ่มอัปโหลดภาพแรก" : "+ เพิ่มภาพอีก"}
+            </p>
+            <p className="text-[12px] text-mp-ink-muted">JPG, PNG · สูงสุด 5MB/ภาพ</p>
+          </div>
+        </label>
+      </div>
 
-        <div>
-          <p className="text-[13px] font-semibold text-mp-ink mb-2">รูปที่ 2 (จำเป็น)</p>
-          <UploadZone
-            file={dga2}
-            onPick={onPickDga2}
-            label="ลากภาพมาวางที่นี่ หรือ เลือกไฟล์"
-            sub="ใช้ตรวจและ blur Username ก่อนบันทึก"
-            required
-            height="min-h-[280px] md:min-h-[320px]"
-            previewLayout="full"
-            previewFit="contain"
-          />
+      {/* Thumbnail grid */}
+      {images.length > 0 && (
+        <div className="max-w-[680px] mx-auto mb-6">
+          <p className="text-[13px] font-semibold text-mp-ink mb-2">
+            ภาพที่อัปแล้ว ({images.length})
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {images.map((img) => {
+              const imageSrc = img.previewUrl ?? img.url;
+
+              return (
+                <div
+                  key={img.id}
+                  className="rounded-xl border border-mp-border bg-white overflow-hidden flex flex-col"
+                >
+                  <div className="aspect-[3/4] bg-mp-cream-alt flex items-center justify-center">
+                    {imageSrc ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={imageSrc}
+                        alt={img.filename ?? "DGA screenshot"}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <UserCircle2 className="w-12 h-12 text-mp-ink-muted/40" />
+                    )}
+                  </div>
+                  <div className="px-3 py-2 flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[12px] text-mp-forest font-semibold">
+                        {img.fieldsContributed.length > 0
+                          ? `✓ ${img.fieldsContributed.length} ฟิลด์`
+                          : "ไม่พบข้อมูลใหม่"}
+                      </p>
+                      <p className="text-[11px] text-mp-ink-muted truncate">
+                        {img.filename ?? "DGA screenshot"} · {(img.bytes / 1024).toFixed(0)} KB
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onRemove(img.id)}
+                      disabled={busy || uploading}
+                      aria-label="ลบภาพนี้"
+                      className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md text-mp-ink-muted hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-mp-ink-muted transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Sticky checklist */}
+      <div className="max-w-[680px] mx-auto mb-6">
+        <div className="rounded-xl border border-mp-border bg-white p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[14px] font-semibold text-mp-ink">
+              ตรวจสอบข้อมูลที่ดึงได้
+            </p>
+            <span
+              className={
+                "text-[12px] font-bold tabular-nums px-2 py-0.5 rounded-md " +
+                (ready
+                  ? "bg-mp-forest/12 text-mp-forest"
+                  : "bg-mp-cream-alt text-mp-ink-muted")
+              }
+            >
+              {capturedCount} / {totalRequired}
+            </span>
+          </div>
+          <ul className="space-y-2">
+            {(checklist.length > 0
+              ? checklist.filter((e) => e.required)
+              : DEFAULT_CHECKLIST_PLACEHOLDERS
+            ).map((entry) => (
+              <ChecklistRow key={entry.key} entry={entry} />
+            ))}
+          </ul>
+          {optionalCaptured.length > 0 && (
+            <>
+              <p className="mt-4 mb-2 text-[12px] font-medium uppercase tracking-[0.08em] text-mp-ink-muted">
+                ข้อมูลเพิ่มเติม (ไม่บังคับ)
+              </p>
+              <ul className="space-y-2">
+                {optionalCaptured.map((entry) => (
+                  <ChecklistRow key={entry.key} entry={entry} />
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       </div>
 
-      <StickyFooter onSubmit={onSubmit} busy={busy} disabled={!dga1 || !dga2} />
+      <StickyFooter
+        onSubmit={onSubmit}
+        busy={busy}
+        disabled={!ready || uploading}
+        submitLabel={
+          ready ? "ตรวจสอบข้อมูล →" : `ยังขาด ${totalRequired - capturedCount} ฟิลด์`
+        }
+      />
+    </div>
+  );
+}
+
+// Placeholder list shown before the user uploads anything (server's checklist
+// is empty — we want the UI to render the field names anyway so the user
+// knows what to expect).
+const PLACEHOLDER_BASE = {
+  required: true,
+  state: "missing" as DgaFieldState,
+  value: null,
+  warning: null,
+  evidenceId: null,
+  locked: false,
+  originalValue: null,
+  editedByUser: false,
+};
+const DEFAULT_CHECKLIST_PLACEHOLDERS: DgaChecklistEntry[] = [
+  { ...PLACEHOLDER_BASE, key: "firstName", label: "ชื่อจริง" },
+  { ...PLACEHOLDER_BASE, key: "lastName", label: "นามสกุล" },
+  { ...PLACEHOLDER_BASE, key: "dob", label: "วันเดือนปีเกิด", locked: true },
+  { ...PLACEHOLDER_BASE, key: "citizenId", label: "เลขบัตรประชาชน", locked: true },
+  { ...PLACEHOLDER_BASE, key: "registeredAddress", label: "ที่อยู่ตามบัตรประจำตัวประชาชน" },
+  { ...PLACEHOLDER_BASE, key: "contactAddress", label: "ที่อยู่ที่ติดต่อได้" },
+  { ...PLACEHOLDER_BASE, key: "phone", label: "เบอร์โทรศัพท์" },
+  { ...PLACEHOLDER_BASE, key: "mobilePhone", label: "เบอร์โทรศัพท์มือถือ" },
+  { ...PLACEHOLDER_BASE, key: "email", label: "อีเมล" },
+];
+
+function ChecklistRow({ entry }: { entry: DgaChecklistEntry }) {
+  const stateClass =
+    entry.state === "captured"
+      ? "text-mp-forest"
+      : entry.state === "captured_warn"
+        ? "text-amber-600"
+        : "text-mp-ink-muted/70";
+  const icon =
+    entry.state === "captured" ? (
+      <CheckCircle2 className="w-4 h-4 shrink-0" />
+    ) : entry.state === "captured_warn" ? (
+      <span className="w-4 h-4 shrink-0 text-amber-600 text-center leading-4">⚠</span>
+    ) : (
+      <span className="w-4 h-4 shrink-0 inline-block rounded-sm border border-mp-ink-muted/30" />
+    );
+  return (
+    <li className="flex items-start gap-2.5 text-[14px]">
+      <span className={`pt-0.5 ${stateClass}`}>{icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className={`text-[13px] ${stateClass}`}>{entry.label}</p>
+        {entry.value && (
+          <p className="text-[13px] text-mp-ink truncate" title={entry.value}>
+            {entry.value}
+          </p>
+        )}
+        {entry.warning && (
+          <p className="text-[11px] text-amber-700 mt-0.5">⚠ {entry.warning}</p>
+        )}
+        {entry.state === "missing" && (
+          <p className="text-[11px] text-mp-ink-muted/70 italic">ยังไม่พบในภาพที่อัป</p>
+        )}
+      </div>
+    </li>
+  );
+}
+
+// ── Step 1 (review phase): edit OCR-extracted fields ───────────────
+//
+// After all 9 required fields are captured, the wizard moves CAPTURE →
+// REVIEW so the vendor can correct OCR mistakes before continuing to S2.
+// Fields marked `locked` (citizenId + dob — strict cross-match anchors)
+// are rendered disabled; the vendor must re-upload a clearer screenshot
+// to fix them. Other fields are editable inline; each PATCH fires on
+// blur and the server re-runs the structural sanity check.
+
+function StepDgaReview({
+  checklist,
+  busy,
+  onEdit,
+  onConfirm,
+  onBack,
+}: {
+  checklist: DgaChecklistEntry[];
+  busy: boolean;
+  onEdit: (key: string, value: string) => void;
+  onConfirm: () => void;
+  onBack: () => void;
+}) {
+  const requiredEntries = checklist.filter((e) => e.required);
+  const optionalCaptured = checklist.filter((e) => !e.required && e.state !== "missing");
+  const hasEmpty = requiredEntries.some((e) => !e.value || e.value.trim() === "");
+
+  return (
+    <div>
+      <StepHeader
+        step={4}
+        total={7}
+        title="ตรวจสอบและแก้ไขข้อมูล"
+        body="ระบบอ่านข้อมูลจากภาพ D.GA ได้ตามด้านล่าง — โปรดตรวจสอบความถูกต้อง และแก้ไขฟิลด์ที่อ่านผิดได้ ฟิลด์ที่มีไอคอน 🔒 (เลขบัตร + วันเกิด) ห้ามแก้เพราะใช้ยืนยันตัวตนกับบัตรประชาชน"
+      />
+
+      <div className="max-w-[680px] mx-auto space-y-4 mb-6">
+        {requiredEntries.map((entry) => (
+          <FieldEditor key={entry.key} entry={entry} onEdit={onEdit} busy={busy} />
+        ))}
+        {optionalCaptured.length > 0 && (
+          <>
+            <p className="mt-6 mb-2 text-[12px] font-medium uppercase tracking-[0.08em] text-mp-ink-muted">
+              ข้อมูลเพิ่มเติม (ไม่บังคับ)
+            </p>
+            {optionalCaptured.map((entry) => (
+              <FieldEditor key={entry.key} entry={entry} onEdit={onEdit} busy={busy} />
+            ))}
+          </>
+        )}
+      </div>
+
+      <div className="max-w-[680px] mx-auto mt-10 flex items-center justify-between pt-6 border-t border-mp-border">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 text-[14px] text-mp-ink-muted hover:text-mp-ink disabled:opacity-50 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          ย้อนกลับเพื่อเพิ่มภาพ
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={busy || hasEmpty}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-mp-coral text-white font-semibold shadow-sm hover:bg-mp-coral-dark hover:-translate-y-px disabled:opacity-50 disabled:hover:transform-none transition-all h-11 px-6 text-[15px]"
+        >
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          ยืนยันและไปขั้นตอนถัดไป
+          {!busy && <ArrowRight className="w-4 h-4" />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FieldEditor({
+  entry,
+  onEdit,
+  busy,
+}: {
+  entry: DgaChecklistEntry;
+  onEdit: (key: string, value: string) => void;
+  busy: boolean;
+}) {
+  const [local, setLocal] = useState(entry.value ?? "");
+  const lastServer = useRef(entry.value ?? "");
+
+  // Sync if the server-canonical value changes from outside (e.g. after
+  // a sibling PATCH succeeds and the parent passes a fresh checklist).
+  useEffect(() => {
+    const serverNow = entry.value ?? "";
+    if (serverNow !== lastServer.current) {
+      lastServer.current = serverNow;
+      setLocal(serverNow);
+    }
+  }, [entry.value]);
+
+  const isMultiline =
+    entry.key === "registeredAddress" || entry.key === "contactAddress";
+
+  const handleBlur = () => {
+    const trimmed = local.trim();
+    if (!trimmed) return; // empty values are rejected server-side
+    if (trimmed === (entry.value ?? "")) return; // no-op
+    lastServer.current = trimmed;
+    onEdit(entry.key, trimmed);
+  };
+
+  const showOriginal =
+    entry.editedByUser &&
+    entry.originalValue &&
+    entry.originalValue !== entry.value;
+
+  const inputClass =
+    "w-full rounded-lg border bg-white px-3 py-2 text-[14px] text-mp-ink " +
+    (entry.locked
+      ? "border-mp-border bg-mp-cream-alt/50 text-mp-ink-muted cursor-not-allowed"
+      : "border-mp-border focus:border-mp-coral focus:outline-none focus:ring-2 focus:ring-mp-coral/20");
+
+  return (
+    <div className="rounded-xl border border-mp-border bg-white p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[13px] font-semibold text-mp-ink">{entry.label}</span>
+        {entry.locked && (
+          <span
+            className="inline-flex items-center gap-1 text-[11px] text-mp-ink-muted bg-mp-cream-alt px-1.5 py-0.5 rounded"
+            title="ห้ามแก้ — หากผิดพลาด กรุณาอัปโหลดภาพใหม่"
+          >
+            <Lock className="w-3 h-3" /> ห้ามแก้
+          </span>
+        )}
+        {entry.editedByUser && (
+          <span className="inline-flex items-center text-[11px] text-mp-coral bg-mp-coral/10 px-1.5 py-0.5 rounded">
+            แก้ไขแล้ว
+          </span>
+        )}
+      </div>
+      {isMultiline ? (
+        <textarea
+          value={local}
+          onChange={(e) => setLocal(e.currentTarget.value)}
+          onBlur={handleBlur}
+          disabled={entry.locked || busy}
+          rows={2}
+          className={`${inputClass} resize-y min-h-[60px]`}
+        />
+      ) : (
+        <input
+          type="text"
+          value={local}
+          onChange={(e) => setLocal(e.currentTarget.value)}
+          onBlur={handleBlur}
+          disabled={entry.locked || busy}
+          className={inputClass}
+        />
+      )}
+      {showOriginal && (
+        <p className="mt-1 text-[11px] text-mp-ink-muted/80">
+          OCR อ่านได้: <span className="font-mono">{entry.originalValue}</span>
+        </p>
+      )}
+      {entry.warning && (
+        <p className="mt-1 text-[11px] text-amber-700">⚠ {entry.warning}</p>
+      )}
     </div>
   );
 }
@@ -777,105 +1695,90 @@ function StepDga({
 // ── Step 2: ID + Selfie ────────────────────────────────────────────
 
 function StepIdSelfie({
-  idFront,
   selfie,
-  onPickId,
   onPickSelfie,
   busy,
   onSubmit,
 }: {
-  idFront: File | null;
   selfie: File | null;
-  onPickId: (f: File | null) => void;
   onPickSelfie: (e: ChangeEvent<HTMLInputElement>) => void;
   busy: boolean;
   onSubmit: () => void;
 }) {
-  // Selfie uses its own labeled file input (not UploadZone) so we can hook
-  // the auto-crop handler. Wrap in similar dashed styling.
+  // The front-of-card image is reused from Step 1 (S1_ID_CARD_REF) — no
+  // re-upload here. The vendor only captures their selfie holding the
+  // ID; the server pulls the Step 1 image for face match.
   const selfieInputId = "selfie-file-input";
   return (
     <div>
       <StepHeader
-        step={2}
-        total={4}
-        title="อัปโหลดรูปบัตรประชาชน + เซลฟี่"
-        body="ระบบจะเทียบใบหน้าในเซลฟี่กับรูปในบัตรประชาชน และตรวจสอบข้อมูลตรงกับขั้นตอนที่ 1"
+        step={5}
+        total={7}
+        title="เซลฟี่ถือบัตรประชาชน"
+        body="ระบบจะเทียบใบหน้าในเซลฟี่กับรูปในบัตรที่อัปโหลดในขั้นตอนที่ 1 — บัตรเดิมยังถูกใช้อยู่ ไม่ต้องอัปใหม่"
       />
 
-      <div className="max-w-[640px] mx-auto rounded-xl bg-mp-cream-alt/60 border border-mp-border p-5 mb-6">
-        <p className="text-[13px] text-mp-ink leading-relaxed">
-          <span className="font-semibold">เคล็ดลับ:</span> ถ่ายในที่แสงสว่าง · เห็นข้อมูลครบทั้งใบ ·
-          ไม่มีเงาบนบัตร · ไม่ใส่หน้ากากหรือแว่นกันแดด
+      <div className="max-w-[640px] mx-auto rounded-xl bg-mp-forest/5 border border-mp-forest/20 px-4 py-3 mb-5 flex items-start gap-3">
+        <IdCard className="w-4 h-4 text-mp-forest shrink-0 mt-0.5" />
+        <p className="text-[13px] text-mp-forest leading-relaxed">
+          <strong>บัตรประชาชนจากขั้นตอนที่ 1</strong> — ระบบจะใช้รูปบัตรที่คุณส่งมาแล้วเทียบกับใบหน้าในเซลฟี่
         </p>
       </div>
 
-      <div className="max-w-[680px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div>
-          <p className="text-[13px] font-semibold text-mp-ink mb-2">
-            1. บัตรประชาชน (ด้านหน้า)
-          </p>
-          <UploadZone
-            file={idFront}
-            onPick={onPickId}
-            label="อัปโหลดรูปบัตร"
-            sub="JPG, PNG · สูงสุด 5MB"
-            required
-            icon={IdCard}
-            height="min-h-[200px]"
-          />
-        </div>
+      <div className="max-w-[640px] mx-auto rounded-xl bg-mp-cream-alt/60 border border-mp-border p-5 mb-6">
+        <p className="text-[13px] text-mp-ink leading-relaxed">
+          <span className="font-semibold">เคล็ดลับเซลฟี่:</span> ถือบัตรไว้ใต้คาง · เห็นข้อมูลในบัตรครบ ·
+          ถ่ายในที่แสงสว่าง · ไม่ใส่หน้ากากหรือแว่นกันแดด
+        </p>
+      </div>
 
-        <div>
-          <p className="text-[13px] font-semibold text-mp-ink mb-2">
-            2. เซลฟี่ถือบัตร
-          </p>
-          <input
-            id={selfieInputId}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={onPickSelfie}
-          />
-          <label
-            htmlFor={selfieInputId}
-            className={
-              "block cursor-pointer rounded-xl border-2 border-dashed transition min-h-[200px] " +
-              (selfie
-                ? "border-mp-forest bg-mp-forest/5"
-                : "border-mp-coral/40 bg-mp-cream-alt/40 hover:bg-mp-cream-alt/60 hover:border-mp-coral")
-            }
-          >
-            {selfie ? (
-              <div className="flex items-center gap-4 p-5">
-                <div className="shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-mp-cream-alt border border-mp-border">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={URL.createObjectURL(selfie)}
-                    alt={selfie.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 text-mp-forest mb-0.5">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span className="text-[13px] font-semibold">อัปโหลดแล้ว</span>
-                  </div>
-                  <p className="text-[14px] text-mp-ink truncate">{selfie.name}</p>
-                  <p className="text-[12px] text-mp-ink-muted">
-                    {(selfie.size / 1024).toFixed(0)} KB · ตัดกรอบบัตรอัตโนมัติแล้ว
-                  </p>
-                </div>
+      <div className="max-w-[680px] mx-auto">
+        <p className="text-[13px] font-semibold text-mp-ink mb-2">รูปเซลฟี่ถือบัตร</p>
+        <input
+          id={selfieInputId}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={onPickSelfie}
+        />
+        <label
+          htmlFor={selfieInputId}
+          className={
+            "block cursor-pointer rounded-xl border-2 border-dashed transition min-h-[260px] " +
+            (selfie
+              ? "border-mp-forest bg-mp-forest/5"
+              : "border-mp-coral/40 bg-mp-cream-alt/40 hover:bg-mp-cream-alt/60 hover:border-mp-coral")
+          }
+        >
+          {selfie ? (
+            <div className="flex items-center gap-4 p-5">
+              <div className="shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-mp-cream-alt border border-mp-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={URL.createObjectURL(selfie)}
+                  alt={selfie.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center p-6 min-h-[200px]">
-                <UserCircle2 className="w-10 h-10 text-mp-forest mb-3" strokeWidth={1.5} />
-                <p className="text-[15px] font-semibold text-mp-ink mb-1">อัปโหลดเซลฟี่</p>
-                <p className="text-[12px] text-mp-ink-muted">ถือบัตรไว้ข้างหน้าใบหน้า</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 text-mp-forest mb-0.5">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span className="text-[13px] font-semibold">อัปโหลดแล้ว</span>
+                </div>
+                <p className="text-[14px] text-mp-ink truncate">{selfie.name}</p>
+                <p className="text-[12px] text-mp-ink-muted">
+                  {(selfie.size / 1024).toFixed(0)} KB · ตัดกรอบบัตรอัตโนมัติแล้ว
+                </p>
               </div>
-            )}
-          </label>
-        </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center text-center p-6 min-h-[260px]">
+              <UserCircle2 className="w-12 h-12 text-mp-forest mb-3" strokeWidth={1.5} />
+              <p className="text-[15px] font-semibold text-mp-ink mb-1">อัปโหลดเซลฟี่</p>
+              <p className="text-[12px] text-mp-ink-muted">ถือบัตรไว้ข้างหน้าใบหน้า</p>
+            </div>
+          )}
+        </label>
       </div>
 
       <div className="max-w-[680px] mx-auto mt-4 flex items-start gap-2 text-[12px] text-mp-ink-muted">
@@ -886,7 +1789,7 @@ function StepIdSelfie({
         </p>
       </div>
 
-      <StickyFooter onSubmit={onSubmit} busy={busy} disabled={!idFront || !selfie} />
+      <StickyFooter onSubmit={onSubmit} busy={busy} disabled={!selfie} />
     </div>
   );
 }
@@ -909,8 +1812,8 @@ function StepPhone({
   return (
     <div>
       <StepHeader
-        step={3}
-        total={4}
+        step={6}
+        total={7}
         title="อัปโหลด screenshot การยืนยันเบอร์"
         body="ส่ง screenshot หน้าจอที่แสดง response จากระบบ DGA ที่ยืนยันว่าเบอร์มือถือของคุณตรงกับบัตรประชาชน"
       />
@@ -930,7 +1833,7 @@ function StepPhone({
               <span className="shrink-0 w-5 h-5 rounded-full bg-mp-coral text-white text-[11px] font-bold flex items-center justify-center">
                 2
               </span>
-              รอข้อความตอบกลับที่ระบุว่าเบอร์ "ตรงกับ" บัตรประชาชน
+              รอข้อความตอบกลับที่ระบุว่าเบอร์ &ldquo;ตรงกับ&rdquo; บัตรประชาชน
             </li>
             <li className="flex gap-2">
               <span className="shrink-0 w-5 h-5 rounded-full bg-mp-coral text-white text-[11px] font-bold flex items-center justify-center">
@@ -940,7 +1843,7 @@ function StepPhone({
             </li>
           </ol>
           <p className="mt-3 pt-3 border-t border-mp-border text-[11px] text-mp-ink-muted/80">
-            ระบบจะตรวจ: เลขบัตรประชาชน + 4 หลักท้ายเบอร์ + คำว่า "ตรงกับ"
+            ระบบจะตรวจ: เลขบัตรประชาชน + 4 หลักท้ายเบอร์ + คำว่า &ldquo;ตรงกับ&rdquo;
           </p>
         </div>
 
@@ -971,7 +1874,7 @@ function StepPhone({
           <ul className="text-[12px] text-red-800 space-y-1 ml-4 list-disc">
             <li>เลขบัตรประชาชน 13 หลัก</li>
             <li>เบอร์มือถือที่ลงทะเบียน (4 หลักท้าย)</li>
-            <li>คำว่า "ตรงกับ"</li>
+            <li>คำว่า &ldquo;ตรงกับ&rdquo;</li>
           </ul>
         </div>
       )}
@@ -1009,8 +1912,8 @@ function StepBankbook({
   return (
     <div>
       <StepHeader
-        step={4}
-        total={4}
+        step={7}
+        total={7}
         title="อัปโหลดสมุดบัญชีธนาคาร"
         body="ระบบจะตรวจสอบว่าชื่อในสมุดบัญชีตรงกับชื่อในบัตรประชาชน — ใช้รับเงินจากการขายในร้านของคุณ"
       />
@@ -1075,6 +1978,122 @@ function StepBankbook({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Hard-block modal: DGA registered vs contact address have different
+// house numbers. Likely user error during DGA registration — vendor
+// must fix in the DGA app itself (we are downstream consumers, we
+// can't write back to DGA) and re-screenshot.
+// ────────────────────────────────────────────────────────────────────
+
+function DgaAddressMismatchModal({
+  mismatch,
+  busy,
+  onClose,
+  onReupload,
+}: {
+  mismatch: {
+    registered: string | null;
+    contact: string | null;
+    registeredHouseNumber: string | null;
+    contactHouseNumber: string | null;
+  };
+  busy: boolean;
+  onClose: () => void;
+  onReupload: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 py-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dga-address-mismatch-title"
+    >
+      <div className="w-full max-w-[520px] rounded-2xl bg-white shadow-xl overflow-hidden">
+        <div className="border-b border-mp-border bg-red-50 px-6 py-5">
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+              <XCircle className="w-5 h-5 text-red-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3
+                id="dga-address-mismatch-title"
+                className="text-[17px] font-bold text-mp-ink mb-1"
+                style={{ fontFamily: "var(--mp-font-display)" }}
+              >
+                ที่อยู่ไม่ตรงกับบัตรประชาชน
+              </h3>
+              <p className="text-[13px] text-mp-ink-muted leading-relaxed">
+                บ้านเลขที่ในช่อง <strong>ที่อยู่ตามบัตรประจำตัวประชาชน</strong>{" "}
+                ไม่ตรงกับ <strong>ที่อยู่ที่ติดต่อได้</strong> ตามที่ DGA แสดง
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-5 space-y-3">
+          <div className="rounded-xl border border-mp-border bg-mp-cream-alt/50 px-4 py-3">
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-mp-ink-muted mb-1">
+              ที่อยู่ตามบัตรประจำตัวประชาชน
+            </p>
+            <p className="text-[13px] text-mp-ink leading-relaxed">
+              {mismatch.registered ?? "—"}
+            </p>
+            {mismatch.registeredHouseNumber && (
+              <p className="mt-1 text-[12px] text-mp-coral font-semibold">
+                บ้านเลขที่: {mismatch.registeredHouseNumber}
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-mp-border bg-mp-cream-alt/50 px-4 py-3">
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-mp-ink-muted mb-1">
+              ที่อยู่ที่ติดต่อได้
+            </p>
+            <p className="text-[13px] text-mp-ink leading-relaxed">
+              {mismatch.contact ?? "—"}
+            </p>
+            {mismatch.contactHouseNumber && (
+              <p className="mt-1 text-[12px] text-mp-coral font-semibold">
+                บ้านเลขที่: {mismatch.contactHouseNumber}
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-xl bg-mp-warning/10 border border-mp-warning/30 px-4 py-3">
+            <p className="text-[13px] text-mp-ink leading-relaxed">
+              <strong>วิธีแก้:</strong> เปิดแอป DGA Digital ID →
+              ไปที่ &ldquo;ข้อมูลส่วนตัว&rdquo; →
+              แก้ไขที่อยู่ที่ติดต่อได้ให้ตรงกับที่อยู่ตามบัตรประจำตัวประชาชน →
+              ถ่ายภาพหน้าจอใหม่ แล้วอัปโหลดในขั้นตอนนี้อีกครั้ง
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-mp-border bg-mp-cream-alt/30 px-6 py-4 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            className="inline-flex h-10 items-center justify-center px-4 text-[14px] text-mp-ink-muted hover:text-mp-ink disabled:opacity-50 transition-colors"
+          >
+            ปิด
+          </button>
+          <button
+            type="button"
+            onClick={onReupload}
+            disabled={busy}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-mp-coral px-5 text-[14px] font-semibold text-white shadow-sm hover:bg-mp-coral-dark disabled:opacity-50 transition-all"
+          >
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            อัปโหลดภาพ DGA ใหม่
+            {!busy && <ArrowRight className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

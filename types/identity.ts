@@ -23,9 +23,21 @@ export interface BankAccountIdentity {
 
 export interface Identity {
   citizenId?: string;
+  /**
+   * Raw citizen-ID as the source rendered it (e.g. DGA shows "1-1017-00119-59-9"
+   * with dashes). `citizenId` keeps the digits-only form for cross-match;
+   * `citizenIdFormatted` is preserved for UI display of "as captured".
+   */
+  citizenIdFormatted?: string;
   thName?: IdentityName;
   enName?: IdentityName;
   dob?: string;
+  /**
+   * Raw date-of-birth as the source rendered it (e.g. DGA shows
+   * "12 สิงหาคม 2535" in Thai BE). `dob` keeps the ISO YYYY-MM-DD CE form
+   * for cross-match; `dobRaw` is preserved for UI display of "as captured".
+   */
+  dobRaw?: string;
   address?: IdentityAddress;
   contactAddress?: IdentityAddress;
   phoneLast4?: string;

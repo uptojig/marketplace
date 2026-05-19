@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { hasApprovedKyc } from "@/lib/kyc/wizard-state";
 import { Wizard } from "./_components/wizard";
 import { createStoreAndRedirect } from "./actions";
 
@@ -37,6 +38,11 @@ export default async function CreateStorePage() {
       select: { slug: true },
     });
     if (existing) redirect(`/dashboard?store=${existing.slug}`);
+
+    const approved = await hasApprovedKyc(session.user.id);
+    if (!approved) {
+      redirect("/apply");
+    }
   }
 
   return <Wizard onSubmit={createStoreAndRedirect} />;

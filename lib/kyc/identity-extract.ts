@@ -60,7 +60,7 @@ const THAI_MONTHS: Record<string, number> = {
   "ธันวาคม": 12,
 };
 
-function toIsoThaiDate(value: string | undefined): string | undefined {
+export function toIsoThaiDate(value: string | undefined): string | undefined {
   if (!value) return undefined;
   const normalized = value.replace(/\s+/g, " ").trim();
   const match = normalized.match(/(\d{1,2})\s+([^\s]+)\s+(\d{4})/);
@@ -228,6 +228,64 @@ function emailFromText(value: string): string | undefined {
   return match?.[0]?.toLowerCase();
 }
 
+// Defense-in-depth against browser-chrome OCR contamination. When iPhone
+// Safari's URL bar overlay (e.g. "connect.egov.go.th") gets OCR'd on the
+// same line as the user's email, our greedy email regex captures the whole
+// concatenated string: "connect.egov.go.thuptojig@gmail.com".
+//
+// Strategy: in the local part (everything before "@"), look for a TLD
+// substring (.go.th, .com, etc.) that has MORE local-part chars after it.
+// A real email's local part wouldn't contain a TLD-shape followed by more
+// chars — that pattern only comes from a domain bleeding into the front
+// of the value. Strip everything up to and including that TLD.
+//
+// Also trims trailing non-email garbage (chevrons, Thai chars, whitespace)
+// — chevron `>` is the "tap to expand" affordance on each DGA row, which
+// iApp's OCR sometimes reads as `<` and appends to the email value.
+//
+// Order matters: try the longest TLDs first ("go.th" before "th") so
+// ".go.th" wins when both are present.
+const URL_TLDS_LONGEST_FIRST = [
+  ".go.th",
+  ".co.th",
+  ".or.th",
+  ".ac.th",
+  ".in.th",
+  ".info",
+  ".gov",
+  ".edu",
+  ".com",
+  ".net",
+  ".org",
+  ".biz",
+  ".io",
+  ".co",
+  ".th",
+] as const;
+const EMAIL_TRAILING_GARBAGE = /[<>‹›「」「」⟨⟩\s฀-๿].*$/;
+
+export function stripLeakedUrlFromEmail(value: string | undefined): string | undefined {
+  if (!value) return value;
+
+  // Strip trailing chevron/Thai/whitespace + anything after — those are
+  // never part of a real email and they break the local-part check below.
+  let cleaned = value.replace(EMAIL_TRAILING_GARBAGE, "").trim().toLowerCase();
+  if (!cleaned) return undefined;
+
+  const atIdx = cleaned.indexOf("@");
+  if (atIdx <= 0) return cleaned;
+
+  const local = cleaned.slice(0, atIdx);
+  for (const tld of URL_TLDS_LONGEST_FIRST) {
+    const tldIdx = local.lastIndexOf(tld);
+    if (tldIdx >= 0 && tldIdx + tld.length < local.length) {
+      // TLD found AND there's more local-part text after it → URL bleed.
+      return cleaned.slice(tldIdx + tld.length);
+    }
+  }
+  return cleaned;
+}
+
 function mobilePhoneFromText(value: string): string | undefined {
   // Thai mobile: 10 digits total (e.g. 080-068-8770), prefix 06/08/09.
   // Layout-aware OCR may insert spaces/dashes between groups, so accept
@@ -257,6 +315,30 @@ function thaiDobFromText(value: string): string | undefined {
   return toIsoThaiDate(match[0]);
 }
 
+// Extract just the "DD <ThaiMonth> YYYY" substring from a possibly-noisy
+// slice — used when DGA's label regex misses the next-label boundary and
+// the dob slice ends up containing trailing fragments like "เลขประจําตัว
+// 1-1017-00119-59-9 ประชาชน 13 หลัก". We want the clean DGA-displayed form,
+// not the whole noisy slice.
+function thaiDobRawFromText(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const re = new RegExp(`\\b(\\d{1,2})\\s+(${THAI_MONTH_REGEX_SOURCE})\\s+(\\d{4})\\b`);
+  const match = re.exec(value);
+  return match?.[0]?.trim();
+}
+
+// Extract the Thai citizen-ID "as displayed" pattern (`1-1017-00119-59-9`)
+// from a possibly-noisy text fragment. The dashed form is the canonical
+// way DGA renders the field. Falls back to `\d{13}` if the dashed format
+// isn't present.
+function citizenIdFormattedFromText(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const dashed = value.match(/\d-\d{4}-\d{5}-\d{2}-\d/);
+  if (dashed) return dashed[0];
+  const bare = value.match(/\b\d{13}\b/);
+  return bare?.[0];
+}
+
 // Repair common Thai word-break artifacts that show up when iApp's OCR
 // splits a long address mid-syllable across two lines: e.g. the province
 // "กรุงเทพมหานคร" emerges as "กรุงเทพมหาน" + "คร" on two lines and ends up
@@ -273,25 +355,54 @@ function repairThaiAddressLineBreaks(value: string): string {
     .trim();
 }
 
-// DGA profile shows two address blocks: registered (ที่อยู่ตามบัตร) +
-// contact (ที่อยู่ที่ติดต่อได้). iApp's plain text often dumps both into
-// one cell. Pull the first one that starts at "บ้านเลขที่" or the first
-// big Thai address-shaped string ending in a 5-digit postal code OR a
-// trailing "จ.<province>" / "จังหวัด<province>" anchor when the registered
-// address omits the postal code (some DGA layouts only show postal on the
-// contact-address line).
-function firstAddressFromText(value: string): string | undefined {
-  const flattened = value.replace(/\s+/g, " ").trim();
-  const explicit = flattened.match(/บ้านเลขที่[^]*?\b\d{5}\b/);
-  if (explicit) return repairThaiAddressLineBreaks(explicit[0]);
-  // Fallback: street-number anchor with house number + "หมู่" or similar,
-  // ending at postal code OR at province name. Used when the address starts
-  // with a raw number (e.g. "118 หมู่ที่ 8 ต.กุดโบสถ์ อ.เสิงสาง จ.นครราชสีมา").
-  const inferred = flattened.match(
-    /\b\d{1,4}\s*หมู่[^]*?(?:\b\d{5}\b|จ\.[฀-๾]+|จังหวัด[฀-๾]+)/,
-  );
-  if (inferred) return repairThaiAddressLineBreaks(inferred[0]);
-  return undefined;
+// Universal structural endpoints of a Thai address — every formal Thai
+// address ends at จังหวัด<X> / จ.<X> / กรุงเทพมหานคร, optionally followed
+// by a 5-digit postal code (per Universal Postal Union SAFD Thailand and
+// the Thai government addressing standard). This is a structural truth
+// independent of how the address STARTS (which can be "บ้านเลขที่ <N>",
+// "<N> หมู่...", "<N>/<sub> ถ....", etc.).
+//
+// Splitting on these endpoints handles iApp's column-first OCR bleed: if
+// the parser slices "ที่อยู่ตามบัตร" empty and "ที่อยู่ที่ติดต่อได้" gets
+// BOTH addresses concatenated, we split that fat slice into N segments
+// using these endpoints — no value-format pattern matching required.
+//
+// Priority order = longest-first so "(จังหวัด|จ\.)<X>\s+<NNNNN>" wins
+// over either part alone. This prevents mid-address splits when an
+// address ends with BOTH a province and a postal code (the postal becomes
+// part of the same segment, not a separate spurious one).
+const THAI_ADDRESS_ENDPOINT_RE =
+  /(?:(?:จังหวัด|จ\.)[฀-๿]+\s+\d{5}\b|กรุงเทพมหานคร\s+\d{5}\b|\b\d{5}\b|(?:จังหวัด|จ\.)[฀-๿]+|กรุงเทพมหานคร)/g;
+
+/**
+ * Split a text blob at every Thai-address structural endpoint marker.
+ * Each segment runs from the previous endpoint (or blob start) through
+ * the current endpoint, inclusive. Segments shorter than 10 chars are
+ * filtered as noise. Caller is responsible for assigning segments to
+ * labels (e.g., first → registered, second → contact).
+ *
+ * Format-agnostic: doesn't care HOW each address starts (slash-numbered,
+ * "บ้านเลขที่", "<N> หมู่", or any future DGA format). Only relies on the
+ * structural END of a Thai address, which is fixed by postal regulations.
+ */
+export function splitAtThaiAddressEndpoints(blob: string): string[] {
+  if (!blob) return [];
+  const flat = blob.replace(/\s+/g, " ").trim();
+  if (!flat) return [];
+
+  const out: string[] = [];
+  let lastEnd = 0;
+  let match: RegExpExecArray | null;
+  THAI_ADDRESS_ENDPOINT_RE.lastIndex = 0;
+  while ((match = THAI_ADDRESS_ENDPOINT_RE.exec(flat)) !== null) {
+    const end = match.index + match[0].length;
+    const segment = flat.slice(lastEnd, end).trim();
+    if (segment.length >= 10) {
+      out.push(repairThaiAddressLineBreaks(segment));
+    }
+    lastEnd = end;
+  }
+  return out;
 }
 
 // When iApp's layout-aware OCR returns the registered-address VALUE
@@ -342,19 +453,6 @@ function cleanThaiNameValue(value: string | undefined): string | undefined {
     .replace(/\s+/g, " ")
     .trim();
   return cleaned || undefined;
-}
-
-// Heuristic to detect the "registered + contact concatenated in one cell"
-// case: the label value contains the same address twice (two postal codes,
-// and the first address text is a substring of the whole). Returns true
-// when we should fall back to a single deduped copy.
-function looksLikeDoubledAddress(label: string, firstAddress?: string): boolean {
-  if (!firstAddress) return false;
-  const postalCount = label.match(/\b\d{5}\b/g)?.length ?? 0;
-  if (postalCount < 2) return false;
-  const collapsed = label.replace(/\s+/g, "");
-  const firstCollapsed = firstAddress.replace(/\s+/g, "");
-  return collapsed.indexOf(firstCollapsed) !== collapsed.lastIndexOf(firstCollapsed);
 }
 
 export function fromIappFront(ocr: OcrIdCardFrontResult): Identity {
@@ -424,45 +522,72 @@ export function fromTyphoonDga(raw: Record<string, unknown>): Identity {
     mobilePhoneFromText(blob) ??
     (mobileRaw || undefined);
 
-  const citizenIdLabel = digitsOnly(labelValues.citizenId ?? getRecordValue(raw, "citizenId", "cid", "idNumber", "id_number"));
-  const citizenId = citizenIdLabel && citizenIdLabel.length === 13 ? citizenIdLabel : citizenIdFromText(blob);
+  // citizenId: preserve BOTH forms — the raw DGA-shown format
+  // ("1-1017-00119-59-9" with dashes) for UI display, and the digits-only
+  // form for cross-match. UI shouldn't fake a format that DGA didn't show.
+  //
+  // Tricky: DGA wraps the label "เลขประจำตัวประชาชน 13 หลัก" across two
+  // lines on narrow phones with the VALUE rendered between them. That
+  // means our label-position parser may miss the boundary entirely and
+  // the slice for adjacent labels (dob, address) absorbs the value. We
+  // extract the structured ID pattern (`X-XXXX-XXXXX-XX-X` or 13-digit)
+  // from the label slice if present, otherwise from the full blob.
+  const citizenIdLabelText = text(labelValues.citizenId ?? getRecordValue(raw, "citizenId", "cid", "idNumber", "id_number"));
+  const citizenIdFormatted =
+    citizenIdFormattedFromText(citizenIdLabelText) ?? citizenIdFormattedFromText(blob);
+  const citizenId = citizenIdFormatted ? digitsOnly(citizenIdFormatted) : citizenIdFromText(blob);
 
+  // dob: preserve BOTH forms — the raw DGA-shown date ("12 สิงหาคม 2535"
+  // in Thai BE) for UI display, and the ISO CE form for cross-match.
+  // Same wrapping issue as citizenId: the dob slice may carry noise from
+  // the next field, so extract just the "DD <ThaiMonth> YYYY" substring.
   const dobLabel = text(labelValues.dobThai ?? getRecordValue(raw, "dob", "dobThai", "birthDate", "birth_date"));
-  const dob = toIsoThaiDate(dobLabel) ?? thaiDobFromText(blob);
+  const dobRaw = thaiDobRawFromText(dobLabel) ?? thaiDobRawFromText(blob);
+  const dob = toIsoThaiDate(dobRaw ?? dobLabel) ?? thaiDobFromText(blob);
 
-  const rawAddressLabel = text(labelValues.addressByID ?? getRecordValue(raw, "addressByID", "addressById", "address", "registeredAddress"));
-  // Strip "ประจำตัวประชาชน" label noise that bleeds into the value when iApp
-  // returns the label fragments interleaved with the address text.
-  const strippedAddressLabel = rawAddressLabel
-    ? stripAddressByIdLabelNoise(rawAddressLabel)
-    : undefined;
-  const contactAddressLabel = text(labelValues.contactAddress ?? getRecordValue(raw, "contactAddress", "contact_address"));
-  // If both addresses dump into one cell, split them by the first valid
-  // address (ending at postal code) — DGA always lists registered first.
-  const firstAddress = firstAddressFromText(blob);
-  const addressLabel = looksLikeThaiAddress(strippedAddressLabel)
-    ? strippedAddressLabel
-    : undefined;
-  const addressFull = addressLabel
-    ? repairThaiAddressLineBreaks(addressLabel)
-    : firstAddress;
-  // Detect the "doubled" case where the label parser captured both
-  // registered + contact in a single string; collapse to the deduped
-  // single address recovered from the blob.
-  const contactDoubled = contactAddressLabel
-    ? looksLikeDoubledAddress(contactAddressLabel, firstAddress)
-    : false;
-  const contactAddressFull = contactDoubled
-    ? firstAddress
-    : contactAddressLabel
-      ? repairThaiAddressLineBreaks(contactAddressLabel)
-      : firstAddress;
+  const rawAddressLabel = text(labelValues.addressByID ?? getRecordValue(raw, "addressByID", "addressById", "address", "registeredAddress")) ?? "";
+  const strippedAddressLabel = stripAddressByIdLabelNoise(rawAddressLabel);
+  const contactAddressLabel = text(labelValues.contactAddress ?? getRecordValue(raw, "contactAddress", "contact_address")) ?? "";
+
+  // Generic column-bleed detection: when iApp's column-first OCR places
+  // BOTH address values in the contact slice (registered slice ends up
+  // empty between adjacent "ที่อยู่ตามบัตร" and "ที่อยู่ที่ติดต่อได้" labels),
+  // the registered slice fails looksLikeThaiAddress and the contact slice
+  // contains a fat blob with two endpoint markers. Split using universal
+  // Thai-address structural endpoints (จังหวัด / postal code) — works
+  // for ANY value format, including DGA UI revisions we haven't seen yet.
+  const registeredHasContent = looksLikeThaiAddress(strippedAddressLabel) && strippedAddressLabel.length >= 10;
+
+  let addressFull: string | undefined;
+  let contactAddressFull: string | undefined;
+
+  if (!registeredHasContent && contactAddressLabel) {
+    const segments = splitAtThaiAddressEndpoints(contactAddressLabel);
+    if (segments.length >= 2) {
+      addressFull = segments[0];
+      contactAddressFull = segments[1];
+    } else if (segments.length === 1) {
+      // DGA shows the same address for both labels — assign to both.
+      addressFull = segments[0];
+      contactAddressFull = segments[0];
+    }
+  }
+
+  // No bleed detected — use each label's own slice independently.
+  if (addressFull === undefined && registeredHasContent) {
+    addressFull = repairThaiAddressLineBreaks(strippedAddressLabel);
+  }
+  if (contactAddressFull === undefined && looksLikeThaiAddress(contactAddressLabel)) {
+    contactAddressFull = repairThaiAddressLineBreaks(contactAddressLabel);
+  }
 
   const emailLabel = text(labelValues.email ?? getRecordValue(raw, "email"))?.toLowerCase();
-  const cleanedEmail = emailLabel?.includes("@") ? emailLabel : emailFromText(blob);
+  const rawEmail = emailLabel?.includes("@") ? emailLabel : emailFromText(blob);
+  const cleanedEmail = stripLeakedUrlFromEmail(rawEmail);
 
   return {
     citizenId,
+    citizenIdFormatted,
     thName: {
       prefix,
       first: firstName,
@@ -471,6 +596,7 @@ export function fromTyphoonDga(raw: Record<string, unknown>): Identity {
       full: fullName,
     },
     dob,
+    dobRaw,
     address: {
       full: addressFull,
     },

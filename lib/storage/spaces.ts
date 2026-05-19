@@ -118,3 +118,17 @@ export async function presignDownload(args: {
   const command = new GetObjectCommand({ Bucket: bucket!, Key: args.key });
   return getSignedUrl(c, command, { expiresIn: args.expiresIn ?? 600 });
 }
+
+// Server-side download of an object as a Buffer. Used when a later
+// pipeline step needs to re-process evidence captured earlier in the
+// flow (e.g. Step 5 face match against the Step 1 ID card image).
+export async function downloadBuffer(key: string): Promise<Buffer> {
+  const c = getClient();
+  const command = new GetObjectCommand({ Bucket: bucket!, Key: key });
+  const res = await c.send(command);
+  if (!res.Body) throw new Error(`Spaces object has empty body: ${key}`);
+  // SDK v3 returns a stream; transformToByteArray collapses it to bytes.
+  const bytes = await (res.Body as { transformToByteArray: () => Promise<Uint8Array> })
+    .transformToByteArray();
+  return Buffer.from(bytes);
+}

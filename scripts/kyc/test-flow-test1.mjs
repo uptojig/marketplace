@@ -87,14 +87,24 @@ async function main() {
   if (!sid) { console.log(`\n${RED}❌ Could not create session — abort.${RESET}`); process.exit(1); }
   console.log(`  ${GREEN}✓ Session ID: ${sid}${RESET}`);
 
+  // S1 v2 — incremental multi-image: 2 add-image calls + 1 finalize.
   await call(
-    "1. S1_DGA_CAPTURE — POST /s3/dga-capture",
-    `${BASE}/api/wizard/${sid}/s3/dga-capture`,
+    "1a. S1_DGA_CAPTURE — POST /s1/dga-add-image (1/2)",
+    `${BASE}/api/wizard/${sid}/s1/dga-add-image`,
     "POST",
-    {
-      image1: readImage("DGA_IMAGE1.jpg", "image/jpeg"),
-      image2: readImage("DGA_IMAGE2.jpg", "image/jpeg"),
-    },
+    { image: readImage("DGA_IMAGE1.jpg", "image/jpeg") },
+  );
+  await call(
+    "1b. S1_DGA_CAPTURE — POST /s1/dga-add-image (2/2)",
+    `${BASE}/api/wizard/${sid}/s1/dga-add-image`,
+    "POST",
+    { image: readImage("DGA_IMAGE2.jpg", "image/jpeg") },
+  );
+  await call(
+    "1c. S1_DGA_CAPTURE — POST /s1/dga-finalize",
+    `${BASE}/api/wizard/${sid}/s1/dga-finalize`,
+    "POST",
+    {},
   );
 
   await call(

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { presignDownload, uploadBuffer } from "@/lib/storage/spaces";
+import { downloadBuffer, presignDownload, uploadBuffer } from "@/lib/storage/spaces";
 
 interface ImageSize {
   width?: number;
@@ -85,6 +85,23 @@ export async function uploadWizardEvidence(args: {
       source: args.source ?? "vendor_upload",
     },
   });
+}
+
+// Returns the most-recently-captured evidence for a session+step plus
+// its raw image buffer. Used when a downstream wizard step needs to
+// re-process an upload from an earlier step (e.g. Step 5 face match
+// against the Step 1 ID-card image we already collected).
+export async function getLatestEvidenceWithBuffer(
+  sessionId: string,
+  step: string,
+): Promise<{ id: string; mime: string; buffer: Buffer } | null> {
+  const evidence = await prisma.wizardEvidence.findFirst({
+    where: { sessionId, step },
+    orderBy: { capturedAt: "desc" },
+  });
+  if (!evidence) return null;
+  const buffer = await downloadBuffer(evidence.storageKey);
+  return { id: evidence.id, mime: evidence.mime, buffer };
 }
 
 export async function evidenceWithPresignedUrls(sessionId: string) {

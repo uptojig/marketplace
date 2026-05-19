@@ -17,6 +17,8 @@ import {
 } from "@/lib/kyc/wizard-state";
 import { prisma } from "@/lib/prisma";
 import KycWizard from "./_components/kyc-wizard";
+import KycWizardV3 from "./_components/kyc-wizard-v3";
+import { KycResumeRedirect } from "./_components/kyc-resume-redirect";
 import { ApplyStartButton } from "./_components/apply-start-button";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +31,20 @@ const TERMINAL_REJECT = new Set(["REJECTED"]);
 const TERMINAL_APPROVED = new Set(["AUTO_APPROVED"]);
 const TERMINAL_REVIEW = new Set(["MANUAL_REVIEW"]);
 const IN_PROGRESS = new Set([
+  "S1_ID_CARD_REF",
+  "S1_ID_CARD_REVIEW",
+  "S2_EMAIL_PENDING",
+  "S3_OTP_VERIFIED",
   "S1_DGA_CAPTURE",
+  "S1_DGA_REVIEW",
+  "S2_ID_SELFIE",
+  "S3_PHONE_RESPONSE",
+  "S4_BANKBOOK_UPLOAD",
+]);
+
+const LEGACY_IN_PROGRESS = new Set([
+  "S1_DGA_CAPTURE",
+  "S1_DGA_REVIEW",
   "S2_ID_SELFIE",
   "S3_PHONE_RESPONSE",
   "S4_BANKBOOK_UPLOAD",
@@ -89,7 +104,9 @@ export default async function ApplyPage({
   if (latest && IN_PROGRESS.has(latest.state)) {
     return (
       <WizardShell>
-        <KycWizard initialSessionId={latest.id} />
+        {LEGACY_IN_PROGRESS.has(latest.state)
+          ? <KycWizard initialSessionId={latest.id} />
+          : <KycWizardV3 initialSessionId={latest.id} />}
       </WizardShell>
     );
   }
@@ -105,6 +122,7 @@ export default async function ApplyPage({
 function LandingScreen() {
   return (
     <div className="mx-auto max-w-[720px] px-5 py-12 md:py-16">
+      <KycResumeRedirect />
       <div className="text-center">
         <span className="inline-block text-[13px] font-medium uppercase tracking-[0.16em] text-mp-coral">
           ขั้นตอนที่ 1 — ยืนยันตัวตน
@@ -141,14 +159,17 @@ function LandingScreen() {
           className="text-[18px] font-semibold text-mp-ink mb-5"
           style={{ fontFamily: "var(--mp-font-display)" }}
         >
-          เตรียมพร้อม 4 ขั้นตอน
+          เตรียมพร้อม 7 ขั้นตอน
         </h2>
         <ol className="space-y-4">
           {[
-            { n: 1, t: "รูปแอป D.GA หรือ ThaID", d: "หน้าโปรไฟล์ที่แสดงข้อมูลส่วนตัวครบ" },
-            { n: 2, t: "บัตรประชาชน + เซลฟี่คู่บัตร", d: "ใช้กล้องมือถือถ่ายให้ชัด" },
-            { n: 3, t: "รูป response เบอร์โทรจาก DGA", d: "screenshot หน้าจอที่ระบบส่งกลับ" },
-            { n: 4, t: "สมุดบัญชีธนาคาร", d: "หน้าแรกที่มีชื่อบัญชี" },
+            { n: 1, t: "บัตรประชาชน (Reference OCR)", d: "อัปโหลดก่อนเริ่ม เพื่อเป็นข้อมูลอ้างอิงหลัก" },
+            { n: 2, t: "รับอีเมลและดึง OTP", d: "ระบบจ่ายอีเมลชั่วคราวให้ แล้วดึง OTP จากฝั่งเรา" },
+            { n: 3, t: "อัปโหลดรูป DGA Capture", d: "ส่งรูปจากหน้าโปรไฟล์ D.GA/ThaID ได้หลายภาพ" },
+            { n: 4, t: "ตรวจทานข้อมูล DGA (Step 3.1)", d: "แก้ไข field ที่ OCR อ่านผิดก่อนไปขั้นต่อไป" },
+            { n: 5, t: "บัตรประชาชน + เซลฟี่คู่บัตร", d: "ตรวจใบหน้าเทียบกับข้อมูลยืนยันตัวตน" },
+            { n: 6, t: "รูป response เบอร์โทรจาก DGA", d: "อัปโหลด screenshot หน้าจอที่ระบบส่งกลับ" },
+            { n: 7, t: "สมุดบัญชีธนาคาร", d: "หน้าแรกที่มีชื่อบัญชีเพื่อยืนยันการรับเงิน" },
           ].map((step) => (
             <li key={step.n} className="flex items-start gap-3">
               <span className="shrink-0 w-7 h-7 rounded-full bg-mp-coral text-white text-[13px] font-bold flex items-center justify-center">
@@ -361,7 +382,7 @@ function WizardShell({ children }: { children: React.ReactNode }) {
           ส่งเอกสารทีละขั้นตอน
         </h1>
         <p className="mt-1.5 text-[14px] text-mp-ink-muted">
-          เก็บเอกสารให้ครบทั้ง 4 ขั้นตอน ระบบจะตรวจอัตโนมัติด้วย OCR
+          เก็บเอกสารให้ครบทุกขั้นตอน ระบบจะตรวจอัตโนมัติด้วย OCR และ cross-check ตามลำดับ
         </p>
       </div>
       <div className="rounded-2xl border border-mp-border bg-white p-4 md:p-6 shadow-sm">

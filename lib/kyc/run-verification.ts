@@ -286,13 +286,45 @@ export async function runVerification(
     if (onCall) await onCall(entry);
   };
 
+  // Parallelize independent iApp calls. Dependency graph:
+  //   ocr(id_front)   ────┐
+  //                       ├──► verify(selfie, face-from-ocr)
+  //   liveness(selfie) ───┤
+  //   heldOcr(crop)    ───┘
+  // (verify is the only call gated on another response — the face crop
+  // extracted from ocr.data.face). We kick off ocr/liveness/heldOcr in
+  // parallel, then start verify the moment ocr resolves, and Promise.all
+  // the rest. Wall clock collapses from sum(2+1.3+1.7+2.5)=7.5s to
+  // max(ocr+verify, liveness, heldOcr) ≈ max(3.8, 1.3, 2.5) ≈ 3.8s.
+  const heldOcrBuffer = opts.heldIdOcrBuffer ?? selfieBuffer;
+  const heldOcrSource: HeldIdEvidence["source"] = opts.heldIdOcrBuffer
+    ? "selfie_card_crop"
+    : "selfie_full";
+
   onStep?.("ocr", "start");
-  const ocr = await iapp.ocrThaiIdFront(idBuffer);
+  onStep?.("liveness", "start");
+  onStep?.("held_ocr", "start");
+  const ocrPromise = iapp.ocrThaiIdFront(idBuffer);
+  const livenessPromise = iapp.liveness(selfieBuffer);
+  const heldOcrPromise = iapp.ocrThaiIdFront(heldOcrBuffer).then(
+    (r) => ({ ok: true as const, value: r }),
+    (err: unknown) => ({ ok: false as const, error: err instanceof Error ? err.message : String(err) }),
+  );
+
+  const ocr = await ocrPromise;
   await emit({ ts: ts(), scenario: name, endpoint: "ocr", ic: ocr.ic, ms: ocr.ms });
   onStep?.("ocr", "done");
 
-  onStep?.("liveness", "start");
-  const liveness = await iapp.liveness(selfieBuffer);
+  onStep?.("verify", "start");
+  const faceCardBuf = Buffer.from(ocr.data.face, "base64");
+  const verifyPromise = iapp.faceVerification(selfieBuffer, faceCardBuf);
+
+  const [liveness, verify, heldOcrSettled] = await Promise.all([
+    livenessPromise,
+    verifyPromise,
+    heldOcrPromise,
+  ]);
+
   await emit({
     ts: ts(),
     scenario: name,
@@ -302,9 +334,6 @@ export async function runVerification(
   });
   onStep?.("liveness", "done");
 
-  onStep?.("verify", "start");
-  const faceCardBuf = Buffer.from(ocr.data.face, "base64");
-  const verify = await iapp.faceVerification(selfieBuffer, faceCardBuf);
   await emit({
     ts: ts(),
     scenario: name,
@@ -314,29 +343,23 @@ export async function runVerification(
   });
   onStep?.("verify", "done");
 
-  onStep?.("held_ocr", "start");
   let heldOcr: OcrIdCardFrontResult | null = null;
   let heldOcrIc = 0;
   let heldOcrMs = 0;
   let heldOcrError: string | undefined;
-  const heldOcrBuffer = opts.heldIdOcrBuffer ?? selfieBuffer;
-  const heldOcrSource: HeldIdEvidence["source"] = opts.heldIdOcrBuffer
-    ? "selfie_card_crop"
-    : "selfie_full";
-  try {
-    const heldResult = await iapp.ocrThaiIdFront(heldOcrBuffer);
-    heldOcr = heldResult.data;
-    heldOcrIc = heldResult.ic;
-    heldOcrMs = heldResult.ms;
+  if (heldOcrSettled.ok) {
+    heldOcr = heldOcrSettled.value.data;
+    heldOcrIc = heldOcrSettled.value.ic;
+    heldOcrMs = heldOcrSettled.value.ms;
     await emit({
       ts: ts(),
       scenario: name,
       endpoint: "held-id-ocr",
-      ic: heldResult.ic,
-      ms: heldResult.ms,
+      ic: heldOcrSettled.value.ic,
+      ms: heldOcrSettled.value.ms,
     });
-  } catch (err) {
-    heldOcrError = err instanceof Error ? err.message : String(err);
+  } else {
+    heldOcrError = heldOcrSettled.error;
   }
   onStep?.("held_ocr", "done");
 

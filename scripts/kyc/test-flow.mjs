@@ -7,7 +7,7 @@
  * how many OCR calls the steps trigger.
  *
  * Image archive expected at C:/Users/riwki/Downloads/Archive with:
- *   DGA_IMAGE1.jpeg, DGA_IMAGE2.jpeg  → S1_DGA_CAPTURE (s3/dga-capture)
+ *   DGA_IMAGE1.jpeg, DGA_IMAGE2.jpeg  → S1_DGA_CAPTURE (s1/dga-add-image × N + s1/dga-finalize)
  *   National_ID.png, Face_and_ID.jpg → S2_ID_SELFIE   (s1/id-card)
  *   Phone.jpeg                       → S3_PHONE_RESPONSE (s4/ussd)
  *   Book_Bank.jpg                    → S4_BANKBOOK_UPLOAD (s6/bankbook)
@@ -120,15 +120,26 @@ async function main() {
   }
   console.log(`  ${GREEN}✓ Session ID: ${sid}${RESET}`);
 
-  // ─── Step 1: DGA capture (image1 + image2 optional) ────────
+  // ─── Step 1: DGA capture (S1 v2 — incremental multi-image) ─
+  // Server expects N add-image calls (one image per request) then a
+  // finalize call. Send 2 images here to match the legacy 2-image flow.
   await call(
-    "1. S1_DGA_CAPTURE — POST /s3/dga-capture",
-    `${BASE}/api/wizard/${sid}/s3/dga-capture`,
+    "1a. S1_DGA_CAPTURE — POST /s1/dga-add-image (1/2)",
+    `${BASE}/api/wizard/${sid}/s1/dga-add-image`,
     "POST",
-    {
-      image1: readImage("DGA_IMAGE1.jpeg", "image/jpeg"),
-      image2: readImage("DGA_IMAGE2.jpeg", "image/jpeg"),
-    },
+    { image: readImage("DGA_IMAGE1.jpeg", "image/jpeg") },
+  );
+  await call(
+    "1b. S1_DGA_CAPTURE — POST /s1/dga-add-image (2/2)",
+    `${BASE}/api/wizard/${sid}/s1/dga-add-image`,
+    "POST",
+    { image: readImage("DGA_IMAGE2.jpeg", "image/jpeg") },
+  );
+  await call(
+    "1c. S1_DGA_CAPTURE — POST /s1/dga-finalize",
+    `${BASE}/api/wizard/${sid}/s1/dga-finalize`,
+    "POST",
+    {},
   );
 
   // ─── Step 2: ID card + selfie ──────────────────────────────

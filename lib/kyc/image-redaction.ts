@@ -9,9 +9,10 @@ export interface BBox {
   bottom: number;
 }
 
+export type DgaRedactionStatus = "blurred" | "not_found" | "fallback_geometric" | "failed";
+
 export interface RedactionMatch {
   bbox: BBox;
-  text: string;
   component_type: string;
   reason: string;
 }
@@ -22,30 +23,113 @@ export interface RedactionResult {
   anchorCount: number;
   candidateCount: number;
   blurredChanged: boolean;
+  redactionRequired: boolean;
+  redactionStatus: DgaRedactionStatus;
   ic: number;
   ms: number;
 }
 
-// DGA Digital ID account-info page: the label is the ground truth (DGA
-// controls it, never changes). The value can be ANY format the user picked —
-// citizen-id-as-username (13 digits), lowercase handle (sorasit.bo22), etc.
-// We locate the row by its label anchor and derive the value region from
-// geometry — never from matching the value's text shape.
-const USERNAME_ANCHOR_PATTERN = /(?:\(\s*username\s*\)|username|บัญชีผู้ใช้งาน|ชื่อผู้ใช้งาน)/i;
+export interface UsernameTextRedactionResult {
+  pages: string[];
+  redactionRequired: boolean;
+  redactedCount: number;
+}
 
-// iApp Layout occasionally returns the whole account-info card as ONE Figure
-// component (esp. on the production DGA layout — fixture layouts split per
-// row). We treat any anchor-bearing component taller than this as "mega" and
-// trigger a second OCR pass on a crop to recover per-row bboxes.
+const TH_USERNAME_LABEL =
+  "(?:\\u0e1a\\u0e31\\u0e0d\\u0e0a\\u0e35\\u0e1c\\u0e39\\u0e49\\u0e43\\u0e0a\\u0e49\\u0e07\\u0e32\\u0e19|\\u0e0a\\u0e37\\u0e48\\u0e2d\\u0e1c\\u0e39\\u0e49\\u0e43\\u0e0a\\u0e49\\u0e07\\u0e32\\u0e19|\\u0e0a\\u0e35\\u0e1c\\u0e39\\u0e49\\u0e43\\u0e0a\\u0e49\\u0e07\\u0e32\\u0e19)";
+const EN_USERNAME_LABEL = "(?:\\(\\s*username\\s*\\)|\\busername\\b)";
+const USERNAME_TEXT_ANCHOR_PATTERN = new RegExp(`${TH_USERNAME_LABEL}|${EN_USERNAME_LABEL}`, "iu");
+const USERNAME_IMAGE_ANCHOR_PATTERN = new RegExp(
+  `(?:${TH_USERNAME_LABEL}\\s*(?:\\(\\s*username\\s*\\))?|\\(\\s*username\\s*\\))`,
+  "iu",
+);
+const INLINE_USERNAME_VALUE_PATTERN = new RegExp(
+  `(${TH_USERNAME_LABEL}\\s*(?:\\(\\s*username\\s*\\))?|${EN_USERNAME_LABEL})\\s*[:\\uFF1A-]?\\s*(.+)$`,
+  "iu",
+);
+const STRONG_EN_USERNAME_MARKER_PATTERN = /\(\s*username\s*\)/iu;
+const IMAGE_ANCHOR_DISQUALIFIER_PATTERN = new RegExp(
+  "(?:\\bthaid\\b|thaiid|\\u0e0a\\u0e48\\u0e2d\\u0e07\\u0e17\\u0e32\\u0e07\\u0e40\\u0e02\\u0e49\\u0e32\\u0e2a\\u0e39\\u0e48\\u0e23\\u0e30\\u0e1a\\u0e1a|\\u0e23\\u0e30\\u0e14\\u0e31\\u0e1a\\u0e04\\u0e27\\u0e32\\u0e21\\u0e19\\u0e48\\u0e32\\u0e40\\u0e0a\\u0e37\\u0e48\\u0e2d\\u0e16\\u0e37\\u0e2d|\\u0e40\\u0e02\\u0e49\\u0e32\\u0e2a\\u0e39\\u0e48\\u0e23\\u0e30\\u0e1a\\u0e1a|\\bial\\b|\\bdigital\\s*id\\b|\\u0e1a\\u0e38\\u0e04\\u0e04\\u0e25\\u0e18\\u0e23\\u0e23\\u0e21\\u0e14\\u0e32)",
+  "iu",
+);
+const INVALID_USERNAME_VALUE_CONTEXT_PATTERN = new RegExp(
+  "(?:\\bthaid\\b|thaiid|\\u0e1a\\u0e38\\u0e04\\u0e04\\u0e25\\u0e18\\u0e23\\u0e23\\u0e21\\u0e14\\u0e32|\\u0e40\\u0e02\\u0e49\\u0e32\\u0e2a\\u0e39\\u0e48\\u0e23\\u0e30\\u0e1a\\u0e1a|\\bial\\b|\\bdigital\\s*id\\b)",
+  "iu",
+);
+
+// iApp layout can return the entire card as one mega component. We use crop
+// + re-OCR to recover row-level boxes in that case.
 const MEGA_COMPONENT_HEIGHT_PX = 200;
-
-// Vertical crop height used for the row-1 re-OCR pass. Big enough to keep
-// some context above/below row 1 (helps iApp segment) but small enough that
-// iApp splits per-row instead of returning another mega-Figure.
 const ROW_ONE_CROP_HEIGHT_PX = 400;
+const FOCUSED_CROP_TOP_RATIOS = [0.35, 0.45, 0.55] as const;
 
-function isUsernameAnchor(text: string): boolean {
-  return USERNAME_ANCHOR_PATTERN.test(text.trim());
+function normalizeLine(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function isUsernameTextAnchor(text: string): boolean {
+  return USERNAME_TEXT_ANCHOR_PATTERN.test(normalizeLine(text));
+}
+
+function isImageAnchorDisqualified(text: string): boolean {
+  const normalized = normalizeLine(text);
+  if (!normalized) return true;
+  const hasStrongMarker = STRONG_EN_USERNAME_MARKER_PATTERN.test(normalized);
+  if (normalized.length > 220 && !hasStrongMarker) return true;
+  if (!IMAGE_ANCHOR_DISQUALIFIER_PATTERN.test(normalized)) return false;
+
+  const inlineValue = stripUsernameLabel(normalized);
+  if (
+    hasStrongMarker &&
+    inlineValue &&
+    looksLikeUsernameValue(inlineValue) &&
+    !INVALID_USERNAME_VALUE_CONTEXT_PATTERN.test(inlineValue)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function isUsernameImageAnchor(text: string): boolean {
+  const normalized = normalizeLine(text);
+  if (!USERNAME_IMAGE_ANCHOR_PATTERN.test(normalized)) return false;
+  return !isImageAnchorDisqualified(normalized);
+}
+
+function isValidUsernameCandidate(text: string): boolean {
+  const normalized = normalizeLine(text);
+  if (!normalized) return false;
+  if (normalized.length > 80) return false;
+  if (IMAGE_ANCHOR_DISQUALIFIER_PATTERN.test(normalized)) return false;
+  if (isUsernameTextAnchor(normalized)) return false;
+  return looksLikeUsernameValue(normalized);
+}
+
+function looksLikeUsernameValue(value: string): boolean {
+  const compact = value.replace(/\s+/g, "");
+  if (!compact) return false;
+  if (compact.length < 4 || compact.length > 64) return false;
+  if (/^\d{8,20}$/.test(compact)) return true;
+  if (/^[A-Za-z0-9._-]{4,64}$/.test(compact)) return true;
+  if (/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(compact)) return true;
+  return false;
+}
+
+function stripUsernameLabel(line: string): string {
+  const matched = line.match(INLINE_USERNAME_VALUE_PATTERN);
+  if (!matched) return "";
+  return normalizeLine(matched[2] ?? "");
+}
+
+function redactInlineUsernameValue(line: string): { line: string; changed: boolean } {
+  const matched = line.match(INLINE_USERNAME_VALUE_PATTERN);
+  if (!matched) return { line, changed: false };
+  const valuePart = normalizeLine(matched[2] ?? "");
+  if (!valuePart) return { line, changed: false };
+  return {
+    line: line.replace(INLINE_USERNAME_VALUE_PATTERN, `${matched[1]} [REDACTED_USERNAME]`),
+    changed: true,
+  };
 }
 
 function bboxArea(box: BBox): number {
@@ -76,9 +160,6 @@ function bboxOverlapRatio(a: BBox, b: BBox): number {
   return overlap / smaller;
 }
 
-// Merge bboxes that overlap heavily — iApp sometimes returns the same value
-// twice with slightly different type (e.g. "UpperLeft" + "Logo"), so we union
-// them so the final blurred region covers both.
 function mergeOverlapping(matches: RedactionMatch[]): RedactionMatch[] {
   const result: RedactionMatch[] = [];
   for (const candidate of matches) {
@@ -89,6 +170,7 @@ function mergeOverlapping(matches: RedactionMatch[]): RedactionMatch[] {
       const existing = result[existingIdx];
       result[existingIdx] = {
         ...existing,
+        reason: existing.reason.includes("geometric") ? existing.reason : candidate.reason,
         bbox: {
           left: Math.min(existing.bbox.left, candidate.bbox.left),
           top: Math.min(existing.bbox.top, candidate.bbox.top),
@@ -103,18 +185,33 @@ function mergeOverlapping(matches: RedactionMatch[]): RedactionMatch[] {
   return result;
 }
 
-function componentToMatch(component: OcrDocumentLayoutComponent, reason: string): RedactionMatch {
-  return {
-    bbox: componentBox(component),
-    text: component.text,
-    component_type: component.type,
-    reason,
-  };
+function expandUsernameRegion(args: {
+  bbox: BBox;
+  reason: string;
+  imageWidth: number;
+  imageHeight: number;
+}): BBox {
+  const width = Math.max(1, args.bbox.right - args.bbox.left);
+  const height = Math.max(1, args.bbox.bottom - args.bbox.top);
+
+  const isInline = args.reason.includes("inline_geometric");
+  const isGeometric = args.reason.includes("geometric");
+  const leftPad = isInline ? Math.max(18, Math.floor(width * 0.35)) : Math.max(8, Math.floor(width * 0.08));
+  const rightPad = isInline ? Math.max(28, Math.floor(width * 0.65)) : Math.max(16, Math.floor(width * 0.2));
+  const topPad = Math.max(3, Math.floor(height * 0.2));
+  const bottomPad = Math.max(3, Math.floor(height * 0.2));
+
+  const left = Math.max(0, args.bbox.left - leftPad);
+  let right = Math.min(args.imageWidth, args.bbox.right + rightPad);
+  if (isInline || isGeometric) {
+    right = Math.min(args.imageWidth, Math.max(right, args.bbox.right + Math.floor(width * 0.75)));
+  }
+
+  const top = Math.max(0, args.bbox.top - topPad);
+  const bottom = Math.min(args.imageHeight, args.bbox.bottom + bottomPad);
+  return { left, top, right, bottom };
 }
 
-// Geometric scoring: nearest component to the right of `anchor` in the same
-// horizontal band wins. Returns Infinity for components above/below/left so
-// they're never picked as the value.
 function valueProximityScore(anchor: OcrDocumentLayoutComponent, candidate: OcrDocumentLayoutComponent): number {
   const anchorBox = componentBox(anchor);
   const candidateBox = componentBox(candidate);
@@ -130,39 +227,131 @@ function valueProximityScore(anchor: OcrDocumentLayoutComponent, candidate: OcrD
 
   if (centerDistance > 140 && aboveOrBelowGap > 90) return Number.POSITIVE_INFINITY;
   if (candidateBox.right < anchorBox.left) return Number.POSITIVE_INFINITY;
-
   return rightDistance + centerDistance * 1.2 + aboveOrBelowGap;
 }
 
-// For each anchor with its own real bbox (not a mega container), find the
-// nearest component to its right and treat that as the value to blur — no
-// matter what text the value contains. Mega anchors (the whole card-as-one-
-// Figure) are skipped here; they're handled by the crop+re-OCR fallback.
 function findValueSiblings(
   anchors: OcrDocumentLayoutComponent[],
   candidates: OcrDocumentLayoutComponent[],
 ): RedactionMatch[] {
   const matches: RedactionMatch[] = [];
   for (const anchor of anchors) {
+    if (!isUsernameImageAnchor(anchor.text ?? "")) continue;
     const anchorBox = componentBox(anchor);
     if (anchorBox.bottom - anchorBox.top > MEGA_COMPONENT_HEIGHT_PX) continue;
     const nearest = candidates
       .map((candidate) => ({ candidate, score: valueProximityScore(anchor, candidate) }))
       .filter((item) => Number.isFinite(item.score))
       .sort((left, right) => left.score - right.score)[0];
-    if (nearest && nearest.score < 500) {
-      matches.push(componentToMatch(nearest.candidate, "anchor_sibling"));
+    if (nearest && nearest.score < 500 && isValidUsernameCandidate(nearest.candidate.text ?? "")) {
+      matches.push({
+        bbox: componentBox(nearest.candidate),
+        component_type: nearest.candidate.type,
+        reason: "anchor_sibling",
+      });
     }
   }
   return matches;
 }
 
-// Fallback strategy for when the anchor is buried inside a mega-Figure (DGA
-// account-info card returned as one blob with no per-row bboxes). We crop
-// the top portion of that Figure and re-OCR it; with much less content in
-// frame, iApp typically splits each row into its own component, giving us a
-// tight bbox for the username value. Returned bboxes are translated back to
-// the original image's coordinate space.
+function buildInlineGeometricBox(anchor: OcrDocumentLayoutComponent): BBox | null {
+  const box = componentBox(anchor);
+  const width = box.right - box.left;
+  if (width <= 20) return null;
+
+  // Keep label area readable; blur only right side where value typically is.
+  const estimatedStart = box.left + Math.floor(width * 0.55);
+  const left = Math.min(box.right - 1, Math.max(box.left + 8, estimatedStart));
+  if (left >= box.right) return null;
+
+  return {
+    left,
+    top: box.top,
+    right: box.right,
+    bottom: box.bottom,
+  };
+}
+
+function buildRowRightSideBox(args: {
+  anchor: OcrDocumentLayoutComponent;
+  candidates: OcrDocumentLayoutComponent[];
+  canvasWidth?: number;
+}): BBox | null {
+  const anchorBox = componentBox(args.anchor);
+  const left = anchorBox.right + 8;
+  if (left >= anchorBox.right + 1) {
+    const rowCandidates = args.candidates
+      .map((component) => componentBox(component))
+      .filter((box) => {
+        const centerDistance = Math.abs(bboxCenterY(box) - bboxCenterY(anchorBox));
+        const overlapsVertically = box.bottom >= anchorBox.top && box.top <= anchorBox.bottom;
+        return (overlapsVertically || centerDistance <= 90) && box.right > anchorBox.right;
+      });
+
+    const rightFromCandidates = rowCandidates.reduce(
+      (maxRight, box) => Math.max(maxRight, box.right),
+      left + Math.max(140, Math.floor((anchorBox.right - anchorBox.left) * 2.6)),
+    );
+    const rightLimitedByCanvas = args.canvasWidth
+      ? Math.min(args.canvasWidth, rightFromCandidates)
+      : rightFromCandidates;
+    const right = Math.max(left + 60, rightLimitedByCanvas);
+    if (right <= left) return null;
+    return {
+      left,
+      top: anchorBox.top,
+      right,
+      bottom: anchorBox.bottom,
+    };
+  }
+  return null;
+}
+
+function findInlineValueRegions(anchors: OcrDocumentLayoutComponent[]): RedactionMatch[] {
+  const matches: RedactionMatch[] = [];
+  for (const anchor of anchors) {
+    if (!isUsernameImageAnchor(anchor.text ?? "")) continue;
+    const anchorBox = componentBox(anchor);
+    if (anchorBox.bottom - anchorBox.top > MEGA_COMPONENT_HEIGHT_PX) continue;
+    const inlineValue = stripUsernameLabel(anchor.text ?? "");
+    if (!inlineValue || !looksLikeUsernameValue(inlineValue)) continue;
+    if (INVALID_USERNAME_VALUE_CONTEXT_PATTERN.test(inlineValue)) continue;
+    const bbox = buildInlineGeometricBox(anchor);
+    if (!bbox) continue;
+    matches.push({
+      bbox,
+      component_type: anchor.type,
+      reason: "anchor_inline_geometric",
+    });
+  }
+  return matches;
+}
+
+function synthesizeRowRightSideRegions(args: {
+  anchors: OcrDocumentLayoutComponent[];
+  candidates: OcrDocumentLayoutComponent[];
+  canvasWidth?: number;
+}): RedactionMatch[] {
+  const matches: RedactionMatch[] = [];
+  for (const anchor of args.anchors) {
+    if (!isUsernameImageAnchor(anchor.text ?? "")) continue;
+    const anchorBox = componentBox(anchor);
+    if (anchorBox.bottom - anchorBox.top > MEGA_COMPONENT_HEIGHT_PX) continue;
+    const bbox = buildRowRightSideBox({
+      anchor,
+      candidates: args.candidates,
+      canvasWidth: args.canvasWidth,
+    });
+    if (!bbox) continue;
+    matches.push({
+      bbox,
+      component_type: anchor.type,
+      reason: "anchor_geometric_extend",
+    });
+  }
+  return matches;
+}
+
 async function locateInsideMegaFigure(args: {
   buffer: Buffer;
   megaFigure: OcrDocumentLayoutComponent;
@@ -180,81 +369,137 @@ async function locateInsideMegaFigure(args: {
     .toBuffer();
 
   const cropLayout = await iapp.ocrDocumentLayout(cropBuffer);
-  const cropComponents = (cropLayout.data?.pages ?? []).flatMap((p) => p.components ?? []);
+  const cropComponents = (cropLayout.data?.pages ?? []).flatMap((page) => page.components ?? []);
+  const cropAnchors = cropComponents.filter((component) => isUsernameTextAnchor(component.text ?? ""));
+  const cropCandidates = cropComponents.filter((component) => !isUsernameTextAnchor(component.text ?? ""));
 
-  const cropAnchors = cropComponents.filter((c) => isUsernameAnchor(c.text ?? ""));
-  const cropCandidates = cropComponents.filter((c) => !isUsernameAnchor(c.text ?? ""));
-  const cropMatches = findValueSiblings(cropAnchors, cropCandidates);
-
-  // iApp Layout on the crop sometimes returns the anchor as its own small
-  // component but skips the value cell entirely (the digits are still in
-  // ocrDocument plain text, just not as a Layout component). When that
-  // happens, synthesize a value bbox geometrically — blur everything to the
-  // right of the anchor in its row band. Over-redacts the right portion of
-  // the row, never misses the value.
+  let cropMatches = findValueSiblings(cropAnchors, cropCandidates);
   if (cropMatches.length === 0) {
-    for (const anchor of cropAnchors) {
-      const anchorBox = componentBox(anchor);
-      if (anchorBox.bottom - anchorBox.top > MEGA_COMPONENT_HEIGHT_PX) continue;
-      cropMatches.push({
-        bbox: {
-          left: Math.min(cropWidth - 1, anchorBox.right + 8),
-          top: anchorBox.top,
-          right: cropWidth,
-          bottom: anchorBox.bottom,
-        },
-        text: "",
-        component_type: anchor.type,
-        reason: "anchor_geometric_extend",
-      });
-    }
+    cropMatches = findInlineValueRegions(cropAnchors);
+  }
+  if (cropMatches.length === 0) {
+    cropMatches = synthesizeRowRightSideRegions({
+      anchors: cropAnchors,
+      candidates: cropCandidates,
+      canvasWidth: cropWidth,
+    }).map((item) => ({
+      ...item,
+      reason: "anchor_geometric_extend",
+    }));
   }
 
-  const translated: RedactionMatch[] = cropMatches.map((m) => ({
+  const translated = cropMatches.map((match) => ({
     bbox: {
-      left: m.bbox.left + cropLeft,
-      top: m.bbox.top + cropTop,
-      right: m.bbox.right + cropLeft,
-      bottom: m.bbox.bottom + cropTop,
+      left: match.bbox.left + cropLeft,
+      top: match.bbox.top + cropTop,
+      right: match.bbox.right + cropLeft,
+      bottom: match.bbox.bottom + cropTop,
     },
-    text: m.text,
-    component_type: m.component_type,
-    reason: `${m.reason}_after_crop`,
+    component_type: match.component_type,
+    reason: `${match.reason}_after_crop`,
   }));
 
   return { matches: translated, ic: cropLayout.ic, ms: cropLayout.ms };
 }
 
-// Apply a heavy gaussian blur to each region. Padding (4 px) prevents hard
-// edges around the bbox that would still leak text via halo.
+async function locateInFocusedCrop(args: {
+  buffer: Buffer;
+  imageWidth: number;
+  imageHeight: number;
+  topRatio: number;
+}): Promise<{ matches: RedactionMatch[]; anchorCount: number; ic: number; ms: number }> {
+  const cropTop = Math.max(0, Math.floor(args.imageHeight * args.topRatio));
+  const cropHeight = Math.max(1, args.imageHeight - cropTop);
+  const cropWidth = Math.max(1, args.imageWidth);
+
+  const cropBuffer = await sharp(args.buffer)
+    .extract({ left: 0, top: cropTop, width: cropWidth, height: cropHeight })
+    .toBuffer();
+
+  const cropLayout = await iapp.ocrDocumentLayout(cropBuffer);
+  const cropComponents = (cropLayout.data?.pages ?? []).flatMap((page) => page.components ?? []);
+  const cropAnchors = cropComponents.filter((component) => isUsernameTextAnchor(component.text ?? ""));
+  const cropCandidates = cropComponents.filter((component) => !isUsernameTextAnchor(component.text ?? ""));
+
+  let matches = findValueSiblings(cropAnchors, cropCandidates);
+  if (matches.length === 0) matches = findInlineValueRegions(cropAnchors);
+  let extraIc = 0;
+  let extraMs = 0;
+  if (matches.length === 0 && cropAnchors.length > 0) {
+    const megaFigure = cropAnchors.find((component) => {
+      const box = componentBox(component);
+      return box.bottom - box.top > MEGA_COMPONENT_HEIGHT_PX;
+    });
+    if (megaFigure) {
+      const nested = await locateInsideMegaFigure({
+        buffer: cropBuffer,
+        megaFigure,
+        imageWidth: cropWidth,
+        imageHeight: cropHeight,
+      });
+      matches = nested.matches;
+      extraIc += nested.ic;
+      extraMs += nested.ms;
+    }
+  }
+  if (matches.length === 0) {
+    matches = synthesizeRowRightSideRegions({
+      anchors: cropAnchors,
+      candidates: cropCandidates,
+      canvasWidth: cropWidth,
+    });
+  }
+
+  const translated = matches.map((match) => ({
+    bbox: {
+      left: match.bbox.left,
+      top: match.bbox.top + cropTop,
+      right: match.bbox.right,
+      bottom: match.bbox.bottom + cropTop,
+    },
+    component_type: match.component_type,
+    reason: `${match.reason}_focused_crop`,
+  }));
+
+  return {
+    matches: translated,
+    anchorCount: cropAnchors.length,
+    ic: cropLayout.ic + extraIc,
+    ms: cropLayout.ms + extraMs,
+  };
+}
+
 async function blurRegions(buffer: Buffer, regions: BBox[]): Promise<Buffer> {
   if (regions.length === 0) return buffer;
+
   const meta = await sharp(buffer).metadata();
   const width = meta.width ?? 0;
   const height = meta.height ?? 0;
   if (!width || !height) return buffer;
 
-  const PADDING = 4;
   const overlays: sharp.OverlayOptions[] = [];
+  const PADDING = 4;
+
   for (const region of regions) {
     const left = Math.max(0, region.left - PADDING);
     const top = Math.max(0, region.top - PADDING);
     const right = Math.min(width, region.right + PADDING);
     const bottom = Math.min(height, region.bottom + PADDING);
-    const w = right - left;
-    const h = bottom - top;
-    if (w <= 0 || h <= 0) continue;
+    const patchWidth = right - left;
+    const patchHeight = bottom - top;
+    if (patchWidth <= 0 || patchHeight <= 0) continue;
 
-    // Pixelate-then-blur: downscale 1/16, upscale to original, then heavy
-    // gaussian. Pure gaussian blur leaves digit silhouettes readable on
-    // high-contrast text; pixelation destroys the underlying glyph shapes
-    // before the smoothing pass.
     const patch = await sharp(buffer)
-      .extract({ left, top, width: w, height: h })
-      .resize(Math.max(1, Math.floor(w / 16)), Math.max(1, Math.floor(h / 16)), { kernel: "nearest" })
-      .resize(w, h, { kernel: "nearest" })
+      .extract({ left, top, width: patchWidth, height: patchHeight })
+      .resize(
+        Math.max(1, Math.floor(patchWidth / 16)),
+        Math.max(1, Math.floor(patchHeight / 16)),
+        { kernel: "nearest" },
+      )
+      .resize(patchWidth, patchHeight, { kernel: "nearest" })
       .blur(20)
       .toBuffer();
+
     overlays.push({ input: patch, left, top });
   }
 
@@ -262,36 +507,98 @@ async function blurRegions(buffer: Buffer, regions: BBox[]): Promise<Buffer> {
   return sharp(buffer).composite(overlays).toBuffer();
 }
 
-// Run iApp Layout OCR on the image, find the Username row's value region
-// (anchor-driven + geometric, never value-pattern matched), and blur ONLY
-// that region on the original image. Returns the original buffer at full
-// fidelity with just the value rectangle blurred — no cropping or content
-// loss. If iApp returned the card as a single mega-Figure with no per-row
-// bboxes, performs a second OCR pass on a crop of the row-1 area to recover
-// a tight bbox.
+function computeStatus(args: {
+  redactionRequired: boolean;
+  blurredChanged: boolean;
+  regions: RedactionMatch[];
+}): DgaRedactionStatus {
+  if (!args.redactionRequired) return "not_found";
+  if (!args.blurredChanged || args.regions.length === 0) return "failed";
+  const usedFallback = args.regions.some((region) => region.reason.includes("geometric"));
+  return usedFallback ? "fallback_geometric" : "blurred";
+}
+
+// Redact username value from OCR plain-text pages. This protects raw OCR data
+// from leaking DGA username values while preserving other fields.
+export function redactDgaUsernameText(pages: string[]): UsernameTextRedactionResult {
+  let redactionRequired = false;
+  let redactedCount = 0;
+
+  const sanitizedPages = pages.map((pageText) => {
+    const lines = pageText.split(/\r?\n/);
+    let pendingUsernameValueLines = 0;
+
+    for (let index = 0; index < lines.length; index += 1) {
+      const originalLine = lines[index] ?? "";
+      const trimmedLine = normalizeLine(originalLine);
+      if (!trimmedLine) continue;
+
+      const hasAnchor = isUsernameTextAnchor(trimmedLine);
+      if (hasAnchor) redactionRequired = true;
+
+      if (hasAnchor) {
+        const inline = redactInlineUsernameValue(originalLine);
+        if (inline.changed) {
+          lines[index] = inline.line;
+          redactedCount += 1;
+          pendingUsernameValueLines = 0;
+          continue;
+        }
+        pendingUsernameValueLines = 2;
+        continue;
+      }
+
+      if (pendingUsernameValueLines > 0) {
+        if (looksLikeUsernameValue(trimmedLine)) {
+          lines[index] = "[REDACTED_USERNAME]";
+          redactedCount += 1;
+          pendingUsernameValueLines = 0;
+          continue;
+        }
+        pendingUsernameValueLines -= 1;
+      }
+    }
+
+    return lines.join("\n");
+  });
+
+  return {
+    pages: sanitizedPages,
+    redactionRequired,
+    redactedCount,
+  };
+}
+
 export async function redactDgaSensitiveRegions(buffer: Buffer): Promise<RedactionResult> {
   const layout = await iapp.ocrDocumentLayout(buffer);
   const components = (layout.data?.pages ?? []).flatMap((page) => page.components ?? []);
-
-  const anchors = components.filter((c) => isUsernameAnchor(c.text ?? ""));
-  const nonAnchors = components.filter((c) => !isUsernameAnchor(c.text ?? ""));
+  const anchors = components.filter((component) => isUsernameTextAnchor(component.text ?? ""));
+  const nonAnchors = components.filter((component) => !isUsernameTextAnchor(component.text ?? ""));
+  let anchorCount = anchors.length;
+  let redactionRequired = anchors.length > 0;
 
   let matches = findValueSiblings(anchors, nonAnchors);
   let extraIc = 0;
   let extraMs = 0;
+  const meta = await sharp(buffer).metadata();
+  const imageWidth = meta.width ?? 0;
+  const imageHeight = meta.height ?? 0;
+
+  if (matches.length === 0) {
+    matches = findInlineValueRegions(anchors);
+  }
 
   if (matches.length === 0 && anchors.length > 0) {
-    const megaFigure = anchors.find((c) => {
-      const box = componentBox(c);
+    const megaFigure = anchors.find((component) => {
+      const box = componentBox(component);
       return box.bottom - box.top > MEGA_COMPONENT_HEIGHT_PX;
     });
     if (megaFigure) {
-      const meta = await sharp(buffer).metadata();
       const result = await locateInsideMegaFigure({
         buffer,
         megaFigure,
-        imageWidth: meta.width ?? 0,
-        imageHeight: meta.height ?? 0,
+        imageWidth,
+        imageHeight,
       });
       matches = result.matches;
       extraIc = result.ic;
@@ -299,15 +606,60 @@ export async function redactDgaSensitiveRegions(buffer: Buffer): Promise<Redacti
     }
   }
 
+  if (matches.length === 0 && anchors.length === 0 && imageWidth > 0 && imageHeight > 0) {
+    for (const ratio of FOCUSED_CROP_TOP_RATIOS) {
+      const focused = await locateInFocusedCrop({
+        buffer,
+        imageWidth,
+        imageHeight,
+        topRatio: ratio,
+      });
+      anchorCount += focused.anchorCount;
+      redactionRequired = redactionRequired || focused.anchorCount > 0;
+      extraIc += focused.ic;
+      extraMs += focused.ms;
+      if (focused.matches.length > 0) {
+        matches = focused.matches;
+        break;
+      }
+    }
+  }
+
+  if (matches.length === 0 && anchors.length > 0) {
+    matches = synthesizeRowRightSideRegions({
+      anchors,
+      candidates: nonAnchors,
+      canvasWidth: imageWidth,
+    });
+  }
+
+  const candidateCount = matches.length;
   const merged = mergeOverlapping(matches);
-  const blurred = await blurRegions(buffer, merged.map((m) => m.bbox));
+  const expandedMerged = merged.map((match) => ({
+    ...match,
+    bbox: expandUsernameRegion({
+      bbox: match.bbox,
+      reason: match.reason,
+      imageWidth,
+      imageHeight,
+    }),
+  }));
+  const blurred = await blurRegions(buffer, expandedMerged.map((match) => match.bbox));
+  const blurredChanged = merged.length > 0 && !blurred.equals(buffer);
+  const redactionStatus = computeStatus({
+    redactionRequired,
+    blurredChanged,
+    regions: expandedMerged,
+  });
 
   return {
     buffer: blurred,
-    regions: merged,
-    anchorCount: anchors.length,
-    candidateCount: matches.length,
-    blurredChanged: merged.length > 0 && !blurred.equals(buffer),
+    regions: expandedMerged,
+    anchorCount,
+    candidateCount,
+    blurredChanged,
+    redactionRequired,
+    redactionStatus,
     ic: layout.ic + extraIc,
     ms: layout.ms + extraMs,
   };

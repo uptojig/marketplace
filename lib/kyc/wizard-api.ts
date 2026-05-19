@@ -45,6 +45,123 @@ export function createStopwatch(): Stopwatch {
   };
 }
 
+// Wizard SSE protocol — stream stage progress to the browser while the
+// route is still doing work, so the user sees "uploading…✓ reading id…✓"
+// instead of a 10-second blank spinner. Wall clock doesn't change; the
+// perceived wait collapses to the gap between consecutive stage events.
+//
+// Backward-compatibility: routes return SSE when the client sends
+// `Accept: text/event-stream`, otherwise plain JSON (existing test scripts
+// + the bench harness use JSON).
+//
+// Event shapes:
+//   event: stage   data: { name: "iapp_ocr",  ms: 2300, total_ms: 4500 }
+//   event: result  data: <full route JSON body>            (terminal)
+//   event: error   data: { message: "...", status: 500 }   (terminal)
+export const WIZARD_STAGE_LABELS_TH: Record<string, string> = {
+  session_check: "ตรวจสถานะคำขอ",
+  form_parse: "อ่านไฟล์ที่อัปโหลด",
+  // S1 — incremental multi-image (current)
+  ocr_and_redact_parallel: "อ่านข้อมูล + ปกปิด Username",
+  field_upsert: "บันทึก label/value",
+  // S2 stages
+  auto_crop_yolo: "ค้นหาบัตรประชาชนในเซลฟี่",
+  evidence_upload: "อัปโหลดหลักฐาน",
+  evidence_upload_parallel: "อัปโหลดหลักฐาน",
+  evidence_and_ocr_parallel: "อัปโหลดหลักฐาน + อ่าน OCR",
+  run_verification_iapp: "ตรวจบัตร + ใบหน้า + ความเป็นบุคคลจริง",
+  iapp_document_ocr: "อ่านหน้าจอ USSD",
+  iapp_bookbank: "อ่านสมุดบัญชี",
+  anchor_parse: "หาเลขบัตร + เบอร์โทรในข้อความ",
+  cross_match_db: "เทียบข้อมูลกับ DGA",
+  db_save_transition: "บันทึกผลตรวจ",
+};
+
+export interface SSEStream {
+  emit(type: "stage" | "result" | "error", data: unknown): void;
+  close(): void;
+  response: Response;
+}
+
+// Returns a Response whose body is a ReadableStream of SSE-formatted
+// chunks. Caller writes events via emit() and ends the stream via close().
+// Headers tell Caddy/nginx not to buffer (x-accel-buffering: no) so events
+// reach the browser the moment they're emitted.
+export function createSSEStream(): SSEStream {
+  const encoder = new TextEncoder();
+  let controllerRef: ReadableStreamDefaultController<Uint8Array> | null = null;
+  let closed = false;
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controllerRef = controller;
+    },
+    cancel() {
+      closed = true;
+      controllerRef = null;
+    },
+  });
+  return {
+    emit(type, data) {
+      if (closed || !controllerRef) return;
+      const payload = `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
+      try {
+        controllerRef.enqueue(encoder.encode(payload));
+      } catch {
+        // Stream was cancelled by the client (closed tab). Mark closed
+        // and stop trying to write so the work loop can finish quietly.
+        closed = true;
+      }
+    },
+    close() {
+      if (closed) return;
+      closed = true;
+      try {
+        controllerRef?.close();
+      } catch {
+        // Already closed — ignore.
+      }
+      controllerRef = null;
+    },
+    response: new Response(stream, {
+      status: 200,
+      headers: {
+        "content-type": "text/event-stream",
+        "cache-control": "no-cache, no-transform",
+        "x-accel-buffering": "no",
+        "connection": "keep-alive",
+      },
+    }),
+  };
+}
+
+// Sugar for wizard routes: instrument stopwatch + emit a "stage" SSE event
+// in one call. Returns the lap delta so callers can do additional work
+// with the timing if needed.
+export function lapAndEmit(
+  sw: Stopwatch,
+  sse: SSEStream | null,
+  name: string,
+): void {
+  sw.lap(name);
+  if (sse) {
+    const snap = sw.snapshot();
+    sse.emit("stage", {
+      name,
+      label: WIZARD_STAGE_LABELS_TH[name],
+      ms: snap[name],
+      total_ms: snap._total_ms,
+    });
+  }
+}
+
+// Detect whether the client wants SSE (Accept header) or the legacy JSON
+// response. Keep in sync with the wizard frontend (sends `Accept:
+// text/event-stream`) and the bench/test scripts (default JSON).
+export function clientWantsSSE(req: Request): boolean {
+  const accept = req.headers.get("accept") ?? "";
+  return accept.includes("text/event-stream");
+}
+
 export function readTextField(value: FormDataEntryValue | null): string | undefined {
   return typeof value === "string" ? value.trim() || undefined : undefined;
 }
