@@ -179,7 +179,6 @@ export function MarketplaceFooter() {
                 </a>
               </li>
               <li>@basketplace (LINE OA)</li>
-              <li>082-XXX-XXXX</li>
               <li className="leading-6 text-mp-cream/70 text-[14px]">
                 888 อาคารตัวอย่าง ชั้น 12
                 <br />

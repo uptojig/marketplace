@@ -1,0 +1,5 @@
+# Force LF for files where checksum stability matters across platforms.
+# Prisma computes SHA256 of migration.sql as-read-from-disk, so CRLF on
+# Windows would produce a different hash than LF on Linux/CI.
+prisma/migrations/**/migration.sql text eol=lf
+*.sql text eol=lf
