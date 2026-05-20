@@ -503,7 +503,15 @@ export function slugify(input: string): string {
 }
 
 export function getPalette(id: string): Palette {
-  return PALETTES.find((p) => p.id === id) ?? PALETTES[0];
+  const hit = PALETTES.find((p) => p.id === id);
+  if (!hit) {
+    console.warn(
+      `[wizard-data] Unknown paletteId "${id}", falling back to "${PALETTES[0].id}". ` +
+        `Valid IDs: ${PALETTES.map((p) => p.id).join(", ")}`,
+    );
+    return PALETTES[0];
+  }
+  return hit;
 }
 
 export function getTemplate(id: TemplateId | null): Template {

@@ -11,8 +11,7 @@ import {
   slugify,
   type WizardState,
 } from "@/lib/store/wizard-data";
-import { templates as TEMPLATE_REGISTRY } from "@/lib/templates/registry";
-import type { TemplateId } from "@/lib/templates/types";
+import { deriveLandingThemeVariant } from "@/lib/store/template-fields";
 
 /** Hard cap on Phase 3 picks. CJ throttles ~1 req/sec, so 20 selected
  *  → ~22s wizard submit. Anything bigger (e.g. the 50-pack) imports
@@ -91,9 +90,13 @@ export async function createStoreFromWizard(
   // detectors already infer family from templateId, but writing the
   // variant out lets the admin theme picker show "what theme are we on"
   // and lets operators override later without changing templateId.
-  const templateGroup = state.layout.templateId
-    ? TEMPLATE_REGISTRY[state.layout.templateId as TemplateId]?.group ?? null
-    : null;
+  // Wizard always derives (no operator-supplied landingThemeVariant in
+  // its WizardState), so we pass templateId only and the helper returns
+  // the canonical group (or undefined if templateId is empty / unknown).
+  const templateGroup =
+    deriveLandingThemeVariant({
+      templateId: state.layout.templateId ?? undefined,
+    }) ?? null;
 
   const store = await prisma.store.create({
     data: {
@@ -114,6 +117,7 @@ export async function createStoreFromWizard(
       lineId: nonEmpty(state.identity.contact.lineId),
       facebookUrl: nonEmpty(state.identity.contact.facebook),
       instagramUrl: nonEmpty(state.identity.contact.instagram),
+      // TODO(schema): no Store.tiktokUrl column yet — tiktok contact dropped at create time.
       addressLine1: nonEmpty(state.identity.contact.address),
     },
   });

@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   provisionPlatformEmail,
   updatePlatformEmailForward,
 } from "@/lib/email/provision";
+import {
+  templateFieldsSchema,
+  deriveLandingThemeVariant,
+  LANDING_CLEAR_PATCH,
+} from "@/lib/store/template-fields";
 
 const imageUrlSchema = z
   .union([z.string().url(), z.literal("")])
@@ -45,6 +51,22 @@ const schema = z.object({
     .email("รูปแบบอีเมลไม่ถูกต้อง")
     .or(z.literal(""))
     .optional(),
+  // Wizard-parity template fields — vendor can change template/palette/
+  // niche/brandVoice/landingThemeVariant from the dashboard settings page.
+  // Validation list is shared with admin via lib/store/template-fields.ts.
+  templateId: templateFieldsSchema.shape.templateId,
+  paletteId: templateFieldsSchema.shape.paletteId,
+  niche: templateFieldsSchema.shape.niche,
+  brandVoice: templateFieldsSchema.shape.brandVoice,
+  landingThemeVariant: z
+    .string()
+    .max(40)
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return undefined;
+      const t = v.trim();
+      return t === "" ? null : t;
+    }),
 });
 
 async function getStore(email: string) {
@@ -100,6 +122,11 @@ export async function PATCH(req: Request) {
     facebookUrl,
     lineId,
     platformEmailForwardTo,
+    templateId,
+    paletteId,
+    niche,
+    brandVoice,
+    landingThemeVariant,
   } = parsed.data;
 
   // Check slug uniqueness (allow own slug)
@@ -118,22 +145,64 @@ export async function PATCH(req: Request) {
     }
   }
 
+  // Auto-derive landingThemeVariant from templates[templateId].group
+  // when vendor sent templateId but NOT landingThemeVariant — keeps the
+  // family detectors in sync. Explicit landingThemeVariant in the same
+  // PATCH always wins (operator override).
+  const derivedVariant = deriveLandingThemeVariant({
+    templateId,
+    landingThemeVariant,
+  });
+
+  // Build the data object incrementally so we only touch columns the
+  // vendor actually sent. Wizard-parity columns are conditionally
+  // included so re-saving the settings page without picking a new
+  // template doesn't reset templateId/paletteId/niche/brandVoice to
+  // undefined → null.
+  const data: Prisma.StoreUpdateInput = {
+    name,
+    slug,
+    description: description ?? "",
+    tagline: tagline ?? "",
+    logoUrl: logoUrl || null,
+    bannerUrl: bannerUrl || null,
+    primaryColor: primaryColor ?? store.primaryColor,
+    customDomain: customDomain || null,
+    contactEmail: contactEmail || null,
+    contactPhone: contactPhone || null,
+    facebookUrl: facebookUrl || null,
+    lineId: lineId || null,
+    ...(templateId !== undefined ? { templateId } : {}),
+    ...(paletteId !== undefined ? { paletteId } : {}),
+    ...(niche !== undefined ? { niche } : {}),
+    ...(brandVoice !== undefined ? { brandVoice } : {}),
+    ...(landingThemeVariant !== undefined
+      ? { landingThemeVariant }
+      : derivedVariant !== undefined
+        ? { landingThemeVariant: derivedVariant }
+        : {}),
+  };
+
+  // Mirror admin PATCH: clear AI-generated landingBlocks when vendor
+  // explicitly picks a new theme variant (non-null) OR changes templateId
+  // at all (skin-only OR full-app). Reason: landingBlocks is rendered by
+  // the LAYOUT dispatcher in app/stores/[slug]/layout.tsx BEFORE the
+  // family detector / StoreRenderer chain, so stale JSON shadows the new
+  // template regardless of whether the new template has its own
+  // chrome/pages adapter.
+  const variantSet =
+    landingThemeVariant !== undefined &&
+    landingThemeVariant !== null &&
+    landingThemeVariant.length > 0;
+  const templateIdChanged =
+    templateId !== undefined && templateId !== store.templateId;
+  if (variantSet || templateIdChanged) {
+    Object.assign(data, LANDING_CLEAR_PATCH);
+  }
+
   const updated = await prisma.store.update({
     where: { id: store.id },
-    data: {
-      name,
-      slug,
-      description: description ?? "",
-      tagline: tagline ?? "",
-      logoUrl: logoUrl || null,
-      bannerUrl: bannerUrl || null,
-      primaryColor: primaryColor ?? store.primaryColor,
-      customDomain: customDomain || null,
-      contactEmail: contactEmail || null,
-      contactPhone: contactPhone || null,
-      facebookUrl: facebookUrl || null,
-      lineId: lineId || null,
-    },
+    data,
   });
 
   // Auto-provision platform email when customDomain transitions null/empty → set,

@@ -24,6 +24,12 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
       customDomain: true,
       logoPosition: true,
       menuPosition: true,
+      // Template/style fields — drive storefront rendering and AI
+      // design hints. Surfaced in the admin edit form's "Design" tab.
+      templateId: true,
+      paletteId: true,
+      niche: true,
+      brandVoice: true,
       companyName: true,
       taxId: true,
       addressLine1: true,

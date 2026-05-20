@@ -69,6 +69,16 @@ export default async function StoreSettingsPage({
           facebookUrl: store.facebookUrl ?? "",
           lineId: store.lineId ?? "",
           platformEmailForwardTo: store.platformEmailForwardTo ?? "",
+          // Template/style fields — drive storefront rendering. Empty
+          // strings mean "no preference" and are passed through as
+          // omit/null by the form's submit serializer.
+          templateId: store.templateId ?? "",
+          paletteId: store.paletteId ?? "",
+          niche: store.niche ?? "",
+          brandVoice:
+            (store.brandVoice as "casual" | "formal" | "playful" | null) ??
+            "casual",
+          landingThemeVariant: store.landingThemeVariant ?? "",
         }}
         platformEmail={{
           address: store.platformEmail,

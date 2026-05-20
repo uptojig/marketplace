@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
+import {
+  TemplateStylePicker,
+  serializeTemplateStyle,
+  templateIdChanged,
+  type TemplateStyleValues,
+} from "@/components/store/template-style-picker";
 
 type StoreData = {
   id: string;
@@ -19,6 +25,10 @@ type StoreData = {
   logoPosition: string | null;
   menuPosition: string | null;
   landingThemeVariant: string | null;
+  templateId: string | null;
+  paletteId: string | null;
+  niche: string | null;
+  brandVoice: string | null;
   companyName: string | null;
   taxId: string | null;
   addressLine1: string | null;
@@ -53,6 +63,10 @@ type FormValues = {
   logoPosition: string;
   menuPosition: string;
   landingThemeVariant: string;
+  templateId: string;
+  paletteId: string;
+  niche: string;
+  brandVoice: string;
   companyName: string;
   taxId: string;
   addressLine1: string;
@@ -86,6 +100,10 @@ function toForm(s: StoreData): FormValues {
     logoPosition: s.logoPosition ?? "left",
     menuPosition: s.menuPosition ?? "right",
     landingThemeVariant: s.landingThemeVariant ?? "",
+    templateId: s.templateId ?? "",
+    paletteId: s.paletteId ?? "",
+    niche: s.niche ?? "",
+    brandVoice: s.brandVoice ?? "casual",
     companyName: s.companyName ?? "",
     taxId: s.taxId ?? "",
     addressLine1: s.addressLine1 ?? "",
@@ -122,18 +140,54 @@ export function StoreEditForm({ store }: { store: StoreData }) {
   const [tab, setTab] = useState<TabId>("info");
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
 
+  // Snapshot of the original templateId so we can detect when the
+  // operator switches templates and warn them before submit — the API
+  // clears existing AI-generated landingBlocks on template change.
+  const initialTemplateId = store.templateId ?? "";
+
   function update<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
+  function updateTemplateStyle(next: Partial<TemplateStyleValues>) {
+    setForm((f) => ({ ...f, ...next }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Warn before stomping AI-generated landing JSON. Only triggers when
+    // the templateId is actually changing — palette/niche/voice swaps
+    // don't invalidate landingBlocks.
+    if (templateIdChanged(initialTemplateId, form.templateId)) {
+      const ok = confirm(
+        "การเปลี่ยน Template จะลบ AI-generated landing blocks (ถ้ามี) เพื่อให้ template ใหม่ render แทน\n\nดำเนินการต่อ?",
+      );
+      if (!ok) return;
+    }
+
     setSaving(true);
     setToast(null);
+
+    // Merge the 5 template-style fields into the PATCH body. We use the
+    // shared serializer so empty `landingThemeVariant` becomes "omit"
+    // (no write) rather than "" (write null), matching the API contract.
+    const styleBody = serializeTemplateStyle({
+      templateId: form.templateId,
+      paletteId: form.paletteId,
+      niche: form.niche,
+      brandVoice: form.brandVoice,
+      landingThemeVariant: form.landingThemeVariant,
+    });
+    // Drop the landingThemeVariant field from `form` before merging —
+    // styleBody owns the serialised version (might be omitted entirely).
+    const { landingThemeVariant: _drop, ...formWithoutVariant } = form;
+    const body = { ...formWithoutVariant, ...styleBody };
+
     const res = await fetch(`/api/admin/stores/${store.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -288,6 +342,23 @@ export function StoreEditForm({ store }: { store: StoreData }) {
       </div>
 
       <div hidden={tab !== "design"} className="space-y-5">
+        <Section title="Template & Style">
+          <p className="-mt-2 mb-2 text-xs text-muted-foreground">
+            เลือก template ของหน้าร้าน + palette + niche + brand voice — ค่าเหล่านี้กำหนดวิธี render หน้าร้านและ AI design hints
+          </p>
+          <TemplateStylePicker
+            embedded
+            values={{
+              templateId: form.templateId,
+              paletteId: form.paletteId,
+              niche: form.niche,
+              brandVoice: form.brandVoice,
+              landingThemeVariant: form.landingThemeVariant,
+            }}
+            onChange={updateTemplateStyle}
+          />
+        </Section>
+
         <Section title="แบรนด์ดิ้ง">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Logo" hint="วาง URL หรือกด อัพโหลด เพื่อเลือกไฟล์">
@@ -331,28 +402,6 @@ export function StoreEditForm({ store }: { store: StoreData }) {
                 className="w-32 rounded-md border px-3 py-2 font-mono text-sm"
               />
             </div>
-          </Field>
-        </Section>
-
-        <Section title="ธีมหน้าร้าน (Storefront theme)">
-          <Field
-            label="Theme variant"
-            hint="กำหนดดีไซน์หน้าร้าน — PDP / cart / homepage จะ render ตามธีมที่เลือก ค่าว่าง = auto ตาม templateId · เลือก theme (non-auto) จะลบ AI-generated landing JSON ออก (เพื่อให้ theme render แทน)"
-          >
-            <select
-              value={form.landingThemeVariant}
-              onChange={(e) => update("landingThemeVariant", e.target.value)}
-              className="w-full rounded-md border bg-white px-3 py-2 text-sm"
-            >
-              <option value="">— auto จาก templateId —</option>
-              <option value="everyday">everyday · consumer retail (Shopee-style)</option>
-              <option value="taobao">taobao · marketplace bold (orange/red/pink gradient)</option>
-              <option value="packaging">packaging · bright pink/yellow/sky (SMB supply)</option>
-              <option value="community">community · live-commerce purple-pink</option>
-              <option value="business-model">business-model · B2B wholesale (red ledger)</option>
-              <option value="minimal">minimal · legacy single-page (A family)</option>
-              <option value="cute">cute · legacy single-page (I family)</option>
-            </select>
           </Field>
         </Section>
 

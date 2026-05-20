@@ -4,6 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Wand2, Loader2, Check } from "lucide-react";
+import {
+  TemplateStylePicker,
+  serializeTemplateStyle,
+  type TemplateStyleValues,
+} from "@/components/store/template-style-picker";
 
 function slugify(value: string): string {
   // keep Thai chars (฀-๿) along with a-z0-9-
@@ -28,6 +33,20 @@ export default function NewStorePage() {
   // Step 2 — AI brief
   const [brief, setBrief] = useState("");
   const [engine, setEngine] = useState<"local" | "managed">("managed");
+
+  // Step 2 — Template & style hints (all optional — empty means "let the
+  // AI / family detector decide"). These ride along on the create POST
+  // so the store row is seeded with the operator's intent BEFORE the
+  // landing-builder runs, which fixes the bug where templates/themes
+  // failed to propagate from create → publish.
+  const [style, setStyle] = useState<TemplateStyleValues>({
+    templateId: "",
+    paletteId: "",
+    niche: "",
+    brandVoice: "casual",
+    landingThemeVariant: "",
+  });
+  const [showStyle, setShowStyle] = useState(false);
 
   // Progress
   const [createdStoreId, setCreatedStoreId] = useState<string | null>(null);
@@ -54,11 +73,20 @@ export default function NewStorePage() {
     setStep("generating");
     setStatusText("กำลังสร้างร้าน...");
 
-    // 1. Create the store
+    // 1. Create the store — seed with the operator-chosen template/style
+    // so it propagates into both the storefront renderer AND the AI
+    // landing-builder. Empty `landingThemeVariant` is omitted (auto from
+    // templateId) via serializeTemplateStyle().
+    const stylePayload = serializeTemplateStyle(style);
     const createRes = await fetch("/api/admin/stores", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, slug, description }),
+      body: JSON.stringify({
+        name,
+        slug,
+        description,
+        ...stylePayload,
+      }),
     });
     if (!createRes.ok) {
       const err = await createRes.json().catch(() => ({}));
@@ -253,6 +281,40 @@ export default function NewStorePage() {
                 </span>
               </label>
             </div>
+          </div>
+
+          {/* Optional template / style override — collapsed by default
+              so the AI-from-brief path stays the fast happy path. Power
+              users open this when they want to lock in a template
+              BEFORE the AI runs (so the storefront renderer + builder
+              agree from create-time). */}
+          <div className="rounded-md border bg-white">
+            <button
+              type="button"
+              onClick={() => setShowStyle((v) => !v)}
+              className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium hover:bg-stone-50"
+            >
+              <span>
+                Template &amp; Style{" "}
+                <span className="text-xs font-normal text-stone-500">
+                  (optional — บังคับ template ก่อน AI ทำงาน)
+                </span>
+              </span>
+              <span className="text-xs text-stone-500">
+                {showStyle ? "▲" : "▼"}
+              </span>
+            </button>
+            {showStyle && (
+              <div className="border-t px-4 py-3">
+                <TemplateStylePicker
+                  embedded
+                  values={style}
+                  onChange={(next) =>
+                    setStyle((s) => ({ ...s, ...next }))
+                  }
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex justify-between gap-2">

@@ -9,6 +9,11 @@ import {
   updatePlatformEmailForward,
 } from "@/lib/email/provision";
 import { tearDownDeploymentNow } from "@/lib/provisioner/orchestrator";
+import {
+  templateFieldsSchema,
+  deriveLandingThemeVariant,
+  LANDING_CLEAR_PATCH,
+} from "@/lib/store/template-fields";
 
 const slugRegex = /^[a-z0-9฀-๿](?:[a-z0-9฀-๿-]*[a-z0-9฀-๿])?$/;
 const domainRegex = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
@@ -56,6 +61,8 @@ const updateSchema = z.object({
   // Storefront theme — drives which <ThemeProductHero> / homepage layout
   // renders on the buyer-facing pages. See lib/landing/<theme>.ts for the
   // detectors. Empty string = clear (fall through to the default theme).
+  // Validation list is in lib/store/template-fields.ts; we keep the
+  // empty-string-to-null transform here so admins can clear it.
   landingThemeVariant: z
     .string()
     .max(40)
@@ -65,6 +72,13 @@ const updateSchema = z.object({
       const t = v.trim();
       return t === "" ? null : t;
     }),
+  // Wizard-parity template fields — accepted at PATCH so admins can
+  // change template/palette/niche/brandVoice after store creation. See
+  // lib/store/template-fields.ts for the allowed-value validation.
+  templateId: templateFieldsSchema.shape.templateId,
+  paletteId: templateFieldsSchema.shape.paletteId,
+  niche: templateFieldsSchema.shape.niche,
+  brandVoice: templateFieldsSchema.shape.brandVoice,
   contactEmail: z
     .string()
     .optional()
@@ -131,37 +145,52 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (v !== undefined) (data as Record<string, unknown>)[k] = v;
   }
 
-  // When an admin explicitly picks a theme variant (non-null), nuke the
-  // AI-generated landingBlocks JSON + title + generation timestamp so
-  // the storefront's theme detector takes over the homepage render.
-  // Without this, /stores/[slug]/page.tsx would fall through to the
-  // landingBlocks MultiPageRenderer branch BEFORE reaching the family
-  // detectors — operator picks "taobao" but still sees the old AI page.
-  // Clearing variant (back to null / auto) leaves landingBlocks alone
-  // so re-running the AI agent still works.
-  if (
-    parsed.data.landingThemeVariant !== undefined &&
-    parsed.data.landingThemeVariant !== null &&
-    parsed.data.landingThemeVariant.length > 0
-  ) {
-    (data as Record<string, unknown>).landingBlocks = null;
-    (data as Record<string, unknown>).landingTitle = null;
-    (data as Record<string, unknown>).landingGeneratedAt = null;
-    (data as Record<string, unknown>).landingStatus = null;
-    (data as Record<string, unknown>).landingError = null;
+  // Auto-derive landingThemeVariant from templates[templateId].group when
+  // the admin sent templateId but NOT landingThemeVariant — keeps the
+  // family-detector chain in app/stores/[slug]/layout.tsx in sync with
+  // the chosen template. Operator override (landingThemeVariant in the
+  // same payload) always wins.
+  const derivedVariant = deriveLandingThemeVariant({
+    templateId: parsed.data.templateId,
+    landingThemeVariant: parsed.data.landingThemeVariant,
+  });
+  if (derivedVariant !== undefined) {
+    (data as Record<string, unknown>).landingThemeVariant = derivedVariant;
   }
 
-  // Capture before-state for platform email side-effect detection.
+  // Capture before-state for platform email side-effect detection and
+  // for the templateId-change trigger on landingBlocks clear below.
   const before = await prisma.store.findUnique({
     where: { id: params.id },
     select: {
       customDomain: true,
       platformEmail: true,
       platformEmailForwardTo: true,
+      templateId: true,
     },
   });
   if (!before) {
     return NextResponse.json({ error: "Store not found" }, { status: 404 });
+  }
+
+  // Clear AI-generated landingBlocks (+ title/timestamp/status/error) when:
+  //   (a) admin explicitly picks a theme variant (non-null), OR
+  //   (b) templateId changed at all — skin-only OR full-app.
+  // Reason: landingBlocks is rendered by the LAYOUT dispatcher in
+  // app/stores/[slug]/layout.tsx BEFORE the family detector / StoreRenderer
+  // chain runs, so stale JSON shadows the new template regardless of
+  // whether the new template has its own chrome/pages adapter. Clearing
+  // variant (back to null / auto) leaves landingBlocks alone so re-running
+  // the AI agent still works.
+  const variantSet =
+    parsed.data.landingThemeVariant !== undefined &&
+    parsed.data.landingThemeVariant !== null &&
+    parsed.data.landingThemeVariant.length > 0;
+  const templateIdChanged =
+    parsed.data.templateId !== undefined &&
+    parsed.data.templateId !== before.templateId;
+  if (variantSet || templateIdChanged) {
+    Object.assign(data, LANDING_CLEAR_PATCH);
   }
 
   try {

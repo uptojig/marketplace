@@ -1,32 +1,39 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  templateFieldsSchema,
+  deriveLandingThemeVariant,
+} from "@/lib/store/template-fields";
 
-const schema = z.object({
-  name: z.string().min(2).max(80),
-  slug: z
-    .string()
-    .min(2)
-    .max(60)
-    .regex(
-      /^[a-z0-9฀-๿](?:[a-z0-9฀-๿-]*[a-z0-9฀-๿])?$/,
-      "Slug ใช้ได้เฉพาะ a-z, 0-9, ภาษาไทย และ -",
-    ),
-  ownerEmail: z
-    .string()
-    .optional()
-    .transform((v) => (v?.trim() ? v.trim() : undefined))
-    .refine(
-      (v) => v === undefined || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
-      "อีเมลไม่ถูกต้อง",
-    ),
-  ownerName: z.string().max(80).optional(),
-  description: z.string().max(500).optional(),
-  logoPosition: z.enum(["left", "center"]).optional(),
-  menuPosition: z.enum(["left", "center", "right"]).optional(),
-});
+const schema = z
+  .object({
+    name: z.string().min(2).max(80),
+    slug: z
+      .string()
+      .min(2)
+      .max(60)
+      .regex(
+        /^[a-z0-9฀-๿](?:[a-z0-9฀-๿-]*[a-z0-9฀-๿])?$/,
+        "Slug ใช้ได้เฉพาะ a-z, 0-9, ภาษาไทย และ -",
+      ),
+    ownerEmail: z
+      .string()
+      .optional()
+      .transform((v) => (v?.trim() ? v.trim() : undefined))
+      .refine(
+        (v) => v === undefined || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+        "อีเมลไม่ถูกต้อง",
+      ),
+    ownerName: z.string().max(80).optional(),
+    description: z.string().max(500).optional(),
+    logoPosition: z.enum(["left", "center"]).optional(),
+    menuPosition: z.enum(["left", "center", "right"]).optional(),
+  })
+  .merge(templateFieldsSchema);
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -52,8 +59,20 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, slug, ownerEmail, ownerName, description, logoPosition, menuPosition } =
-    parsed.data;
+  const {
+    name,
+    slug,
+    ownerEmail,
+    ownerName,
+    description,
+    logoPosition,
+    menuPosition,
+    templateId,
+    paletteId,
+    niche,
+    brandVoice,
+    landingThemeVariant,
+  } = parsed.data;
 
   const slugTaken = await prisma.store.findUnique({ where: { slug } });
   if (slugTaken) {
@@ -102,15 +121,36 @@ export async function POST(req: Request) {
     });
   }
 
+  // Auto-derive landingThemeVariant from templates[templateId].group when
+  // the operator picked a templateId but not an explicit variant — same
+  // pattern as the wizard server action so stores created via this admin
+  // endpoint render via the right family detector instead of falling
+  // through to the generic grid in app/stores/[slug]/page.tsx.
+  const derivedVariant = deriveLandingThemeVariant({
+    templateId,
+    landingThemeVariant,
+  });
+  const effectiveLandingThemeVariant =
+    landingThemeVariant ?? derivedVariant ?? undefined;
+
+  const data: Prisma.StoreUncheckedCreateInput = {
+    name,
+    slug,
+    ownerId: owner.id,
+    description: description ?? null,
+    logoPosition: logoPosition ?? "left",
+    menuPosition: menuPosition ?? "right",
+    ...(templateId !== undefined ? { templateId } : {}),
+    ...(paletteId !== undefined ? { paletteId } : {}),
+    ...(niche !== undefined ? { niche } : {}),
+    ...(brandVoice !== undefined ? { brandVoice } : {}),
+    ...(effectiveLandingThemeVariant !== undefined
+      ? { landingThemeVariant: effectiveLandingThemeVariant }
+      : {}),
+  };
+
   const store = await prisma.store.create({
-    data: {
-      name,
-      slug,
-      ownerId: owner.id,
-      description: description ?? null,
-      logoPosition: logoPosition ?? "left",
-      menuPosition: menuPosition ?? "right",
-    },
+    data,
     select: { id: true, slug: true },
   });
 

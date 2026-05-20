@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
+import {
+  TemplateStylePicker,
+  serializeTemplateStyle,
+  templateIdChanged,
+  type TemplateStyleValues,
+} from "@/components/store/template-style-picker";
 
 const schema = z.object({
   name: z.string().min(2).max(80),
@@ -55,6 +61,17 @@ const schema = z.object({
     .or(z.literal(""))
     .optional()
     .default(""),
+  // Template & style — empty strings mean "no preference". The submit
+  // handler converts these to nulls/omitted-fields via
+  // serializeTemplateStyle() so the API receives canonical values.
+  templateId: z.string().max(60).optional().default(""),
+  paletteId: z.string().max(40).optional().default(""),
+  niche: z.string().max(40).optional().default(""),
+  brandVoice: z
+    .union([z.literal("casual"), z.literal("formal"), z.literal("playful"), z.literal("")])
+    .optional()
+    .default("casual"),
+  landingThemeVariant: z.string().max(40).optional().default(""),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -134,14 +151,73 @@ export function StoreSettingsForm({
   const bannerUrl = watch("bannerUrl") ?? "";
   const primaryColor = watch("primaryColor") ?? "#2563eb";
 
+  // Watch the 5 template-style fields so we can render <TemplateStylePicker />
+  // in controlled mode — react-hook-form's `register` doesn't fit selects-
+  // with-grouped-options + button toggles cleanly.
+  const templateId = watch("templateId") ?? "";
+  const paletteId = watch("paletteId") ?? "";
+  const niche = watch("niche") ?? "";
+  const brandVoice = (watch("brandVoice") ?? "casual") as string;
+  const landingThemeVariant = watch("landingThemeVariant") ?? "";
+  const initialTemplateId = defaultValues.templateId ?? "";
+
+  function updateStyle(next: Partial<TemplateStyleValues>) {
+    if (next.templateId !== undefined)
+      setValue("templateId", next.templateId, { shouldValidate: true });
+    if (next.paletteId !== undefined)
+      setValue("paletteId", next.paletteId, { shouldValidate: true });
+    if (next.niche !== undefined)
+      setValue("niche", next.niche, { shouldValidate: true });
+    if (next.brandVoice !== undefined)
+      setValue(
+        "brandVoice",
+        next.brandVoice as FormValues["brandVoice"],
+        { shouldValidate: true },
+      );
+    if (next.landingThemeVariant !== undefined)
+      setValue("landingThemeVariant", next.landingThemeVariant, {
+        shouldValidate: true,
+      });
+  }
+
   async function onSubmit(values: FormValues) {
+    // Warn before stomping AI-generated landing JSON. Only triggers on
+    // an actual templateId change — palette/niche/voice swaps don't
+    // invalidate landingBlocks.
+    if (templateIdChanged(initialTemplateId, values.templateId ?? "")) {
+      const ok = confirm(
+        "การเปลี่ยน Template จะลบ AI-generated landing blocks (ถ้ามี) เพื่อให้ template ใหม่ render แทน\n\nดำเนินการต่อ?",
+      );
+      if (!ok) return;
+    }
+
     setSaving(true);
     setToast(null);
     try {
+      // Merge the 5 template-style fields through the canonical
+      // serializer — empty landingThemeVariant becomes "omit" rather
+      // than "write null", matching the API contract.
+      const styleBody = serializeTemplateStyle({
+        templateId: values.templateId ?? "",
+        paletteId: values.paletteId ?? "",
+        niche: values.niche ?? "",
+        brandVoice: values.brandVoice ?? "casual",
+        landingThemeVariant: values.landingThemeVariant ?? "",
+      });
+      const {
+        templateId: _t,
+        paletteId: _p,
+        niche: _n,
+        brandVoice: _b,
+        landingThemeVariant: _l,
+        ...restValues
+      } = values;
+      const body = { ...restValues, ...styleBody };
+
       const res = await fetch("/api/store/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -300,6 +376,30 @@ export function StoreSettingsForm({
               <p className="text-xs text-red-500">{errors.primaryColor.message}</p>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Template & Style */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Template &amp; Style</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            เลือก template ของหน้าร้าน + palette + niche + brand voice — ค่าเหล่านี้กำหนดวิธี render หน้าร้าน
+            การเปลี่ยน template จะลบ AI-generated landing blocks (ถ้ามี) แล้วใช้ template ใหม่แทน
+          </p>
+          <TemplateStylePicker
+            embedded
+            values={{
+              templateId,
+              paletteId,
+              niche,
+              brandVoice,
+              landingThemeVariant,
+            }}
+            onChange={updateStyle}
+          />
         </CardContent>
       </Card>
 
