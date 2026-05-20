@@ -86,6 +86,9 @@ import {
   landingContentCssVars,
 } from "@/lib/store/landing-content-runtime";
 import type { ColorOverrides } from "@/lib/store/landing-content";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
+import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 
 export const dynamic = "force-dynamic";
 
@@ -511,6 +514,11 @@ export default async function ShopLayout({
   // cascade to the same accent — not just the agent-rendered home.
   // Legacy values that pre-date the v3 picker still get a real family
   // color so old stores aren't stuck on default blue.
+  const effectiveTpl = effectiveTemplateId(store);
+  const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
+    ? STORE_TEMPLATES[effectiveTpl as TemplateId]
+    : null;
+
   const family = resolveFamily(store.landingThemeVariant);
   const primary = family?.themeColor ?? store.primaryColor ?? "#0f172a";
 
@@ -529,32 +537,56 @@ export default async function ShopLayout({
     primaryColor: primary,
   });
 
+  const CustomHeader = template?.chrome?.Header;
+  const CustomFooter = template?.chrome?.Footer;
+  const CustomStrip = template?.chrome?.AnnouncementStrip;
+  const accent = familyAccent ?? tokens.accent;
+
   return (
     <div
       className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
       style={{ ...tokensToCssVars(tokens), ...familyVars, ...lcColorVars }}
     >
-      <ShopHeader
-        storeSlug={store.slug}
-        storeName={store.name}
-        storeLogoUrl={store.logoUrl}
-        categories={categories}
-        accent={familyAccent ?? tokens.accent}
-        decorationGlyph={tokens.decorationGlyph}
-        glyphStyle={tokens.glyphStyle}
-        announcement={lcAnnouncement ?? tokens.announcement}
-        buttonShape={familyButtonShape ?? tokens.buttonShape}
-      />
+      {CustomStrip && <CustomStrip storeName={store.name} />}
+      {CustomHeader ? (
+        <CustomHeader
+          storeSlug={store.slug}
+          storeName={store.name}
+          storeLogoUrl={store.logoUrl}
+          categories={categories}
+          accent={accent}
+        />
+      ) : (
+        <ShopHeader
+          storeSlug={store.slug}
+          storeName={store.name}
+          storeLogoUrl={store.logoUrl}
+          categories={categories}
+          accent={accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+          announcement={lcAnnouncement ?? tokens.announcement}
+          buttonShape={familyButtonShape ?? tokens.buttonShape}
+        />
+      )}
       <main className="flex-1">{children}</main>
-      <ShopFooter
-        store={store}
-        categories={categories}
-        accent={familyAccent ?? tokens.accent}
-        decorationGlyph={tokens.decorationGlyph}
-        glyphStyle={tokens.glyphStyle}
-      />
+      {CustomFooter ? (
+        <CustomFooter
+          store={store}
+          categories={categories}
+          accent={accent}
+        />
+      ) : (
+        <ShopFooter
+          store={store}
+          categories={categories}
+          accent={accent}
+          decorationGlyph={tokens.decorationGlyph}
+          glyphStyle={tokens.glyphStyle}
+        />
+      )}
       <CookiesBar />
-      <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
+      <ShopFloatingButtons primaryColor={accent} />
     </div>
   );
 }

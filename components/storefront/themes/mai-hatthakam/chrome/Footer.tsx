@@ -1,0 +1,127 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { Instagram, Facebook, MapPin, Mail, Phone } from 'lucide-react';
+
+interface MaiHatthakamFooterProps {
+  store: {
+    name: string;
+    slug: string;
+  };
+}
+
+export function MaiHatthakamFooter({ store }: MaiHatthakamFooterProps) {
+  return (
+    <footer className="bg-[#3a1a07] text-[#fde8c8] border-t border-[#7c2d12] pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-8 mb-12">
+          
+          {/* Brand Info */}
+          <div className="md:col-span-5 lg:col-span-4">
+            <Link href={`/${store.slug}`} className="inline-block mb-6">
+              <span className="text-2xl font-bold text-[#fef9f1] tracking-wider font-[family:var(--font-prompt)] uppercase">
+                {store.name}
+              </span>
+            </Link>
+            <p className="text-[#fde8c8]/80 text-sm leading-relaxed font-[family:var(--font-kanit)] mb-6 max-w-sm">
+              เซรามิกทำมือจากเตาดินเผาที่เชียงราย ทุกใบปั้นด้วยความตั้งใจ ส่งต่อร่องรอยของศิลปินผ่านงานฝีมือที่ใช้ได้จริงในชีวิตประจำวัน
+            </p>
+            <div className="flex space-x-5">
+              <a href="#" className="text-[#fde8c8]/60 hover:text-[#d97706] transition-colors">
+                <span className="sr-only">Instagram</span>
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a href="#" className="text-[#fde8c8]/60 hover:text-[#d97706] transition-colors">
+                <span className="sr-only">Facebook</span>
+                <Facebook className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Contact & Visit */}
+          <div className="md:col-span-4 lg:col-span-4">
+            <h3 className="text-sm font-semibold text-[#fef9f1] tracking-wider uppercase mb-6 font-[family:var(--font-kanit)]">ติดต่อ & เยี่ยมชมเตาเผา</h3>
+            <ul className="space-y-4">
+              <li className="flex items-start">
+                <MapPin className="h-5 w-5 text-[#7c2d12] mr-3 flex-shrink-0 mt-0.5" />
+                <span className="text-sm text-[#fde8c8]/80 font-[family:var(--font-kanit)] leading-relaxed">
+                  123 หมู่บ้านดินเผา ตำบลแม่อาย<br />
+                  อำเภอเมือง จังหวัดเชียงราย 57000<br />
+                  <span className="text-xs text-[#d97706] mt-1 block">เปิดให้เข้าชมทุกวันเสาร์ 10:00 - 16:00 น.</span>
+                </span>
+              </li>
+              <li className="flex items-center">
+                <Phone className="h-5 w-5 text-[#7c2d12] mr-3 flex-shrink-0" />
+                <span className="text-sm text-[#fde8c8]/80 font-[family:var(--font-kanit)]">053-123-4567</span>
+              </li>
+              <li className="flex items-center">
+                <Mail className="h-5 w-5 text-[#7c2d12] mr-3 flex-shrink-0" />
+                <span className="text-sm text-[#fde8c8]/80 font-[family:var(--font-kanit)]">hello@mai-hatthakam.com</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Quick Links */}
+          <div className="md:col-span-3 lg:col-span-4 grid grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-sm font-semibold text-[#fef9f1] tracking-wider uppercase mb-6 font-[family:var(--font-kanit)]">ร้านค้า</h3>
+              <ul className="space-y-4">
+                <li>
+                  <Link href={`/${store.slug}/c/all`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                    สินค้าทั้งหมด
+                  </Link>
+                </li>
+                <li>
+                  <Link href={`/${store.slug}/c/new`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                    ล็อตล่าสุด (Batch 20)
+                  </Link>
+                </li>
+                <li>
+                  <Link href={`/${store.slug}/about`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                    เรื่องราวของเตาเผา
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-[#fef9f1] tracking-wider uppercase mb-6 font-[family:var(--font-kanit)]">ช่วยเหลือ</h3>
+              <ul className="space-y-4">
+                <li>
+                  <Link href={`/${store.slug}/faq`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                    คำถามที่พบบ่อย
+                  </Link>
+                </li>
+                <li>
+                  <Link href={`/${store.slug}/shipping`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                    การจัดส่ง
+                  </Link>
+                </li>
+                <li>
+                  <Link href={`/${store.slug}/care`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                    การดูแลรักษาเซรามิก
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+
+        <div className="pt-8 border-t border-[#7c2d12]/50 flex flex-col md:flex-row justify-between items-center">
+          <p className="text-sm text-[#fde8c8]/50 font-[family:var(--font-kanit)]">
+            &copy; {new Date().getFullYear()} {store.name}. สงวนลิขสิทธิ์
+          </p>
+          <div className="mt-4 md:mt-0 flex space-x-6">
+            <Link href={`/${store.slug}/terms`} className="text-xs text-[#fde8c8]/50 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+              ข้อตกลงและเงื่อนไข
+            </Link>
+            <Link href={`/${store.slug}/privacy`} className="text-xs text-[#fde8c8]/50 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+              นโยบายความเป็นส่วนตัว
+            </Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

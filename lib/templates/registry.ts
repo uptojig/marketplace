@@ -38,6 +38,191 @@ import {
   MegaStoreHelpAdapter,
 } from '@/components/storefront/themes/mega-store/adapters';
 
+import {
+  SaiSingHeaderAdapter,
+  SaiSingFooterAdapter,
+  SaiSingStripAdapter,
+  SaiSingHomepageAdapter,
+} from '@/components/storefront/themes/sai-sing/adapters';
+import {
+  TaladSeeSodHeaderAdapter,
+  TaladSeeSodFooterAdapter,
+  TaladSeeSodStripAdapter,
+  TaladSeeSodHomepageAdapter,
+} from '@/components/storefront/themes/talad-see-sod/adapters';
+import {
+  BrutalistThaiHeaderAdapter,
+  BrutalistThaiFooterAdapter,
+  BrutalistThaiStripAdapter,
+  BrutalistThaiHomepageAdapter,
+} from '@/components/storefront/themes/brutalist-thai/adapters';
+import {
+  MonoEightHeaderAdapter,
+  MonoEightFooterAdapter,
+  MonoEightStripAdapter,
+  MonoEightHomepageAdapter,
+} from '@/components/storefront/themes/mono-eight/adapters';
+import {
+  LilaModestHeaderAdapter,
+  LilaModestFooterAdapter,
+  LilaModestStripAdapter,
+  LilaModestHomepageAdapter,
+} from '@/components/storefront/themes/lila-modest/adapters';
+import {
+  Atelier27HeaderAdapter,
+  Atelier27FooterAdapter,
+  Atelier27StripAdapter,
+  Atelier27HomepageAdapter,
+} from '@/components/storefront/themes/atelier-27/adapters';
+
+
+import {
+  BulkboxIndustrialHeaderAdapter,
+  BulkboxIndustrialFooterAdapter,
+  BulkboxIndustrialStripAdapter,
+  BulkboxIndustrialHomepageAdapter,
+} from '@/components/storefront/themes/bulkbox-industrial/adapters';
+
+import {
+  CalderaSkinHeaderAdapter,
+  CalderaSkinFooterAdapter,
+  CalderaSkinStripAdapter,
+  CalderaSkinHomepageAdapter,
+} from '@/components/storefront/themes/caldera-skin/adapters';
+
+import {
+  CarbonEraCamerasHeaderAdapter,
+  CarbonEraCamerasFooterAdapter,
+  CarbonEraCamerasStripAdapter,
+  CarbonEraCamerasHomepageAdapter,
+} from '@/components/storefront/themes/carbon-era-cameras/adapters';
+
+import {
+  GlowLampCoHeaderAdapter,
+  GlowLampCoFooterAdapter,
+  GlowLampCoStripAdapter,
+  GlowLampCoHomepageAdapter,
+} from '@/components/storefront/themes/glow-lamp-co/adapters';
+
+import {
+  HinokiApothecaryHeaderAdapter,
+  HinokiApothecaryFooterAdapter,
+  HinokiApothecaryStripAdapter,
+  HinokiApothecaryHomepageAdapter,
+} from '@/components/storefront/themes/hinoki-apothecary/adapters';
+
+import {
+  InkstonePaperHeaderAdapter,
+  InkstonePaperFooterAdapter,
+  InkstonePaperStripAdapter,
+  InkstonePaperHomepageAdapter,
+} from '@/components/storefront/themes/inkstone-paper/adapters';
+
+import {
+  KeystrokeLabHeaderAdapter,
+  KeystrokeLabFooterAdapter,
+  KeystrokeLabStripAdapter,
+  KeystrokeLabHomepageAdapter,
+} from '@/components/storefront/themes/keystroke-lab/adapters';
+
+import {
+  KorakotHouseHeaderAdapter,
+  KorakotHouseFooterAdapter,
+  KorakotHouseStripAdapter,
+  KorakotHouseHomepageAdapter,
+} from '@/components/storefront/themes/korakot-house/adapters';
+
+import {
+  LinenAndLoomHeaderAdapter,
+  LinenAndLoomFooterAdapter,
+  LinenAndLoomStripAdapter,
+  LinenAndLoomHomepageAdapter,
+} from '@/components/storefront/themes/linen-and-loom/adapters';
+
+import {
+  MaiHatthakamHeaderAdapter,
+  MaiHatthakamFooterAdapter,
+  MaiHatthakamStripAdapter,
+  MaiHatthakamHomepageAdapter,
+} from '@/components/storefront/themes/mai-hatthakam/adapters';
+
+import {
+  PastelPackHeaderAdapter,
+  PastelPackFooterAdapter,
+  PastelPackStripAdapter,
+  PastelPackHomepageAdapter,
+} from '@/components/storefront/themes/pastel-pack/adapters';
+
+import {
+  PetitCoteHeaderAdapter,
+  PetitCoteFooterAdapter,
+  PetitCoteStripAdapter,
+  PetitCoteHomepageAdapter,
+} from '@/components/storefront/themes/petit-cote/adapters';
+
+import {
+  PigmentStudioHeaderAdapter,
+  PigmentStudioFooterAdapter,
+  PigmentStudioStripAdapter,
+  PigmentStudioHomepageAdapter,
+} from '@/components/storefront/themes/pigment-studio/adapters';
+
+import {
+  ReclaimLeatherHeaderAdapter,
+  ReclaimLeatherFooterAdapter,
+  ReclaimLeatherStripAdapter,
+  ReclaimLeatherHomepageAdapter,
+} from '@/components/storefront/themes/reclaim-leather/adapters';
+
+import {
+  SalukiYogaHeaderAdapter,
+  SalukiYogaFooterAdapter,
+  SalukiYogaStripAdapter,
+  SalukiYogaHomepageAdapter,
+} from '@/components/storefront/themes/saluki-yoga/adapters';
+
+import {
+  SirinWomenswearHeaderAdapter,
+  SirinWomenswearFooterAdapter,
+  SirinWomenswearStripAdapter,
+  SirinWomenswearHomepageAdapter,
+} from '@/components/storefront/themes/sirin-womenswear/adapters';
+
+import {
+  SmartloopHomeHeaderAdapter,
+  SmartloopHomeFooterAdapter,
+  SmartloopHomeStripAdapter,
+  SmartloopHomeHomepageAdapter,
+} from '@/components/storefront/themes/smartloop-home/adapters';
+
+import {
+  TinyhandWoodenToysHeaderAdapter,
+  TinyhandWoodenToysFooterAdapter,
+  TinyhandWoodenToysStripAdapter,
+  TinyhandWoodenToysHomepageAdapter,
+} from '@/components/storefront/themes/tinyhand-wooden-toys/adapters';
+
+import {
+  TrailcraftOutdoorsHeaderAdapter,
+  TrailcraftOutdoorsFooterAdapter,
+  TrailcraftOutdoorsStripAdapter,
+  TrailcraftOutdoorsHomepageAdapter,
+} from '@/components/storefront/themes/trailcraft-outdoors/adapters';
+
+import {
+  WavelengthAudioHeaderAdapter,
+  WavelengthAudioFooterAdapter,
+  WavelengthAudioStripAdapter,
+  WavelengthAudioHomepageAdapter,
+} from '@/components/storefront/themes/wavelength-audio/adapters';
+
+import {
+  YumeiroLipHeaderAdapter,
+  YumeiroLipFooterAdapter,
+  YumeiroLipStripAdapter,
+  YumeiroLipHomepageAdapter,
+} from '@/components/storefront/themes/yumeiro-lip/adapters';
+
 export const templates: Record<TemplateId, Template> = {
   classic: {
     id: 'classic',
@@ -556,6 +741,682 @@ export const templates: Record<TemplateId, Template> = {
     gating: {},
     customizable: { canReorder: true, canHideBlocks: [], canAddBlocks: [] },
   },
+
+  'sai-sing': {
+    id: 'sai-sing',
+    name: 'Sai Sing',
+    description: 'ท่อสูตร อะไหล่ซิ่ง รถแต่ง สไตล์มอเตอร์ไซค์สปอร์ต',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: SaiSingHeaderAdapter,
+      Footer: SaiSingFooterAdapter,
+      AnnouncementStrip: SaiSingStripAdapter,
+    },
+    pages: {
+      home: SaiSingHomepageAdapter,
+    },
+  },
+
+  'talad-see-sod': {
+    id: 'talad-see-sod',
+    name: 'Talad See Sod',
+    description: 'ร้านขายไอทีแกดเจ็ต สีสันสดใส เน้นโปรโมชั่นสะดุดตา',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: TaladSeeSodHeaderAdapter,
+      Footer: TaladSeeSodFooterAdapter,
+      AnnouncementStrip: TaladSeeSodStripAdapter,
+    },
+    pages: {
+      home: TaladSeeSodHomepageAdapter,
+    },
+  },
+
+  'brutalist-thai': {
+    id: 'brutalist-thai',
+    name: 'Brutalist Thai',
+    description: 'โรงพิมพ์และร้านขายโปสเตอร์อาร์ต ดีไซน์ดิบ ดุดัน สไตล์ Brutalist',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: BrutalistThaiHeaderAdapter,
+      Footer: BrutalistThaiFooterAdapter,
+      AnnouncementStrip: BrutalistThaiStripAdapter,
+    },
+    pages: {
+      home: BrutalistThaiHomepageAdapter,
+    },
+  },
+
+  'mono-eight': {
+    id: 'mono-eight',
+    name: 'Mono Eight',
+    description: 'แฟชั่นสตรีทแวร์ลิมิเต็ด สไตล์ zine ขาวดำ',
+    group: 'fashion-beauty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'portrait', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'editorial', id: 'products' },
+    ],
+    desktopPattern: 'A',
+    theme: themePresets.lookbook,
+    behavior: { bottomNav: 'visible', hideRatingsCount: true },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: MonoEightHeaderAdapter,
+      Footer: MonoEightFooterAdapter,
+      AnnouncementStrip: MonoEightStripAdapter,
+    },
+    pages: {
+      home: MonoEightHomepageAdapter,
+    },
+  },
+
+  'lila-modest': {
+    id: 'lila-modest',
+    name: 'Lila Modest',
+    description: 'เดรสยาวและผ้าคลุม modest-wear โทนอุ่น',
+    group: 'fashion-beauty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'standard', id: 'header' },
+      { type: 'story', variant: 'inline', id: 'story' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'A',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible', storyBlock: 'inline-visible' },
+    gating: {},
+    customizable: { canReorder: true, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: LilaModestHeaderAdapter,
+      Footer: LilaModestFooterAdapter,
+      AnnouncementStrip: LilaModestStripAdapter,
+    },
+    pages: {
+      home: LilaModestHomepageAdapter,
+    },
+  },
+
+  'atelier-27': {
+    id: 'atelier-27',
+    name: 'Atelier 27',
+    description: 'สูทตัดเฉพาะบุคคล premium luxury สไตล์ Hermès',
+    group: 'trust',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', data: { minimal: true }, id: 'products' },
+    ],
+    desktopPattern: 'A',
+    theme: themePresets.premium,
+    behavior: { bottomNav: 'visible', hideRatingsCount: true },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: Atelier27HeaderAdapter,
+      Footer: Atelier27FooterAdapter,
+      AnnouncementStrip: Atelier27StripAdapter,
+    },
+    pages: {
+      home: Atelier27HomepageAdapter,
+    },
+  },
+
+  'bulkbox-industrial': {
+    id: 'bulkbox-industrial',
+    name: 'Bulkbox Industrial',
+    description: 'Auto-generated theme for bulkbox-industrial',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: BulkboxIndustrialHeaderAdapter,
+      Footer: BulkboxIndustrialFooterAdapter,
+      AnnouncementStrip: BulkboxIndustrialStripAdapter,
+    },
+    pages: {
+      home: BulkboxIndustrialHomepageAdapter,
+    },
+  },
+
+  'caldera-skin': {
+    id: 'caldera-skin',
+    name: 'Caldera Skin',
+    description: 'Auto-generated theme for caldera-skin',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: CalderaSkinHeaderAdapter,
+      Footer: CalderaSkinFooterAdapter,
+      AnnouncementStrip: CalderaSkinStripAdapter,
+    },
+    pages: {
+      home: CalderaSkinHomepageAdapter,
+    },
+  },
+
+  'carbon-era-cameras': {
+    id: 'carbon-era-cameras',
+    name: 'Carbon Era Cameras',
+    description: 'Auto-generated theme for carbon-era-cameras',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: CarbonEraCamerasHeaderAdapter,
+      Footer: CarbonEraCamerasFooterAdapter,
+      AnnouncementStrip: CarbonEraCamerasStripAdapter,
+    },
+    pages: {
+      home: CarbonEraCamerasHomepageAdapter,
+    },
+  },
+
+  'glow-lamp-co': {
+    id: 'glow-lamp-co',
+    name: 'Glow Lamp Co',
+    description: 'Auto-generated theme for glow-lamp-co',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: GlowLampCoHeaderAdapter,
+      Footer: GlowLampCoFooterAdapter,
+      AnnouncementStrip: GlowLampCoStripAdapter,
+    },
+    pages: {
+      home: GlowLampCoHomepageAdapter,
+    },
+  },
+
+  'hinoki-apothecary': {
+    id: 'hinoki-apothecary',
+    name: 'Hinoki Apothecary',
+    description: 'Auto-generated theme for hinoki-apothecary',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: HinokiApothecaryHeaderAdapter,
+      Footer: HinokiApothecaryFooterAdapter,
+      AnnouncementStrip: HinokiApothecaryStripAdapter,
+    },
+    pages: {
+      home: HinokiApothecaryHomepageAdapter,
+    },
+  },
+
+  'inkstone-paper': {
+    id: 'inkstone-paper',
+    name: 'Inkstone Paper',
+    description: 'Auto-generated theme for inkstone-paper',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: InkstonePaperHeaderAdapter,
+      Footer: InkstonePaperFooterAdapter,
+      AnnouncementStrip: InkstonePaperStripAdapter,
+    },
+    pages: {
+      home: InkstonePaperHomepageAdapter,
+    },
+  },
+
+  'keystroke-lab': {
+    id: 'keystroke-lab',
+    name: 'Keystroke Lab',
+    description: 'Auto-generated theme for keystroke-lab',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: KeystrokeLabHeaderAdapter,
+      Footer: KeystrokeLabFooterAdapter,
+      AnnouncementStrip: KeystrokeLabStripAdapter,
+    },
+    pages: {
+      home: KeystrokeLabHomepageAdapter,
+    },
+  },
+
+  'korakot-house': {
+    id: 'korakot-house',
+    name: 'Korakot House',
+    description: 'Auto-generated theme for korakot-house',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: KorakotHouseHeaderAdapter,
+      Footer: KorakotHouseFooterAdapter,
+      AnnouncementStrip: KorakotHouseStripAdapter,
+    },
+    pages: {
+      home: KorakotHouseHomepageAdapter,
+    },
+  },
+
+  'linen-and-loom': {
+    id: 'linen-and-loom',
+    name: 'Linen And Loom',
+    description: 'Auto-generated theme for linen-and-loom',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: LinenAndLoomHeaderAdapter,
+      Footer: LinenAndLoomFooterAdapter,
+      AnnouncementStrip: LinenAndLoomStripAdapter,
+    },
+    pages: {
+      home: LinenAndLoomHomepageAdapter,
+    },
+  },
+
+  'mai-hatthakam': {
+    id: 'mai-hatthakam',
+    name: 'Mai Hatthakam',
+    description: 'Auto-generated theme for mai-hatthakam',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: MaiHatthakamHeaderAdapter,
+      Footer: MaiHatthakamFooterAdapter,
+      AnnouncementStrip: MaiHatthakamStripAdapter,
+    },
+    pages: {
+      home: MaiHatthakamHomepageAdapter,
+    },
+  },
+
+  'pastel-pack': {
+    id: 'pastel-pack',
+    name: 'Pastel Pack',
+    description: 'Auto-generated theme for pastel-pack',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: PastelPackHeaderAdapter,
+      Footer: PastelPackFooterAdapter,
+      AnnouncementStrip: PastelPackStripAdapter,
+    },
+    pages: {
+      home: PastelPackHomepageAdapter,
+    },
+  },
+
+  'petit-cote': {
+    id: 'petit-cote',
+    name: 'Petit Cote',
+    description: 'Auto-generated theme for petit-cote',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: PetitCoteHeaderAdapter,
+      Footer: PetitCoteFooterAdapter,
+      AnnouncementStrip: PetitCoteStripAdapter,
+    },
+    pages: {
+      home: PetitCoteHomepageAdapter,
+    },
+  },
+
+  'pigment-studio': {
+    id: 'pigment-studio',
+    name: 'Pigment Studio',
+    description: 'Auto-generated theme for pigment-studio',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: PigmentStudioHeaderAdapter,
+      Footer: PigmentStudioFooterAdapter,
+      AnnouncementStrip: PigmentStudioStripAdapter,
+    },
+    pages: {
+      home: PigmentStudioHomepageAdapter,
+    },
+  },
+
+  'reclaim-leather': {
+    id: 'reclaim-leather',
+    name: 'Reclaim Leather',
+    description: 'Auto-generated theme for reclaim-leather',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: ReclaimLeatherHeaderAdapter,
+      Footer: ReclaimLeatherFooterAdapter,
+      AnnouncementStrip: ReclaimLeatherStripAdapter,
+    },
+    pages: {
+      home: ReclaimLeatherHomepageAdapter,
+    },
+  },
+
+  'saluki-yoga': {
+    id: 'saluki-yoga',
+    name: 'Saluki Yoga',
+    description: 'Auto-generated theme for saluki-yoga',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: SalukiYogaHeaderAdapter,
+      Footer: SalukiYogaFooterAdapter,
+      AnnouncementStrip: SalukiYogaStripAdapter,
+    },
+    pages: {
+      home: SalukiYogaHomepageAdapter,
+    },
+  },
+
+  'sirin-womenswear': {
+    id: 'sirin-womenswear',
+    name: 'Sirin Womenswear',
+    description: 'Auto-generated theme for sirin-womenswear',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: SirinWomenswearHeaderAdapter,
+      Footer: SirinWomenswearFooterAdapter,
+      AnnouncementStrip: SirinWomenswearStripAdapter,
+    },
+    pages: {
+      home: SirinWomenswearHomepageAdapter,
+    },
+  },
+
+  'smartloop-home': {
+    id: 'smartloop-home',
+    name: 'Smartloop Home',
+    description: 'Auto-generated theme for smartloop-home',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: SmartloopHomeHeaderAdapter,
+      Footer: SmartloopHomeFooterAdapter,
+      AnnouncementStrip: SmartloopHomeStripAdapter,
+    },
+    pages: {
+      home: SmartloopHomeHomepageAdapter,
+    },
+  },
+
+  'tinyhand-wooden-toys': {
+    id: 'tinyhand-wooden-toys',
+    name: 'Tinyhand Wooden Toys',
+    description: 'Auto-generated theme for tinyhand-wooden-toys',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: TinyhandWoodenToysHeaderAdapter,
+      Footer: TinyhandWoodenToysFooterAdapter,
+      AnnouncementStrip: TinyhandWoodenToysStripAdapter,
+    },
+    pages: {
+      home: TinyhandWoodenToysHomepageAdapter,
+    },
+  },
+
+  'trailcraft-outdoors': {
+    id: 'trailcraft-outdoors',
+    name: 'Trailcraft Outdoors',
+    description: 'Auto-generated theme for trailcraft-outdoors',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: TrailcraftOutdoorsHeaderAdapter,
+      Footer: TrailcraftOutdoorsFooterAdapter,
+      AnnouncementStrip: TrailcraftOutdoorsStripAdapter,
+    },
+    pages: {
+      home: TrailcraftOutdoorsHomepageAdapter,
+    },
+  },
+
+  'wavelength-audio': {
+    id: 'wavelength-audio',
+    name: 'Wavelength Audio',
+    description: 'Auto-generated theme for wavelength-audio',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: WavelengthAudioHeaderAdapter,
+      Footer: WavelengthAudioFooterAdapter,
+      AnnouncementStrip: WavelengthAudioStripAdapter,
+    },
+    pages: {
+      home: WavelengthAudioHomepageAdapter,
+    },
+  },
+
+  'yumeiro-lip': {
+    id: 'yumeiro-lip',
+    name: 'Yumeiro Lip',
+    description: 'Auto-generated theme for yumeiro-lip',
+    group: 'specialty',
+    mobileBlocks: [
+      { type: 'hero', variant: 'cover', id: 'hero' },
+      { type: 'store-header', variant: 'compact', id: 'header' },
+      { type: 'product', variant: 'grid-2', id: 'products' },
+    ],
+    desktopPattern: 'C',
+    theme: defaultTheme,
+    behavior: { bottomNav: 'visible' },
+    gating: {},
+    customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
+    chrome: {
+      Header: YumeiroLipHeaderAdapter,
+      Footer: YumeiroLipFooterAdapter,
+      AnnouncementStrip: YumeiroLipStripAdapter,
+    },
+    pages: {
+      home: YumeiroLipHomepageAdapter,
+    },
+  },
 };
 
 export function getTemplate(id: TemplateId): Template {
@@ -590,11 +1451,11 @@ export function getRecommendedTemplates(niche: string, limit = 3): Template[] {
 }
 
 export const templateGroups: Record<string, TemplateId[]> = {
-  trust: ['classic', 'official-brand', 'premium-luxury'],
-  'fashion-beauty': ['lookbook', 'beauty-swatch', 'boutique', 'bikini-beach'],
+  trust: ['classic', 'official-brand', 'premium-luxury', 'atelier-27'],
+  'fashion-beauty': ['lookbook', 'beauty-swatch', 'boutique', 'bikini-beach', 'mono-eight', 'lila-modest'],
   'electronics-tech': ['catalog-dense', 'tech-compare', 'single-product'],
   lifestyle: ['home-living', 'sport-active', 'kids-toys', 'mega-store'],
   community: ['live-commerce', 'video-feed', 'storyteller'],
   'business-model': ['wholesale-b2b', 'flash-deal', 'subscription', 'eco-pack'],
-  specialty: ['handmade', 'vintage'],
+  specialty: ['handmade', 'vintage', 'sai-sing', 'talad-see-sod', 'brutalist-thai'],
 };

@@ -330,6 +330,35 @@ export default async function StorePage({
   if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
     const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
     const store = await mapStoreFromPrisma(baseStore);
+
+    const TemplateHomepage = template?.pages?.home;
+    if (TemplateHomepage) {
+      const dbProducts = await prisma.product.findMany({
+        where: { storeId: baseStore.id, active: true },
+        orderBy: { createdAt: "desc" },
+        take: 60,
+      });
+      const products = dbProducts.map((p) => ({
+        id: p.id,
+        title: p.titleTh ?? p.title,
+        priceTHB: Number(p.priceTHB),
+        compareAtPriceTHB: p.compareAtPriceTHB ? Number(p.compareAtPriceTHB) : null,
+        imageUrl: p.imageUrl,
+        categoryName: p.categoryName,
+      }));
+      const categories = Array.from(
+        new Set(products.map((p) => p.categoryName).filter((c): c is string => !!c))
+      ).slice(0, 8);
+
+      return (
+        <TemplateHomepage
+          store={storeToSummary(baseStore)}
+          products={products}
+          categories={categories}
+        />
+      );
+    }
+
     return <StoreRenderer store={store} template={template} />;
   }
 
