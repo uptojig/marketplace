@@ -22,6 +22,10 @@ import { getServerSession } from "next-auth";
 import { OrderStatus, type Role } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  sendOrderShippedEmail,
+  sendOrderDeliveredEmail,
+} from "@/lib/transactional-email";
 
 export type ShippingCarrier = "KERRY" | "FLASH" | "JNT" | "OTHER";
 
@@ -153,6 +157,13 @@ export async function markOrderShipped(
       },
     });
 
+    // Fire and forget email notification
+    sendOrderShippedEmail({
+      orderId,
+      trackingNumber,
+      carrier: input.shippingCarrier,
+    }).catch(console.error);
+
     revalidateVendorOrderRoutes(order.orderRef);
     return { ok: true };
   } catch (err) {
@@ -178,6 +189,9 @@ export async function markOrderDelivered(
         deliveredAt: new Date(),
       },
     });
+
+    // Fire and forget email notification
+    sendOrderDeliveredEmail({ orderId }).catch(console.error);
 
     revalidateVendorOrderRoutes(order.orderRef);
     return { ok: true };

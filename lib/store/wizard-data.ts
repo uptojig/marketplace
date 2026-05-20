@@ -21,17 +21,17 @@ export type Niche = {
 };
 
 export const NICHES: Niche[] = [
-  { id: "electronics", label: "อิเล็กทรอนิกส์", emoji: "📱", recommendedTemplates: ["catalog-dense", "tech-compare", "single-product"] },
-  { id: "fashion", label: "แฟชั่น", emoji: "👗", recommendedTemplates: ["lookbook", "boutique", "vintage"] },
-  { id: "beauty", label: "ความงาม", emoji: "💄", recommendedTemplates: ["beauty-swatch", "lookbook", "boutique"] },
-  { id: "home", label: "แต่งบ้าน", emoji: "🛋️", recommendedTemplates: ["home-living", "boutique", "classic"] },
-  { id: "sport", label: "กีฬา", emoji: "⚽", recommendedTemplates: ["sport-active", "catalog-dense", "classic"] },
-  { id: "kids", label: "แม่และเด็ก", emoji: "🧸", recommendedTemplates: ["kids-toys", "classic", "lookbook"] },
-  { id: "food", label: "อาหาร", emoji: "🍱", recommendedTemplates: ["subscription", "classic", "boutique"] },
-  { id: "wholesale", label: "ขายส่ง / B2B", emoji: "📦", recommendedTemplates: ["wholesale-b2b", "catalog-dense", "classic"] },
-  { id: "handmade", label: "งานฝีมือ", emoji: "🎨", recommendedTemplates: ["handmade", "storyteller", "boutique"] },
-  { id: "vintage", label: "วินเทจ / มือสอง", emoji: "🕰️", recommendedTemplates: ["vintage", "lookbook", "boutique"] },
-  { id: "general", label: "อื่นๆ / ขายทั่วไป", emoji: "🛍️", recommendedTemplates: ["classic", "catalog-dense", "flash-deal"] },
+  { id: "electronics", label: "อิเล็กทรอนิกส์", emoji: "📱", recommendedTemplates: ["wavelength-audio", "carbon-era-cameras", "glow-lamp-co", "smartloop-home", "keystroke-lab"] },
+  { id: "fashion", label: "แฟชั่น", emoji: "👗", recommendedTemplates: ["sirin-womenswear", "lila-modest", "reclaim-leather"] },
+  { id: "beauty", label: "ความงาม", emoji: "💄", recommendedTemplates: ["caldera-skin", "yumeiro-lip", "hinoki-apothecary"] },
+  { id: "home", label: "แต่งบ้าน", emoji: "🛋️", recommendedTemplates: ["korakot-house", "linen-and-loom", "glow-lamp-co"] },
+  { id: "sport", label: "กีฬา", emoji: "⚽", recommendedTemplates: ["trailcraft-outdoors", "saluki-yoga"] },
+  { id: "kids", label: "แม่และเด็ก", emoji: "🧸", recommendedTemplates: ["tinyhand-wooden-toys"] },
+  { id: "food", label: "อาหาร", emoji: "🍱", recommendedTemplates: ["talad-see-sod", "bulkbox-industrial", "petit-cote"] },
+  { id: "wholesale", label: "ขายส่ง / B2B", emoji: "📦", recommendedTemplates: ["bulkbox-industrial", "inkstone-paper"] },
+  { id: "handmade", label: "งานฝีมือ", emoji: "🎨", recommendedTemplates: ["mai-hatthakam", "pigment-studio"] },
+  { id: "vintage", label: "วินเทจ / มือสอง", emoji: "🕰️", recommendedTemplates: ["brutalist-thai", "mono-eight", "atelier-27"] },
+  { id: "general", label: "อื่นๆ / ขายทั่วไป", emoji: "🛍️", recommendedTemplates: ["pastel-pack", "sai-sing"] },
 ];
 
 // ─── Templates (20) ────────────────────────────────────────────────────────
@@ -42,32 +42,6 @@ export const NICHES: Niche[] = [
 // preview cards + niche ranking only.
 
 export type TemplateId =
-  | "classic"
-  | "official-brand"
-  | "premium-luxury"
-  | "lookbook"
-  | "beauty-swatch"
-  | "boutique"
-  | "catalog-dense"
-  | "tech-compare"
-  | "single-product"
-  | "home-living"
-  | "sport-active"
-  | "kids-toys"
-  | "live-commerce"
-  | "video-feed"
-  | "storyteller"
-  | "wholesale-b2b"
-  | "flash-deal"
-  | "subscription"
-  | "handmade"
-  | "vintage"
-  | "eco-pack"
-  | "mega-store"
-  | "bikini-beach"
-  | "everyday-retail"
-  | "taobao-style"
-  | "packaging-supply"
   | "sai-sing"
   | "talad-see-sod"
   | "brutalist-thai"
@@ -164,244 +138,6 @@ export type Template = {
 };
 
 export const TEMPLATES: Template[] = [
-  {
-    id: "classic",
-    name: "Classic",
-    description: "ค่าตั้งต้น ครอบคลุมร้านทั่วไป",
-    group: "trust",
-    desktopPattern: "C",
-    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { showTabs: true, bottomNav: "visible", heroSize: "cover" },
-  },
-  {
-    id: "official-brand",
-    name: "Official Brand",
-    description: "แบรนด์ทางการ มี badge ฟ้า ต้องยืนยันตัวตน",
-    group: "trust",
-    desktopPattern: "A",
-    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { heroSize: "large", showTabs: false, badgeSlot: "official" },
-    gating: { requiresKYC: "brand-verified" },
-  },
-  {
-    id: "premium-luxury",
-    name: "Premium Luxury",
-    description: "หรูหรา minimal ซ่อนตัวเลข ราคา/รีวิว",
-    group: "trust",
-    desktopPattern: "A",
-    theme: { spacing: "airy", radius: "sharp", titleScale: "editorial", font: "serif" },
-    behavior: { hideRatingsCount: true, productCardStyle: "minimal" },
-  },
-  {
-    id: "lookbook",
-    name: "Lookbook",
-    description: "แฟชั่น portrait hero editorial card",
-    group: "fashion-beauty",
-    desktopPattern: "A",
-    theme: { spacing: "airy", radius: "sharp", titleScale: "editorial", font: "sans-display" },
-    behavior: { heroSize: "portrait", productCardStyle: "editorial" },
-  },
-  {
-    id: "beauty-swatch",
-    name: "Beauty Swatch",
-    description: "เครื่องสำอาง โชว์เฉดสีเป็นแถว",
-    group: "fashion-beauty",
-    desktopPattern: "C",
-    theme: { spacing: "default", radius: "round", titleScale: "default", font: "sans" },
-    behavior: { swatchRow: true },
-  },
-  {
-    id: "boutique",
-    name: "Boutique",
-    description: "แบรนด์ตัวเล็ก มี story สั้นด้านบน",
-    group: "fashion-beauty",
-    desktopPattern: "A",
-    theme: { spacing: "airy", radius: "default", titleScale: "editorial", font: "sans-display" },
-    behavior: { storyBlock: true },
-  },
-  {
-    id: "catalog-dense",
-    name: "Catalog Dense",
-    description: "ของเยอะ (500+ SKU) ค้นหาแบบ chips + grid แน่น",
-    group: "electronics-tech",
-    desktopPattern: "B",
-    theme: { spacing: "compact", radius: "sharp", titleScale: "compact", font: "sans" },
-    behavior: { coverHidden: true, searchInTopBar: true, productGridDensity: "dense" },
-  },
-  {
-    id: "tech-compare",
-    name: "Tech Compare",
-    description: "เปรียบเทียบ spec สินค้าไอที",
-    group: "electronics-tech",
-    desktopPattern: "B",
-    theme: { spacing: "compact", radius: "sharp", titleScale: "compact", font: "sans" },
-    behavior: { compareBlock: true, productCardStyle: "spec-rows" },
-  },
-  {
-    id: "single-product",
-    name: "Single Product",
-    description: "ขาย 1 สินค้าโดดเด่น sticky Buy Now",
-    group: "electronics-tech",
-    desktopPattern: "A",
-    theme: { spacing: "airy", radius: "default", titleScale: "display", font: "sans-display" },
-    behavior: { singleProductMode: true, stickyCTA: "buy-now", bottomNav: "hidden" },
-  },
-  {
-    id: "home-living",
-    name: "Home & Living",
-    description: "เฟอร์นิเจอร์ ของแต่งบ้าน scene card",
-    group: "lifestyle",
-    desktopPattern: "C",
-    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { sceneCards: true, heroSize: "large" },
-  },
-  {
-    id: "sport-active",
-    name: "Sport & Active",
-    description: "ชุดกีฬา outdoor performance badges",
-    group: "lifestyle",
-    desktopPattern: "B",
-    theme: { spacing: "default", radius: "sharp", titleScale: "default", font: "sans-display" },
-    behavior: { performanceBadges: true },
-  },
-  {
-    id: "kids-toys",
-    name: "Kids & Toys",
-    description: "สดใส tile หมวดสีพาสเทล",
-    group: "lifestyle",
-    desktopPattern: "C",
-    theme: { spacing: "default", radius: "round", titleScale: "default", font: "sans-display" },
-    behavior: { categoryTilesColored: true },
-  },
-  {
-    id: "live-commerce",
-    name: "Live Commerce",
-    description: "ไลฟ์สด KOL พร้อม replay carousel",
-    group: "community",
-    desktopPattern: "D",
-    theme: { spacing: "compact", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { liveBlock: true, replayCarousel: true, heroSize: "live-tile" },
-  },
-  {
-    id: "video-feed",
-    name: "Video Feed",
-    description: "ฟีดวิดีโอแนวตั้งสไตล์ TikTok Shop",
-    group: "community",
-    desktopPattern: "D",
-    theme: { spacing: "compact", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { videoFirstGrid: true, coverHidden: true },
-  },
-  {
-    id: "storyteller",
-    name: "Storyteller",
-    description: "เน้นเรื่องราวแบรนด์ ตัวอักษรเยอะ",
-    group: "community",
-    desktopPattern: "A",
-    theme: { spacing: "airy", radius: "sharp", titleScale: "editorial", font: "serif" },
-    behavior: { storyBlock: true },
-  },
-  {
-    id: "wholesale-b2b",
-    name: "Wholesale B2B",
-    description: "ขายส่ง โชว์ pricing tier + MOQ",
-    group: "business-model",
-    desktopPattern: "B",
-    theme: { spacing: "compact", radius: "sharp", titleScale: "compact", font: "sans" },
-    behavior: { pricingTiers: true, moqVisible: true, badgeSlot: "b2b" },
-    gating: { requiresKYC: "business-verified" },
-  },
-  {
-    id: "flash-deal",
-    name: "Flash Deal",
-    description: "ดีลด่วน countdown timer + stock indicator",
-    group: "business-model",
-    desktopPattern: "B",
-    theme: { spacing: "compact", radius: "sharp", titleScale: "default", font: "sans" },
-    behavior: { countdownBanner: "visible", stockIndicators: "visible" },
-  },
-  {
-    id: "subscription",
-    name: "Subscription Box",
-    description: "Subscription รายเดือน drop calendar",
-    group: "business-model",
-    desktopPattern: "C",
-    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { dropCalendar: true },
-  },
-  {
-    id: "handmade",
-    name: "Handmade Artisan",
-    description: "งานคราฟต์ โชว์รูป maker + story",
-    group: "specialty",
-    desktopPattern: "A",
-    theme: { spacing: "airy", radius: "default", titleScale: "editorial", font: "serif" },
-    behavior: { makerPortrait: true, storyBlock: true },
-  },
-  {
-    id: "vintage",
-    name: "Vintage / Pre-owned",
-    description: "ของมือสอง วินเทจ พร้อม badge สภาพ",
-    group: "specialty",
-    desktopPattern: "B",
-    theme: { spacing: "default", radius: "sharp", titleScale: "default", font: "serif" },
-    behavior: { conditionBadges: true, uniqueItemMode: true },
-  },
-  // ─── Per-template full mini-app entries (chrome + every route) ──
-  {
-    id: "eco-pack",
-    name: "Eco Pack",
-    description: "บรรจุภัณฑ์รักษ์โลก มินิมอล โทนธรรมชาติ และคราฟท์",
-    group: "business-model",
-    desktopPattern: "C",
-    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { heroSize: "cover" },
-  },
-  {
-    id: "mega-store",
-    name: "Mega Store",
-    description: "ร้านค้าสายช้อป อารมณ์ Taobao ของเยอะ โปรแน่น สีสันสดใส",
-    group: "lifestyle",
-    desktopPattern: "B",
-    theme: { spacing: "compact", radius: "default", titleScale: "compact", font: "sans" },
-    behavior: { coverHidden: true, searchInTopBar: true, productGridDensity: "dense" },
-  },
-  {
-    id: "bikini-beach",
-    name: "BIKINI 551",
-    description: "ชุดว่ายน้ำ ทะเลใส โทนสด · บีกีนี่สำหรับสาวเอเชีย",
-    group: "fashion-beauty",
-    desktopPattern: "A",
-    theme: { spacing: "default", radius: "round", titleScale: "display", font: "sans-display" },
-    behavior: { heroSize: "portrait", hideRatingsCount: true },
-  },
-  // ─── Skin-only themes (PR #105 — chrome + page palette via family) ─
-  {
-    id: "everyday-retail",
-    name: "Everyday Retail",
-    description: "Shopee-style คอนซูเมอร์ ภาพใหญ่ ราคาเด่น",
-    group: "everyday",
-    desktopPattern: "C",
-    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { stickyCTA: "buy-now", bottomNav: "visible" },
-  },
-  {
-    id: "taobao-style",
-    name: "Taobao Marketplace",
-    description: "ตลาดสด ลดทุกวัน gradient ส้ม-แดง-ชมพู flash deal",
-    group: "taobao",
-    desktopPattern: "C",
-    theme: { spacing: "compact", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { countdownBanner: "visible", stockIndicators: "visible", bottomNav: "visible" },
-  },
-  {
-    id: "packaging-supply",
-    name: "Packaging Supply",
-    description: "บรรจุภัณฑ์ ชมพู/เหลือง/ฟ้า/ขาว สดใส",
-    group: "packaging",
-    desktopPattern: "C",
-    theme: { spacing: "airy", radius: "round", titleScale: "default", font: "sans" },
-    behavior: { bottomNav: "visible" },
-  },
   {
     id: "sai-sing",
     name: "Sai Sing",

@@ -23,12 +23,18 @@
  * Why per-family (not per-template) mockups: the runtime ship matrix
  * is 6 families × 8 pages = 48 designs. Templates within a family
  * share the page chrome — they only diverge in the homepage block
- * composition. So 6 family mockups per page communicates the actual
- * delivered design.
+ * makeup (e.g. SwatchRow vs Editorial cards vs LiveCommerce overlay).
  */
 
+import {
+  TemplateId,
+  Template,
+  Family,
+  TemplateGroup,
+  Behavior,
+} from "@/lib/store/wizard-data";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
 import { useState } from "react";
-import type { Template, TemplateId } from "@/lib/store/wizard-data";
 
 export type PageKey =
   | "home"
@@ -535,9 +541,37 @@ export function PageMockup({
   );
 
   switch (page) {
-    case "home":
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wizard-data `Behavior` and HomeMock's inline behavior shape diverged across the PR #105 / per-template merge; the actual fields consumed are a subset and runtime-safe.
+    case "home": {
+      const realTemplate = template?.id ? STORE_TEMPLATES[template.id] : null;
+      const TemplateHome = realTemplate?.pages?.home;
+      if (TemplateHome) {
+        return (
+          <div className="relative w-full h-[600px] overflow-hidden rounded-md border border-mp-border/50 bg-white shadow-sm">
+            <div
+              className="absolute left-0 top-0 w-[1024px] origin-top-left"
+              style={{ transform: "scale(0.4)", width: "250%" }}
+            >
+              <div className="pointer-events-none select-none">
+                <TemplateHome
+                  store={{ id: "preview", name: displayName, slug: slug || "preview", logoUrl: null }}
+                  categories={[{ id: "1", name: "Featured" }]}
+                  products={[
+                    { id: "1", title: "Preview Product 1", priceTHB: 1290, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
+                    { id: "2", title: "Preview Product 2", priceTHB: 890, compareAtPriceTHB: 1290, imageUrl: null, categoryName: "Featured" },
+                    { id: "3", title: "Preview Product 3", priceTHB: 2490, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
+                    { id: "4", title: "Preview Product 4", priceTHB: 1590, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
+                    { id: "5", title: "Preview Product 5", priceTHB: 990, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
+                    { id: "6", title: "Preview Product 6", priceTHB: 3190, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return shell(<HomeMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} behavior={b as any} />);
+    }
     case "category":
       return shell(<CategoryMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
     case "pdp":
@@ -710,8 +744,11 @@ function HomeMock({
     productCardStyle: 'default' | 'minimal' | 'editorial' | 'spec-rows';
     hideRatingsCount: boolean;
     heroSize: 'cover' | 'large' | 'portrait' | 'video' | 'live-tile' | 'none';
-    storyBlock: 'inline-visible' | 'hidden';
+    storyBlock: 'inline-visible' | 'hidden' | true;
     liveBlock: 'visible' | 'hidden';
+    swatchRow: boolean;
+    singleProductMode: boolean;
+    makerPortrait: boolean;
   }>;
 }) {
   const showCountdown = behavior.countdownBanner === 'visible' || family === 'business-model';
@@ -719,8 +756,13 @@ function HomeMock({
   const isMinimalCards = behavior.productCardStyle === 'minimal';
   const isEditorialCards = behavior.productCardStyle === 'editorial';
   const isLargeHero = behavior.heroSize === 'large' || behavior.heroSize === 'cover';
-  const hasStoryBlock = behavior.storyBlock === 'inline-visible';
+  const isPortraitHero = behavior.heroSize === 'portrait';
+  const hasStoryBlock = behavior.storyBlock === 'inline-visible' || behavior.storyBlock === true;
   const hasLiveBlock = behavior.liveBlock === 'visible';
+  const isSpecRows = behavior.productCardStyle === 'spec-rows';
+  const hasSwatchRow = behavior.swatchRow === true;
+  const isSingleProduct = behavior.singleProductMode === true;
+  const hasMakerPortrait = behavior.makerPortrait === true;
   return (
     <div className="px-4 py-4 space-y-3">
       {/* Optional countdown stripe — fires when template.behavior says so
@@ -740,8 +782,9 @@ function HomeMock({
         </div>
       )}
       {/* Hero band */}
+      {behavior.heroSize !== 'none' && (
       <div
-        className={isLargeHero ? "px-3 py-5" : "px-3 py-3"}
+        className={isLargeHero ? "px-3 py-5" : isPortraitHero ? "px-3 py-8" : "px-3 py-3"}
         style={{
           background:
             family === "fashion-beauty"
@@ -799,6 +842,27 @@ function HomeMock({
           </p>
         )}
       </div>
+      )}
+
+      {/* Optional Swatch Row */}
+      {hasSwatchRow && (
+        <div className="flex gap-1 overflow-hidden px-1">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="h-4 w-4 rounded-full" style={{ background: i % 2 === 0 ? t.primary : t.accent, opacity: 0.6 + (i * 0.05) }} />
+          ))}
+        </div>
+      )}
+
+      {/* Optional Maker Portrait */}
+      {hasMakerPortrait && (
+        <div className="flex items-center gap-2 rounded-md border p-2" style={{ borderColor: t.border, background: t.surface }}>
+          <div className="h-8 w-8 rounded-full bg-black/10" />
+          <div className="space-y-0.5">
+            <div className="h-1.5 w-16 bg-black/20" />
+            <div className="h-1 w-24 bg-black/10" />
+          </div>
+        </div>
+      )}
 
       {/* Optional story-block strip (storyteller/handmade templates) */}
       {hasStoryBlock && (
@@ -840,6 +904,31 @@ function HomeMock({
            family === "specialty" ? "from the atelier" :
            "Featured"}
         </Eyebrow>
+        {isSingleProduct ? (
+          <div className="space-y-1">
+            <Tile t={t} ratio="16/9" />
+            <p className="font-bold text-[12px]" style={{ color: t.ink, fontFamily: t.heading === 'serif' ? t.serif : undefined }}>Signature Edition</p>
+            <PriceLine t={t} family={family} />
+          </div>
+        ) : isSpecRows ? (
+          <div className="space-y-1.5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex gap-2 rounded border p-1.5" style={{ borderColor: t.border }}>
+                <div className="h-8 w-8 shrink-0 bg-black/5" />
+                <div className="flex-1 space-y-1">
+                  <div className="flex justify-between items-start">
+                    <p className="text-[10px] font-medium" style={{ color: t.ink }}>Formulation #{i+1}</p>
+                    <p className="text-[9px] font-bold" style={{ color: t.primary }}>฿890</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <span className="bg-black/5 px-1 py-0.5 text-[7px]" style={{ fontFamily: t.mono }}>pH 5.5</span>
+                    <span className="bg-black/5 px-1 py-0.5 text-[7px]" style={{ fontFamily: t.mono }}>CT-0{i+1}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
         <div className="grid grid-cols-3 gap-1.5">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-0.5">
@@ -879,6 +968,7 @@ function HomeMock({
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
   );

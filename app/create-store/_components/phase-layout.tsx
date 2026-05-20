@@ -170,54 +170,6 @@ function TemplateCard({
 function TemplateThumb({ id }: { id: TemplateId }) {
   // Schematic thumbnail showing the dominant pattern of each template.
   switch (id) {
-    case "classic":
-      return <Thumb header band="cover" body="grid-2" />;
-    case "official-brand":
-      return <Thumb header band="hero-large" body="grid-2" />;
-    case "premium-luxury":
-      return <Thumb header band="hero-small" body="grid-2-airy" />;
-    case "lookbook":
-      return <Thumb header band="portrait" body="grid-2-edit" />;
-    case "beauty-swatch":
-      return <Thumb header band="cover" body="swatch-grid" />;
-    case "boutique":
-      return <Thumb header band="cover" body="story-grid" />;
-    case "catalog-dense":
-      return <Thumb header={false} band="chips" body="grid-3-dense" />;
-    case "tech-compare":
-      return <Thumb header band="compare" body="list-spec" />;
-    case "single-product":
-      return <Thumb header band="hero-large" body="single" />;
-    case "home-living":
-      return <Thumb header band="lifestyle" body="scene-grid" />;
-    case "sport-active":
-      return <Thumb header band="cover" body="grid-2-badges" />;
-    case "kids-toys":
-      return <Thumb header band="cover" body="tiles-grid" />;
-    case "live-commerce":
-      return <Thumb header band="live" body="grid-3-dense" />;
-    case "video-feed":
-      return <Thumb header={false} band="none" body="video-grid" />;
-    case "storyteller":
-      return <Thumb header band="text-hero" body="grid-2-edit" />;
-    case "wholesale-b2b":
-      return <Thumb header band="cover" body="list-spec" />;
-    case "flash-deal":
-      return <Thumb header band="countdown" body="grid-3-dense" />;
-    case "subscription":
-      return <Thumb header band="cover" body="calendar" />;
-    case "handmade":
-      return <Thumb header band="portrait" body="story-grid" />;
-    case "vintage":
-      return <Thumb header band="cover" body="grid-2-badges" />;
-    case "everyday-retail":
-      return <Thumb header band="everyday-red" body="grid-2-bold" />;
-    case "taobao-style":
-    case "talad-see-sod":
-      return <Thumb header={false} band="taobao-gradient" body="grid-3-dense" />;
-    case "packaging-supply":
-    case "pastel-pack":
-      return <Thumb header band="packaging-pink" body="grid-2-pastel" />;
     case "brutalist-thai":
       return <Thumb header band="everyday-red" body="grid-2-badges" />;
     case "mono-eight":
