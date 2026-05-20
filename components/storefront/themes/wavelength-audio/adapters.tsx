@@ -14,7 +14,7 @@ import { WavelengthAudioStrip } from './chrome/AnnouncementStrip';
 import { WavelengthAudioHomepage } from './pages/Homepage';
 
 export function WavelengthAudioHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <WavelengthAudioHeader store={props.store} />;
+  return <WavelengthAudioHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} />;
 }
 
 export function WavelengthAudioFooterAdapter(props: ScaffoldFooterProps) {

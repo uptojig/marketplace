@@ -13,7 +13,7 @@ import { KeystrokeLabAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { KeystrokeLabHomepage } from './pages/Homepage';
 
 export function KeystrokeLabHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <KeystrokeLabHeader store={props.store} categories={props.categories} />;
+  return <KeystrokeLabHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} categories={props.categories} />;
 }
 export function KeystrokeLabFooterAdapter(props: ScaffoldFooterProps) {
   return <KeystrokeLabFooter store={props.store} />;

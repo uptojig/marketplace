@@ -14,7 +14,7 @@ import { SirinAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { SirinHomepage } from './pages/Homepage';
 
 export function SirinHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <SirinHeader store={props.store} />;
+  return <SirinHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} />;
 }
 
 export function SirinFooterAdapter(props: ScaffoldFooterProps) {

@@ -14,7 +14,7 @@ import { GlowLampCoAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { GlowLampCoHomepage } from './pages/Homepage';
 
 export function GlowLampCoHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <GlowLampCoHeader store={props.store} />;
+  return <GlowLampCoHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} />;
 }
 
 export function GlowLampCoFooterAdapter(props: ScaffoldFooterProps) {

@@ -14,7 +14,7 @@ import { MaiHatthakamAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { MaiHatthakamHomepage } from './pages/Homepage';
 
 export function MaiHatthakamHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <MaiHatthakamHeader store={props.store} categories={props.categories} />;
+  return <MaiHatthakamHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} categories={props.categories} />;
 }
 
 export function MaiHatthakamFooterAdapter(props: ScaffoldFooterProps) {

@@ -13,7 +13,7 @@ import { TinyhandStrip } from './chrome/AnnouncementStrip';
 import { TinyhandHomepage } from './pages/Homepage';
 
 export function TinyhandWoodenToysHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <TinyhandHeader storeName={props.store.name} storeSlug={props.store.slug} />;
+  return <TinyhandHeader storeName={props.storeName} storeSlug={props.storeSlug} />;
 }
 
 export function TinyhandWoodenToysFooterAdapter(props: ScaffoldFooterProps) {

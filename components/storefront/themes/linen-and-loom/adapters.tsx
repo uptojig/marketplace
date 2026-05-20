@@ -14,7 +14,7 @@ import { LinenAndLoomStrip } from './chrome/AnnouncementStrip';
 import { LinenAndLoomHomepage } from './pages/Homepage';
 
 export function LinenAndLoomHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <LinenAndLoomHeader store={props.store} />;
+  return <LinenAndLoomHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} />;
 }
 
 export function LinenAndLoomFooterAdapter(props: ScaffoldFooterProps) {

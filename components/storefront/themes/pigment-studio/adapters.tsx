@@ -13,7 +13,7 @@ import { PigmentStudioAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { PigmentStudioHomepage } from './pages/Homepage';
 
 export function PigmentStudioHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <PigmentStudioHeader store={props.store} categories={props.categories} />;
+  return <PigmentStudioHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} categories={props.categories} />;
 }
 
 export function PigmentStudioFooterAdapter(props: ScaffoldFooterProps) {

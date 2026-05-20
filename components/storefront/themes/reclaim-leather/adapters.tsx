@@ -13,7 +13,7 @@ import { ReclaimLeatherAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { ReclaimLeatherHomepage } from './pages/Homepage';
 
 export function ReclaimLeatherHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <ReclaimLeatherHeader store={props.store} />;
+  return <ReclaimLeatherHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} />;
 }
 
 export function ReclaimLeatherFooterAdapter(props: ScaffoldFooterProps) {

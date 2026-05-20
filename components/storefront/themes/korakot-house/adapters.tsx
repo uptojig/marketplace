@@ -14,7 +14,7 @@ import { KorakotHouseAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { KorakotHouseHomepage } from './pages/Homepage';
 
 export function KorakotHouseHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <KorakotHouseHeader store={props.store} />;
+  return <KorakotHouseHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} />;
 }
 
 export function KorakotHouseFooterAdapter(props: ScaffoldFooterProps) {

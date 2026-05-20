@@ -13,7 +13,7 @@ import { HinokiAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { HinokiHomepage } from './pages/Homepage';
 
 export function HinokiHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <HinokiHeader store={props.store} />;
+  return <HinokiHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} />;
 }
 
 export function HinokiFooterAdapter(props: ScaffoldFooterProps) {

@@ -13,7 +13,7 @@ import { SmartloopHomeStrip } from './chrome/AnnouncementStrip';
 import { SmartloopHomeHomepage } from './pages/Homepage';
 
 export function SmartloopHomeHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <SmartloopHomeHeader store={props.store} />;
+  return <SmartloopHomeHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} />;
 }
 
 export function SmartloopHomeFooterAdapter(props: ScaffoldFooterProps) {
