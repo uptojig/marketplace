@@ -78,10 +78,11 @@ export async function generateMetadata({
   if (!store) {
     return { title: "ไม่พบร้านค้า" };
   }
-  const description =
-    store.tagline?.trim() ||
-    store.description?.trim() ||
-    `ช้อปสินค้าออนไลน์ ส่งฟรีทั่วประเทศ จาก ${store.name}`;
+  const description = store.description
+    ? `${store.description} - ${store.name}`
+    : store.tagline
+      ? `${store.tagline} - ${store.name}`
+      : `ช้อปสินค้าออนไลน์ ส่งฟรีทั่วประเทศ จาก ${store.name}`;
   return {
     title: store.name,
     description,

@@ -3,9 +3,14 @@
 import * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
-import { StarIcon, type LucideProps } from 'lucide-react'
-
 import { cn } from '@/lib/utils'
+import { StarIcon } from "lucide-react"
+
+type IconElementProps = {
+  size?: number
+  className?: string
+  'aria-hidden'?: string | boolean
+}
 
 // Variants
 const ratingVariants = cva('transition-colors', {
@@ -14,7 +19,7 @@ const ratingVariants = cva('transition-colors', {
       default: 'text-foreground fill-current',
       destructive: 'text-destructive fill-current',
       outline: 'text-muted-foreground fill-transparent stroke-current',
-      secondary: 'text-secondary-foreground fill-current',
+      secondary: 'text-muted-foreground fill-current',
       yellow: 'fill-current text-amber-600 dark:text-amber-400'
     }
   },
@@ -29,7 +34,10 @@ const RATING_DEFAULTS = {
   maxStars: 5,
   size: 20,
   variant: 'default' as const,
-  icon: <StarIcon />
+  icon: (
+    <StarIcon
+    />
+  )
 } as const
 
 // Types
@@ -43,7 +51,7 @@ interface RatingItemProps extends React.ComponentProps<'label'> {
   readOnly?: boolean
   disabled?: boolean
   precision: number
-  Icon: React.ReactElement<LucideProps>
+  Icon: React.ReactElement<IconElementProps>
   onMouseLeave: React.MouseEventHandler<HTMLLabelElement>
   onValueHover: (value: number) => void
   onValueChange?: (value: number) => void
@@ -55,7 +63,7 @@ interface RatingProps extends React.ComponentProps<'div'> {
   name?: string
   max?: number
   size?: number
-  icon?: React.ReactElement<LucideProps>
+  icon?: React.ReactElement<IconElementProps>
   variant?: VariantProps<typeof ratingVariants>['variant']
   readOnly?: boolean
   disabled?: boolean
@@ -95,8 +103,9 @@ function RatingItem({
     const emptyIcon = React.cloneElement(Icon, {
       size,
       className: cn(
-        'fill-muted-foreground/20 stroke-muted-foreground/10',
-        variant === 'yellow' && 'fill-amber-600/30 stroke-amber-600/10 dark:fill-amber-400/30 dark:stroke-amber-400/10'
+        'fill-muted-foreground/20 stroke-muted-foreground/10 text-muted-foreground/10',
+        variant === 'yellow' &&
+          'fill-amber-600/30 stroke-amber-600/10 text-amber-600/10 dark:fill-amber-400/30 dark:stroke-amber-400/10'
       ),
       'aria-hidden': 'true'
     })
@@ -151,7 +160,7 @@ function RatingItem({
       <Comp
         data-slot='rating-item'
         htmlFor={readOnly ? undefined : `${ratingIconId}-${point}`}
-        aria-label={`${point} Stars`}
+        aria-label={readOnly ? `${point} Stars` : undefined}
         onClick={!readOnly ? handleClick : undefined}
         onMouseMove={!readOnly ? handleMouseMove : undefined}
         onMouseLeave={!readOnly ? onMouseLeave : undefined}
@@ -318,11 +327,7 @@ function Rating({
         disabled && 'opacity-50',
         className
       )}
-      aria-label={readOnly ? `${value} stars` : 'Rating'}
-      aria-valuemin={0}
-      aria-valuemax={max}
-      aria-valuenow={value}
-      aria-valuetext={`${value} of ${max} stars`}
+      aria-label={readOnly ? `${value} of ${max} stars` : 'Rating'}
       {...props}
     >
       {stars.map(({ key, points }) => (

@@ -18,7 +18,6 @@
 
 import sharp from "sharp";
 import cv from "@techstark/opencv-js";
-import * as ort from "onnxruntime-node";
 import { join } from "node:path";
 
 const MODEL_PATH = join(process.cwd(), "models", "thai-id-card-detector.onnx");
@@ -65,9 +64,10 @@ function ensureOpenCv(): Promise<void> {
 
 // Memoize the ONNX session so we pay model-load cost once per process. Cold
 // start adds ~100-200ms; subsequent inferences are sub-second on CPU.
-let onnxSession: Promise<ort.InferenceSession> | null = null;
-function loadModel(): Promise<ort.InferenceSession> {
+let onnxSession: Promise<any> | null = null;
+function loadModel(): Promise<any> {
   if (!onnxSession) {
+    const ort = require("onnxruntime-node");
     onnxSession = ort.InferenceSession.create(MODEL_PATH, {
       executionProviders: ["cpu"],
       graphOptimizationLevel: "all",
@@ -169,6 +169,8 @@ export async function detectIdCardRegion(
 
   const { data: rgbBuffer, scale, padX, padY, origWidth, origHeight } = await letterboxResize(buffer);
   const tensorData = imageBufferToTensor(rgbBuffer);
+  
+  const ort = require("onnxruntime-node");
   const inputTensor = new ort.Tensor("float32", tensorData, [1, 3, MODEL_INPUT_SIZE, MODEL_INPUT_SIZE]);
 
   const result = await session.run({ images: inputTensor });

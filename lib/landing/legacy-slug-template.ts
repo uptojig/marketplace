@@ -38,6 +38,9 @@ export const LEGACY_SLUG_TEMPLATE: Record<string, TemplateId> = {
   ergobodies: "sport-active",
   // Sugar / gift-box artisan → specialty handmade
   zugarbox: "handmade",
+  "volt-7-garage": "sai-sing",
+  "saidee-gadgets": "talad-see-sod",
+  "block-press": "brutalist-thai",
 };
 
 /**

@@ -229,7 +229,7 @@ function PhaseContent({
     case 1:
       return <PhaseIdentity state={state} onChange={patchIdentity} />;
     case 2:
-      return <PhaseLayout state={state} onChange={patchLayout} />;
+      return <PhaseLayout state={state} onChange={patchLayout} onIdentityChange={patchIdentity} />;
     case 3:
       return <PhaseProducts state={state} onChange={patchProducts} />;
     case 4:

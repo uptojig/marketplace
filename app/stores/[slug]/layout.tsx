@@ -92,6 +92,36 @@ import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const store = await prisma.store.findUnique({
+    where: { slug: params.slug },
+    select: { name: true, tagline: true, description: true },
+  });
+  if (!store) {
+    return { title: "ไม่พบร้านค้า" };
+  }
+  const description = store.description
+    ? `${store.description} - ${store.name}`
+    : store.tagline
+      ? `${store.tagline} - ${store.name}`
+      : `ช้อปสินค้าออนไลน์ ส่งฟรีทั่วประเทศ จาก ${store.name}`;
+  return {
+    title: {
+      template: `%s | ${store.name}`,
+      default: store.name,
+    },
+    description,
+    openGraph: {
+      title: store.name,
+      description,
+    },
+  };
+}
+
 export default async function ShopLayout({
   children,
   params,

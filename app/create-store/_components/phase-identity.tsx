@@ -185,33 +185,6 @@ export function PhaseIdentity({ state, onChange }: Props) {
         </Field>
       </div>
 
-      <Field label="โทนสี (Palette)">
-        <div className="grid grid-cols-4 gap-2">
-          {PALETTES.map((p) => {
-            const active = identity.paletteId === p.id;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => onChange({ paletteId: p.id })}
-                aria-label={p.name}
-                className={`flex flex-col items-center gap-1.5 rounded-lg border p-2 transition ${
-                  active
-                    ? "border-mp-coral ring-2 ring-mp-coral/20"
-                    : "border-mp-border hover:border-mp-coral/60"
-                }`}
-              >
-                <div className="flex h-8 w-full overflow-hidden rounded-md">
-                  <span className="h-full flex-1" style={{ backgroundColor: p.primary }} />
-                  <span className="h-full flex-1" style={{ backgroundColor: p.accent }} />
-                </div>
-                <span className="text-[11px] text-mp-ink">{p.name}</span>
-              </button>
-            );
-          })}
-        </div>
-      </Field>
-
       <details
         className="rounded-lg border border-mp-border bg-white"
         open={contactOpen}

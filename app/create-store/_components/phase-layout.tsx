@@ -6,17 +6,21 @@ import {
   type Template,
   type TemplateId,
   type WizardState,
+  PALETTES,
 } from "@/lib/store/wizard-data";
 
 type Props = {
   state: WizardState;
   onChange: (patch: Partial<WizardState["layout"]>) => void;
+  onIdentityChange?: (patch: Partial<WizardState["identity"]>) => void;
 };
 
-export function PhaseLayout({ state, onChange }: Props) {
+export function PhaseLayout({ state, onChange, onIdentityChange }: Props) {
   const [showAll, setShowAll] = useState(false);
   const { recommended, others } = rankTemplates(state.identity.niche);
   const selectedId = state.layout.templateId;
+  const selectedTemplate = [...recommended, ...others].find(t => t.id === selectedId);
+  const isSpecialty = selectedTemplate?.group === "specialty";
 
   return (
     <div className="space-y-5">
@@ -81,6 +85,39 @@ export function PhaseLayout({ state, onChange }: Props) {
           </div>
         )}
       </section>
+
+      {!isSpecialty && onIdentityChange && (
+        <section className="space-y-2 border-t pt-5">
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-mp-ink">เลือกโทนสีหลัก (Palette)</h3>
+            <p className="text-[11px] text-mp-ink-muted">ธีมนี้รองรับการเปลี่ยนสีร้านค้า</p>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {PALETTES.map((p) => {
+              const active = state.identity.paletteId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => onIdentityChange({ paletteId: p.id })}
+                  aria-label={p.name}
+                  className={`flex flex-col items-center gap-1.5 rounded-lg border p-2 transition ${
+                    active
+                      ? "border-mp-coral ring-2 ring-mp-coral/20"
+                      : "border-mp-border hover:border-mp-coral/60"
+                  }`}
+                >
+                  <div className="flex h-8 w-full overflow-hidden rounded-md">
+                    <span className="h-full flex-1" style={{ backgroundColor: p.primary }} />
+                    <span className="h-full flex-1" style={{ backgroundColor: p.accent }} />
+                  </div>
+                  <span className="text-[11px] text-mp-ink">{p.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

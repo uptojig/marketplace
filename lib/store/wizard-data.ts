@@ -67,7 +67,34 @@ export type TemplateId =
   | "bikini-beach"
   | "everyday-retail"
   | "taobao-style"
-  | "packaging-supply";
+  | "packaging-supply"
+  | "sai-sing"
+  | "talad-see-sod"
+  | "brutalist-thai"
+  | "mono-eight"
+  | "lila-modest"
+  | "atelier-27"
+  | "bulkbox-industrial"
+  | "caldera-skin"
+  | "carbon-era-cameras"
+  | "glow-lamp-co"
+  | "hinoki-apothecary"
+  | "inkstone-paper"
+  | "keystroke-lab"
+  | "korakot-house"
+  | "linen-and-loom"
+  | "mai-hatthakam"
+  | "pastel-pack"
+  | "petit-cote"
+  | "pigment-studio"
+  | "reclaim-leather"
+  | "saluki-yoga"
+  | "sirin-womenswear"
+  | "smartloop-home"
+  | "tinyhand-wooden-toys"
+  | "trailcraft-outdoors"
+  | "wavelength-audio"
+  | "yumeiro-lip";
 
 export type TemplateGroup =
   | "trust"
@@ -374,6 +401,249 @@ export const TEMPLATES: Template[] = [
     desktopPattern: "C",
     theme: { spacing: "airy", radius: "round", titleScale: "default", font: "sans" },
     behavior: { bottomNav: "visible" },
+  },
+  {
+    id: "sai-sing",
+    name: "Sai Sing",
+    description: "ธีมสายมู โทนสีเข้มขลัง เสริมดวงบารมี",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "talad-see-sod",
+    name: "Talad See Sod",
+    description: "ตลาดสด ของกินของฝาก สีสันจัดจ้าน",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "brutalist-thai",
+    name: "Brutalist Thai",
+    description: "ดิบๆ เท่ๆ แฟชั่นแนวสตรีทและตัวอักษรใหญ่",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "mono-eight",
+    name: "Mono Eight",
+    description: "มินิมอล ญี่ปุ่น โทนขาวดำ",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "lila-modest",
+    name: "Lila Modest",
+    description: "เสื้อผ้ามุสลิม เรียบหรู อ่อนโยน",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "atelier-27",
+    name: "Atelier 27",
+    description: "งานศิลปะและงานคราฟต์ พรีเมียม",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "bulkbox-industrial",
+    name: "Bulkbox Industrial",
+    description: "ขายส่ง เครื่องจักร อุตสาหกรรม B2B",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "caldera-skin",
+    name: "Caldera Skin",
+    description: "สกินแคร์ เครื่องสำอาง คลินิก สไตล์คลีน",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "carbon-era-cameras",
+    name: "Carbon Era Cameras",
+    description: "กล้องถ่ายรูป อุปกรณ์ไอที สายลุย",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "glow-lamp-co",
+    name: "Glow Lamp Co",
+    description: "โคมไฟ ของตกแต่งบ้าน โทนอบอุ่น",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "hinoki-apothecary",
+    name: "Hinoki Apothecary",
+    description: "สปา น้ำหอม สมุนไพร โทนไม้และธรรมชาติ",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "inkstone-paper",
+    name: "Inkstone Paper",
+    description: "เครื่องเขียน อุปกรณ์โต๊ะทำงาน มินิมอล",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "keystroke-lab",
+    name: "Keystroke Lab",
+    description: "คีย์บอร์ด ไอที เกมมิ่ง ดุดัน",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "korakot-house",
+    name: "Korakot House",
+    description: "เฟอร์นิเจอร์ไม้ แต่งบ้าน โฮมมี่",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "linen-and-loom",
+    name: "Linen And Loom",
+    description: "เสื้อผ้าฝ้าย ลินิน โทนละมุน",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "mai-hatthakam",
+    name: "Mai Hatthakam",
+    description: "งานหัตถกรรมจักสาน ท้องถิ่น",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "pastel-pack",
+    name: "Pastel Pack",
+    description: "แพ็คเกจจิ้ง ของขวัญ สีพาสเทลน่ารัก",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "petit-cote",
+    name: "Petit Cote",
+    description: "เสื้อผ้าเด็ก ของใช้แม่และเด็ก ละมุน",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "pigment-studio",
+    name: "Pigment Studio",
+    description: "อุปกรณ์ศิลปะ สีวาดรูป อาร์ตสตูดิโอ",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "reclaim-leather",
+    name: "Reclaim Leather",
+    description: "งานหนังทำมือ เท่ กระเป๋า เครื่องหนัง",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "saluki-yoga",
+    name: "Saluki Yoga",
+    description: "โยคะ สายสุขภาพ กีฬา",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "sirin-womenswear",
+    name: "Sirin Womenswear",
+    description: "เสื้อผ้าผู้หญิง แฟชั่น เรียบหรู",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "smartloop-home",
+    name: "Smartloop Home",
+    description: "สมาร์ทโฮม แก็ดเจ็ต ล้ำสมัย",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "tinyhand-wooden-toys",
+    name: "Tinyhand Wooden Toys",
+    description: "ของเล่นไม้ เสริมพัฒนาการเด็ก",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "trailcraft-outdoors",
+    name: "Trailcraft Outdoors",
+    description: "แคมป์ปิ้ง อุปกรณ์เดินป่า สายลุย",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "wavelength-audio",
+    name: "Wavelength Audio",
+    description: "เครื่องเสียง หูฟัง สาย audiophile",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
+  },
+  {
+    id: "yumeiro-lip",
+    name: "Yumeiro Lip",
+    description: "ลิปสติก บิวตี้ สีสันสดใส",
+    group: "specialty",
+    desktopPattern: "C",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: {},
   },
 ];
 

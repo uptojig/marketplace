@@ -77,10 +77,10 @@ import {
 
 
 import {
-  BulkboxIndustrialHeaderAdapter,
-  BulkboxIndustrialFooterAdapter,
-  BulkboxIndustrialStripAdapter,
-  BulkboxIndustrialHomepageAdapter,
+  BulkboxHeaderAdapter,
+  BulkboxFooterAdapter,
+  BulkboxStripAdapter,
+  BulkboxHomepageAdapter,
 } from '@/components/storefront/themes/bulkbox-industrial/adapters';
 
 import {
@@ -105,10 +105,10 @@ import {
 } from '@/components/storefront/themes/glow-lamp-co/adapters';
 
 import {
-  HinokiApothecaryHeaderAdapter,
-  HinokiApothecaryFooterAdapter,
-  HinokiApothecaryStripAdapter,
-  HinokiApothecaryHomepageAdapter,
+  HinokiHeaderAdapter,
+  HinokiFooterAdapter,
+  HinokiStripAdapter,
+  HinokiHomepageAdapter,
 } from '@/components/storefront/themes/hinoki-apothecary/adapters';
 
 import {
@@ -182,10 +182,10 @@ import {
 } from '@/components/storefront/themes/saluki-yoga/adapters';
 
 import {
-  SirinWomenswearHeaderAdapter,
-  SirinWomenswearFooterAdapter,
-  SirinWomenswearStripAdapter,
-  SirinWomenswearHomepageAdapter,
+  SirinHeaderAdapter,
+  SirinFooterAdapter,
+  SirinStripAdapter,
+  SirinHomepageAdapter,
 } from '@/components/storefront/themes/sirin-womenswear/adapters';
 
 import {
@@ -203,10 +203,10 @@ import {
 } from '@/components/storefront/themes/tinyhand-wooden-toys/adapters';
 
 import {
-  TrailcraftOutdoorsHeaderAdapter,
-  TrailcraftOutdoorsFooterAdapter,
-  TrailcraftOutdoorsStripAdapter,
-  TrailcraftOutdoorsHomepageAdapter,
+  TrailcraftHeaderAdapter,
+  TrailcraftFooterAdapter,
+  TrailcraftStripAdapter,
+  TrailcraftHomepageAdapter,
 } from '@/components/storefront/themes/trailcraft-outdoors/adapters';
 
 import {
@@ -909,12 +909,12 @@ export const templates: Record<TemplateId, Template> = {
     gating: {},
     customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
     chrome: {
-      Header: BulkboxIndustrialHeaderAdapter,
-      Footer: BulkboxIndustrialFooterAdapter,
-      AnnouncementStrip: BulkboxIndustrialStripAdapter,
+      Header: BulkboxHeaderAdapter,
+      Footer: BulkboxFooterAdapter,
+      AnnouncementStrip: BulkboxStripAdapter,
     },
     pages: {
-      home: BulkboxIndustrialHomepageAdapter,
+      home: BulkboxHomepageAdapter,
     },
   },
 
@@ -1009,12 +1009,12 @@ export const templates: Record<TemplateId, Template> = {
     gating: {},
     customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
     chrome: {
-      Header: HinokiApothecaryHeaderAdapter,
-      Footer: HinokiApothecaryFooterAdapter,
-      AnnouncementStrip: HinokiApothecaryStripAdapter,
+      Header: HinokiHeaderAdapter,
+      Footer: HinokiFooterAdapter,
+      AnnouncementStrip: HinokiStripAdapter,
     },
     pages: {
-      home: HinokiApothecaryHomepageAdapter,
+      home: HinokiHomepageAdapter,
     },
   },
 
@@ -1284,12 +1284,12 @@ export const templates: Record<TemplateId, Template> = {
     gating: {},
     customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
     chrome: {
-      Header: SirinWomenswearHeaderAdapter,
-      Footer: SirinWomenswearFooterAdapter,
-      AnnouncementStrip: SirinWomenswearStripAdapter,
+      Header: SirinHeaderAdapter,
+      Footer: SirinFooterAdapter,
+      AnnouncementStrip: SirinStripAdapter,
     },
     pages: {
-      home: SirinWomenswearHomepageAdapter,
+      home: SirinHomepageAdapter,
     },
   },
 
@@ -1359,12 +1359,12 @@ export const templates: Record<TemplateId, Template> = {
     gating: {},
     customizable: { canReorder: false, canHideBlocks: [], canAddBlocks: [] },
     chrome: {
-      Header: TrailcraftOutdoorsHeaderAdapter,
-      Footer: TrailcraftOutdoorsFooterAdapter,
-      AnnouncementStrip: TrailcraftOutdoorsStripAdapter,
+      Header: TrailcraftHeaderAdapter,
+      Footer: TrailcraftFooterAdapter,
+      AnnouncementStrip: TrailcraftStripAdapter,
     },
     pages: {
-      home: TrailcraftOutdoorsHomepageAdapter,
+      home: TrailcraftHomepageAdapter,
     },
   },
 

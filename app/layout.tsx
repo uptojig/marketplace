@@ -13,6 +13,7 @@ import {
   Fraunces,
   Caveat,
   Nunito,
+  Kanit,
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -174,6 +175,13 @@ const nunito = Nunito({
   display: "swap",
 });
 
+const kanit = Kanit({
+  subsets: ["thai", "latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-kanit",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Marketplace",
   description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
@@ -185,7 +193,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="th"
       data-theme="marketplace-fantasy"
-      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, outfit.variable, jetBrainsMono.variable, interTight.variable, jetBrainsMonoTech.variable, fraunces.variable, caveat.variable, nunito.variable, "font-sans", inter.variable)}
+      className={cn(googleSans.variable, prompt.variable, ibmPlexThai.variable, notoSansThai.variable, cormorant.variable, playfair.variable, outfit.variable, jetBrainsMono.variable, interTight.variable, jetBrainsMonoTech.variable, fraunces.variable, caveat.variable, nunito.variable, kanit.variable, "font-sans", inter.variable)}
     >
       <body className="font-sans">
         <Providers>

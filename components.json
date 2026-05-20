@@ -30,7 +30,7 @@
       }
     },
     "@ss-blocks": {
-      "url": "https://shadcnstudio.com/r/blocks/{name}.json",
+      "url": "https://shadcnstudio.com/r/radix-nova/{name}.json",
       "headers": {
         "x-email": "${SHADCN_STUDIO_EMAIL}",
         "x-license-key": "${SHADCN_STUDIO_LICENSE_KEY}"
