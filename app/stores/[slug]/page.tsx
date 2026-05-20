@@ -38,6 +38,9 @@ import { isEverydayStore } from "@/lib/landing/everyday";
 import { isTaobaoStore } from "@/lib/landing/taobao";
 import { isPackagingStore } from "@/lib/landing/packaging";
 import { isCommunityStore } from "@/lib/landing/community";
+import { isBikiniBeachStore } from "@/lib/landing/bikini-beach";
+import { isEcoPackStore } from "@/lib/landing/eco-pack";
+import { isMegaStoreStore } from "@/lib/landing/mega-store";
 import { PetHouseHomepage } from "@/components/storefront/themes/pet-house/PetHouseHomepage";
 import { FashionBeautyHomepage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyHomepage";
 import { TrustHomepage } from "@/components/storefront/themes/trust/TrustHomepage";
@@ -50,6 +53,9 @@ import { EverydayHomepage } from "@/components/storefront/themes/everyday/Everyd
 import { TaobaoHomepage } from "@/components/storefront/themes/taobao/TaobaoHomepage";
 import { PackagingHomepage } from "@/components/storefront/themes/packaging/PackagingHomepage";
 import { CommunityHomepage } from "@/components/storefront/themes/community/CommunityHomepage";
+import { BikiniBeachHomepage } from "@/components/storefront/themes/bikini-beach/BikiniBeachHomepage";
+import { EcoPackHomepage } from "@/components/storefront/themes/eco-pack/EcoPackHomepage";
+import { MegaStoreHomepage } from "@/components/storefront/themes/mega-store/MegaStoreHomepage";
 
 export const dynamic = "force-dynamic";
 
@@ -226,14 +232,23 @@ export default async function StorePage({
     if (isCaseStudioStore(familyInput)) {
       return <CaseStudioHomepage store={baseStore} />;
     }
+    if (isBikiniBeachStore(familyInput)) {
+      return <BikiniBeachHomepage store={baseStore} />;
+    }
     if (isFashionBeautyStore(familyInput)) {
       return <FashionBeautyHomepage store={baseStore} />;
     }
     if (isTrustStore(familyInput)) {
       return <TrustHomepage store={baseStore} />;
     }
+    if (isEcoPackStore(familyInput)) {
+      return <EcoPackHomepage store={baseStore} />;
+    }
     if (isBusinessModelStore(familyInput)) {
       return <BusinessModelHomepage store={baseStore} />;
+    }
+    if (isMegaStoreStore(familyInput)) {
+      return <MegaStoreHomepage store={baseStore} />;
     }
     if (isLifestyleStore(familyInput)) {
       return <LifestyleHomepage store={baseStore} />;
