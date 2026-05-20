@@ -81,6 +81,11 @@ import {
   resolveChromeTokens,
   tokensToCssVars,
 } from "@/components/storefront/chrome/tokens";
+import {
+  landingContentAnnouncement,
+  landingContentCssVars,
+} from "@/lib/store/landing-content-runtime";
+import type { ColorOverrides } from "@/lib/store/landing-content";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +98,18 @@ export default async function ShopLayout({
 }) {
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
+
+  // Editable storefront content (1:1 with Store) — colors, hero, announcement,
+  // and all repeatables. May be null when the operator hasn't saved anything
+  // yet, in which case every consumer below falls back to template defaults.
+  const landingContent = await prisma.storeLandingContent.findUnique({
+    where: { storeId: store.id },
+  });
+  const lcColorVars = landingContentCssVars(
+    (landingContent?.colorOverrides as ColorOverrides | null | undefined) ??
+      null,
+  );
+  const lcAnnouncement = landingContentAnnouncement(landingContent);
 
   // ── Auto-translate trigger ──────────────────────────────────
   // Stores imported BEFORE the auto-translate waitUntil hook
@@ -379,7 +396,7 @@ export default async function ShopLayout({
     return (
       <div
         className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
-        style={{ ...tokensToCssVars(tokens), ...familyVars }}
+        style={{ ...tokensToCssVars(tokens), ...familyVars, ...lcColorVars }}
       >
         <ShopHeader
           storeSlug={store.slug}
@@ -389,7 +406,7 @@ export default async function ShopLayout({
           accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
-          announcement={tokens.announcement}
+          announcement={lcAnnouncement ?? tokens.announcement}
           buttonShape={familyButtonShape ?? tokens.buttonShape}
         />
         <main className="flex-1">{children}</main>
@@ -457,7 +474,7 @@ export default async function ShopLayout({
     return (
       <div
         className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass}`.trim()}
-        style={{ ...tokensToCssVars(tokens), ...familyVars }}
+        style={{ ...tokensToCssVars(tokens), ...familyVars, ...lcColorVars }}
       >
         <ShopHeader
           storeSlug={store.slug}
@@ -467,7 +484,7 @@ export default async function ShopLayout({
           accent={familyAccent ?? tokens.accent}
           decorationGlyph={tokens.decorationGlyph}
           glyphStyle={tokens.glyphStyle}
-          announcement={tokens.announcement}
+          announcement={lcAnnouncement ?? tokens.announcement}
           buttonShape={familyButtonShape ?? tokens.buttonShape}
         />
         <main className="flex-1">{children}</main>
@@ -515,7 +532,7 @@ export default async function ShopLayout({
   return (
     <div
       className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
-      style={{ ...tokensToCssVars(tokens), ...familyVars }}
+      style={{ ...tokensToCssVars(tokens), ...familyVars, ...lcColorVars }}
     >
       <ShopHeader
         storeSlug={store.slug}
@@ -525,7 +542,7 @@ export default async function ShopLayout({
         accent={familyAccent ?? tokens.accent}
         decorationGlyph={tokens.decorationGlyph}
         glyphStyle={tokens.glyphStyle}
-        announcement={tokens.announcement}
+        announcement={lcAnnouncement ?? tokens.announcement}
         buttonShape={familyButtonShape ?? tokens.buttonShape}
       />
       <main className="flex-1">{children}</main>

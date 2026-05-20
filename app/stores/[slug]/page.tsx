@@ -54,6 +54,11 @@ import { isPackagingStore } from "@/lib/landing/packaging";
 import { PackagingHomepage } from "@/components/storefront/themes/packaging/PackagingHomepage";
 import { isCommunityStore } from "@/lib/landing/community";
 import { CommunityHomepage } from "@/components/storefront/themes/community/CommunityHomepage";
+import { parseUIConfig } from "@/lib/store/ui-config";
+import {
+  BlockRenderer,
+  storeToSummary,
+} from "@/components/storefront/block-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -225,6 +230,28 @@ export default async function StorePage({
 
   const baseStore = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!baseStore) notFound();
+
+  // ── Server-driven UI (uiConfig) ────────────────────────────────────
+  // When the operator (or seed) has saved a `uiConfig` JSON on the store's
+  // landing-content row, the storefront renders via the data-driven
+  // BlockRenderer pipeline instead of any family-detector path below.
+  // This is the path the 27-store recipe doc targets — every block is a
+  // shadcn-studio variant looked up in lib/registry/block-registry.tsx.
+  // Falling through (null parse) keeps every legacy store working
+  // unchanged so the migration to data-driven is opt-in per store.
+  const landingContentRow = await prisma.storeLandingContent.findUnique({
+    where: { storeId: baseStore.id },
+  });
+  const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
+  if (uiConfig) {
+    return (
+      <BlockRenderer
+        blocks={uiConfig.pages.home}
+        store={storeToSummary(baseStore)}
+        content={landingContentRow}
+      />
+    );
+  }
 
   // ── pet-house custom homepage (fluffyhouse) ─────────────────
   // Bespoke landing for the pet-supplies store. Detection looks at the

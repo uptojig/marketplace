@@ -13,6 +13,11 @@
  */
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { parseUIConfig } from "@/lib/store/ui-config";
+import {
+  SingleBlockRenderer,
+  storeToSummary,
+} from "@/components/storefront/block-renderer";
 import { ChevronDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
@@ -110,6 +115,23 @@ export default async function CategoryIndexPage({
     },
   });
   if (!store) notFound();
+
+  // ── Server-driven UI (uiConfig.pages.catalog) ──────────────────────
+  const landingContentRow = await prisma.storeLandingContent.findUnique({
+    where: { storeId: store.id },
+  });
+  const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
+  if (uiConfig?.pages.catalog) {
+    return (
+      <SingleBlockRenderer
+        id={uiConfig.pages.catalog}
+        type="catalog"
+        store={storeToSummary(store)}
+        content={landingContentRow}
+        data={{ products: store.products, categories: store.categories }}
+      />
+    );
+  }
 
   // Per-family branching. Trust gets the squared TrustCategoryGrid
   // with heritage SKU + serif titles + gold-rule frame. Business-model

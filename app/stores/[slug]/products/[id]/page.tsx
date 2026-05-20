@@ -55,6 +55,11 @@ import {
 // the file already imports it as `TEMPLATE_REGISTRY` (PR #105) — keep both
 // aliases so the merge resolution doesn't have to rewrite either side.
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import { parseUIConfig } from "@/lib/store/ui-config";
+import {
+  SingleBlockRenderer,
+  storeToSummary,
+} from "@/components/storefront/block-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +96,31 @@ export default async function ShopProductPage({
     include: { store: true, variants: { orderBy: { createdAt: "asc" } } },
   });
   if (!product || !product.active) notFound();
+
+  // ── Server-driven UI (uiConfig.pages.pdp) ──────────────────────────
+  // When the store's StoreLandingContent.uiConfig is populated, route
+  // PDP rendering through the data-driven block registry instead of
+  // any family-detector path below. The chosen PDP block reads the
+  // product + content via its props.
+  const landingContentRow = await prisma.storeLandingContent.findUnique({
+    where: { storeId: product.store.id },
+  });
+  const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
+  if (uiConfig?.pages.pdp) {
+    return (
+      <SingleBlockRenderer
+        id={uiConfig.pages.pdp}
+        type="pdp"
+        store={storeToSummary(product.store)}
+        content={landingContentRow}
+        data={{ product, related: await prisma.product.findMany({
+          where: { storeId: product.storeId, active: true, NOT: { id: product.id } },
+          take: 6,
+          orderBy: { createdAt: "desc" },
+        }) }}
+      />
+    );
+  }
 
   const gallery = (Array.isArray(product.galleryUrls) ? (product.galleryUrls as string[]) : []).filter(Boolean);
   // Importers + the legacy form sometimes save the main imageUrl into

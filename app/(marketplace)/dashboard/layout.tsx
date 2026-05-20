@@ -11,6 +11,7 @@ import {
   Store as StoreIcon,
   ExternalLink,
   PlusSquare,
+  Palette,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { DashboardSidebarToggle } from "@/components/dashboard/sidebar-toggle";
@@ -269,6 +270,13 @@ function Sidebar({
             pathname={pathname}
           >
             ข้อความ
+          </NavItem>
+          <NavItem
+            href={`/dashboard/store/landing-content${suffix}`}
+            icon={<Palette className="h-4 w-4" />}
+            pathname={pathname}
+          >
+            หน้าร้าน
           </NavItem>
           <NavItem
             href={`/dashboard/store/settings${suffix}`}

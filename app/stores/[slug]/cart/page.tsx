@@ -22,6 +22,11 @@ import { EverydayCartPage } from "@/components/storefront/themes/everyday/Everyd
 import { TaobaoCartPage } from "@/components/storefront/themes/taobao/TaobaoCartPage";
 import { PackagingCartPage } from "@/components/storefront/themes/packaging/PackagingCartPage";
 import { CommunityCartPage } from "@/components/storefront/themes/community/CommunityCartPage";
+import { parseUIConfig } from "@/lib/store/ui-config";
+import {
+  SingleBlockRenderer,
+  storeToSummary,
+} from "@/components/storefront/block-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -37,12 +42,31 @@ export default async function StoreCartPage({
       slug: true,
       name: true,
       logoUrl: true,
+      bannerUrl: true,
       primaryColor: true,
+      tagline: true,
+      description: true,
       templateId: true,
       landingThemeVariant: true,
     },
   });
   if (!store) notFound();
+
+  // ── Server-driven UI (uiConfig.pages.cart) ─────────────────────────
+  const landingContentRow = await prisma.storeLandingContent.findUnique({
+    where: { storeId: store.id },
+  });
+  const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
+  if (uiConfig?.pages.cart) {
+    return (
+      <SingleBlockRenderer
+        id={uiConfig.pages.cart}
+        type="cart"
+        store={storeToSummary(store)}
+        content={landingContentRow}
+      />
+    );
+  }
 
   // Tell the cart client which design family to render under. The
   // .theme-fashion-beauty / .theme-trust / .theme-business-model /

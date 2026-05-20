@@ -191,8 +191,89 @@ model Store {
   identityVerification IdentityVerification?
   deployment           ShopDeployment?
   contactMessages      ContactMessage[]
+  landingContent       StoreLandingContent?
 
   @@index([approvalStatus])
+}
+
+// ── Editable storefront content (per-store) ────────────────────────────────
+// 1:1 with Store. Every field is nullable — adapters fall back to template
+// defaults when a slot is empty, so legacy stores keep working without a
+// backfill. Operators / owners edit these via the admin or vendor dashboard
+// "Landing content" editor; chrome adapters read them at render time so no
+// image URL or copy is ever hardcoded inside a component.
+model StoreLandingContent {
+  storeId        String @id
+  store          Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  // ── Hero (above-the-fold) ──
+  heroHeadline      String?
+  heroSubheadline   String?
+  heroCtaLabel      String?
+  heroCtaUrl        String?
+  heroImageUrl      String?
+  heroVideoUrl      String?
+  heroAlignment     String? @default("center") // "left" | "center" | "right"
+
+  // ── Announcement strip (above header) ──
+  announcementMessage       String?
+  announcementMessageMobile String?
+  announcementLinkUrl       String?
+  announcementEnabled       Boolean @default(true)
+
+  // ── About / brand story ──
+  aboutHeading   String?
+  aboutBody      String? @db.Text
+  aboutImageUrl  String?
+  aboutVideoUrl  String?
+
+  // ── Featured tiles (collection / category cards) ──
+  // Shape: [{ imageUrl, label, href, eyebrow? }, ...]
+  featuredTiles  Json?
+
+  // ── Free-form CTA blocks the adapter may render between sections ──
+  // Shape: [{ heading, body, ctaLabel, ctaUrl, imageUrl? }, ...]
+  ctaBlocks      Json?
+
+  // ── FAQ items ──
+  // Shape: [{ q, a }, ...]
+  faqItems       Json?
+
+  // ── Testimonials / social proof ──
+  // Shape: [{ name, role?, photoUrl?, quote, rating? }, ...]
+  testimonials   Json?
+
+  // ── Fine-grain color overrides (optional — paletteId is the primary
+  // source of truth; this layers per-element tweaks on top) ──
+  // Shape: { accent?, button?, link?, surfaceAlt?, headline?, body? }
+  colorOverrides Json?
+
+  // ── Free-form per-template extension bag ──
+  // For one-off slots a single bespoke adapter needs (e.g. mega-store's
+  // "category strip" copy) without bloating the schema for everyone.
+  extras         Json?
+
+  // ── Server-driven UI config (data-driven storefront) ──
+  // When present, the storefront renders via the data-driven BlockRenderer
+  // (lib/registry/block-registry) instead of the family-detector chain.
+  // Shape (validated by lib/store/ui-config.ts Zod schema):
+  //   {
+  //     theme: { palette: string, fontPrimary: string, fontDisplay: string },
+  //     pages: {
+  //       home:    Array<{ type: string, id: string, data?: Record<string, unknown> }>,
+  //       pdp:     string,   // single block id (e.g. "product-overview-04")
+  //       catalog: string,
+  //       cart:    string,
+  //       checkout?: string,
+  //       about?:    string
+  //     }
+  //   }
+  // Each block id references a key in lib/registry/block-registry.tsx.
+  // Null/undefined = use the legacy family-detector + bespoke-adapter chain.
+  uiConfig       Json?
+
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
 }
 
 enum StoreApprovalStatus {

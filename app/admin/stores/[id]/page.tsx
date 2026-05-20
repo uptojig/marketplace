@@ -129,6 +129,12 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
               เลือกสินค้า ({store._count.products})
             </Link>
             <Link
+              href={`/admin/stores/${store.id}/landing-content`}
+              className="inline-flex items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            >
+              Landing content
+            </Link>
+            <Link
               href={`/stores/${store.slug}`}
               target="_blank"
               className="inline-flex items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
