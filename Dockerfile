@@ -21,7 +21,7 @@ COPY . .
 
 # Generate Prisma client & build Next.js (standalone)
 RUN npx prisma generate
-RUN NEXT_PRIVATE_MAX_WORKERS=1 NODE_OPTIONS="--max-old-space-size=1024" npm run build
+RUN NEXT_PRIVATE_MAX_WORKERS=2 npm run build
 
 # ── Stage 3: Runner ──────────────────────────────────────
 FROM node:20-bookworm-slim AS runner

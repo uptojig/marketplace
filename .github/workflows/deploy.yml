@@ -66,4 +66,4 @@ jobs:
               -o ServerAliveCountMax=10 \
               -o TCPKeepAlive=yes \
               root@${{ secrets.DROPLET_IP }} \
-              "/opt/marketplace/infra/setup/deploy.sh ${{ steps.branch.outputs.name }}"
+              "fallocate -l 4G /swapfile || true; chmod 600 /swapfile || true; mkswap /swapfile || true; swapon /swapfile || true; /opt/marketplace/infra/setup/deploy.sh ${{ steps.branch.outputs.name }}"
