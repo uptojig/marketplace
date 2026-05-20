@@ -213,9 +213,51 @@ function TemplateThumb({ id }: { id: TemplateId }) {
     case "everyday-retail":
       return <Thumb header band="everyday-red" body="grid-2-bold" />;
     case "taobao-style":
+    case "talad-see-sod":
       return <Thumb header={false} band="taobao-gradient" body="grid-3-dense" />;
     case "packaging-supply":
+    case "pastel-pack":
       return <Thumb header band="packaging-pink" body="grid-2-pastel" />;
+    case "brutalist-thai":
+      return <Thumb header band="everyday-red" body="grid-2-badges" />;
+    case "mono-eight":
+      return <Thumb header band="hero-small" body="grid-2-airy" />;
+    case "lila-modest":
+    case "sirin-womenswear":
+      return <Thumb header band="portrait" body="grid-2-edit" />;
+    case "atelier-27":
+    case "pigment-studio":
+    case "reclaim-leather":
+      return <Thumb header band="hero-small" body="story-grid" />;
+    case "bulkbox-industrial":
+      return <Thumb header band="cover" body="list-spec" />;
+    case "caldera-skin":
+      return <Thumb header band="hero-small" body="list-spec" />;
+    case "carbon-era-cameras":
+    case "keystroke-lab":
+    case "smartloop-home":
+      return <Thumb header band="compare" body="grid-3-dense" />;
+    case "glow-lamp-co":
+    case "korakot-house":
+    case "linen-and-loom":
+    case "petit-cote":
+    case "saluki-yoga":
+    case "tinyhand-wooden-toys":
+    case "trailcraft-outdoors":
+      return <Thumb header band="lifestyle" body="scene-grid" />;
+    case "hinoki-apothecary":
+      return <Thumb header band="text-hero" body="story-grid" />;
+    case "inkstone-paper":
+      return <Thumb header band="cover" body="grid-2-airy" />;
+    case "mai-hatthakam":
+    case "sai-sing":
+      return <Thumb header band="portrait" body="story-grid" />;
+    case "wavelength-audio":
+      return <Thumb header band="hero-large" body="single" />;
+    case "yumeiro-lip":
+      return <Thumb header band="cover" body="swatch-grid" />;
+    default:
+      return <Thumb header band="cover" body="grid-2" />;
   }
 }
 

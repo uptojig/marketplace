@@ -409,7 +409,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { storyBlock: true, makerPortrait: true },
   },
   {
     id: "talad-see-sod",
@@ -427,7 +427,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { heroSize: "none" },
   },
   {
     id: "mono-eight",
@@ -445,7 +445,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { heroSize: "portrait", productCardStyle: "editorial" },
   },
   {
     id: "atelier-27",
@@ -454,7 +454,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { storyBlock: true },
   },
   {
     id: "bulkbox-industrial",
@@ -463,7 +463,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { productCardStyle: "spec-rows", badgeSlot: "b2b" },
   },
   {
     id: "caldera-skin",
@@ -472,7 +472,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { productCardStyle: "spec-rows" },
   },
   {
     id: "carbon-era-cameras",
@@ -490,7 +490,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { productCardStyle: "editorial" },
   },
   {
     id: "hinoki-apothecary",
@@ -499,7 +499,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { storyBlock: true },
   },
   {
     id: "inkstone-paper",
@@ -526,7 +526,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { heroSize: "large", productCardStyle: "editorial" },
   },
   {
     id: "linen-and-loom",
@@ -544,7 +544,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { makerPortrait: true, storyBlock: true },
   },
   {
     id: "pastel-pack",
@@ -598,7 +598,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { heroSize: "portrait", productCardStyle: "editorial" },
   },
   {
     id: "smartloop-home",
@@ -625,16 +625,16 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { heroSize: "large", productCardStyle: "sharp" },
   },
   {
     id: "wavelength-audio",
     name: "Wavelength Audio",
-    description: "เครื่องเสียง หูฟัง สาย audiophile",
+    description: "เครื่องเสียง หูฟัง ออดิโอไฟล์ พรีเมียม",
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { heroSize: "large", singleProductMode: true },
   },
   {
     id: "yumeiro-lip",
@@ -643,7 +643,7 @@ export const TEMPLATES: Template[] = [
     group: "specialty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: {},
+    behavior: { swatchRow: true },
   },
 ];
 
