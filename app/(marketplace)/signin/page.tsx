@@ -317,7 +317,9 @@ function SignInPageContent() {
     );
   }
 
-  if (!isValidRef && status !== "authenticated") {
+  const bypassGate = searchParams.get("bypass") === "1" || next.startsWith("/agent") || next.startsWith("/admin");
+
+  if (!isValidRef && status !== "authenticated" && !bypassGate) {
     return (
       <div className="mx-auto max-w-[1440px] min-h-[calc(100vh-4rem)] grid lg:grid-cols-[60%_40%] bg-mp-cream">
         {/* LEFT — editorial brand panel (desktop only) */}
@@ -399,12 +401,20 @@ function SignInPageContent() {
 
             <div className="space-y-4 pt-4 border-t border-mp-border">
               <p className="text-sm text-mp-ink-muted text-left">หากคุณต้องการเปิดร้านและยังไม่มีตัวแทนผู้แนะนำ หรือสนใจร่วมทีมกับเรา:</p>
-              <Link
-                href="/agent/register"
-                className="flex w-full h-11 items-center justify-center rounded-xl border border-mp-border bg-white text-[15px] font-semibold text-mp-ink hover:bg-mp-cream-alt/40 transition-all"
-              >
-                สมัครเป็นตัวแทน (Agent)
-              </Link>
+              <div className="grid grid-cols-1 gap-2.5">
+                <Link
+                  href="/agent/register"
+                  className="flex w-full h-11 items-center justify-center rounded-xl border border-mp-border bg-white text-[15px] font-semibold text-mp-ink hover:bg-mp-cream-alt/40 transition-all animate-pulse"
+                >
+                  สมัครเป็นตัวแทน (Agent)
+                </Link>
+                <Link
+                  href="/signin?bypass=1&next=/agent/dashboard"
+                  className="flex w-full h-11 items-center justify-center rounded-xl bg-mp-forest/10 text-[15px] font-semibold text-mp-forest hover:bg-mp-forest/20 transition-all"
+                >
+                  เข้าสู่ระบบสำหรับตัวแทน (Agent Login)
+                </Link>
+              </div>
             </div>
           </div>
         </div>
