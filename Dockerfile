@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ── Stage 1: Dependencies ────────────────────────────────
 FROM node:20-bookworm-slim AS deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -7,7 +8,8 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
-RUN npm install --legacy-peer-deps --no-audit --no-fund
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --legacy-peer-deps --no-audit --no-fund
 
 # ── Stage 2: Build ───────────────────────────────────────
 FROM node:20-bookworm-slim AS builder
@@ -19,9 +21,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma client & build Next.js (standalone)
+# Generate Prisma client & build Next.js (standalone).
+# The .next/cache mount persists the Next.js compiler cache across deploys so
+# only changed modules recompile (cache is shared with the shop-app build).
 RUN npx prisma generate
-RUN NEXT_PRIVATE_MAX_WORKERS=2 npm run build
+RUN --mount=type=cache,target=/app/.next/cache \
+    NEXT_PRIVATE_MAX_WORKERS=2 npm run build
 
 # ── Stage 3: Runner ──────────────────────────────────────
 FROM node:20-bookworm-slim AS runner

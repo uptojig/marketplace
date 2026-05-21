@@ -12,6 +12,13 @@ BRANCH="${1:-main}"
 ENV_FILE="/etc/marketplace/control.env"
 REGISTRY="registry.digitalocean.com/marketplace"
 
+# Force BuildKit so the `--mount=type=cache` lines in both Dockerfiles take
+# effect. The cached `.next/cache` (Next.js compiler cache) persists on the
+# droplet between deploys and is SHARED by both image builds — the second
+# image (shop-app) reuses the first's compile cache, turning two cold ~7-min
+# Next builds into one cold + one near-incremental build.
+export DOCKER_BUILDKIT=1
+
 c_reset="\033[0m"; c_bold="\033[1m"
 c_blue="\033[34m"; c_green="\033[32m"; c_red="\033[31m"
 log()     { printf "%b▸%b %s\n"          "$c_blue"  "$c_reset" "$*"; }

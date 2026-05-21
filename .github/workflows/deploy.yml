@@ -19,7 +19,13 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # 25 → 45: a clean (cache-cold) run builds TWO full Next.js images
+    # sequentially on the droplet (~10m control-plane + ~13m shop-app) plus
+    # push + migrate + restart, which overran the old 25m cap and got the job
+    # cancelled mid-push (shop-app never pushed, service never restarted). The
+    # BuildKit `.next/cache` mount added to both Dockerfiles makes warm runs
+    # far faster, but the first cache-priming run still needs the wider cap.
+    timeout-minutes: 45
 
     steps:
       - name: Resolve target branch

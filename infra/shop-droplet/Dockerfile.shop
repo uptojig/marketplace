@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Shop application image — what runs inside each shop droplet's `shop`
 # container. We reuse the same Next.js codebase as the marketplace
 # control plane; the only difference is the environment (SHOP_ID set,
@@ -15,7 +16,8 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
-RUN npm install --omit=dev --ignore-scripts --legacy-peer-deps --no-audit --no-fund && npx prisma generate
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --omit=dev --ignore-scripts --legacy-peer-deps --no-audit --no-fund && npx prisma generate
 
 # Need full deps including dev for build step. Use a second copy so we
 # don't pollute the runner.
@@ -26,7 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
-RUN npm install --ignore-scripts --legacy-peer-deps --no-audit --no-fund && npx prisma generate
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --ignore-scripts --legacy-peer-deps --no-audit --no-fund && npx prisma generate
 
 # ── Stage 2: Build ───────────────────────────────────────
 FROM node:20-bookworm-slim AS builder
@@ -39,7 +42,11 @@ COPY --from=deps-full /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npx prisma generate && NEXT_PRIVATE_MAX_WORKERS=2 npm run build
+# Shared .next/cache mount (same target as the control-plane Dockerfile) lets
+# this build reuse the compiler cache the control-plane build just primed.
+RUN npx prisma generate
+RUN --mount=type=cache,target=/app/.next/cache \
+    NEXT_PRIVATE_MAX_WORKERS=2 npm run build
 
 # ── Stage 3: Runner ──────────────────────────────────────
 FROM node:20-bookworm-slim AS runner
