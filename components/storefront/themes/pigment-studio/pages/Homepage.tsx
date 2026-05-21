@@ -190,8 +190,8 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {featuredProducts.map((product) => (
-              <div key={product.id} className="group relative flex flex-col cursor-pointer">
+            {featuredProducts.map((product, index) => (
+              <div key={`${product.id}-${index}`} className="group relative flex flex-col cursor-pointer">
                 <Link href={`/stores/${store.slug}/products/${product.id}`} className="absolute inset-0 z-10" aria-label={`View ${product.title}`} />
                 
                 {/* Visual Signature: Hand-painted swatch effect */}
@@ -274,9 +274,9 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                 สำรวจหมวดหมู่สินค้าทั้งหมดของเรา ตั้งแต่สีน้ำ พู่กัน กระดาษ และอุปกรณ์เสริมที่ช่วยให้การวาดภาพของคุณสนุกยิ่งขึ้น
               </p>
               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                {categories.slice(0, 5).map((category) => (
+                {categories.slice(0, 5).map((category, index) => (
                   <Link
-                    key={category.id}
+                    key={`${category.id}-${category.slug}-${index}`}
                     href={`/stores/${store.slug}/category/${category.slug}`}
                     className="px-6 py-2 bg-white/10 hover:bg-[#f97316] text-white rounded-full font-[family:var(--font-prompt)] font-medium transition-colors border border-white/20"
                   >
@@ -312,8 +312,8 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {newestProducts.map((product) => (
-              <div key={product.id} className="group relative bg-white rounded-[2rem] p-4 shadow-sm hover:shadow-xl transition-shadow duration-300 border border-[#fed7aa]/50">
+            {newestProducts.map((product, index) => (
+              <div key={`${product.id}-${index}`} className="group relative bg-white rounded-[2rem] p-4 shadow-sm hover:shadow-xl transition-shadow duration-300 border border-[#fed7aa]/50">
                 <Link href={`/stores/${store.slug}/products/${product.id}`} className="absolute inset-0 z-10" aria-label={`View ${product.title}`} />
                 
                 {/* Visual Signature applied to new arrivals too */}

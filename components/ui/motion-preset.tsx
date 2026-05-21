@@ -38,13 +38,11 @@ interface MotionPresetProps {
       }
     | boolean
   motionProps?: Omit<HTMLMotionProps<any>, 'children' | 'className' | 'ref' | 'transition'>
-  ref?: React.Ref<any>
 }
 
 const motionComponents = motion as any
 
-function MotionPreset({
-  ref,
+const MotionPreset = React.forwardRef<any, MotionPresetProps>(function MotionPreset({
   children,
   className,
   component = 'div',
@@ -58,7 +56,7 @@ function MotionPreset({
   fade = false,
   zoom = false,
   motionProps = {}
-}: MotionPresetProps) {
+}, ref) {
   const localRef = React.useRef<any>(null)
 
   React.useImperativeHandle(ref, () => localRef.current)
@@ -121,6 +119,8 @@ function MotionPreset({
       </MotionComponent>
     </AnimatePresence>
   )
-}
+})
+
+MotionPreset.displayName = 'MotionPreset'
 
 export { MotionPreset, type MotionPresetProps }

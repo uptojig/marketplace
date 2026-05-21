@@ -27,9 +27,9 @@ export function CarbonEraCamerasHeader({ store, categories }: HeaderProps) {
               </span>
             </Link>
             <nav className="hidden sm:flex gap-8 ml-8">
-              {categories.slice(0, 4).map((cat) => (
+              {categories.slice(0, 4).map((cat, index) => (
                 <Link
-                  key={cat.id}
+                  key={`${cat.id}-${cat.slug}-${index}`}
                   href={`/stores/${store.slug}/category/${cat.slug}`}
                   className="text-sm font-[family:var(--font-prompt)] font-medium text-[#0a0a0a]/70 hover:text-[#0a0a0a] transition-colors uppercase tracking-wider"
                 >

@@ -170,7 +170,7 @@ export function YumeiroLipHomepage({ store, products, categories }: YumeiroLipHo
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categories.slice(0, 3).map((cat, i) => (
               <Link 
-                key={cat.id} 
+                key={`${cat.id}-${cat.name}-${i}`} 
                 href={`/stores/${store.slug}/category/${cat.id}`}
                 className="relative overflow-hidden rounded-3xl aspect-[4/3] group"
               >

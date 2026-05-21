@@ -32,9 +32,9 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             <div className="hidden md:flex space-x-8 ml-8">
-              {categories.slice(0, 4).map((category) => (
+              {categories.slice(0, 4).map((category, index) => (
                 <Link
-                  key={category.id}
+                  key={`${category.id}-${category.slug}-${index}`}
                   href={`/stores/${store.slug}/category/${category.slug}`}
                   className="font-[family:var(--font-prompt)] text-[#7c2d12] hover:text-[#f97316] font-medium transition-colors relative group"
                 >
@@ -86,9 +86,9 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
       {isMenuOpen && (
         <div className="md:hidden bg-[#fff7ed] border-t-2 border-[#fed7aa] absolute w-full left-0 shadow-lg">
           <div className="px-4 pt-2 pb-6 space-y-2">
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <Link
-                key={category.id}
+                key={`${category.id}-${category.slug}-${index}`}
                 href={`/stores/${store.slug}/category/${category.slug}`}
                 className="block px-4 py-3 font-[family:var(--font-prompt)] text-[#7c2d12] font-medium hover:bg-[#fed7aa] hover:text-[#f97316] rounded-xl transition-colors"
                 onClick={() => setIsMenuOpen(false)}

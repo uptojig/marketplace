@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Shared cart adapter — bridges CartProps from the storefront
  * to shadcn-studio shopping-cart blocks (01–04).

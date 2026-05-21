@@ -118,7 +118,7 @@ export function LinenAndLoomHomepage({ store, products, categories }: LinenAndLo
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {categories.slice(0, 3).map((category, index) => (
               <Link
-                key={category.id}
+                key={`${category.id}-${category.slug}-${index}`}
                 href={`/stores/${store.slug}/categories/${category.slug}`}
                 className="group block relative aspect-square overflow-hidden bg-[#f1f5f9]"
               >

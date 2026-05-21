@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Shared catalog adapter — bridges CatalogProps from the storefront
  * scaffold to shadcn-studio product-category blocks.

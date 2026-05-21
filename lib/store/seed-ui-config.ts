@@ -616,6 +616,7 @@ const DOC_RECIPES: Partial<Record<TemplateId, RecipePages>> = {
 // Derived from the single source of truth — no more manual sync.
 import {
   groupForTemplate as _groupForTemplate,
+  TEMPLATE_TO_GROUP,
 } from "@/lib/templates/template-groups";
 
 function groupForTemplate(id: TemplateId): TemplateGroup {
@@ -676,7 +677,7 @@ export function seedUiConfigForTemplate(
   // otherwise return null so the storefront stays on the legacy path
   // rather than receiving a config for an unknown template.
   const id = templateId as TemplateId;
-  const knownTemplate = id in TEMPLATE_GROUPS;
+  const knownTemplate = TEMPLATE_TO_GROUP.has(id);
 
   // Doc-sourced recipe takes precedence; fall back to per-group default
   // ONLY for known TemplateIds.
@@ -706,7 +707,7 @@ export function seedUiConfigForTemplate(
 export function validateAllRecipes():
   | { ok: true }
   | { ok: false; templateId: TemplateId; error: string } {
-  const templateIds = Object.keys(TEMPLATE_GROUPS) as TemplateId[];
+  const templateIds = Array.from(TEMPLATE_TO_GROUP.keys()) as TemplateId[];
   for (const id of templateIds) {
     const config = seedUiConfigForTemplate(id, "default");
     if (!config) {

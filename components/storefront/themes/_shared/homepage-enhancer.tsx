@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Homepage enhancer — wraps an existing homepage component and appends
  * a shadcn product-list block section beneath it.

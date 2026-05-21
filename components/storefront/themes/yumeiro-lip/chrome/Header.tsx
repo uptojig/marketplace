@@ -38,8 +38,8 @@ export function YumeiroLipHeader({ store, categories }: YumeiroLipHeaderProps) {
           <Link href={`/stores/${store.slug}`} className="text-[#831843] hover:text-[#ec4899] font-medium transition-colors">
             หน้าแรก
           </Link>
-          {categories.slice(0, 4).map((cat) => (
-            <Link key={cat.id} href={`/stores/${store.slug}/category/${cat.id}`} className="text-[#831843] hover:text-[#ec4899] font-medium transition-colors">
+          {categories.slice(0, 4).map((cat, index) => (
+            <Link key={`${cat.id}-${cat.name}-${index}`} href={`/stores/${store.slug}/category/${cat.id}`} className="text-[#831843] hover:text-[#ec4899] font-medium transition-colors">
               {cat.name}
             </Link>
           ))}

@@ -73,9 +73,33 @@ export default async function ApplyPage({
 
     if (!isBypassedRole && !hasAgentBound) {
       const refParam = searchParams.c?.trim().toUpperCase();
-      if (!refParam) {
+      // A valid invite code (`c`) is required for a FRESH entry, but not
+      // when an existing session is referenced by `sid` (resume / view a
+      // finalized session — which redirects back here without `c`).
+      if (!refParam && !searchParams.sid) {
         return <KycLocalRefGate />;
       }
+      if (refParam) {
+        const agent = await prisma.agent.findUnique({
+          where: { linkCode: refParam },
+          select: { id: true, displayName: true, status: true },
+        });
+        if (!agent || agent.status !== "ACTIVE") {
+          notFound();
+        }
+        validatedAgentLinkCode = refParam;
+      }
+    }
+  } else {
+    // Anonymous user. A valid invite code (`c`) is required for a FRESH
+    // entry, but NOT when resuming/viewing an existing session via `sid`
+    // (the unguessable session id is itself sufficient — a finalized
+    // session redirects back here and may not carry `c`).
+    const refParam = searchParams.c?.trim().toUpperCase();
+    if (!refParam && !searchParams.sid) {
+      return <KycLocalRefGate />;
+    }
+    if (refParam) {
       const agent = await prisma.agent.findUnique({
         where: { linkCode: refParam },
         select: { id: true, displayName: true, status: true },
@@ -85,20 +109,6 @@ export default async function ApplyPage({
       }
       validatedAgentLinkCode = refParam;
     }
-  } else {
-    // Anonymous user: must have a valid invite code (the opaque `c` param)
-    const refParam = searchParams.c?.trim().toUpperCase();
-    if (!refParam) {
-      return <KycLocalRefGate />;
-    }
-    const agent = await prisma.agent.findUnique({
-      where: { linkCode: refParam },
-      select: { id: true, displayName: true, status: true },
-    });
-    if (!agent || agent.status !== "ACTIVE") {
-      notFound();
-    }
-    validatedAgentLinkCode = refParam;
   }
 
   // 3. Normal KYC wizard state machine loading

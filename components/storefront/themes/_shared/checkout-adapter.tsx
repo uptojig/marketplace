@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Shared checkout adapter — bridges CheckoutProps from the storefront
  * to shadcn-studio checkout-page blocks (01, 02, 04).

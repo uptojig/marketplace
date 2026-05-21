@@ -45,9 +45,9 @@ export function TrailcraftHeader({ store, categories }: HeaderProps) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            {categories.slice(0, 4).map((category) => (
+            {categories.slice(0, 4).map((category, index) => (
               <Link
-                key={category.id}
+                key={`${category.id}-${category.slug}-${index}`}
                 href={`/stores/${store.slug}/category/${category.slug}`}
                 className="font-[family:var(--font-prompt)] text-[#1a2e05] hover:text-[#365314] hover:underline decoration-[#facc15] decoration-4 underline-offset-4 font-semibold transition-all"
               >

@@ -483,7 +483,12 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     }
     if (!sessionId || terminalRefreshRequested.current) return;
     terminalRefreshRequested.current = true;
-    router.replace(`/apply?sid=${encodeURIComponent(sessionId)}`);
+    // Preserve existing query params (notably the invite code `c`) so an
+    // anonymous session isn't bounced by the /apply gate once it reaches a
+    // terminal state.
+    const params = new URLSearchParams(window.location.search);
+    params.set("sid", sessionId);
+    router.replace(`/apply?${params.toString()}`);
     router.refresh();
   }, [router, sessionId, state]);
 
@@ -2890,24 +2895,19 @@ function StepSummaryReview({
       if (!res.ok || !data.ok) {
         throw new Error(data.error ?? "ไม่สามารถส่งข้อมูลยืนยันตัวตนได้");
       }
-      setState(data.state);
       setInfo("ส่งข้อมูลยืนยันตัวตนเสร็จสมบูรณ์");
+      clearCache();
 
-      if (data.phone && data.tempPassword) {
-        clearCache();
-        setCreatedVendorCreds({
-          phone: data.phone,
-          tempPass: data.tempPassword,
-          refCode: data.refCode,
-        });
-      } else if (data.phone) {
-        clearCache();
-        let redirectUrl = `/signin?phone=${encodeURIComponent(data.phone)}`;
-        if (data.refCode) {
-          redirectUrl += `&c=${encodeURIComponent(data.refCode)}`;
-        }
-        router.push(redirectUrl);
+      // AUTO_APPROVED → a vendor account now exists (temp password = last 6
+      // digits of the citizen ID). Send them to sign in by phone. For
+      // MANUAL_REVIEW / REJECTED, reflect the terminal state so the
+      // terminal-state effect re-renders /apply into the waiting / rejected
+      // screen (it preserves the invite code, so it never 404s).
+      if (data.state === "AUTO_APPROVED" && data.phone) {
+        router.push(`/signin?phone=${encodeURIComponent(data.phone)}`);
+        return;
       }
+      setState(data.state);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -2926,7 +2926,7 @@ function StepSummaryReview({
 
   const idCardRef = evidence.find((e) => e.step === "S1_ID_CARD_REF");
   const dgaImages = evidence.filter((e) => e.step === "S1_DGA_CAPTURE");
-  const selfie = evidence.find((e) => e.step === "S2_ID_SELFIE");
+  const selfie = evidence.find((e) => e.step === "S2_SELFIE");
   const phone = evidence.find((e) => e.step === "S3_PHONE_RESPONSE");
   const bankbook = evidence.find((e) => e.step === "S4_BANKBOOK");
 

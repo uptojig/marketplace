@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Shared PDP adapter — bridges ProductDetailProps from the storefront
  * to shadcn-studio product-overview + product-reviews blocks.

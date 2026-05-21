@@ -246,7 +246,14 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Maker portrait + small batch craft',
     group: 'specialty',
         pages: {
-      home: enhanceHomepage(HandmadeHomepageAdapter, '06'),
+      // STOPGAP: `HandmadeHomepageAdapter` was referenced here by the
+      // template-pages commit but never created/exported (no
+      // themes/handmade/adapters.tsx), which crashed the whole registry
+      // module ("HandmadeHomepageAdapter is not defined") and 500'd every
+      // page that imports it (e.g. /create-store). Reuse the Mai Hatthakam
+      // (Thai handicraft) homepage — closest artisan match — until a real
+      // handmade adapter is built.
+      home: enhanceHomepage(MaiHatthakamHomepageAdapter, '06'),
       catalog: makeCatalogAdapter('04'),
       pdp: makePdpAdapter('04', '05'),
       cart: makeCartAdapter('01'),
@@ -280,7 +287,7 @@ export const templates: Record<TemplateId, Template> = {
       cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('02'),
       catalog: makeCatalogAdapter('12'),
-      home: enhanceHomepage(enhanceHomepage, '03')(BikiniHomepageAdapter, '01'),
+      home: enhanceHomepage(BikiniHomepageAdapter, '01'),
       lookbook: BikiniLookbookAdapter,
       about: BikiniAboutAdapter,
       help: BikiniHelpAdapter,
@@ -397,7 +404,7 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('08', '03'),
       cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('02'),
-      home: enhanceHomepage(enhanceHomepage, '06')(enhanceHomepage, '08')(enhanceHomepage, '07')(SaiSingHomepageAdapter, '05'),
+      home: enhanceHomepage(SaiSingHomepageAdapter, '05'),
     },
   },
 

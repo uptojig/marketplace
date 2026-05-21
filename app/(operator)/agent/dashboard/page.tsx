@@ -104,12 +104,14 @@ export default function AgentDashboard() {
   }, []);
 
   const getFullReferralUrl = (code: string) => {
-    // Param is intentionally the opaque `c=` (not `ref=`) so the vendor
-    // who receives this link cannot tell it carries an agent referral.
+    // Points straight at /apply (the KYC wizard entry), NOT /signup — the
+    // invited vendor goes directly into KYC and the account is created at
+    // the end (s5/finalize) before redirecting to /signin. The opaque `c=`
+    // param (not `ref=`) keeps the agent-referral mechanism invisible.
     if (typeof window !== "undefined") {
-      return `${window.location.origin}/signup?c=${code}`;
+      return `${window.location.origin}/apply?c=${code}`;
     }
-    return `https://basketplace.co/signup?c=${code}`;
+    return `https://basketplace.co/apply?c=${code}`;
   };
 
   const copyToClipboard = async (text: string) => {
