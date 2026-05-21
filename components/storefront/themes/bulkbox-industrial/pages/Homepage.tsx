@@ -126,7 +126,7 @@ export function BulkboxHomepage({ store, products, categories }: HomepageProps) 
             <h2 className="text-3xl font-bold font-[family:var(--font-kanit)] text-[#0f172a] uppercase tracking-tight">รายการสินค้าอุตสาหกรรม (Industrial Supply)</h2>
             <p className="text-[#64748b] mt-2">เลือกสินค้าเพื่อดูโครงสร้างราคาตามปริมาณ (Pricing Tiers)</p>
           </div>
-          <Link href={`/${store.slug}/products`} className="hidden sm:flex items-center gap-1 text-[#0284c7] font-semibold hover:text-[#0369a1] transition-colors">
+          <Link href={`/stores/${store.slug}/products`} className="hidden sm:flex items-center gap-1 text-[#0284c7] font-semibold hover:text-[#0369a1] transition-colors">
             ดูรายการทั้งหมด <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -149,7 +149,7 @@ export function BulkboxHomepage({ store, products, categories }: HomepageProps) 
                   </div>
                   <div className="flex flex-col justify-center">
                     <span className="text-xs font-semibold text-[#0284c7] mb-1">{product.categoryName || 'General Industrial'}</span>
-                    <Link href={`/${store.slug}/products/${product.id}`} className="font-[family:var(--font-kanit)] font-bold text-lg text-[#0f172a] hover:text-[#0284c7] line-clamp-2 leading-tight">
+                    <Link href={`/stores/${store.slug}/products/${product.id}`} className="font-[family:var(--font-kanit)] font-bold text-lg text-[#0f172a] hover:text-[#0284c7] line-clamp-2 leading-tight">
                       {product.title}
                     </Link>
                     <span className="text-xs text-[#64748b] mt-1 font-mono">SKU: IND-{product.id.substring(0,6).toUpperCase()}</span>
@@ -195,7 +195,7 @@ export function BulkboxHomepage({ store, products, categories }: HomepageProps) 
         </div>
 
         <div className="mt-8 flex justify-center sm:hidden">
-          <Link href={`/${store.slug}/products`} className="flex items-center gap-2 bg-white border border-[#cbd5e1] px-6 py-3 rounded text-[#0f172a] font-semibold w-full justify-center">
+          <Link href={`/stores/${store.slug}/products`} className="flex items-center gap-2 bg-white border border-[#cbd5e1] px-6 py-3 rounded text-[#0f172a] font-semibold w-full justify-center">
             ดูรายการสินค้าทั้งหมด <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

@@ -79,7 +79,7 @@ export function CarbonEraCamerasHomepage({ store, products, categories }: Homepa
             </p>
             <div className="flex flex-wrap gap-4">
               <Link 
-                href={`/${store.slug}/category/leica`}
+                href={`/stores/${store.slug}/category/leica`}
                 className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#0a0a0a] font-[family:var(--font-prompt)] font-semibold hover:bg-[#a1a1aa] transition-colors"
               >
                 ดู Leica วันนี้
@@ -136,7 +136,7 @@ export function CarbonEraCamerasHomepage({ store, products, categories }: Homepa
               <p className="font-[family:var(--font-prompt)] text-[#52525b] font-light">สินค้าเข้าใหม่ล่าสุด</p>
             </div>
             <Link 
-              href={`/${store.slug}/products`}
+              href={`/stores/${store.slug}/products`}
               className="hidden sm:inline-flex items-center gap-2 font-[family:var(--font-prompt)] text-sm font-semibold hover:text-[#a1a1aa] transition-colors uppercase tracking-wider"
             >
               ดูสินค้าทั้งหมด
@@ -150,7 +150,7 @@ export function CarbonEraCamerasHomepage({ store, products, categories }: Homepa
               return (
                 <Link
                   key={product.id}
-                  href={`/${store.slug}/products/${product.id}`}
+                  href={`/stores/${store.slug}/products/${product.id}`}
                   className="group block bg-white border border-[#27272a] hover:border-[#0a0a0a] transition-all overflow-hidden"
                 >
                   <div className="aspect-[4/3] bg-[#f4f4f5] relative overflow-hidden">

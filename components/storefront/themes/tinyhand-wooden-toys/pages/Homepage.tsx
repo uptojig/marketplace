@@ -69,7 +69,7 @@ export function TinyhandHomepage({ store, products, categories }: HomepageProps)
               ของเล่นไม้สำหรับเด็ก 0-5 ขวบ ทำจากไม้บีชจากสวนป่ายุโรป สีย้อมจากผัก ผ่านการทดสอบ EN71 และ ASTM F963
             </p>
             <Link 
-              href={`/${store.slug}/products`}
+              href={`/stores/${store.slug}/products`}
               className="inline-block bg-[#c9974b] hover:bg-[#b0823b] text-[#f7f1e3] font-[family:var(--font-kanit)] text-lg px-8 py-4 rounded-full shadow-[0_4px_0_#8b6528] active:shadow-[0_0px_0_#8b6528] active:translate-y-[4px] transition-all font-bold"
             >
               เลือกตามอายุ
@@ -98,7 +98,7 @@ export function TinyhandHomepage({ store, products, categories }: HomepageProps)
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
           {ageCategories.map((cat, i) => (
-            <Link href={`/${store.slug}/category/age-${i+1}`} key={i} className="group block transform hover:-translate-y-2 transition-transform">
+            <Link href={`/stores/${store.slug}/category/age-${i+1}`} key={i} className="group block transform hover:-translate-y-2 transition-transform">
               <div className={`${cat.color} aspect-square rounded-3xl p-6 flex flex-col justify-center items-center text-center shadow-md`}>
                 <span className="font-[family:var(--font-kanit)] text-4xl md:text-5xl font-black text-white mb-2 group-hover:scale-110 transition-transform">
                   {cat.label}
@@ -120,7 +120,7 @@ export function TinyhandHomepage({ store, products, categories }: HomepageProps)
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {products.slice(0, 8).map((product) => (
-              <Link key={product.id} href={`/${store.slug}/product/${product.id}`} className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#ebe1c8]">
+              <Link key={product.id} href={`/stores/${store.slug}/products/${product.id}`} className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#ebe1c8]">
                 <div className="relative aspect-[4/3] bg-[#f7f1e3] p-4">
                   {product.imageUrl ? (
                     <Image
@@ -174,7 +174,7 @@ export function TinyhandHomepage({ store, products, categories }: HomepageProps)
             ))}
           </div>
           <div className="text-center mt-12">
-            <Link href={`/${store.slug}/products`} className="inline-block bg-transparent border-2 border-[#3a2e22] text-[#3a2e22] hover:bg-[#3a2e22] hover:text-[#f7f1e3] font-[family:var(--font-kanit)] font-bold py-3 px-8 rounded-full transition-colors">
+            <Link href={`/stores/${store.slug}/products`} className="inline-block bg-transparent border-2 border-[#3a2e22] text-[#3a2e22] hover:bg-[#3a2e22] hover:text-[#f7f1e3] font-[family:var(--font-kanit)] font-bold py-3 px-8 rounded-full transition-colors">
               ดูของเล่นทั้งหมด
             </Link>
           </div>

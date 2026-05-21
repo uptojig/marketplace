@@ -77,7 +77,7 @@ export function InkstonePaperHomepage({
           </p>
           <div className="pt-4">
             <Link 
-              href={`/${store.slug}`}
+              href={`/stores/${store.slug}`}
               className="inline-flex items-center justify-center px-10 py-4 border border-[#3a2e22] text-[#3a2e22] hover:bg-[#3a2e22] hover:text-[#f7f1e3] transition-all duration-500 font-[family:var(--font-prompt)] uppercase tracking-[0.2em] text-sm"
             >
               ดูปากกาทั้งหมด
@@ -100,7 +100,7 @@ export function InkstonePaperHomepage({
             const jpLabel = japaneseLabels[idx % japaneseLabels.length];
             const thLabel = thaiLabels[idx % thaiLabels.length];
             return (
-              <Link key={product.id} href={`/${store.slug}/products/${product.id}`} className="group flex flex-col">
+              <Link key={product.id} href={`/stores/${store.slug}/products/${product.id}`} className="group flex flex-col">
                 <div className="relative aspect-[4/5] mb-6 overflow-hidden bg-[#e6dcc4] p-4 shadow-sm group-hover:shadow-md transition-shadow duration-500 flex items-center justify-center">
                   
                   {/* Washi Paper Effect Background */}

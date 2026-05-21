@@ -72,7 +72,7 @@ export function LinenAndLoomHomepage({ store, products, categories }: LinenAndLo
             ผ้าปูที่นอน ผ้าห่ม และผ้าม่านจากลินินยุโรปทอเอง สีย้อมธรรมชาติทั้งหมด ส่งภายใน 3 วันทำการ
           </p>
           <Link
-            href={`/${store.slug}/products`}
+            href={`/stores/${store.slug}/products`}
             className="inline-flex items-center gap-2 bg-[#475569] text-[#f8fafc] px-8 py-4 rounded-none hover:bg-[#0f172a] transition-all duration-300 tracking-wide font-[family:var(--font-kanit)]"
           >
             เลือกผ้าปูที่นอน
@@ -119,7 +119,7 @@ export function LinenAndLoomHomepage({ store, products, categories }: LinenAndLo
             {categories.slice(0, 3).map((category, index) => (
               <Link
                 key={category.id}
-                href={`/${store.slug}/categories/${category.slug}`}
+                href={`/stores/${store.slug}/categories/${category.slug}`}
                 className="group block relative aspect-square overflow-hidden bg-[#f1f5f9]"
               >
                 {/* Fallback image for categories using unsplash fabric/home images */}
@@ -147,7 +147,7 @@ export function LinenAndLoomHomepage({ store, products, categories }: LinenAndLo
             <h2 className="text-3xl font-light font-[family:var(--font-kanit)] text-[#0f172a] mb-2">สินค้าแนะนำ</h2>
             <p className="text-[#475569]">คอลเลกชันที่ได้รับความนิยมที่สุดของเรา</p>
           </div>
-          <Link href={`/${store.slug}/products`} className="hidden md:flex items-center gap-2 text-[#475569] hover:text-[#0f172a] transition-colors pb-1 border-b border-transparent hover:border-[#0f172a]">
+          <Link href={`/stores/${store.slug}/products`} className="hidden md:flex items-center gap-2 text-[#475569] hover:text-[#0f172a] transition-colors pb-1 border-b border-transparent hover:border-[#0f172a]">
             ดูทั้งหมด
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -157,7 +157,7 @@ export function LinenAndLoomHomepage({ store, products, categories }: LinenAndLo
           {featuredProducts.map((product) => (
             <Link
               key={product.id}
-              href={`/${store.slug}/products/${product.id}`}
+              href={`/stores/${store.slug}/products/${product.id}`}
               className="group flex flex-col"
             >
               <div className="relative aspect-[3/4] bg-[#f8fafc] mb-6 overflow-hidden">

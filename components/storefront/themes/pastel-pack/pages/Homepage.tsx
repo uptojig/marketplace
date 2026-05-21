@@ -68,7 +68,7 @@ export function PastelPackHomepage({ store, products, categories }: PastelPackHo
             </p>
             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
               <Link 
-                href={`/${store.slug}/products`}
+                href={`/stores/${store.slug}/products`}
                 className="bg-[#fde68a] text-[#0f766e] px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-[#0f4a44] transition-all shadow-[0_0_40px_rgba(253,230,138,0.3)] hover:shadow-[0_0_60px_rgba(253,230,138,0.5)] hover:-translate-y-1 font-[family:var(--font-kanit)] flex items-center gap-2"
               >
                 เลือกกล่องตามขนาด <ArrowRight className="w-5 h-5" />
@@ -134,7 +134,7 @@ export function PastelPackHomepage({ store, products, categories }: PastelPackHo
               <p className="text-[#0f766e] mt-3 text-lg font-light">แพ็คเกจจิ้งยอดฮิต สำหรับร้านค้าสไตล์มินิมอล</p>
             </div>
             <Link 
-              href={`/${store.slug}/products`} 
+              href={`/stores/${store.slug}/products`} 
               className="bg-[#ccfbf1] text-[#0f766e] px-6 py-3 rounded-full font-bold hover:bg-[#0f766e] hover:text-[#fde68a] transition-colors flex items-center gap-2 font-[family:var(--font-kanit)]"
             >
               ดูทั้งหมด <Plus className="w-5 h-5" />
@@ -145,7 +145,7 @@ export function PastelPackHomepage({ store, products, categories }: PastelPackHo
             {featuredProducts.map((product) => (
               <Link 
                 key={product.id} 
-                href={`/${store.slug}/product/${product.id}`}
+                href={`/stores/${store.slug}/products/${product.id}`}
                 className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border-2 border-[#ccfbf1] hover:border-[#0f766e]"
               >
                 <div className="aspect-[4/5] relative bg-[#f0fdfa] overflow-hidden">
@@ -227,7 +227,7 @@ export function PastelPackHomepage({ store, products, categories }: PastelPackHo
                 เพิ่มความพรีเมียมให้แบรนด์ <span className="font-bold text-[#fde68a]">ฟรี! ค่าบล็อกพิมพ์</span> เมื่อสั่งครบ 500 ชิ้นขึ้นไป
               </p>
               <Link 
-                href={`/${store.slug}/custom-print`}
+                href={`/stores/${store.slug}/custom-print`}
                 className="inline-flex bg-[#fde68a] text-[#0f766e] px-8 py-4 rounded-full font-bold hover:bg-white hover:text-[#0f4a44] transition-colors shadow-xl font-[family:var(--font-kanit)] items-center gap-2 text-lg"
               >
                 ดูรายละเอียดงานพิมพ์ <ArrowRight className="w-5 h-5" />
@@ -263,7 +263,7 @@ export function PastelPackHomepage({ store, products, categories }: PastelPackHo
               {ecoProducts.map((product) => (
                 <Link 
                   key={product.id} 
-                  href={`/${store.slug}/product/${product.id}`}
+                  href={`/stores/${store.slug}/products/${product.id}`}
                   className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
                 >
                   <div className="aspect-square relative bg-[#f0fdfa] overflow-hidden p-6">

@@ -95,7 +95,7 @@ export function KeystrokeLabHomepage({ store, products, categories }: HomepagePr
           
           <div className="flex flex-col sm:flex-row gap-4">
             <Link 
-              href={`/${store.slug}/products`}
+              href={`/stores/${store.slug}/products`}
               className="px-8 py-3 bg-[#22d3ee] text-[#020617] font-[family:var(--font-prompt)] font-bold uppercase tracking-[0.12em] hover:bg-white transition-all transform hover:scale-105"
             >
               เปรียบเทียบสวิตช์
@@ -117,7 +117,7 @@ export function KeystrokeLabHomepage({ store, products, categories }: HomepagePr
             {products.map((product) => (
               <Link 
                 key={product.id} 
-                href={`/${store.slug}/products/${product.id}`}
+                href={`/stores/${store.slug}/products/${product.id}`}
                 className="group block bg-[#0f172a] border border-[#1e293b] hover:border-[#22d3ee] transition-colors relative overflow-hidden"
               >
                 {/* Decorative corners */}
@@ -197,7 +197,7 @@ export function KeystrokeLabHomepage({ store, products, categories }: HomepagePr
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/${store.slug}/categories/${category.slug}`}
+                href={`/stores/${store.slug}/categories/${category.slug}`}
                 className="group p-4 border border-[#1e293b] hover:border-[#22d3ee] bg-[#0f172a] transition-all flex items-center justify-between"
               >
                 <div className="flex items-center">

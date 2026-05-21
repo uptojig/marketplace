@@ -98,7 +98,7 @@ export function SirinHomepage({ store, products, categories }: SirinHomepageProp
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
           {featuredProducts.length > 0 && (
             <div className="md:col-span-7 relative group cursor-pointer overflow-hidden rounded-sm">
-              <Link href={`/${store.slug}/products/${featuredProducts[0].id}`} className="block relative aspect-[3/4]">
+              <Link href={`/stores/${store.slug}/products/${featuredProducts[0].id}`} className="block relative aspect-[3/4]">
                 <img 
                   src={featuredProducts[0].imageUrl || `https://images.unsplash.com/photo-1550639524-a6f58345a013?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`} 
                   alt={featuredProducts[0].title}
@@ -137,7 +137,7 @@ export function SirinHomepage({ store, products, categories }: SirinHomepageProp
               </div>
 
               <div className="relative group cursor-pointer overflow-hidden rounded-sm">
-                <Link href={`/${store.slug}/products/${featuredProducts[1].id}`} className="block relative aspect-[4/5]">
+                <Link href={`/stores/${store.slug}/products/${featuredProducts[1].id}`} className="block relative aspect-[4/5]">
                   <img 
                     src={featuredProducts[1].imageUrl || `https://images.unsplash.com/photo-1515347619362-f1df4866c1b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`} 
                     alt={featuredProducts[1].title}
@@ -173,7 +173,7 @@ export function SirinHomepage({ store, products, categories }: SirinHomepageProp
                 <p className="font-[family:var(--font-prompt)] text-[#fb7185] text-sm uppercase tracking-widest mb-2 font-normal">New Arrivals</p>
                 <h2 className="font-[family:var(--font-kanit)] font-extrabold text-3xl text-[#3f0f24]">สินค้ามาใหม่</h2>
               </div>
-              <Link href={`/${store.slug}`} className="hidden sm:flex items-center space-x-2 text-[#be185d] hover:text-[#9d124c] font-[family:var(--font-prompt)] font-normal">
+              <Link href={`/stores/${store.slug}`} className="hidden sm:flex items-center space-x-2 text-[#be185d] hover:text-[#9d124c] font-[family:var(--font-prompt)] font-normal">
                 <span>ดูทั้งหมด</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -183,7 +183,7 @@ export function SirinHomepage({ store, products, categories }: SirinHomepageProp
               {latestCollection.map((product) => (
                 <div key={product.id} className="group relative">
                   <div className="aspect-[3/4] w-full overflow-hidden rounded-sm bg-[#fce7f3] relative">
-                    <Link href={`/${store.slug}/products/${product.id}`}>
+                    <Link href={`/stores/${store.slug}/products/${product.id}`}>
                       <img
                         src={product.imageUrl || `https://images.unsplash.com/photo-1595777457583-95e059d581b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80`}
                         alt={product.title}
@@ -203,7 +203,7 @@ export function SirinHomepage({ store, products, categories }: SirinHomepageProp
                   <div className="mt-6 text-center">
                     <p className="text-xs font-[family:var(--font-prompt)] font-normal text-[#fb7185] mb-1">{product.categoryName || 'Dress'}</p>
                     <h3 className="text-sm font-[family:var(--font-kanit)] text-[#3f0f24] font-semibold group-hover:text-[#be185d] transition-colors">
-                      <Link href={`/${store.slug}/products/${product.id}`}>
+                      <Link href={`/stores/${store.slug}/products/${product.id}`}>
                         {product.title}
                       </Link>
                     </h3>
@@ -225,7 +225,7 @@ export function SirinHomepage({ store, products, categories }: SirinHomepageProp
             </div>
             
             <div className="mt-12 sm:hidden flex justify-center">
-              <Link href={`/${store.slug}`} className="flex items-center space-x-2 text-[#be185d] border border-[#be185d] px-6 py-2 rounded-full font-[family:var(--font-prompt)] font-normal">
+              <Link href={`/stores/${store.slug}`} className="flex items-center space-x-2 text-[#be185d] border border-[#be185d] px-6 py-2 rounded-full font-[family:var(--font-prompt)] font-normal">
                 <span>ดูทั้งหมด</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>

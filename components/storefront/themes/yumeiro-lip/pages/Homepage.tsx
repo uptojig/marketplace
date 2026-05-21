@@ -113,7 +113,7 @@ export function YumeiroLipHomepage({ store, products, categories }: YumeiroLipHo
           {products.map((product) => (
             <Link
               key={product.id}
-              href={`/${store.slug}/product/${product.id}`}
+              href={`/stores/${store.slug}/products/${product.id}`}
               className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-[#fbcfe8]/50 flex flex-col h-full"
             >
               <div className="relative aspect-square overflow-hidden bg-[#fff0f5]">
@@ -171,7 +171,7 @@ export function YumeiroLipHomepage({ store, products, categories }: YumeiroLipHo
             {categories.slice(0, 3).map((cat, i) => (
               <Link 
                 key={cat.id} 
-                href={`/${store.slug}/category/${cat.id}`}
+                href={`/stores/${store.slug}/category/${cat.id}`}
                 className="relative overflow-hidden rounded-3xl aspect-[4/3] group"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${

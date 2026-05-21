@@ -50,7 +50,7 @@ function ProductCard({ product, store }: { product: Product; store: HomepageProp
 
   return (
     <Link 
-      href={`/${store.slug}/product/${product.id}`}
+      href={`/stores/${store.slug}/products/${product.id}`}
       className="group block rounded-2xl bg-white border border-[#e2e8f0] overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 font-[family:var(--font-prompt)] relative"
     >
       <div className="aspect-[4/3] relative bg-[#f8fafc] overflow-hidden">
@@ -169,13 +169,13 @@ export function GlowLampCoHomepage({ store, products, categories }: HomepageProp
               </p>
               <div className="flex flex-wrap items-center gap-4 pt-4">
                 <Link
-                  href={`/${store.slug}/category/desk-lamps`}
+                  href={`/stores/${store.slug}/category/desk-lamps`}
                   className="bg-[#f59e0b] text-[#0f172a] px-8 py-4 rounded-full font-bold text-lg hover:bg-amber-400 hover:scale-105 transition-all shadow-[0_0_20px_rgba(245,158,11,0.4)] flex items-center gap-2"
                 >
                   ดูโคมตั้งโต๊ะ <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
-                  href={`/${store.slug}/about`}
+                  href={`/stores/${store.slug}/about`}
                   className="bg-transparent border border-white/30 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center gap-2"
                 >
                   รู้จักแสงของเรา
@@ -220,7 +220,7 @@ export function GlowLampCoHomepage({ store, products, categories }: HomepageProp
               </h2>
               <p className="text-[#64748b] font-[family:var(--font-prompt)]">โคมไฟที่ออกแบบมาเพื่อแสงสว่างที่สมบูรณ์แบบ</p>
             </div>
-            <Link href={`/${store.slug}/products`} className="hidden sm:flex items-center gap-2 text-[#0f172a] font-semibold hover:text-[#f59e0b] transition-colors font-[family:var(--font-kanit)]">
+            <Link href={`/stores/${store.slug}/products`} className="hidden sm:flex items-center gap-2 text-[#0f172a] font-semibold hover:text-[#f59e0b] transition-colors font-[family:var(--font-kanit)]">
               ดูทั้งหมด <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -236,7 +236,7 @@ export function GlowLampCoHomepage({ store, products, categories }: HomepageProp
       <section className="py-16 bg-white border-y border-[#e2e8f0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Link href={`/${store.slug}/category/desk-lamps`} className="bg-[#0f172a] text-white p-8 rounded-2xl flex flex-col items-start justify-between relative overflow-hidden group min-h-[250px] shadow-lg">
+            <Link href={`/stores/${store.slug}/category/desk-lamps`} className="bg-[#0f172a] text-white p-8 rounded-2xl flex flex-col items-start justify-between relative overflow-hidden group min-h-[250px] shadow-lg">
               <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1534073828943-f801091bb18c?q=80&w=1964&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay group-hover:scale-105 transition-transform duration-700"></div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/50 to-transparent"></div>
               <div className="relative z-10 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-4 border border-white/20">
@@ -250,7 +250,7 @@ export function GlowLampCoHomepage({ store, products, categories }: HomepageProp
               </div>
             </Link>
             
-            <Link href={`/${store.slug}/category/ceiling-lamps`} className="bg-[#0f172a] text-white p-8 rounded-2xl flex flex-col items-start justify-between relative overflow-hidden group min-h-[250px] shadow-lg">
+            <Link href={`/stores/${store.slug}/category/ceiling-lamps`} className="bg-[#0f172a] text-white p-8 rounded-2xl flex flex-col items-start justify-between relative overflow-hidden group min-h-[250px] shadow-lg">
               <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1540932239986-30128078f3c5?q=80&w=1974&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay group-hover:scale-105 transition-transform duration-700"></div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/50 to-transparent"></div>
               <div className="relative z-10 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-4 border border-white/20">
@@ -264,7 +264,7 @@ export function GlowLampCoHomepage({ store, products, categories }: HomepageProp
               </div>
             </Link>
 
-            <Link href={`/${store.slug}/category/bedside-lamps`} className="bg-[#f59e0b] text-[#0f172a] p-8 rounded-2xl flex flex-col items-start justify-between relative overflow-hidden group min-h-[250px] shadow-[0_10px_30px_rgba(245,158,11,0.2)]">
+            <Link href={`/stores/${store.slug}/category/bedside-lamps`} className="bg-[#f59e0b] text-[#0f172a] p-8 rounded-2xl flex flex-col items-start justify-between relative overflow-hidden group min-h-[250px] shadow-[0_10px_30px_rgba(245,158,11,0.2)]">
               <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
               <div className="relative z-10 w-12 h-12 bg-[#0f172a]/10 backdrop-blur-md rounded-full flex items-center justify-center mb-4">
                  <Moon className="w-6 h-6 text-[#0f172a]" />
@@ -336,7 +336,7 @@ export function GlowLampCoHomepage({ store, products, categories }: HomepageProp
                 </li>
               </ul>
               <div className="pt-4">
-                <Link href={`/${store.slug}/about`} className="inline-flex bg-white text-[#0f172a] px-8 py-4 rounded-full font-bold hover:bg-[#e2e8f0] transition-colors shadow-lg hover:shadow-xl items-center gap-2 font-[family:var(--font-kanit)]">
+                <Link href={`/stores/${store.slug}/about`} className="inline-flex bg-white text-[#0f172a] px-8 py-4 rounded-full font-bold hover:bg-[#e2e8f0] transition-colors shadow-lg hover:shadow-xl items-center gap-2 font-[family:var(--font-kanit)]">
                   อ่านเรื่องราวของเรา <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>

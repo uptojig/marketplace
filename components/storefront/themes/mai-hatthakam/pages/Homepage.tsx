@@ -79,7 +79,7 @@ export function MaiHatthakamHomepage({ store, products, categories }: MaiHatthak
             แก้ว ถ้วยชา และจาน ทำมือทีละชิ้นที่เชียงราย ดินแม่ขมิ้นจากแม่อาย เคลือบขี้เถ้าจากแกลบข้าวเหนียว ผลิตเป็นล็อต 20 ชิ้น
           </p>
           <Link 
-            href={`/${store.slug}/c/all`}
+            href={`/stores/${store.slug}/c/all`}
             className="inline-flex items-center justify-center px-8 py-4 bg-[#d97706] text-[#fef9f1] hover:bg-[#7c2d12] transition-colors duration-300 font-medium text-lg rounded-sm shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transform"
           >
             ดูล็อตล่าสุด
@@ -135,7 +135,7 @@ export function MaiHatthakamHomepage({ store, products, categories }: MaiHatthak
               <h2 className="text-3xl font-medium text-[#7c2d12] font-[family:var(--font-prompt)]">ผลงานล่าสุด</h2>
             </div>
             <Link 
-              href={`/${store.slug}/c/all`}
+              href={`/stores/${store.slug}/c/all`}
               className="hidden sm:inline-flex items-center text-[#7c2d12] hover:text-[#d97706] font-medium transition-colors"
             >
               ดูทั้งหมด <ArrowRight className="ml-1 w-4 h-4" />
@@ -146,7 +146,7 @@ export function MaiHatthakamHomepage({ store, products, categories }: MaiHatthak
             {featuredProducts.map((product) => (
               <Link 
                 key={product.id} 
-                href={`/${store.slug}/p/${product.id}`}
+                href={`/stores/${store.slug}/p/${product.id}`}
                 className="group flex flex-col"
               >
                 <div className="relative aspect-[4/5] bg-[#fef9f1] mb-4 overflow-hidden rounded-sm shadow-sm">
@@ -202,7 +202,7 @@ export function MaiHatthakamHomepage({ store, products, categories }: MaiHatthak
           
           <div className="mt-10 sm:hidden">
             <Link 
-              href={`/${store.slug}/c/all`}
+              href={`/stores/${store.slug}/c/all`}
               className="flex w-full items-center justify-center py-3 border border-[#7c2d12] text-[#7c2d12] hover:bg-[#7c2d12] hover:text-[#fef9f1] transition-colors rounded-sm"
             >
               ดูผลงานทั้งหมด
@@ -243,7 +243,7 @@ export function MaiHatthakamHomepage({ store, products, categories }: MaiHatthak
               </div>
               <div className="pt-6">
                 <Link 
-                  href={`/${store.slug}/about`}
+                  href={`/stores/${store.slug}/about`}
                   className="inline-flex items-center text-[#fef9f1] border-b border-[#d97706] pb-1 hover:text-[#d97706] transition-colors"
                 >
                   อ่านเรื่องราวของเรา <ArrowRight className="ml-2 w-4 h-4" />
@@ -263,7 +263,7 @@ export function MaiHatthakamHomepage({ store, products, categories }: MaiHatthak
               {categories.map(category => (
                 <Link
                   key={category.id}
-                  href={`/${store.slug}/c/${category.slug}`}
+                  href={`/stores/${store.slug}/c/${category.slug}`}
                   className="px-6 py-3 border border-[#7c2d12]/30 text-[#3a1a07] hover:border-[#d97706] hover:bg-[#fde8c8]/30 transition-all rounded-sm font-medium"
                 >
                   {category.name}

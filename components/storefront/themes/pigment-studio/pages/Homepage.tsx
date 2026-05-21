@@ -78,14 +78,14 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link
-                  href={`/${store.slug}/products`}
+                  href={`/stores/${store.slug}/products`}
                   className="inline-flex items-center justify-center px-8 py-4 bg-[#f97316] text-white rounded-full font-[family:var(--font-prompt)] font-medium text-lg hover:bg-[#ea580c] hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] transition-all duration-300 group"
                 >
                   <Palette className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
                   ดูชุดเริ่มต้น
                 </Link>
                 <Link
-                  href={`/${store.slug}/about`}
+                  href={`/stores/${store.slug}/about`}
                   className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#7c2d12] rounded-full font-[family:var(--font-prompt)] font-medium text-lg border-2 border-[#fed7aa] hover:border-[#f97316] hover:bg-[#fff7ed] transition-all duration-300"
                 >
                   ทำความรู้จักเรา
@@ -177,7 +177,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
               <div className="absolute -bottom-2 left-0 w-full h-4 bg-[#facc15]/40 rounded-full -rotate-1 z-0"></div>
             </div>
             <Link
-              href={`/${store.slug}/products`}
+              href={`/stores/${store.slug}/products`}
               className="group font-[family:var(--font-prompt)] text-[#f97316] font-medium flex items-center gap-2 hover:text-[#ea580c] transition-colors"
             >
               ดูสีทั้งหมด
@@ -192,7 +192,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
             {featuredProducts.map((product) => (
               <div key={product.id} className="group relative flex flex-col cursor-pointer">
-                <Link href={`/${store.slug}/product/${product.id}`} className="absolute inset-0 z-10" aria-label={`View ${product.title}`} />
+                <Link href={`/stores/${store.slug}/products/${product.id}`} className="absolute inset-0 z-10" aria-label={`View ${product.title}`} />
                 
                 {/* Visual Signature: Hand-painted swatch effect */}
                 <div className="relative aspect-[4/5] w-full overflow-hidden bg-transparent mb-6 transition-transform duration-500 group-hover:-translate-y-2">
@@ -234,7 +234,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                 <div className="flex justify-between items-start z-20">
                   <div>
                     <h3 className="text-lg font-[family:var(--font-kanit)] font-bold text-[#7c2d12] leading-tight line-clamp-1 group-hover:text-[#f97316] transition-colors">
-                      <Link href={`/${store.slug}/product/${product.id}`}>{product.title}</Link>
+                      <Link href={`/stores/${store.slug}/products/${product.id}`}>{product.title}</Link>
                     </h3>
                     <div className="mt-1 flex items-center gap-2 font-[family:var(--font-prompt)]">
                       <span className="text-[#f97316] font-bold">฿{product.priceTHB.toLocaleString()}</span>
@@ -277,7 +277,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                 {categories.slice(0, 5).map((category) => (
                   <Link
                     key={category.id}
-                    href={`/${store.slug}/category/${category.slug}`}
+                    href={`/stores/${store.slug}/category/${category.slug}`}
                     className="px-6 py-2 bg-white/10 hover:bg-[#f97316] text-white rounded-full font-[family:var(--font-prompt)] font-medium transition-colors border border-white/20"
                   >
                     {category.name}
@@ -314,7 +314,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {newestProducts.map((product) => (
               <div key={product.id} className="group relative bg-white rounded-[2rem] p-4 shadow-sm hover:shadow-xl transition-shadow duration-300 border border-[#fed7aa]/50">
-                <Link href={`/${store.slug}/product/${product.id}`} className="absolute inset-0 z-10" aria-label={`View ${product.title}`} />
+                <Link href={`/stores/${store.slug}/products/${product.id}`} className="absolute inset-0 z-10" aria-label={`View ${product.title}`} />
                 
                 {/* Visual Signature applied to new arrivals too */}
                 <div className="relative aspect-square w-full overflow-hidden bg-[#fff7ed] rounded-2xl mb-4 p-4">
@@ -345,7 +345,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                     {product.categoryName || 'New Arrival'}
                   </p>
                   <h3 className="text-lg font-[family:var(--font-kanit)] font-bold text-[#7c2d12] mb-2 line-clamp-1 group-hover:text-[#f97316] transition-colors">
-                    <Link href={`/${store.slug}/product/${product.id}`}>{product.title}</Link>
+                    <Link href={`/stores/${store.slug}/products/${product.id}`}>{product.title}</Link>
                   </h3>
                   <div className="flex justify-center items-center gap-2 font-[family:var(--font-prompt)] mb-4">
                     <span className="text-[#7c2d12] font-bold">฿{product.priceTHB.toLocaleString()}</span>
@@ -365,7 +365,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
           
           <div className="mt-16 text-center">
             <Link
-              href={`/${store.slug}/products`}
+              href={`/stores/${store.slug}/products`}
               className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#f97316] rounded-full font-[family:var(--font-prompt)] font-medium text-lg border-2 border-[#f97316] hover:bg-[#f97316] hover:text-white transition-all duration-300"
             >
               ดูสินค้ามาใหม่ทั้งหมด

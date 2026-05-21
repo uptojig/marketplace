@@ -79,14 +79,14 @@ export function CalderaSkinHomepage({ store, products, categories }: HomepagePro
             
             <div className="flex flex-col sm:flex-row gap-4">
               <Link 
-                href={`/${store.slug}/products`}
+                href={`/stores/${store.slug}/products`}
                 className="inline-flex items-center justify-center px-8 py-4 bg-[#0b3d4a] text-[#f4f8f9] font-[family:var(--font-prompt)] uppercase tracking-[0.15em] text-sm hover:bg-[#5cbac7] transition-colors duration-300"
               >
                 ดูผลทดสอบทางคลินิก
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
               <Link 
-                href={`/${store.slug}/about`}
+                href={`/stores/${store.slug}/about`}
                 className="inline-flex items-center justify-center px-8 py-4 border border-[#0b3d4a] text-[#0b3d4a] font-[family:var(--font-prompt)] uppercase tracking-[0.15em] text-sm hover:bg-[#cdd9dc]/50 transition-colors duration-300"
               >
                 Lab Protocols
@@ -109,7 +109,7 @@ export function CalderaSkinHomepage({ store, products, categories }: HomepagePro
               </p>
             </div>
             <Link 
-              href={`/${store.slug}/products`}
+              href={`/stores/${store.slug}/products`}
               className="group hidden md:inline-flex items-center gap-2 font-[family:var(--font-prompt)] text-xs uppercase tracking-[0.15em] text-[#0b3d4a] hover:text-[#5cbac7] transition-colors"
             >
               View Full Index <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -122,7 +122,7 @@ export function CalderaSkinHomepage({ store, products, categories }: HomepagePro
               return (
                 <Link
                   key={product.id}
-                  href={`/${store.slug}/products/${product.id}`}
+                  href={`/stores/${store.slug}/products/${product.id}`}
                   className="group bg-white border border-[#cdd9dc] hover:border-[#5cbac7] transition-colors flex flex-col h-full relative"
                 >
                   <div className="absolute top-4 left-4 z-10 bg-[#0b3d4a] text-[#f4f8f9] text-[10px] font-[family:var(--font-prompt)] uppercase tracking-[0.15em] px-2 py-1">

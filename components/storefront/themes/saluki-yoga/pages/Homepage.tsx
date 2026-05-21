@@ -79,13 +79,13 @@ export function SalukiHomepage({ store, products, categories }: SalukiHomepagePr
             </p>
             <div className="flex flex-wrap items-center gap-4">
               <Link 
-                href={`/${store.slug}?category=leggings`}
+                href={`/stores/${store.slug}?category=leggings`}
                 className="px-8 py-4 bg-[#0f766e] text-white rounded-full font-medium hover:bg-[#064e3b] transition-all transform hover:-translate-y-1 shadow-lg shadow-[#0f766e]/30 flex items-center gap-2"
               >
                 ดูเลกกิ้ง <ArrowRight className="w-5 h-5" />
               </Link>
               <Link 
-                href={`/${store.slug}#story`}
+                href={`/stores/${store.slug}#story`}
                 className="px-8 py-4 bg-white/80 backdrop-blur-sm text-[#0f766e] rounded-full font-medium hover:bg-white transition-all border border-[#a7f3d0]"
               >
                 เรื่องราวของเรา
@@ -164,7 +164,7 @@ export function SalukiHomepage({ store, products, categories }: SalukiHomepagePr
               </h2>
               <p className="text-[#064e3b]/70">สีสันแห่งธรรมชาติ สู่ชุดโยคะที่ใส่สบายที่สุด</p>
             </div>
-            <Link href={`/${store.slug}/products`} className="hidden md:flex items-center gap-2 text-[#0f766e] hover:text-[#064e3b] font-medium transition-colors">
+            <Link href={`/stores/${store.slug}/products`} className="hidden md:flex items-center gap-2 text-[#0f766e] hover:text-[#064e3b] font-medium transition-colors">
               ดูทั้งหมด <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -172,7 +172,7 @@ export function SalukiHomepage({ store, products, categories }: SalukiHomepagePr
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {featuredProducts.map((product) => (
               <div key={product.id} className="group flex flex-col h-full rounded-2xl overflow-hidden bg-[#ecfdf5]/30 border border-[#d1fae5] hover:shadow-xl hover:shadow-[#a7f3d0]/20 transition-all duration-300">
-                <Link href={`/${store.slug}/product/${product.id}`} className="relative aspect-[3/4] overflow-hidden bg-[#d1fae5]/50 flex-shrink-0">
+                <Link href={`/stores/${store.slug}/products/${product.id}`} className="relative aspect-[3/4] overflow-hidden bg-[#d1fae5]/50 flex-shrink-0">
                   {product.imageUrl ? (
                     <img 
                       src={product.imageUrl} 
@@ -206,7 +206,7 @@ export function SalukiHomepage({ store, products, categories }: SalukiHomepagePr
                   <div className="text-xs font-medium text-[#0f766e] mb-2 uppercase tracking-wider">
                     {product.categoryName || 'Activewear'}
                   </div>
-                  <Link href={`/${store.slug}/product/${product.id}`}>
+                  <Link href={`/stores/${store.slug}/products/${product.id}`}>
                     <h3 className="text-lg font-medium text-[#064e3b] group-hover:text-[#0f766e] transition-colors line-clamp-2 mb-4 font-[family:var(--font-prompt)]">
                       {product.title}
                     </h3>
@@ -244,7 +244,7 @@ export function SalukiHomepage({ store, products, categories }: SalukiHomepagePr
           </div>
           
           <div className="mt-12 text-center md:hidden">
-            <Link href={`/${store.slug}/products`} className="inline-flex items-center gap-2 text-[#0f766e] font-medium border-b-2 border-[#0f766e] pb-1">
+            <Link href={`/stores/${store.slug}/products`} className="inline-flex items-center gap-2 text-[#0f766e] font-medium border-b-2 border-[#0f766e] pb-1">
               ดูสินค้าทั้งหมด <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -281,7 +281,7 @@ export function SalukiHomepage({ store, products, categories }: SalukiHomepagePr
               
               <div className="pt-4">
                 <Link 
-                  href={`/${store.slug}/sustainability`}
+                  href={`/stores/${store.slug}/sustainability`}
                   className="inline-flex items-center gap-2 text-[#a7f3d0] hover:text-white font-medium transition-colors"
                 >
                   อ่านเรื่องราวความยั่งยืน <ArrowRight className="w-5 h-5" />

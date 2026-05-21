@@ -66,7 +66,7 @@ export function PetitCoteHomepage({ store, products, categories }: HomepageProps
               เสื้อผ้า ผ้าอ้อม และของใช้สำหรับเด็ก 0-24 เดือน เนื้อผ้าออร์แกนิคคอตตอน 100% ตัดในโปรตุเกส ใส่ได้ตั้งแต่นอนยันออกข้างนอก
             </p>
             <Link
-              href={`/${store.slug}/products`}
+              href={`/stores/${store.slug}/products`}
               className="inline-flex items-center justify-center px-8 py-4 bg-[#27272a] text-[#fafafa] font-light tracking-widest hover:bg-[#525252] transition-colors rounded-full uppercase text-sm"
             >
               ดูเสื้อผ้าเด็ก <ArrowRight className="ml-2 h-4 w-4" />
@@ -97,7 +97,7 @@ export function PetitCoteHomepage({ store, products, categories }: HomepageProps
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {newArrivals.map((product) => (
-              <Link key={product.id} href={`/${store.slug}/product/${product.id}`} className="group block">
+              <Link key={product.id} href={`/stores/${store.slug}/products/${product.id}`} className="group block">
                 <div className="relative aspect-[3/4] mb-4 bg-[#fafafa] rounded-sm overflow-hidden group-hover:shadow-md transition-shadow duration-300 border border-[#f4f4f5]">
                   {product.imageUrl ? (
                     <img
@@ -145,7 +145,7 @@ export function PetitCoteHomepage({ store, products, categories }: HomepageProps
           </div>
           
           <div className="mt-16 text-center">
-            <Link href={`/${store.slug}/products`} className="text-[#525252] hover:text-[#27272a] font-light underline underline-offset-4 tracking-widest uppercase text-sm transition-colors">
+            <Link href={`/stores/${store.slug}/products`} className="text-[#525252] hover:text-[#27272a] font-light underline underline-offset-4 tracking-widest uppercase text-sm transition-colors">
               View All Pieces
             </Link>
           </div>
@@ -161,7 +161,7 @@ export function PetitCoteHomepage({ store, products, categories }: HomepageProps
               สร้างรายการของขวัญสำหรับวันเกิด แรกเกิด หรือโอกาสพิเศษต่างๆ ให้เพื่อนๆ และครอบครัวเลือกซื้อได้อย่างง่ายดาย
             </p>
             <Link
-              href={`/${store.slug}/registry`}
+              href={`/stores/${store.slug}/registry`}
               className="inline-block px-8 py-4 border border-[#27272a] text-[#27272a] font-light tracking-widest hover:bg-[#27272a] hover:text-white transition-colors rounded-full uppercase text-sm"
             >
               Create Registry

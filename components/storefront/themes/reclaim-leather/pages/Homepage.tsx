@@ -77,10 +77,10 @@ export function ReclaimLeatherHomepage({ store, products, categories }: ReclaimL
                 กระเป๋าสะพายข้าง วอลเล็ต และเครื่องหนังจากเศษหนัง vegetable-tanned จากโรงงานในกรุงเทพ เย็บมือทุกใบ ใช้ทนได้ 10 ปี
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link href={`/${store.slug}/category/bags`} className="inline-flex items-center justify-center px-8 py-4 bg-[#5b3a1e] text-[#f4ead8] font-[family:var(--font-prompt)] font-semibold text-lg hover:bg-[#2a1a09] transition-all transform hover:-translate-y-1 shadow-[4px_4px_0px_#c9974b] hover:shadow-[6px_6px_0px_#c9974b] border-2 border-[#2a1a09]">
+                <Link href={`/stores/${store.slug}/category/bags`} className="inline-flex items-center justify-center px-8 py-4 bg-[#5b3a1e] text-[#f4ead8] font-[family:var(--font-prompt)] font-semibold text-lg hover:bg-[#2a1a09] transition-all transform hover:-translate-y-1 shadow-[4px_4px_0px_#c9974b] hover:shadow-[6px_6px_0px_#c9974b] border-2 border-[#2a1a09]">
                   ดูกระเป๋าสะพายข้าง
                 </Link>
-                <Link href={`/${store.slug}/about`} className="inline-flex items-center justify-center px-8 py-4 bg-transparent text-[#5b3a1e] font-[family:var(--font-prompt)] font-semibold text-lg hover:bg-[#e6d7b8] transition-colors border-2 border-[#5b3a1e]">
+                <Link href={`/stores/${store.slug}/about`} className="inline-flex items-center justify-center px-8 py-4 bg-transparent text-[#5b3a1e] font-[family:var(--font-prompt)] font-semibold text-lg hover:bg-[#e6d7b8] transition-colors border-2 border-[#5b3a1e]">
                   เรื่องราวของเรา
                 </Link>
               </div>
@@ -139,14 +139,14 @@ export function ReclaimLeatherHomepage({ store, products, categories }: ReclaimL
             <h2 className="text-4xl font-bold font-[family:var(--font-prompt)] text-[#2a1a09] mb-3">คอลเลกชันล่าสุด</h2>
             <p className="text-lg font-[family:var(--font-kanit)] text-[#5b3a1e]">แต่ละใบมีลวดลายและสีที่เป็นเอกลักษณ์</p>
           </div>
-          <Link href={`/${store.slug}/products`} className="hidden md:inline-flex items-center gap-2 font-[family:var(--font-prompt)] font-bold text-[#5b3a1e] hover:text-[#c9974b] transition-colors group">
+          <Link href={`/stores/${store.slug}/products`} className="hidden md:inline-flex items-center gap-2 font-[family:var(--font-prompt)] font-bold text-[#5b3a1e] hover:text-[#c9974b] transition-colors group">
             ดูทั้งหมด <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {featuredProducts.map((product) => (
-            <Link key={product.id} href={`/${store.slug}/product/${product.id}`} className="group block bg-white border-2 border-[#5b3a1e] hover:-translate-y-2 transition-all duration-300 shadow-[4px_4px_0px_#e6d7b8] hover:shadow-[8px_8px_0px_#5b3a1e]">
+            <Link key={product.id} href={`/stores/${store.slug}/products/${product.id}`} className="group block bg-white border-2 border-[#5b3a1e] hover:-translate-y-2 transition-all duration-300 shadow-[4px_4px_0px_#e6d7b8] hover:shadow-[8px_8px_0px_#5b3a1e]">
               <div className="aspect-square bg-[#f4ead8] relative overflow-hidden border-b-2 border-[#5b3a1e]">
                 {/* Repair-for-life Badge */}
                 <div className="absolute top-3 right-3 z-20 bg-[#2a1a09] text-[#c9974b] text-[10px] font-bold px-2 py-1 flex items-center gap-1 font-[family:var(--font-prompt)] uppercase tracking-wider shadow-sm border border-[#c9974b]/30">
@@ -198,7 +198,7 @@ export function ReclaimLeatherHomepage({ store, products, categories }: ReclaimL
         </div>
         
         <div className="mt-12 text-center md:hidden">
-          <Link href={`/${store.slug}/products`} className="inline-flex items-center gap-2 font-[family:var(--font-prompt)] font-bold text-[#f4ead8] bg-[#5b3a1e] px-6 py-3 border-2 border-[#2a1a09] shadow-[4px_4px_0px_#c9974b]">
+          <Link href={`/stores/${store.slug}/products`} className="inline-flex items-center gap-2 font-[family:var(--font-prompt)] font-bold text-[#f4ead8] bg-[#5b3a1e] px-6 py-3 border-2 border-[#2a1a09] shadow-[4px_4px_0px_#c9974b]">
             ดูทั้งหมด <ArrowRight size={18} />
           </Link>
         </div>
@@ -235,7 +235,7 @@ export function ReclaimLeatherHomepage({ store, products, categories }: ReclaimL
                     ทุกชิ้นจึงมีเอกลักษณ์เฉพาะตัว และมีใบเดียวในโลก
                   </p>
                 </div>
-                <Link href={`/${store.slug}/about`} className="inline-block mt-8 font-[family:var(--font-prompt)] font-bold text-[#5b3a1e] border-b-2 border-[#c9974b] pb-1 hover:text-[#2a1a09] hover:border-[#2a1a09] transition-colors">
+                <Link href={`/stores/${store.slug}/about`} className="inline-block mt-8 font-[family:var(--font-prompt)] font-bold text-[#5b3a1e] border-b-2 border-[#c9974b] pb-1 hover:text-[#2a1a09] hover:border-[#2a1a09] transition-colors">
                   อ่านเรื่องราวของเราทั้งหมด
                 </Link>
               </div>

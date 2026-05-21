@@ -93,7 +93,7 @@ export function TrailcraftHomepage({ store, products, categories }: TrailcraftHo
             
             <div className="pt-4">
               <Link 
-                href={`/${store.slug}/category/shoes`}
+                href={`/stores/${store.slug}/category/shoes`}
                 className="inline-flex items-center gap-3 bg-[#facc15] text-[#1a2e05] px-8 py-4 rounded-md font-[family:var(--font-kanit)] font-bold text-lg hover:bg-white hover:text-[#365314] transition-all transform hover:-translate-y-1 hover:shadow-[0_8px_0_0_#1a2e05]"
               >
                 ดูรองเท้าเทรล
@@ -135,7 +135,7 @@ export function TrailcraftHomepage({ store, products, categories }: TrailcraftHo
               </h2>
               <p className="text-[#365314] font-[family:var(--font-prompt)] mt-2">อุปกรณ์พร้อมลุยสำหรับทุกสภาพเส้นทาง</p>
             </div>
-            <Link href={`/${store.slug}/products`} className="hidden md:flex items-center gap-2 text-[#365314] hover:text-[#1a2e05] font-[family:var(--font-prompt)] font-semibold border-b-2 border-[#84cc16] pb-1">
+            <Link href={`/stores/${store.slug}/products`} className="hidden md:flex items-center gap-2 text-[#365314] hover:text-[#1a2e05] font-[family:var(--font-prompt)] font-semibold border-b-2 border-[#84cc16] pb-1">
               ดูสินค้าทั้งหมด <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -145,7 +145,7 @@ export function TrailcraftHomepage({ store, products, categories }: TrailcraftHo
               const badges = getBadges(product.id);
               
               return (
-                <Link key={product.id} href={`/${store.slug}/product/${product.id}`} className="group flex flex-col bg-white rounded-xl shadow-sm hover:shadow-xl border border-[#ecfccb] hover:border-[#84cc16] transition-all duration-300 overflow-hidden relative">
+                <Link key={product.id} href={`/stores/${store.slug}/products/${product.id}`} className="group flex flex-col bg-white rounded-xl shadow-sm hover:shadow-xl border border-[#ecfccb] hover:border-[#84cc16] transition-all duration-300 overflow-hidden relative">
                   
                   {/* Image Container */}
                   <div className="relative aspect-[4/5] bg-[#fdfbe8] p-6 overflow-hidden flex items-center justify-center">
@@ -213,7 +213,7 @@ export function TrailcraftHomepage({ store, products, categories }: TrailcraftHo
           </div>
           
           <div className="mt-12 text-center md:hidden">
-            <Link href={`/${store.slug}/products`} className="inline-flex items-center gap-2 text-[#365314] hover:text-[#1a2e05] font-[family:var(--font-prompt)] font-semibold border-b-2 border-[#84cc16] pb-1">
+            <Link href={`/stores/${store.slug}/products`} className="inline-flex items-center gap-2 text-[#365314] hover:text-[#1a2e05] font-[family:var(--font-prompt)] font-semibold border-b-2 border-[#84cc16] pb-1">
               ดูสินค้าทั้งหมด <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -239,7 +239,7 @@ export function TrailcraftHomepage({ store, products, categories }: TrailcraftHo
               { title: 'Hydration Vests', slug: 'hydration', desc: 'เป้น้ำน้ำหนักเบา จุของได้เยอะ', icon: <Droplets className="w-8 h-8" /> },
               { title: 'Technical Apparel', slug: 'apparel', desc: 'เสื้อผ้าแห้งไว ระบายอากาศดีเยี่ยม', icon: <Mountain className="w-8 h-8" /> }
             ].map((cat, i) => (
-              <Link key={i} href={`/${store.slug}/category/${cat.slug}`} className="group relative block h-72 overflow-hidden rounded-2xl bg-[#1a2e05] border border-[#84cc16]/30 hover:border-[#facc15] transition-colors">
+              <Link key={i} href={`/stores/${store.slug}/category/${cat.slug}`} className="group relative block h-72 overflow-hidden rounded-2xl bg-[#1a2e05] border border-[#84cc16]/30 hover:border-[#facc15] transition-colors">
                 <div className="absolute inset-0 opacity-10 topo-bg mix-blend-overlay group-hover:opacity-30 transition-opacity"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1a2e05] to-transparent z-10"></div>
                 

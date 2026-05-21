@@ -89,7 +89,7 @@ export function KorakotHouseHomepage({ store, products, categories }: HomepagePr
             {featured.map((product, index) => (
               <div key={product.id} className={`flex flex-col ${index % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'} gap-12 lg:gap-20 items-center`}>
                 <div className="w-full lg:w-3/5">
-                  <Link href={`/${store.slug}/products/${product.id}`} className="group block relative overflow-hidden bg-[#e8d5b7] aspect-[4/3] shadow-lg">
+                  <Link href={`/stores/${store.slug}/products/${product.id}`} className="group block relative overflow-hidden bg-[#e8d5b7] aspect-[4/3] shadow-lg">
                     {product.imageUrl ? (
                       <img 
                         src={product.imageUrl} 
@@ -109,7 +109,7 @@ export function KorakotHouseHomepage({ store, products, categories }: HomepagePr
                   <span className="text-[#7c4a1e] font-[family:var(--font-kanit)] text-sm tracking-widest uppercase mb-4">
                     {product.categoryName || 'เฟอร์นิเจอร์'}
                   </span>
-                  <Link href={`/${store.slug}/products/${product.id}`} className="group">
+                  <Link href={`/stores/${store.slug}/products/${product.id}`} className="group">
                     <h3 className="text-3xl md:text-4xl font-[family:var(--font-kanit)] font-medium text-[#3a2818] mb-6 group-hover:text-[#7c4a1e] transition-colors leading-tight">
                       {product.title}
                     </h3>
@@ -180,7 +180,7 @@ export function KorakotHouseHomepage({ store, products, categories }: HomepagePr
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
               {rest.map((product) => (
-                <Link href={`/${store.slug}/products/${product.id}`} key={product.id} className="group block">
+                <Link href={`/stores/${store.slug}/products/${product.id}`} key={product.id} className="group block">
                   <div className="relative aspect-[4/5] bg-[#e8d5b7] mb-6 overflow-hidden shadow-sm group-hover:shadow-md transition-shadow duration-300">
                     {product.imageUrl ? (
                       <img 
