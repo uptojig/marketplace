@@ -44,24 +44,6 @@ import { templateIdsForGroup } from '@/lib/templates/template-groups';
 // / radius / spacing)
 // ---------------------------------------------------------------------------
 
-export interface LifestyleColors {
-  /** CTAs and price emphasis — terracotta (orange-600). Filled, friendly. */
-  primary: string;
-  /** Sage — used for icons / hairlines / chip accents. Soft outdoorsy green. */
-  accent: string;
-  /** Card / inner surface — pure white. */
-  surface: string;
-  /** Page background — warm cream, friendly outdoor light. */
-  bg: string;
-  /** Muted surface — peach for secondary cards / in-use scenes. */
-  muted: string;
-  /** Primary text — deep umber. Warm brown reads as catalog-friendly. */
-  ink: string;
-  /** Muted text — stone-500 for tagline / benefits. */
-  inkMuted: string;
-  /** Hairline borders — soft brown. */
-  border: string;
-}
 
 export interface LifestyleTypography {
   /** Used for h1..h3 — Outfit / Plus Jakarta Sans display via CSS var.
@@ -83,48 +65,14 @@ export interface LifestyleTypography {
   headingWeight: 600;
 }
 
-export interface LifestyleRadius {
-  /** Rare — most chrome lives at rounded-3xl. */
-  none: string;
-  sm: string;
-  md: string;
-  lg: string;
-  /** Default for buttons / pills (rectangular pill). */
-  xl: string;
-  /** Default for cards — generous, airy. */
-  '2xl': string;
-  /** Promoted card radius — even more airy. */
-  '3xl': string;
-  /** Pills explicitly disabled for full-circle in lifestyle — use rounded
-   *  pill rectangles instead. Kept here only for legacy callers expecting
-   *  a value at this key. */
-  full: string;
-}
 
-export interface LifestyleSpacing {
-  /** Airy density — translates to py-16 sections, gap-8 grids. */
-  density: 'airy';
-  /** Section vertical padding utility (Tailwind class). */
-  section: string;
-  /** Grid gap utility (Tailwind class). */
-  grid: string;
-}
 
-export interface LifestyleTokens {
-  code: 'lifestyle';
-  label: string;
-  description: string;
-  colors: LifestyleColors;
-  typography: LifestyleTypography;
-  radius: LifestyleRadius;
-  spacing: LifestyleSpacing;
-}
 
 // ---------------------------------------------------------------------------
 // Token values
 // ---------------------------------------------------------------------------
 
-export const LIFESTYLE_TOKENS: LifestyleTokens = {
+export const LIFESTYLE_TOKENS = {
   code: 'lifestyle',
   label: 'Lifestyle — Warm Catalog / Outdoorsy',
   description:

@@ -43,26 +43,6 @@ import { templateIdsForGroup } from '@/lib/templates/template-groups';
 // Token shape (mirrors trust.ts — colors / typography / radius / spacing)
 // ---------------------------------------------------------------------------
 
-export interface ElectronicsTechColors {
-  /** CTAs and price emphasis — electric blue (blue-600). Filled. */
-  primary: string;
-  /** Cyan-500 — secondary accents, compare-chip outlines. */
-  accent: string;
-  /** Mint highlight — "in stock", spec deltas, success chips. */
-  highlight: string;
-  /** Card / inner surface — pure white. */
-  surface: string;
-  /** Page background — pure white (Apple / Best Buy). */
-  bg: string;
-  /** Muted surface — slate-100 for spec rows + secondary cards. */
-  muted: string;
-  /** Primary text — slate-900. */
-  ink: string;
-  /** Muted text — slate-500 for captions / eyebrows. */
-  inkMuted: string;
-  /** Hairline borders — slate-200. */
-  border: string;
-}
 
 export interface ElectronicsTechTypography {
   /** Display sans — Inter Tight (or Inter) via CSS var, NEVER serif.
@@ -88,44 +68,14 @@ export interface ElectronicsTechTypography {
   headingWeight: 700;
 }
 
-export interface ElectronicsTechRadius {
-  none: string;
-  /** Default cards / spec tables — rounded-md. */
-  sm: string;
-  md: string;
-  /** Reserved aliases — point at rounded-md so the family stays
-   *  rectangular-but-not-pill. */
-  lg: string;
-  xl: string;
-  '2xl': string;
-  /** Pills explicitly disabled — chips are rectangles. */
-  full: string;
-}
 
-export interface ElectronicsTechSpacing {
-  /** High overall density — translates to py-10 sections, gap-4 grids. */
-  density: 'dense';
-  /** Section vertical padding utility (Tailwind class). */
-  section: string;
-  /** Grid gap utility (Tailwind class). */
-  grid: string;
-}
 
-export interface ElectronicsTechTokens {
-  code: 'electronics-tech';
-  label: string;
-  description: string;
-  colors: ElectronicsTechColors;
-  typography: ElectronicsTechTypography;
-  radius: ElectronicsTechRadius;
-  spacing: ElectronicsTechSpacing;
-}
 
 // ---------------------------------------------------------------------------
 // Token values
 // ---------------------------------------------------------------------------
 
-export const ELECTRONICS_TECH_TOKENS: ElectronicsTechTokens = {
+export const ELECTRONICS_TECH_TOKENS = {
   code: 'electronics-tech',
   label: 'Electronics-Tech — Spec-Sheet / Consumer Electronics',
   description:

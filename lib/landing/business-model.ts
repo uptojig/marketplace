@@ -41,27 +41,6 @@ import { templateIdsForGroup } from '@/lib/templates/template-groups';
 // Token shape (mirrors trust.ts — colors / typography / radius / spacing)
 // ---------------------------------------------------------------------------
 
-export interface BusinessModelColors {
-  /** CTAs + urgency ink — red-600. Fills "Add to cart" / "Checkout". */
-  primary: string;
-  /** Amber-500 — countdown / flash-sale flag stickers ONLY.
-   *  Never as a primary button fill (red owns CTAs). */
-  accent: string;
-  /** Mint green-500 — savings indicator pills ("Save 30%"). */
-  savings: string;
-  /** Card / inner surface — pure white. */
-  surface: string;
-  /** Page background — pure white. Spreadsheet / dashboard feel. */
-  bg: string;
-  /** Muted surface — yellow-50 deal-card tint + row striping. */
-  muted: string;
-  /** Primary text — slate-900. */
-  ink: string;
-  /** Muted text — slate-500 for captions. */
-  inkMuted: string;
-  /** Hairline borders — zinc-200. */
-  border: string;
-}
 
 export interface BusinessModelTypography {
   /** Headings + numerics — Inter sans loaded via --font-sans (already
@@ -86,46 +65,14 @@ export interface BusinessModelTypography {
   headingWeight: 700;
 }
 
-export interface BusinessModelRadius {
-  /** Squared CTAs — rectangular utility look. */
-  none: string;
-  /** Default for inputs / chips — rounded-sm. */
-  sm: string;
-  /** Cards / containers — rounded-md only. */
-  md: string;
-  lg: string;
-  xl: string;
-  /** Even rounded-2xl in business-model → rounded-md (sharp utility). */
-  '2xl': string;
-  /** Pills disabled in business-model — rectangular utility. */
-  full: string;
-}
 
-export interface BusinessModelSpacing {
-  /** High density — tier tables, countdown banner, MOQ chips, savings
-   *  callouts all packed together. Translates to py-8 sections, gap-4 grids. */
-  density: 'dense';
-  /** Section vertical padding utility (Tailwind class). */
-  section: string;
-  /** Grid gap utility (Tailwind class). */
-  grid: string;
-}
 
-export interface BusinessModelTokens {
-  code: 'business-model';
-  label: string;
-  description: string;
-  colors: BusinessModelColors;
-  typography: BusinessModelTypography;
-  radius: BusinessModelRadius;
-  spacing: BusinessModelSpacing;
-}
 
 // ---------------------------------------------------------------------------
 // Token values
 // ---------------------------------------------------------------------------
 
-export const BUSINESS_MODEL_TOKENS: BusinessModelTokens = {
+export const BUSINESS_MODEL_TOKENS = {
   code: 'business-model',
   label: 'Business-Model — Deal Dashboard / Wholesale Utility',
   description:

@@ -42,25 +42,6 @@ import { templateIdsForGroup } from '@/lib/templates/template-groups';
 // Token shape (mirrors fashion-beauty.ts — colors / typography / radius / spacing)
 // ---------------------------------------------------------------------------
 
-export interface TrustColors {
-  /** CTAs and emphasis ink — charcoal (slate-800). High-contrast fill. */
-  primary: string;
-  /** Gold — used for hairlines / eyebrows / decorative accents ONLY.
-   *  Never as a button fill (luxury rule). */
-  accent: string;
-  /** Card / inner surface — pure white. */
-  surface: string;
-  /** Page background — ivory, warmer than stone-50. */
-  bg: string;
-  /** Muted surface — pale stone for secondary cards. */
-  muted: string;
-  /** Primary text — deep navy (slate-900). */
-  ink: string;
-  /** Muted text — slate-500 for captions / eyebrows. */
-  inkMuted: string;
-  /** Hairline borders — stone-200. */
-  border: string;
-}
 
 export interface TrustTypography {
   /** Used for h1..h4 + labels — Playfair Display serif via CSS var.
@@ -83,47 +64,14 @@ export interface TrustTypography {
   headingWeight: 600;
 }
 
-export interface TrustRadius {
-  /** Squared corners — luxury feels rectangular, not soft. */
-  none: string;
-  /** Default for cards / CTAs — rounded-sm only. */
-  sm: string;
-  /** Reserved for legacy callers that expect a value here.
-   *  Set to rounded-sm so default-styled cards still look squared
-   *  if they ask the token bag for radius.md/lg/xl. */
-  md: string;
-  lg: string;
-  xl: string;
-  /** Even rounded-2xl in trust → squared. */
-  '2xl': string;
-  /** Pills explicitly disabled in trust. */
-  full: string;
-}
 
-export interface TrustSpacing {
-  /** Generous overall density — translates to py-16 sections, gap-6 grids. */
-  density: 'generous';
-  /** Section vertical padding utility (Tailwind class). */
-  section: string;
-  /** Grid gap utility (Tailwind class). */
-  grid: string;
-}
 
-export interface TrustTokens {
-  code: 'trust';
-  label: string;
-  description: string;
-  colors: TrustColors;
-  typography: TrustTypography;
-  radius: TrustRadius;
-  spacing: TrustSpacing;
-}
 
 // ---------------------------------------------------------------------------
 // Token values
 // ---------------------------------------------------------------------------
 
-export const TRUST_TOKENS: TrustTokens = {
+export const TRUST_TOKENS = {
   code: 'trust',
   label: 'Trust — Department-store / Luxury Heritage',
   description:

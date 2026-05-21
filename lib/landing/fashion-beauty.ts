@@ -36,24 +36,6 @@ import { templateIdsForGroup } from '@/lib/templates/template-groups';
 // Token shape (per spec — must include colors / typography / radius / spacing)
 // ---------------------------------------------------------------------------
 
-export interface FashionBeautyColors {
-  /** Hero CTAs, price emphasis, focus rings. Rose-500. */
-  primary: string;
-  /** Soft accent — rose-300, used for chips / pills / hover. */
-  accent: string;
-  /** Card / inner surface — pure white. */
-  surface: string;
-  /** Page background — cream / off-white. */
-  bg: string;
-  /** Muted surface — peach / blush card tint. */
-  muted: string;
-  /** Primary text — deep mauve / near-black. */
-  ink: string;
-  /** Muted text — soft stone for captions. */
-  inkMuted: string;
-  /** Hairline borders — pale rose. */
-  border: string;
-}
 
 export interface FashionBeautyTypography {
   /** Used for h1/h2/h3 — serif display font (CSS-var loaded by app/layout.tsx). */
@@ -73,42 +55,14 @@ export interface FashionBeautyTypography {
   headingWeight: 500;
 }
 
-export interface FashionBeautyRadius {
-  xs: string;
-  sm: string;
-  md: string;
-  lg: string;
-  xl: string;
-  /** Default for product cards / hero gallery. */
-  '2xl': string;
-  /** Hero CTA + primary buttons — fully rounded. */
-  full: string;
-}
 
-export interface FashionBeautySpacing {
-  /** Generous overall density — translates to py-12 sections, gap-8 grids. */
-  density: 'airy';
-  /** Section vertical padding utility (Tailwind class). */
-  section: string;
-  /** Grid gap utility (Tailwind class). */
-  grid: string;
-}
 
-export interface FashionBeautyTokens {
-  code: 'fashion-beauty';
-  label: string;
-  description: string;
-  colors: FashionBeautyColors;
-  typography: FashionBeautyTypography;
-  radius: FashionBeautyRadius;
-  spacing: FashionBeautySpacing;
-}
 
 // ---------------------------------------------------------------------------
 // Token values
 // ---------------------------------------------------------------------------
 
-export const FASHION_BEAUTY_TOKENS: FashionBeautyTokens = {
+export const FASHION_BEAUTY_TOKENS = {
   code: 'fashion-beauty',
   label: 'Fashion & Beauty — Editorial Soft',
   description:

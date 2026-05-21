@@ -21,66 +21,16 @@
  *   - Components in `components/marketplace/*` consume the utilities.
  */
 
-export interface MarketplaceColors {
-  /** Warm coral — primary CTAs (เปิดร้าน, เริ่มต้นฟรี). */
-  primary: string;
-  /** Deeper coral — hover state for primary buttons, brand mark. */
-  primaryDark: string;
-  /** Forest green — secondary CTAs, links, footer background. */
-  secondary: string;
-  /** Cream page background — warmer than gray, Thai-cultural friendly. */
-  bg: string;
-  /** Darker cream — section dividers (How-It-Works, Pricing). */
-  bgAlt: string;
-  /** Off-white card surface — slight tint to pop against cream bg. */
-  surface: string;
-  /** Pure white — modals, inputs, hover surfaces. */
-  surfaceContrast: string;
-  /** Near-black ink for body + headings. */
-  ink: string;
-  /** Muted ink for body copy, captions. */
-  inkMuted: string;
-  /** Hairline warm border — replaces gray borders project-wide. */
-  border: string;
-  /** Star/badge yellow for testimonials + warning states. */
-  warning: string;
-}
 
-export interface MarketplaceTypography {
-  /** Display + h1/h2/h3 — IBM Plex Sans Thai for editorial authority. */
-  displayFontVar: string;
-  /** Body + UI — Prompt for Thai legibility. */
-  bodyFontVar: string;
-  /** Numerics, SKU, stat cards — JetBrains Mono. */
-  monoFontVar: string;
-}
 
-export interface MarketplaceSpacing {
-  /** Container max-width — matches Stitch DESIGN.md (1200px). */
-  containerMax: string;
-  /** Section vertical padding — desktop. */
-  sectionDesktop: string;
-  /** Section vertical padding — mobile. */
-  sectionMobile: string;
-  /** Grid + column gap — 24px to match other families. */
-  gutter: string;
-}
 
-export interface MarketplaceTokens {
-  code: 'marketplace';
-  label: string;
-  description: string;
-  colors: MarketplaceColors;
-  typography: MarketplaceTypography;
-  spacing: MarketplaceSpacing;
-}
 
 // ---------------------------------------------------------------------------
 // Token values — keep in sync with the .theme-marketplace block in
 // app/globals.css and the @theme inline `--color-mp-*` exports.
 // ---------------------------------------------------------------------------
 
-export const MARKETPLACE_TOKENS: MarketplaceTokens = {
+export const MARKETPLACE_TOKENS = {
   code: 'marketplace',
   label: 'Marketplace — Editorial Merchant',
   description:

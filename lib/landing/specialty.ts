@@ -46,24 +46,6 @@ import { templateIdsForGroup } from '@/lib/templates/template-groups';
 // Token shape (per spec — must include colors / typography / radius / spacing)
 // ---------------------------------------------------------------------------
 
-export interface SpecialtyColors {
-  /** Hero CTAs, price emphasis, focus rings. Ochre / yellow-600. */
-  primary: string;
-  /** Terra-rose accent — used sparingly for secondary highlights. */
-  accent: string;
-  /** Card / inner surface — soft warm white. */
-  surface: string;
-  /** Page background — kraft paper warm beige. */
-  bg: string;
-  /** Muted surface — faded sage / hairline-grey for secondary cards. */
-  muted: string;
-  /** Primary text — warm near-black (stone-700). */
-  ink: string;
-  /** Muted text — warm stone for captions. */
-  inkMuted: string;
-  /** Hairline borders — soft kraft taupe. */
-  border: string;
-}
 
 export interface SpecialtyTypography {
   /** Used for h1/h2/h3 — Fraunces slab-serif (CSS-var loaded by app/layout.tsx). */
@@ -85,41 +67,14 @@ export interface SpecialtyTypography {
   headingWeight: 500;
 }
 
-export interface SpecialtyRadius {
-  xs: string;
-  sm: string;
-  /** Default for product cards / hero gallery — subtle round. */
-  md: string;
-  lg: string;
-  xl: string;
-  '2xl': string;
-  full: string;
-}
 
-export interface SpecialtySpacing {
-  /** Medium density — translates to py-10 sections, gap-6 grids. */
-  density: 'medium';
-  /** Section vertical padding utility (Tailwind class). */
-  section: string;
-  /** Grid gap utility (Tailwind class). */
-  grid: string;
-}
 
-export interface SpecialtyTokens {
-  code: 'specialty';
-  label: string;
-  description: string;
-  colors: SpecialtyColors;
-  typography: SpecialtyTypography;
-  radius: SpecialtyRadius;
-  spacing: SpecialtySpacing;
-}
 
 // ---------------------------------------------------------------------------
 // Token values
 // ---------------------------------------------------------------------------
 
-export const SPECIALTY_TOKENS: SpecialtyTokens = {
+export const SPECIALTY_TOKENS = {
   code: 'specialty',
   label: 'Specialty — Artisan / Vintage Paper',
   description:
