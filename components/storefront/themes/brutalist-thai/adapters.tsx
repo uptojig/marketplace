@@ -60,3 +60,9 @@ export function BrutalistThaiHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as brutalist_thai_Catalog } from './pages/Catalog';
+export { default as brutalist_thai_ProductDetail } from './pages/ProductDetail';
+export { default as brutalist_thai_Cart } from './pages/Cart';
+export { default as brutalist_thai_Checkout } from './pages/Checkout';

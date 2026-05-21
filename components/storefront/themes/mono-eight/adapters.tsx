@@ -60,3 +60,9 @@ export function MonoEightHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as mono_eight_Catalog } from './pages/Catalog';
+export { default as mono_eight_ProductDetail } from './pages/ProductDetail';
+export { default as mono_eight_Cart } from './pages/Cart';
+export { default as mono_eight_Checkout } from './pages/Checkout';

@@ -46,3 +46,9 @@ export function WavelengthAudioHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as wavelength_audio_Catalog } from './pages/Catalog';
+export { default as wavelength_audio_ProductDetail } from './pages/ProductDetail';
+export { default as wavelength_audio_Cart } from './pages/Cart';
+export { default as wavelength_audio_Checkout } from './pages/Checkout';

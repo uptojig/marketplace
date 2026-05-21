@@ -45,3 +45,9 @@ export function TinyhandWoodenToysHomepageAdapter(props: ScaffoldHomepageProps) 
     />
   );
 }
+
+// Page re-exports
+export { default as tinyhand_wooden_toys_Catalog } from './pages/Catalog';
+export { default as tinyhand_wooden_toys_ProductDetail } from './pages/ProductDetail';
+export { default as tinyhand_wooden_toys_Cart } from './pages/Cart';
+export { default as tinyhand_wooden_toys_Checkout } from './pages/Checkout';

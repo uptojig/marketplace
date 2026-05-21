@@ -41,3 +41,9 @@ export function EverydayRetailFooterAdapter(props: ScaffoldFooterProps) {
 export function EverydayRetailStripAdapter(props: ScaffoldStripProps) {
   return <EverydayRetailStrip storeName={props.storeName} />;
 }
+
+// Page re-exports
+export { default as everyday_retail_Catalog } from './pages/Catalog';
+export { default as everyday_retail_ProductDetail } from './pages/ProductDetail';
+export { default as everyday_retail_Cart } from './pages/Cart';
+export { default as everyday_retail_Checkout } from './pages/Checkout';

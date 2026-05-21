@@ -42,3 +42,9 @@ export function TrailcraftHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as trailcraft_outdoors_Catalog } from './pages/Catalog';
+export { default as trailcraft_outdoors_ProductDetail } from './pages/ProductDetail';
+export { default as trailcraft_outdoors_Cart } from './pages/Cart';
+export { default as trailcraft_outdoors_Checkout } from './pages/Checkout';

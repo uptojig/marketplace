@@ -46,3 +46,9 @@ export function SirinHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as sirin_womenswear_Catalog } from './pages/Catalog';
+export { default as sirin_womenswear_ProductDetail } from './pages/ProductDetail';
+export { default as sirin_womenswear_Cart } from './pages/Cart';
+export { default as sirin_womenswear_Checkout } from './pages/Checkout';

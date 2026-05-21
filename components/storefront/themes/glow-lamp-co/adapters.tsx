@@ -46,3 +46,9 @@ export function GlowLampCoHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as glow_lamp_co_Catalog } from './pages/Catalog';
+export { default as glow_lamp_co_ProductDetail } from './pages/ProductDetail';
+export { default as glow_lamp_co_Cart } from './pages/Cart';
+export { default as glow_lamp_co_Checkout } from './pages/Checkout';

@@ -63,3 +63,9 @@ export function PastelPackHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as pastel_pack_Catalog } from './pages/Catalog';
+export { default as pastel_pack_ProductDetail } from './pages/ProductDetail';
+export { default as pastel_pack_Cart } from './pages/Cart';
+export { default as pastel_pack_Checkout } from './pages/Checkout';

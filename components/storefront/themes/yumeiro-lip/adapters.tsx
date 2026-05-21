@@ -60,3 +60,9 @@ export function YumeiroLipHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as yumeiro_lip_Catalog } from './pages/Catalog';
+export { default as yumeiro_lip_ProductDetail } from './pages/ProductDetail';
+export { default as yumeiro_lip_Cart } from './pages/Cart';
+export { default as yumeiro_lip_Checkout } from './pages/Checkout';

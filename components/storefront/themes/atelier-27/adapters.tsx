@@ -65,3 +65,9 @@ export function Atelier27HomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as atelier_27_Catalog } from './pages/Catalog';
+export { default as atelier_27_ProductDetail } from './pages/ProductDetail';
+export { default as atelier_27_Cart } from './pages/Cart';
+export { default as atelier_27_Checkout } from './pages/Checkout';

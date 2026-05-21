@@ -71,3 +71,9 @@ export function LilaModestHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as lila_modest_Catalog } from './pages/Catalog';
+export { default as lila_modest_ProductDetail } from './pages/ProductDetail';
+export { default as lila_modest_Cart } from './pages/Cart';
+export { default as lila_modest_Checkout } from './pages/Checkout';

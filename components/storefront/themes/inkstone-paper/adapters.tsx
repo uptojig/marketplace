@@ -45,3 +45,9 @@ export function InkstonePaperHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as inkstone_paper_Catalog } from './pages/Catalog';
+export { default as inkstone_paper_ProductDetail } from './pages/ProductDetail';
+export { default as inkstone_paper_Cart } from './pages/Cart';
+export { default as inkstone_paper_Checkout } from './pages/Checkout';

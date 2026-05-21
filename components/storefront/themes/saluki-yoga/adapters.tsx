@@ -62,3 +62,9 @@ export function SalukiYogaHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as saluki_yoga_Catalog } from './pages/Catalog';
+export { default as saluki_yoga_ProductDetail } from './pages/ProductDetail';
+export { default as saluki_yoga_Cart } from './pages/Cart';
+export { default as saluki_yoga_Checkout } from './pages/Checkout';

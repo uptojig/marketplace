@@ -45,3 +45,9 @@ export function HinokiHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as hinoki_apothecary_Catalog } from './pages/Catalog';
+export { default as hinoki_apothecary_ProductDetail } from './pages/ProductDetail';
+export { default as hinoki_apothecary_Cart } from './pages/Cart';
+export { default as hinoki_apothecary_Checkout } from './pages/Checkout';

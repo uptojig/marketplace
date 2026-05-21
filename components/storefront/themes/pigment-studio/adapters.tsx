@@ -45,3 +45,9 @@ export function PigmentStudioHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as pigment_studio_Catalog } from './pages/Catalog';
+export { default as pigment_studio_ProductDetail } from './pages/ProductDetail';
+export { default as pigment_studio_Cart } from './pages/Cart';
+export { default as pigment_studio_Checkout } from './pages/Checkout';

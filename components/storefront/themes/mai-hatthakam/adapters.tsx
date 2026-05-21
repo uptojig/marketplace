@@ -46,3 +46,9 @@ export function MaiHatthakamHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as mai_hatthakam_Catalog } from './pages/Catalog';
+export { default as mai_hatthakam_ProductDetail } from './pages/ProductDetail';
+export { default as mai_hatthakam_Cart } from './pages/Cart';
+export { default as mai_hatthakam_Checkout } from './pages/Checkout';

@@ -46,3 +46,9 @@ export function CarbonEraCamerasHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as carbon_era_cameras_Catalog } from './pages/Catalog';
+export { default as carbon_era_cameras_ProductDetail } from './pages/ProductDetail';
+export { default as carbon_era_cameras_Cart } from './pages/Cart';
+export { default as carbon_era_cameras_Checkout } from './pages/Checkout';

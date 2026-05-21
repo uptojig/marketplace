@@ -46,3 +46,9 @@ export function KorakotHouseHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as korakot_house_Catalog } from './pages/Catalog';
+export { default as korakot_house_ProductDetail } from './pages/ProductDetail';
+export { default as korakot_house_Cart } from './pages/Cart';
+export { default as korakot_house_Checkout } from './pages/Checkout';

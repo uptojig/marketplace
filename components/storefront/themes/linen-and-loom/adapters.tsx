@@ -46,3 +46,9 @@ export function LinenAndLoomHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as linen_and_loom_Catalog } from './pages/Catalog';
+export { default as linen_and_loom_ProductDetail } from './pages/ProductDetail';
+export { default as linen_and_loom_Cart } from './pages/Cart';
+export { default as linen_and_loom_Checkout } from './pages/Checkout';

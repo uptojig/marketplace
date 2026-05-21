@@ -45,3 +45,9 @@ export function SmartloopHomeHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as smartloop_home_Catalog } from './pages/Catalog';
+export { default as smartloop_home_ProductDetail } from './pages/ProductDetail';
+export { default as smartloop_home_Cart } from './pages/Cart';
+export { default as smartloop_home_Checkout } from './pages/Checkout';

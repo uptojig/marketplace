@@ -45,3 +45,9 @@ export function CalderaSkinHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as caldera_skin_Catalog } from './pages/Catalog';
+export { default as caldera_skin_ProductDetail } from './pages/ProductDetail';
+export { default as caldera_skin_Cart } from './pages/Cart';
+export { default as caldera_skin_Checkout } from './pages/Checkout';

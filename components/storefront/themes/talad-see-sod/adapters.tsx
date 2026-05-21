@@ -60,3 +60,9 @@ export function TaladSeeSodHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as talad_see_sod_Catalog } from './pages/Catalog';
+export { default as talad_see_sod_ProductDetail } from './pages/ProductDetail';
+export { default as talad_see_sod_Cart } from './pages/Cart';
+export { default as talad_see_sod_Checkout } from './pages/Checkout';

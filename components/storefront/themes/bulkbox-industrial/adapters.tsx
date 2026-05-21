@@ -42,3 +42,9 @@ export function BulkboxHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as bulkbox_industrial_Catalog } from './pages/Catalog';
+export { default as bulkbox_industrial_ProductDetail } from './pages/ProductDetail';
+export { default as bulkbox_industrial_Cart } from './pages/Cart';
+export { default as bulkbox_industrial_Checkout } from './pages/Checkout';

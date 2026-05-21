@@ -42,3 +42,9 @@ export function KeystrokeLabHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as keystroke_lab_Catalog } from './pages/Catalog';
+export { default as keystroke_lab_ProductDetail } from './pages/ProductDetail';
+export { default as keystroke_lab_Cart } from './pages/Cart';
+export { default as keystroke_lab_Checkout } from './pages/Checkout';

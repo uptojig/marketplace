@@ -65,3 +65,9 @@ export function SaiSingHomepageAdapter(props: ScaffoldHomepageProps) {
     />
   );
 }
+
+// Page re-exports
+export { default as sai_sing_Catalog } from './pages/Catalog';
+export { default as sai_sing_ProductDetail } from './pages/ProductDetail';
+export { default as sai_sing_Cart } from './pages/Cart';
+export { default as sai_sing_Checkout } from './pages/Checkout';
