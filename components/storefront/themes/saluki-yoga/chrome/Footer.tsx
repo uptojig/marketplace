@@ -13,25 +13,36 @@ interface SalukiFooterProps {
 export function SalukiFooter({ storeSlug, storeName, tagline }: SalukiFooterProps) {
   const currentYear = new Date().getFullYear();
 
+  // Saluki shades derive from --shop-primary (the operator's picked accent
+  // threaded by app/stores/[slug]/layout.tsx). Hex fallbacks preserve the
+  // original saluki forest+sage palette when --shop-primary is missing.
+  const deep = "color-mix(in srgb, var(--shop-primary, #064e3b) 70%, black)";
+  const mid = "var(--shop-primary, #0f766e)";
+  const accent = "color-mix(in srgb, var(--shop-primary, #0f766e) 30%, white)";
+  const body = "color-mix(in srgb, var(--shop-primary, #0f766e) 18%, white)";
+
   return (
-    <footer className="bg-[#064e3b] text-[#d1fae5] pt-16 pb-8 font-[family:var(--font-kanit)]">
+    <footer
+      className="pt-16 pb-8 font-[family:var(--font-kanit)]"
+      style={{ background: deep, color: body }}
+    >
       <div className="container mx-auto px-4 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           <div>
             <h3 className="text-2xl font-medium text-white mb-6 tracking-wider">
               {storeName}
             </h3>
-            <p className="text-[#a7f3d0] mb-6 leading-relaxed">
+            <p className="mb-6 leading-relaxed" style={{ color: accent }}>
               {tagline || "เสื้อผ้าโยคะและพีลาทิส ผลิตจากผ้ารีไซเคิล"}
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-[#0f766e] flex items-center justify-center text-white hover:bg-[#a7f3d0] hover:text-[#064e3b] transition-colors">
+              <a href="#" className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-colors" style={{ background: mid }}>
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-[#0f766e] flex items-center justify-center text-white hover:bg-[#a7f3d0] hover:text-[#064e3b] transition-colors">
+              <a href="#" className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-colors" style={{ background: mid }}>
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-[#0f766e] flex items-center justify-center text-white hover:bg-[#a7f3d0] hover:text-[#064e3b] transition-colors">
+              <a href="#" className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-colors" style={{ background: mid }}>
                 <Twitter className="w-5 h-5" />
               </a>
             </div>
@@ -69,22 +80,25 @@ export function SalukiFooter({ storeSlug, storeName, tagline }: SalukiFooterProp
             <h4 className="text-lg font-medium text-white mb-6">ติดต่อเรา</h4>
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-[#a7f3d0] shrink-0" />
+                <MapPin className="w-5 h-5 shrink-0" style={{ color: accent }} />
                 <span>123 สุขุมวิท ซอย 24<br />คลองเตย กรุงเทพมหานคร 10110</span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-[#a7f3d0]" />
+                <Phone className="w-5 h-5" style={{ color: accent }} />
                 <span>02-123-4567</span>
               </li>
               <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-[#a7f3d0]" />
+                <Mail className="w-5 h-5" style={{ color: accent }} />
                 <span>hello@{storeSlug}.com</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="pt-8 border-t border-[#0f766e] flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[#a7f3d0]">
+        <div
+          className="pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4 text-xs"
+          style={{ borderColor: mid, color: accent }}
+        >
           <p>&copy; {currentYear} {storeName}. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="#" className="hover:text-white transition-colors">นโยบายความเป็นส่วนตัว</Link>
