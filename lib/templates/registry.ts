@@ -258,6 +258,9 @@ import {
   EverydayRetailStripAdapter,
 } from '@/components/storefront/themes/everyday-retail/adapters';
 
+import { makeCatalogAdapter } from '@/components/storefront/themes/_shared/catalog-adapter';
+
+
 export const templates: Record<TemplateId, Template> = {
   classic: {
     id: 'classic',
@@ -269,6 +272,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: ClassicHeaderAdapter,
       Footer: ClassicFooterAdapter,
       AnnouncementStrip: ClassicStripAdapter,
+    },
+      pages: {
+      catalog: makeCatalogAdapter('01'),
     },
   },
 
@@ -284,6 +290,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: LookbookHeaderAdapter,
       Footer: LookbookFooterAdapter,
       AnnouncementStrip: LookbookStripAdapter,
+    },
+      pages: {
+      catalog: makeCatalogAdapter('03'),
     },
   },
 
@@ -301,6 +310,9 @@ export const templates: Record<TemplateId, Template> = {
       Footer: TechCompareFooterAdapter,
       AnnouncementStrip: TechCompareStripAdapter,
     },
+      pages: {
+      catalog: makeCatalogAdapter('06'),
+    },
   },
 
 
@@ -316,6 +328,9 @@ export const templates: Record<TemplateId, Template> = {
       Footer: SportActiveFooterAdapter,
       AnnouncementStrip: SportActiveStripAdapter,
     },
+      pages: {
+      catalog: makeCatalogAdapter('02'),
+    },
   },
 
 
@@ -329,6 +344,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: LiveCommerceHeaderAdapter,
       Footer: LiveCommerceFooterAdapter,
       AnnouncementStrip: LiveCommerceStripAdapter,
+    },
+      pages: {
+      catalog: makeCatalogAdapter('02'),
     },
   },
 
@@ -379,6 +397,8 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'full-bleed',
     },
     pages: {
+      catalog: makeCatalogAdapter('12'),
+      catalog: makeCatalogAdapter('12'),
       home: BikiniHomepageAdapter,
       catalog: BikiniCatalogAdapter,
       pdp: BikiniProductDetailAdapter,
@@ -490,7 +510,9 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: SaiSingStripAdapter,
     },
     pages: {
+      catalog: makeCatalogAdapter('01'),
       home: SaiSingHomepageAdapter,
+      catalog: makeCatalogAdapter('01'),
     },
   },
 
@@ -523,6 +545,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: BrutalistThaiHomepageAdapter,
+      catalog: makeCatalogAdapter('07'),
     },
   },
 
@@ -539,6 +562,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: MonoEightHomepageAdapter,
+      catalog: makeCatalogAdapter('05'),
     },
   },
 
@@ -577,6 +601,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: Atelier27HomepageAdapter,
+      catalog: makeCatalogAdapter('12'),
     },
   },
 
@@ -596,6 +621,7 @@ export const templates: Record<TemplateId, Template> = {
       // adapter ships for this template.
     },
     pages: {
+      catalog: makeCatalogAdapter('12'),
       home: BulkboxHomepageAdapter,
     },
   },
@@ -616,6 +642,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: CalderaSkinHomepageAdapter,
+      catalog: makeCatalogAdapter('05'),
     },
   },
 
@@ -633,6 +660,7 @@ export const templates: Record<TemplateId, Template> = {
       // fit the 240px aside; re-enable once a vertical adapter ships.
     },
     pages: {
+      catalog: makeCatalogAdapter('09'),
       home: CarbonEraCamerasHomepageAdapter,
     },
   },
@@ -666,6 +694,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: HinokiHomepageAdapter,
+      catalog: makeCatalogAdapter('09'),
     },
   },
 
@@ -701,6 +730,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: KeystrokeLabHomepageAdapter,
+      catalog: makeCatalogAdapter('06'),
     },
   },
 
@@ -736,6 +766,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: LinenAndLoomHomepageAdapter,
+      catalog: makeCatalogAdapter('04'),
     },
   },
 
@@ -751,6 +782,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: MaiHatthakamStripAdapter,
     },
     pages: {
+      catalog: makeCatalogAdapter('04'),
       home: MaiHatthakamHomepageAdapter,
     },
   },
@@ -787,6 +819,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: PetitCoteHomepageAdapter,
+      catalog: makeCatalogAdapter('02'),
     },
   },
 
@@ -822,6 +855,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: ReclaimLeatherHomepageAdapter,
+      catalog: makeCatalogAdapter('07'),
     },
   },
 
@@ -857,6 +891,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: SirinHomepageAdapter,
+      catalog: makeCatalogAdapter('03'),
     },
   },
 
@@ -876,6 +911,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: SmartloopHomeHomepageAdapter,
+      catalog: makeCatalogAdapter('09'),
     },
   },
 
@@ -892,6 +928,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: TinyhandWoodenToysHomepageAdapter,
+      catalog: makeCatalogAdapter('02'),
     },
   },
 
@@ -908,6 +945,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: TrailcraftHomepageAdapter,
+      catalog: makeCatalogAdapter('07'),
     },
   },
 
@@ -946,6 +984,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: YumeiroLipHomepageAdapter,
+      catalog: makeCatalogAdapter('05'),
     },
   },
 };
