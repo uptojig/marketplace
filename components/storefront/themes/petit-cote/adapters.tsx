@@ -18,9 +18,9 @@ export function PetitCoteHeaderAdapter(props: ScaffoldHeaderProps) {
     <PetitCoteHeader
       store={{
         id: props.store.id,
-        name: props.store.name,
-        slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        name: props.storeName,
+        slug: props.storeSlug,
+        logoUrl: props.storeLogoUrl,
       }}
       categories={props.categories}
       cartItemCount={props.cartItemCount}

@@ -15,9 +15,9 @@ import { SalukiHomepage } from './pages/Homepage';
 export function SalukiYogaHeaderAdapter(props: ScaffoldHeaderProps) {
   return (
     <SalukiHeader 
-      storeSlug={props.store.slug}
-      storeName={props.store.name}
-      logoUrl={props.store.logoUrl ?? null}
+      storeSlug={props.storeSlug}
+      storeName={props.storeName}
+      logoUrl={props.storeLogoUrl ?? null}
     />
   );
 }

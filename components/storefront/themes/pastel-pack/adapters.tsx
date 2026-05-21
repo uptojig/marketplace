@@ -16,9 +16,9 @@ import { PastelPackHomepage } from './pages/Homepage';
 export function PastelPackHeaderAdapter(props: ScaffoldHeaderProps) {
   return (
     <PastelPackHeader
-      storeName={props.store.name}
-      storeSlug={props.store.slug}
-      logoUrl={props.store.logoUrl}
+      storeName={props.storeName}
+      storeSlug={props.storeSlug}
+      logoUrl={props.storeLogoUrl}
       categories={props.categories}
     />
   );

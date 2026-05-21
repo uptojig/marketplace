@@ -16,9 +16,9 @@ export function YumeiroLipHeaderAdapter(props: ScaffoldHeaderProps) {
   return (
     <YumeiroLipHeader
       store={{
-        name: props.store.name,
-        slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        name: props.storeName,
+        slug: props.storeSlug,
+        logoUrl: props.storeLogoUrl,
       }}
       categories={props.categories}
     />
