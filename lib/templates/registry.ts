@@ -55,6 +55,7 @@ import {
   BrutalistThaiStripAdapter,
   BrutalistThaiHomepageAdapter,
 } from '@/components/storefront/themes/brutalist-thai/adapters';
+import BrutalistCatalog from '@/components/storefront/themes/brutalist-thai/pages/Catalog';
 import {
   MonoEightHeaderAdapter,
   MonoEightFooterAdapter,
@@ -277,15 +278,8 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('06', '02'),
       cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('02'),
-      cart: makeCartAdapter('01'),
-      checkout: makeCheckoutAdapter('01'),
-      catalog: makeCatalogAdapter('12'),
       catalog: makeCatalogAdapter('12'),
       home: enhanceHomepage(enhanceHomepage, '03')(BikiniHomepageAdapter, '01'),
-      catalog: BikiniCatalogAdapter,
-      pdp: BikiniProductDetailAdapter,
-      cart: BikiniCartAdapter,
-      checkout: BikiniCheckoutAdapter,
       lookbook: BikiniLookbookAdapter,
       about: BikiniAboutAdapter,
       help: BikiniHelpAdapter,
@@ -402,14 +396,7 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('08', '03'),
       cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('02'),
-      cart: makeCartAdapter('01'),
-      checkout: makeCheckoutAdapter('01'),
-      cart: makeCartAdapter('04'),
-      checkout: makeCheckoutAdapter('04'),
-      cart: makeCartAdapter('02'),
-      checkout: makeCheckoutAdapter('02'),
       home: enhanceHomepage(enhanceHomepage, '06')(enhanceHomepage, '08')(enhanceHomepage, '07')(SaiSingHomepageAdapter, '05'),
-      catalog: makeCatalogAdapter('01'),
     },
   },
 
@@ -443,12 +430,10 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(BrutalistThaiHomepageAdapter, '01'),
-      catalog: makeCatalogAdapter('07'),
+      catalog: BrutalistCatalog,
       pdp: makePdpAdapter('05', '04'),
       cart: makeCartAdapter('04'),
       checkout: makeCheckoutAdapter('01'),
-      cart: makeCartAdapter('02'),
-      checkout: makeCheckoutAdapter('04'),
     },
   },
 
@@ -514,8 +499,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('02', '03'),
       cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('01'),
-      cart: makeCartAdapter('03'),
-      checkout: makeCheckoutAdapter('04'),
     },
   },
 
@@ -563,8 +546,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('04', '03'),
       cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('04'),
-      cart: makeCartAdapter('04'),
-      checkout: makeCheckoutAdapter('02'),
     },
   },
 
@@ -624,8 +605,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('08', '04'),
       cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('04'),
-      cart: makeCartAdapter('02'),
-      checkout: makeCheckoutAdapter('02'),
     },
   },
 
@@ -668,8 +647,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('06', '03'),
       cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('02'),
-      cart: makeCartAdapter('04'),
-      checkout: makeCheckoutAdapter('01'),
     },
   },
 
@@ -712,8 +689,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('01', '05'),
       cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('01'),
-      cart: makeCartAdapter('02'),
-      checkout: makeCheckoutAdapter('04'),
     },
   },
 
@@ -776,8 +751,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('05', '02'),
       cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('01'),
-      cart: makeCartAdapter('03'),
-      checkout: makeCheckoutAdapter('04'),
     },
   },
 
@@ -820,8 +793,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('06', '02'),
       cart: makeCartAdapter('04'),
       checkout: makeCheckoutAdapter('04'),
-      cart: makeCartAdapter('01'),
-      checkout: makeCheckoutAdapter('02'),
     },
   },
 
@@ -864,8 +835,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('07', '03'),
       cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('02'),
-      cart: makeCartAdapter('03'),
-      checkout: makeCheckoutAdapter('01'),
     },
   },
 
@@ -974,8 +943,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('04', '04'),
       cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('01'),
-      cart: makeCartAdapter('02'),
-      checkout: makeCheckoutAdapter('04'),
     },
   },
 };
