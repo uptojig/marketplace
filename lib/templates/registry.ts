@@ -1285,10 +1285,24 @@ export function getRecommendedTemplates(niche: string, limit = 3): Template[] {
 
 export const templateGroups: Record<string, TemplateId[]> = {
   trust: ['classic', 'atelier-27'],
-  'fashion-beauty': ['lookbook', 'bikini-beach', 'mono-eight', 'lila-modest'],
-  'electronics-tech': ['tech-compare'],
-  lifestyle: ['sport-active', 'mega-store'],
+  'fashion-beauty': [
+    'lookbook', 'bikini-beach', 'brutalist-thai', 'mono-eight', 'lila-modest',
+    'caldera-skin', 'hinoki-apothecary', 'linen-and-loom', 'reclaim-leather',
+    'sirin-womenswear', 'yumeiro-lip',
+  ],
+  'electronics-tech': [
+    'tech-compare', 'carbon-era-cameras', 'keystroke-lab',
+    'smartloop-home', 'wavelength-audio',
+  ],
+  lifestyle: [
+    'sport-active', 'mega-store', 'glow-lamp-co', 'inkstone-paper',
+    'korakot-house', 'petit-cote', 'saluki-yoga',
+    'tinyhand-wooden-toys', 'trailcraft-outdoors',
+  ],
   community: ['live-commerce'],
-  'business-model': ['wholesale-b2b', 'eco-pack'],
-  specialty: ['handmade', 'sai-sing', 'talad-see-sod', 'brutalist-thai'],
+  'business-model': ['wholesale-b2b', 'eco-pack', 'bulkbox-industrial'],
+  specialty: ['handmade', 'sai-sing', 'mai-hatthakam', 'pigment-studio'],
+  everyday: ['everyday-retail', 'talad-see-sod'],
+  taobao: ['taobao-style'],
+  packaging: ['packaging-supply', 'pastel-pack'],
 };
