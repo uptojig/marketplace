@@ -7,8 +7,8 @@ import { Building2, Search, User, Menu, ShoppingCart, FileText } from 'lucide-re
 import { useCart } from '@/lib/store/cart';
 
 export function BulkboxHeader({ store, categories }: HeaderProps) {
-  const items = useCart((s) => s.items);
-  const cartCount = items.filter((i) => i.storeSlug === store.slug).reduce((acc, item) => acc + item.quantity, 0);
+  const items = useCart((s) => s.lines);
+  const cartCount = items.filter((i) => i.storeSlug === store.slug).reduce((acc, item) => acc + item.qty, 0);
 
   return (
     <header className="border-b border-[#cbd5e1] bg-[#f8fafc] sticky top-0 z-50">

@@ -6,7 +6,7 @@ import { ShoppingCart, Search, Menu } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 
 export function KeystrokeLabHeader({ store, categories }: any) {
-  const cartItems = useCart((s) => s.items);
+  const cartItems = useCart((s) => s.lines);
   const itemCount = cartItems.length;
 
   return (

@@ -13,7 +13,7 @@ interface HeaderProps {
 }
 
 export function ReclaimLeatherHeader({ store }: HeaderProps) {
-  const cartItems = useCart((s) => s.items);
+  const cartItems = useCart((s) => s.lines);
   const cartCount = cartItems.length;
 
   return (

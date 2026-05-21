@@ -8,8 +8,8 @@ import { useCart } from '@/lib/store/cart';
 export function HinokiHeader({ store }: { store: any }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const cartItems = useCart((s) => s.items);
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const cartItems = useCart((s) => s.lines);
+  const cartCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
 
   useEffect(() => {
     const handleScroll = () => {

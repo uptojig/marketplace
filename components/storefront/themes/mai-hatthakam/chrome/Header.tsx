@@ -22,8 +22,8 @@ interface MaiHatthakamHeaderProps {
 
 export function MaiHatthakamHeader({ store, categories }: MaiHatthakamHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const items = useCart((s) => s.items);
-  const cartItemCount = items.filter((i) => i.storeSlug === store.slug).reduce((total, item) => total + item.quantity, 0);
+  const items = useCart((s) => s.lines);
+  const cartItemCount = items.filter((i) => i.storeSlug === store.slug).reduce((total, item) => total + item.qty, 0);
 
   return (
     <header className="sticky top-0 z-50 bg-[#fef9f1]/95 backdrop-blur-md border-b border-[#fde8c8]">

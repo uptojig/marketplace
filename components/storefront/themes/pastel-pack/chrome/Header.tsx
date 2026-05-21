@@ -13,7 +13,7 @@ interface PastelPackHeaderProps {
 }
 
 export function PastelPackHeader({ storeName, storeSlug, logoUrl, categories }: PastelPackHeaderProps) {
-  const cartItems = useCart((s) => s.items);
+  const cartItems = useCart((s) => s.lines);
   const cartCount = cartItems.length;
 
   return (

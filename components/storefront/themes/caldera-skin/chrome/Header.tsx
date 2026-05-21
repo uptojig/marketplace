@@ -6,7 +6,7 @@ import { ShoppingCart, FlaskConical, Search, Menu } from 'lucide-react';
 import type { HeaderProps } from '@/lib/templates/types';
 
 export function CalderaSkinHeader({ store }: HeaderProps) {
-  const cartItems = useCart((s) => s.items);
+  const cartItems = useCart((s) => s.lines);
   const storeItems = cartItems.filter((i) => i.storeSlug === store.slug);
   const itemCount = storeItems.length;
 

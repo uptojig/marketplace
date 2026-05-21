@@ -6,7 +6,7 @@ import { useCart } from '@/lib/store/cart';
 import type { HeaderProps } from '@/lib/templates/types';
 
 export function CarbonEraCamerasHeader({ store, categories }: HeaderProps) {
-  const items = useCart((s) => s.items);
+  const items = useCart((s) => s.lines);
   const storeItems = items.filter((i) => i.storeSlug === store.slug);
   const cartCount = storeItems.length;
 

@@ -7,8 +7,8 @@ import type { HeaderProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
 
 export function InkstonePaperHeader({ store }: HeaderProps) {
-  const cartItems = useCart((s) => s.items);
-  const itemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const cartItems = useCart((s) => s.lines);
+  const itemCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#f7f1e3] border-b border-[#e6dcc4] shadow-sm">

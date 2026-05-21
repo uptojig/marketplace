@@ -15,7 +15,7 @@ interface SirinHeaderProps {
 
 export function SirinHeader({ store }: SirinHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const cartItems = useCart((s) => s.items);
+  const cartItems = useCart((s) => s.lines);
   
   const storeCartItems = cartItems.filter(item => item.storeSlug === store.slug);
   const cartCount = storeCartItems.reduce((acc, item) => acc + item.qty, 0);

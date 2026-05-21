@@ -16,9 +16,9 @@ interface PigmentStudioHeaderProps {
 
 export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const cartItems = useCart((s) => s.items);
+  const cartItems = useCart((s) => s.lines);
   const storeItems = cartItems.filter((item) => item.storeSlug === store.slug);
-  const cartCount = storeItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = storeItems.reduce((sum, item) => sum + item.qty, 0);
 
   return (
     <header className="bg-[#fff7ed] border-b-2 border-[#fed7aa] sticky top-0 z-50 transition-all shadow-sm">

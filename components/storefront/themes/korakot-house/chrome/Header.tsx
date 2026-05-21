@@ -13,9 +13,9 @@ interface HeaderProps {
 }
 
 export function KorakotHouseHeader({ store }: HeaderProps) {
-  const items = useCart((s) => s.items);
+  const items = useCart((s) => s.lines);
   const storeItems = items.filter((i) => i.storeSlug === store.slug);
-  const itemCount = storeItems.reduce((acc, item) => acc + item.quantity, 0);
+  const itemCount = storeItems.reduce((acc, item) => acc + item.qty, 0);
 
   return (
     <header className="bg-[#f5ede0] border-b border-[#e8d5b7] sticky top-0 z-50 text-[#3a2818] font-[family:var(--font-prompt)] shadow-sm">

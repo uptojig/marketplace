@@ -14,7 +14,7 @@ interface YumeiroLipHeaderProps {
 }
 
 export function YumeiroLipHeader({ store, categories }: YumeiroLipHeaderProps) {
-  const cartItems = useCart((s) => s.items);
+  const cartItems = useCart((s) => s.lines);
   const itemCount = cartItems.length;
 
   return (

@@ -5,7 +5,7 @@ import { ShoppingCart, Menu } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 
 export function TinyhandHeader({ storeName, storeSlug }: { storeName: string; storeSlug: string }) {
-  const items = useCart((s) => s.items);
+  const items = useCart((s) => s.lines);
   const itemCount = items.reduce((total, item) => total + (item.qty || 1), 0);
 
   return (

@@ -12,7 +12,7 @@ interface SalukiHeaderProps {
 }
 
 export function SalukiHeader({ storeSlug, storeName, logoUrl }: SalukiHeaderProps) {
-  const cartItems = useCart((s) => s.items);
+  const cartItems = useCart((s) => s.lines);
   const storeItems = cartItems.filter(item => item.storeSlug === storeSlug);
   const itemCount = storeItems.reduce((total, item) => total + item.qty, 0);
 

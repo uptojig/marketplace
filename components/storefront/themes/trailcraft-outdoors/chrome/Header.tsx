@@ -7,9 +7,9 @@ import { useCart } from '@/lib/store/cart';
 import type { HeaderProps } from '@/lib/templates/types';
 
 export function TrailcraftHeader({ store, categories }: HeaderProps) {
-  const cartItems = useCart((s) => s.items);
+  const cartItems = useCart((s) => s.lines);
   const storeCartItems = cartItems.filter((i) => i.storeSlug === store.slug);
-  const cartCount = storeCartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const cartCount = storeCartItems.reduce((acc, item) => acc + item.qty, 0);
 
   return (
     <header className="bg-[#fdfbe8] border-b border-[#84cc16] sticky top-0 z-50">

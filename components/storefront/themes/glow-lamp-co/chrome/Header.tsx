@@ -13,7 +13,7 @@ interface HeaderProps {
 }
 
 export function GlowLampCoHeader({ store }: HeaderProps) {
-  const items = useCart((s) => s.items);
+  const items = useCart((s) => s.lines);
   const cartCount = items.filter(i => i.storeSlug === store.slug).length;
 
   return (
