@@ -56,6 +56,7 @@ import {
   BrutalistThaiHomepageAdapter,
 } from '@/components/storefront/themes/brutalist-thai/adapters';
 import BrutalistCatalog from '@/components/storefront/themes/brutalist-thai/pages/Catalog';
+import BrutalistProductDetail from '@/components/storefront/themes/brutalist-thai/pages/ProductDetail';
 import {
   MonoEightHeaderAdapter,
   MonoEightFooterAdapter,
@@ -431,7 +432,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(BrutalistThaiHomepageAdapter, '01'),
       catalog: BrutalistCatalog,
-      pdp: makePdpAdapter('05', '04'),
+      pdp: BrutalistProductDetail,
       cart: makeCartAdapter('04'),
       checkout: makeCheckoutAdapter('01'),
     },
