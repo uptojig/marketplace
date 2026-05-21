@@ -128,12 +128,12 @@ export interface StoreTheme {
 }
 
 /**
- * CHROME ladder — mirrors app/stores/[slug]/layout.tsx:199-350 exactly.
- * Raw templateId, family-only (no singletons, no everyday), FB-wins precedence.
+ * CHROME ladder — now uses effectiveTemplateId() to match content resolution.
+ * Family-only (no singletons, no everyday), FB-wins precedence.
  */
 export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   const key = {
-    templateId: store.templateId,
+    templateId: effectiveTemplateId(store),
     landingThemeVariant: store.landingThemeVariant,
   };
 
