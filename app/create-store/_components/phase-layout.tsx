@@ -1,17 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import {
-  rankThemes,
-  themeForTemplate,
+  rankTemplates,
   TEMPLATES,
-  type ThemeOption,
   type Template,
   type TemplateId,
   type TemplateGroup,
   type WizardState,
-  type NicheId,
-  getNiche,
 } from "@/lib/store/wizard-data";
 
 type Props = {
@@ -20,42 +15,47 @@ type Props = {
   onIdentityChange?: (patch: Partial<WizardState["identity"]>) => void;
 };
 
+const GROUP_LABEL: Record<TemplateGroup, string> = {
+  "fashion-beauty": "แฟชั่น & บิวตี้",
+  "lifestyle": "ไลฟ์สไตล์ & แต่งบ้าน",
+  "electronics-tech": "อิเล็กทรอนิกส์ & ไอที",
+  "specialty": "คราฟต์ & วินเทจ",
+  "business-model": "โปรโมชัน & ดีล",
+  "trust": "คลาสสิก & น่าเชื่อถือ",
+  "community": "วิดีโอ & ไลฟ์",
+  "everyday": "ขายปลีกทั่วไป",
+  "taobao": "มาร์เก็ตเพลส",
+  "packaging": "บรรจุภัณฑ์ & ซัพพลาย",
+};
+
+const GROUP_ORDER: TemplateGroup[] = [
+  "fashion-beauty",
+  "lifestyle",
+  "electronics-tech",
+  "specialty",
+  "business-model",
+  "trust",
+  "community",
+  "everyday",
+  "taobao",
+  "packaging",
+];
+
 /**
- * Hierarchical picker — 10 main family sections, each with sub-template
- * cards underneath. User can pick the family default (writes the family's
- * representative templateId from THEME_OPTIONS) OR a specific sub-template
- * (writes that exact templateId). Highlighted card always matches the
- * exact saved templateId.
- *
- * Recommended sub-templates surface in a separate top section when the
- * user has picked a niche in Phase 1.
+ * Flat template picker — shows ALL 27 sub-templates as cards, grouped by
+ * design family with section headers. "แนะนำสำหรับคุณ" section pinned at
+ * top whenever the user has selected a niche in Phase 1; downstream rendering
+ * (storefront pages) dispatches each templateId to its bespoke pages and
+ * falls through to the matching design family for pages without bespoke
+ * coverage (cart / catalog / pdp). Picking any card writes that exact
+ * templateId — the family is derived from the template.group at write time
+ * (see actions.ts deriveLandingThemeVariant).
  */
 export function PhaseLayout({ state, onChange, onIdentityChange: _onIdentityChange }: Props) {
-  const [expandedFamilies, setExpandedFamilies] = useState<Set<TemplateGroup>>(
-    new Set(),
-  );
-  const { recommended: recFamilies, others: otherFamilies } = rankThemes(
-    state.identity.niche,
-  );
-  const allFamilies = [...recFamilies, ...otherFamilies];
-
-  // Active templateId — used by both family cards (when their representative
-  // matches) and sub-template cards (when their exact id matches).
   const activeTemplateId = state.layout.templateId;
+  const { recommended, others } = rankTemplates(state.identity.niche);
 
-  // Recommended sub-templates surfaced from the niche, regardless of family.
-  // Gives users a faster path to "this specific look" rather than digging
-  // through 10 families.
-  const recSubTemplates = recommendedSubTemplates(state.identity.niche);
-
-  const toggleFamily = (group: TemplateGroup) => {
-    setExpandedFamilies((prev) => {
-      const next = new Set(prev);
-      if (next.has(group)) next.delete(group);
-      else next.add(group);
-      return next;
-    });
-  };
+  const grouped = groupByFamily(others);
 
   return (
     <div className="space-y-6">
@@ -67,12 +67,12 @@ export function PhaseLayout({ state, onChange, onIdentityChange: _onIdentityChan
           เลือกธีมที่เหมาะกับร้าน
         </h2>
         <p className="text-sm text-mp-ink-muted">
-          เลือก <strong>หมวดหลัก</strong> หรือกางออกเพื่อเลือก{" "}
-          <strong>สไตล์ย่อย</strong> ที่ตรงกับร้านมากที่สุด · ปรับสี/โลโก้ได้ภายหลัง
+          มี <strong>{TEMPLATES.length} ธีม</strong> ให้เลือก · จัดกลุ่มตามสไตล์ ·
+          ปรับสี/โลโก้ได้ภายหลัง
         </p>
       </header>
 
-      {recSubTemplates.length > 0 && (
+      {recommended.length > 0 && (
         <section className="space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium uppercase tracking-wide text-mp-ink">
@@ -82,9 +82,9 @@ export function PhaseLayout({ state, onChange, onIdentityChange: _onIdentityChan
               AI
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {recSubTemplates.map((tpl) => (
-              <SubTemplateCard
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {recommended.map((tpl) => (
+              <TemplateCard
                 key={tpl.id}
                 template={tpl}
                 active={tpl.id === activeTemplateId}
@@ -95,131 +95,51 @@ export function PhaseLayout({ state, onChange, onIdentityChange: _onIdentityChan
         </section>
       )}
 
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-mp-ink">
-            ทุกหมวดหลัก
-          </span>
-          <span className="text-[11px] text-mp-ink-muted">
-            ({allFamilies.length} หมวด · {TEMPLATES.length} สไตล์ย่อย)
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          {allFamilies.map((family) => {
-            const subs = subTemplatesFor(family.key);
-            const isExpanded = expandedFamilies.has(family.key);
-            const familyActive =
-              activeTemplateId === family.templateId ||
-              subs.some((s) => s.id === activeTemplateId);
-
-            return (
-              <div
-                key={family.key}
-                className={`rounded-lg border transition ${
-                  familyActive
-                    ? "border-mp-coral/60 bg-white"
-                    : "border-mp-border bg-white"
-                }`}
-              >
-                <div className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-[1fr_auto]">
-                  <FamilyCard
-                    family={family}
-                    active={activeTemplateId === family.templateId}
-                    onSelect={() => onChange({ templateId: family.templateId })}
-                  />
-                  {subs.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => toggleFamily(family.key)}
-                      className="self-start rounded-md border border-mp-border bg-mp-cream-alt/40 px-2.5 py-1.5 text-[11px] font-medium text-mp-ink hover:bg-mp-cream-alt/70"
-                    >
-                      {isExpanded
-                        ? `↑ ซ่อนสไตล์ย่อย`
-                        : `↓ ดูสไตล์ย่อย (${subs.length})`}
-                    </button>
-                  )}
-                </div>
-
-                {isExpanded && subs.length > 0 && (
-                  <div className="border-t border-mp-border/60 bg-mp-cream-alt/20 p-3">
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                      {subs.map((tpl) => (
-                        <SubTemplateCard
-                          key={tpl.id}
-                          template={tpl}
-                          active={tpl.id === activeTemplateId}
-                          onSelect={() => onChange({ templateId: tpl.id })}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      {GROUP_ORDER.map((group) => {
+        const items = grouped[group] ?? [];
+        if (items.length === 0) return null;
+        return (
+          <section key={group} className="space-y-2">
+            <div className="flex items-center gap-2 border-b border-mp-border/60 pb-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-mp-ink">
+                {GROUP_LABEL[group]}
+              </span>
+              <span className="text-[11px] text-mp-ink-muted">
+                ({items.length})
+              </span>
+            </div>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((tpl) => (
+                <TemplateCard
+                  key={tpl.id}
+                  template={tpl}
+                  active={tpl.id === activeTemplateId}
+                  onSelect={() => onChange({ templateId: tpl.id })}
+                />
+              ))}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }
 
 // ─── Data helpers ──────────────────────────────────────────────────────
 
-function subTemplatesFor(group: TemplateGroup): Template[] {
-  return TEMPLATES.filter((t) => t.group === group);
+function groupByFamily(list: Template[]): Partial<Record<TemplateGroup, Template[]>> {
+  const out: Partial<Record<TemplateGroup, Template[]>> = {};
+  for (const tpl of list) {
+    const bucket = out[tpl.group] ?? [];
+    bucket.push(tpl);
+    out[tpl.group] = bucket;
+  }
+  return out;
 }
 
-/**
- * Sub-templates whose niche is explicitly listed in
- * `NICHES[nicheId].recommendedTemplates`. Empty when no niche yet.
- */
-function recommendedSubTemplates(nicheId: NicheId | null): Template[] {
-  if (!nicheId) return [];
-  const niche = getNiche(nicheId);
-  const ids = niche?.recommendedTemplates ?? [];
-  return ids
-    .map((id) => TEMPLATES.find((t) => t.id === id))
-    .filter((t): t is Template => Boolean(t));
-}
+// ─── Card component ────────────────────────────────────────────────────
 
-// ─── Card components ───────────────────────────────────────────────────
-
-function FamilyCard({
-  family,
-  active,
-  onSelect,
-}: {
-  family: ThemeOption;
-  active: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`group flex items-center gap-3 rounded-md border p-2.5 text-left transition ${
-        active
-          ? "border-mp-coral bg-white ring-2 ring-mp-coral/20"
-          : "border-mp-border bg-white hover:border-mp-coral/60"
-      }`}
-    >
-      <div className="h-12 w-16 overflow-hidden rounded-md bg-mp-cream-alt/60">
-        <TemplateThumb id={family.templateId} />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold text-mp-ink">
-          {family.name}
-        </p>
-        <p className="text-[11px] leading-snug text-mp-ink-muted">
-          {family.description}
-        </p>
-      </div>
-    </button>
-  );
-}
-
-function SubTemplateCard({
+function TemplateCard({
   template,
   active,
   onSelect,
@@ -232,16 +152,17 @@ function SubTemplateCard({
     <button
       type="button"
       onClick={onSelect}
+      aria-pressed={active}
       className={`group relative flex flex-col rounded-lg border p-3 text-left transition ${
         active
           ? "border-mp-coral bg-white ring-2 ring-mp-coral/20"
           : "border-mp-border bg-white hover:border-mp-coral/60"
       }`}
     >
-      <div className="mb-2 h-14 overflow-hidden rounded-md bg-mp-cream-alt/60">
+      <div className="mb-2 h-16 overflow-hidden rounded-md bg-mp-cream-alt/60">
         <TemplateThumb id={template.id} />
       </div>
-      <p className="text-sm font-medium text-mp-ink">{template.name}</p>
+      <p className="text-sm font-semibold text-mp-ink">{template.name}</p>
       <p className="text-[11px] leading-snug text-mp-ink-muted">
         {template.description}
       </p>
@@ -249,7 +170,7 @@ function SubTemplateCard({
   );
 }
 
-// ─── Schematic thumbs (unchanged from previous picker) ─────────────────
+// ─── Schematic thumbs ──────────────────────────────────────────────────
 
 function TemplateThumb({ id }: { id: TemplateId }) {
   switch (id) {
@@ -291,6 +212,10 @@ function TemplateThumb({ id }: { id: TemplateId }) {
       return <Thumb header band="hero-large" body="single" />;
     case "yumeiro-lip":
       return <Thumb header band="cover" body="swatch-grid" />;
+    case "talad-see-sod":
+      return <Thumb header band="lifestyle" body="grid-2-badges" />;
+    case "pastel-pack":
+      return <Thumb header band="packaging-pink" body="grid-2-pastel" />;
     default:
       return <Thumb header band="cover" body="grid-2" />;
   }
