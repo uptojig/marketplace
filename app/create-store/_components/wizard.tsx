@@ -129,9 +129,9 @@ export function Wizard({ onSubmit }: WizardProps) {
 function validate(state: WizardState): boolean {
   switch (state.phase) {
     case 1:
-      return state.identity.name.trim().length > 0 && Boolean(state.identity.niche);
-    case 2:
       return Boolean(state.layout.templateId);
+    case 2:
+      return state.identity.name.trim().length > 0;
     case 3:
       return Boolean(state.products.starterPack);
     case 4:
@@ -227,9 +227,9 @@ function PhaseContent({
 }) {
   switch (state.phase) {
     case 1:
-      return <PhaseIdentity state={state} onChange={patchIdentity} />;
-    case 2:
       return <PhaseLayout state={state} onChange={patchLayout} onIdentityChange={patchIdentity} />;
+    case 2:
+      return <PhaseIdentity state={state} onChange={patchIdentity} />;
     case 3:
       return <PhaseProducts state={state} onChange={patchProducts} />;
     case 4:

@@ -69,32 +69,6 @@ export function PhaseIdentity({ state, onChange }: Props) {
       </Field>
 
       <Field
-        label="หมวดสินค้าหลัก (Niche)"
-        hint="ใช้ในการแนะนำเลย์เอาต์และคัดสินค้าจากคลัง"
-      >
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {NICHES.map((n) => {
-            const active = identity.niche === n.id;
-            return (
-              <button
-                key={n.id}
-                type="button"
-                onClick={() => onChange({ niche: n.id as NicheId })}
-                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition ${
-                  active
-                    ? "border-mp-coral bg-mp-ink text-white"
-                    : "border-mp-border bg-white hover:border-mp-coral/60"
-                }`}
-              >
-                <span aria-hidden>{n.emoji}</span>
-                <span className="truncate">{n.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </Field>
-
-      <Field
         label="แนะนำร้านสั้นๆ"
         hint="2-3 ประโยค จะใช้ในหน้าแรกและ SEO (เว้นว่างก็ได้ ระบบจะช่วยร่างให้)"
       >
@@ -106,64 +80,6 @@ export function PhaseIdentity({ state, onChange }: Props) {
           placeholder="เช่น ร้านอุปกรณ์แคมป์ปิ้งคุณภาพดี ราคามิตร ส่งฟรีทั่วไทย"
           className="w-full resize-none rounded-lg border border-mp-border bg-white px-3 py-2.5 text-sm outline-none transition focus:border-mp-coral focus:ring-2 focus:ring-mp-coral/20"
         />
-      </Field>
-
-      <Field label="โทนการเขียน (Brand voice)">
-        <div className="grid grid-cols-3 gap-2">
-          {BRAND_VOICES.map((v) => {
-            const active = identity.brandVoice === v.id;
-            return (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => onChange({ brandVoice: v.id })}
-                className={`rounded-lg border p-2.5 text-left transition ${
-                  active
-                    ? "border-mp-coral ring-2 ring-mp-coral/20"
-                    : "border-mp-border hover:border-mp-coral/60"
-                }`}
-              >
-                <p className="text-sm font-medium">{v.label}</p>
-                <p className="text-[11px] leading-tight text-mp-ink-muted">{v.hint}</p>
-              </button>
-            );
-          })}
-        </div>
-      </Field>
-
-      <Field label="ชุดสี (Palette)" hint="สีหลักและสี accent ของร้าน">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {PALETTES.map((p) => {
-            const active = identity.paletteId === p.id;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => onChange({ paletteId: p.id })}
-                aria-pressed={active}
-                className={`flex items-center gap-2 rounded-lg border p-2 text-left transition ${
-                  active
-                    ? "border-mp-coral ring-2 ring-mp-coral/20"
-                    : "border-mp-border hover:border-mp-coral/60"
-                }`}
-              >
-                <span className="flex shrink-0 overflow-hidden rounded-md border border-mp-border">
-                  <span
-                    aria-hidden
-                    className="block h-7 w-5"
-                    style={{ backgroundColor: p.primary }}
-                  />
-                  <span
-                    aria-hidden
-                    className="block h-7 w-5"
-                    style={{ backgroundColor: p.accent }}
-                  />
-                </span>
-                <span className="truncate text-xs font-medium">{p.name}</span>
-              </button>
-            );
-          })}
-        </div>
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
