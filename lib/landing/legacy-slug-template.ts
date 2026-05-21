@@ -32,8 +32,8 @@ export const LEGACY_SLUG_TEMPLATE: Record<string, TemplateId> = {
   // multi-page template architecture (chrome + per-route page
   // components). See lib/templates/types.ts for the contract.
   bikini551: "bikini-beach",
-  // Kids cartoon merch / playful tile-led → lifestyle kids-toys
-  powerpuff678: "kids-toys",
+  // Kids cartoon merch / playful tile-led → lifestyle sport-active
+  powerpuff678: "sport-active",
   // Ergonomic body / wellness gear → lifestyle sport-active
   ergobodies: "sport-active",
   // Sugar / gift-box artisan → specialty handmade
