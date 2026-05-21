@@ -3,17 +3,13 @@
 /**
  * Real-component template preview.
  *
- * Renders the ACTUAL chrome (Header/Footer) + pages.home component from
+ * Renders the ACTUAL chrome (Header/Footer) + page component from
  * lib/templates/registry.ts at storefront size (1280px), scaled down with
  * transform: scale + pointer-events: none so it fits the wizard preview
- * pane and clicks don't mutate the user's real cart.
+ * pane and clicks don't mutate the user's real cart store.
  *
- * Why this exists: the earlier preview-pages.tsx renders family-level
- * abstract sketches — picking talad-see-sod showed a generic "everyday
- * family" mock instead of the bespoke red-brutalist Thai chrome that
- * actually publishes. The user's complaint: "preview ยังไม่ตรงแสดงให้
- * ถูกต้อง". This component fixes that by mounting the real adapters with
- * mock products + the merchant's name.
+ * Supports ALL page keys (home, catalog, pdp, cart, checkout, about, help,
+ * lookbook). Tabs are dynamically generated from the template's pages object.
  */
 
 import { useMemo, useRef, useState, useEffect } from "react";
@@ -21,12 +17,34 @@ import { templates } from "@/lib/templates/registry";
 import type { TemplateId } from "@/lib/templates/types";
 import type { Palette } from "@/lib/store/wizard-data";
 
+/** All possible page keys from TemplatePages */
+export type RealPageKey =
+  | "home"
+  | "catalog"
+  | "pdp"
+  | "cart"
+  | "checkout"
+  | "lookbook"
+  | "about"
+  | "help";
+
+const PAGE_LABELS: Record<RealPageKey, string> = {
+  home: "หน้าแรก",
+  catalog: "สินค้า",
+  pdp: "รายละเอียด",
+  cart: "ตะกร้า",
+  checkout: "ชำระเงิน",
+  lookbook: "Lookbook",
+  about: "เกี่ยวกับ",
+  help: "ช่วยเหลือ",
+};
+
 type Props = {
   templateId: string;
   displayName: string;
   slug: string;
   palette: Palette;
-  page: "home";
+  page: RealPageKey;
 };
 
 const MOCK_CATEGORIES = ["เคส", "สายชาร์จ", "หัวชาร์จ", "ของแต่งโต๊ะ", "ไฟ"];
@@ -82,10 +100,24 @@ const MOCK_PRODUCTS = [
   },
 ];
 
+/** Returns true if the template has chrome + at least one page registered. */
 export function isBespokeTemplate(templateId: string | null | undefined): boolean {
   if (!templateId) return false;
   const tpl = templates[templateId as TemplateId];
-  return Boolean(tpl?.chrome?.Header && tpl?.pages?.home);
+  return Boolean(tpl?.chrome?.Header && tpl?.pages);
+}
+
+/** Returns the available page keys for a given template. */
+export function getAvailablePages(templateId: string | null | undefined): RealPageKey[] {
+  if (!templateId) return [];
+  const tpl = templates[templateId as TemplateId];
+  if (!tpl?.pages) return [];
+  const keys: RealPageKey[] = [];
+  const pages = tpl.pages as Record<string, unknown>;
+  for (const k of Object.keys(pages)) {
+    if (pages[k]) keys.push(k as RealPageKey);
+  }
+  return keys;
 }
 
 export function TemplatePreviewReal({
@@ -99,14 +131,9 @@ export function TemplatePreviewReal({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.42);
 
-  // Recompute scale on resize so the 1280px storefront fits the available
-  // wizard pane width. We render at full storefront size internally and use
-  // CSS transform to shrink — pointer-events:none on the inner div prevents
-  // clicks from leaking into the merchant's real cart store.
   useEffect(() => {
     const compute = () => {
       const w = wrapperRef.current?.clientWidth ?? 540;
-      // 1280 = our internal render width; clamp to a sensible thumbnail range.
       setScale(Math.min(0.8, Math.max(0.25, w / 1280)));
     };
     compute();
@@ -124,8 +151,6 @@ export function TemplatePreviewReal({
       logoUrl: null,
       bannerUrl: null,
       primaryColor: palette.primary,
-      // Footer adapters destructure these — provide nulls so destructuring
-      // doesn't throw on missing keys.
       contactEmail: null,
       contactPhone: null,
       lineId: null,
@@ -156,7 +181,53 @@ export function TemplatePreviewReal({
   const HeaderComp = tpl.chrome?.Header;
   const FooterComp = tpl.chrome?.Footer;
   const StripComp = tpl.chrome?.AnnouncementStrip;
-  const HomepageComp = tpl.pages?.home;
+
+  // Resolve the page component dynamically
+  const PageComp = tpl.pages?.[page as keyof typeof tpl.pages] as
+    | React.ComponentType<Record<string, unknown>>
+    | undefined;
+
+  // Build page-specific props
+  const pageProps = useMemo(() => {
+    const base = {
+      store: mockStore,
+      products: MOCK_PRODUCTS,
+      categories: MOCK_CATEGORIES,
+    };
+    switch (page) {
+      case "home":
+      case "catalog":
+      case "lookbook":
+        return base;
+      case "pdp":
+        return {
+          ...base,
+          product: MOCK_PRODUCTS[0],
+          relatedProducts: MOCK_PRODUCTS.slice(1, 4),
+        };
+      case "cart":
+        return {
+          ...base,
+          items: MOCK_PRODUCTS.slice(0, 2).map((p) => ({
+            ...p,
+            quantity: 1,
+          })),
+        };
+      case "checkout":
+        return {
+          ...base,
+          items: MOCK_PRODUCTS.slice(0, 2).map((p) => ({
+            ...p,
+            quantity: 1,
+          })),
+        };
+      case "about":
+      case "help":
+        return { store: mockStore };
+      default:
+        return base;
+    }
+  }, [page, mockStore]);
 
   return (
     <div
@@ -185,12 +256,12 @@ export function TemplatePreviewReal({
             accent={palette.accent}
           />
         )}
-        {page === "home" && HomepageComp && (
-          <HomepageComp
-            store={mockStore}
-            products={MOCK_PRODUCTS}
-            categories={MOCK_CATEGORIES}
-          />
+        {PageComp ? (
+          <PageComp {...pageProps} />
+        ) : (
+          <div className="flex h-96 items-center justify-center text-zinc-400">
+            หน้า &ldquo;{PAGE_LABELS[page]}&rdquo; ยังไม่มีในเทมเพลตนี้
+          </div>
         )}
         {FooterComp && (
           <FooterComp
@@ -201,12 +272,11 @@ export function TemplatePreviewReal({
         )}
       </div>
 
-      {/* Live-preview badge so reviewers know this is the actual template */}
       <span
         className="pointer-events-none absolute right-2 top-2 rounded-full bg-zinc-900/80 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm"
         aria-hidden
       >
-        ตัวอย่างจริง
+        ตัวอย่างจริง · {PAGE_LABELS[page]}
       </span>
     </div>
   );

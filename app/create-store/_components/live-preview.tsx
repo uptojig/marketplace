@@ -3,24 +3,10 @@
 /**
  * Wizard right-side preview pane.
  *
- * Two-mode preview:
- *
- *   1) Bespoke template (≈30/53 — those with chrome+pages.home in
- *      lib/templates/registry.ts) → render the REAL chrome + Homepage
- *      component at storefront size, scaled to fit the pane, with
- *      pointer-events:none so the user's cart isn't mutated. This is
- *      what the user sees when the published store loads, so picking
- *      `talad-see-sod` finally shows the red brutalist Thai chrome
- *      instead of a generic "everyday" abstract sketch.
- *
- *   2) Skin-only / no-template → fall back to MultiPagePreview which
- *      paints the family-level abstract mockups (8 page tabs).
- *
- * Home tab uses the real component for bespoke templates. Other tabs
- * (cart/category/pdp/checkout/success/contact/policy) stay on the
- * family-level abstract because templates without bespoke pages share
- * those routes with the family fallback anyway — the abstract IS the
- * truth for them.
+ * Dynamically renders tabs for every page the selected template has.
+ * If a template has pages.home + pages.catalog + pages.cart, the user
+ * sees 3 tabs with the REAL bespoke components. Templates without
+ * bespoke pages fall back to MultiPagePreview (family-level mockups).
  */
 
 import { useState } from "react";
@@ -30,16 +16,24 @@ import {
   type WizardState,
   slugify,
 } from "@/lib/store/wizard-data";
-import {
-  MultiPagePreview,
-  PreviewPagesTabs,
-  PageMockup,
-  type PageKey,
-} from "./preview-pages";
+import { MultiPagePreview } from "./preview-pages";
 import {
   TemplatePreviewReal,
   isBespokeTemplate,
+  getAvailablePages,
+  type RealPageKey,
 } from "./template-preview-real";
+
+const PAGE_LABELS: Record<RealPageKey, string> = {
+  home: "หน้าแรก",
+  catalog: "สินค้า",
+  pdp: "รายละเอียด",
+  cart: "ตะกร้า",
+  checkout: "ชำระเงิน",
+  lookbook: "Lookbook",
+  about: "เกี่ยวกับ",
+  help: "ช่วยเหลือ",
+};
 
 type Props = {
   state: WizardState;
@@ -53,8 +47,12 @@ export function LivePreview({ state }: Props) {
   const slug = slugify(state.identity.name) || "your-store";
   const palette = getPalette(state.identity.paletteId);
   const bespoke = isBespokeTemplate(state.layout.templateId);
+  const availablePages = getAvailablePages(state.layout.templateId);
 
-  const [active, setActive] = useState<PageKey>("home");
+  const [active, setActive] = useState<RealPageKey>("home");
+
+  // Reset to "home" if the current tab isn't available in the new template
+  const safePage = availablePages.includes(active) ? active : availablePages[0] ?? "home";
 
   return (
     <div className="flex h-full flex-col gap-3">
@@ -62,32 +60,40 @@ export function LivePreview({ state }: Props) {
         <span className="font-mono">{slug}.basketplace.co</span>
         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">
           {template ? template.name : "ยังไม่เลือกเลย์เอาต์"}
+          {availablePages.length > 0 && (
+            <> · {availablePages.length} หน้า</>
+          )}
         </span>
       </div>
 
       {bespoke && state.layout.templateId ? (
         <div className="space-y-2">
-          <PreviewPagesTabs active={active} onChange={setActive} />
-          {active === "home" ? (
-            <TemplatePreviewReal
-              templateId={state.layout.templateId}
-              displayName={displayName}
-              slug={slug}
-              palette={palette}
-              page="home"
-            />
-          ) : (
-            <div className="overflow-hidden rounded-md border border-zinc-200 shadow-sm" style={{ minHeight: 400 }}>
-              <PageMockup
-                template={template}
-                displayName={displayName}
-                slug={slug}
-                page={active}
-              />
-            </div>
-          )}
+          {/* Dynamic tabs — only show pages the template has */}
+          <div className="flex gap-1 overflow-x-auto rounded-lg bg-zinc-100 p-1">
+            {availablePages.map((key) => (
+              <button
+                key={key}
+                onClick={() => setActive(key)}
+                className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                  safePage === key
+                    ? "bg-white text-zinc-900 shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-700"
+                }`}
+              >
+                {PAGE_LABELS[key]}
+              </button>
+            ))}
+          </div>
+
+          <TemplatePreviewReal
+            templateId={state.layout.templateId}
+            displayName={displayName}
+            slug={slug}
+            palette={palette}
+            page={safePage}
+          />
           <p className="text-[11px] text-zinc-500">
-            แท็บ &ldquo;หน้าแรก&rdquo; แสดงดีไซน์จริงของเทมเพลตที่จะรันบนหน้าร้าน · แท็บอื่นแสดง mockup ของ family
+            ทุกแท็บแสดงดีไซน์จริงของเทมเพลตที่จะรันบนหน้าร้าน
           </p>
         </div>
       ) : (
