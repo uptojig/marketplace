@@ -52,7 +52,6 @@ enum Role {
   VENDOR
   AGENT
   ADMIN
-  AGENT
 }
 
 model User {
