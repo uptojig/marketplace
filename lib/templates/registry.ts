@@ -222,6 +222,42 @@ import {
   YumeiroLipHomepageAdapter,
 } from '@/components/storefront/themes/yumeiro-lip/adapters';
 
+import {
+  ClassicHeaderAdapter,
+  ClassicFooterAdapter,
+  ClassicStripAdapter,
+} from '@/components/storefront/themes/classic/adapters';
+import {
+  LookbookHeaderAdapter,
+  LookbookFooterAdapter,
+  LookbookStripAdapter,
+} from '@/components/storefront/themes/lookbook/adapters';
+import {
+  TechCompareHeaderAdapter,
+  TechCompareFooterAdapter,
+  TechCompareStripAdapter,
+} from '@/components/storefront/themes/tech-compare/adapters';
+import {
+  SportActiveHeaderAdapter,
+  SportActiveFooterAdapter,
+  SportActiveStripAdapter,
+} from '@/components/storefront/themes/sport-active/adapters';
+import {
+  LiveCommerceHeaderAdapter,
+  LiveCommerceFooterAdapter,
+  LiveCommerceStripAdapter,
+} from '@/components/storefront/themes/live-commerce/adapters';
+import {
+  WholesaleB2bHeaderAdapter,
+  WholesaleB2bFooterAdapter,
+  WholesaleB2bStripAdapter,
+} from '@/components/storefront/themes/wholesale-b2b/adapters';
+import {
+  EverydayRetailHeaderAdapter,
+  EverydayRetailFooterAdapter,
+  EverydayRetailStripAdapter,
+} from '@/components/storefront/themes/everyday-retail/adapters';
+
 export const templates: Record<TemplateId, Template> = {
   classic: {
     id: 'classic',
@@ -229,6 +265,11 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Balanced default for general retail',
     group: 'trust',
     behavior: { bottomNav: 'visible', showTabs: true },
+      chrome: {
+      Header: ClassicHeaderAdapter,
+      Footer: ClassicFooterAdapter,
+      AnnouncementStrip: ClassicStripAdapter,
+    },
   },
 
 
@@ -239,6 +280,11 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Editorial fashion with portrait hero',
     group: 'fashion-beauty',
     behavior: { bottomNav: 'visible', hideRatingsCount: true },
+      chrome: {
+      Header: LookbookHeaderAdapter,
+      Footer: LookbookFooterAdapter,
+      AnnouncementStrip: LookbookStripAdapter,
+    },
   },
 
 
@@ -250,6 +296,11 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Spec comparison cards',
     group: 'electronics-tech',
     behavior: { bottomNav: 'visible' },
+    chrome: {
+      Header: TechCompareHeaderAdapter,
+      Footer: TechCompareFooterAdapter,
+      AnnouncementStrip: TechCompareStripAdapter,
+    },
   },
 
 
@@ -260,6 +311,11 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Performance badges and action imagery',
     group: 'lifestyle',
     behavior: { bottomNav: 'visible', performanceBadges: 'visible' },
+    chrome: {
+      Header: SportActiveHeaderAdapter,
+      Footer: SportActiveFooterAdapter,
+      AnnouncementStrip: SportActiveStripAdapter,
+    },
   },
 
 
@@ -269,6 +325,11 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Live stream + replay + products from live',
     group: 'community',
     behavior: { bottomNav: 'visible', liveBlock: 'visible' },
+    chrome: {
+      Header: LiveCommerceHeaderAdapter,
+      Footer: LiveCommerceFooterAdapter,
+      AnnouncementStrip: LiveCommerceStripAdapter,
+    },
   },
 
 
@@ -279,6 +340,11 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Pricing tiers, MOQ, business buyer',
     group: 'business-model',
     behavior: { bottomNav: 'visible', b2bMode: true },
+    chrome: {
+      Header: WholesaleB2bHeaderAdapter,
+      Footer: WholesaleB2bFooterAdapter,
+      AnnouncementStrip: WholesaleB2bStripAdapter,
+    },
   },
 
 
@@ -389,6 +455,11 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Shopee-style consumer retail — photo-forward, red CTA',
     group: 'everyday',
     behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: EverydayRetailHeaderAdapter,
+      Footer: EverydayRetailFooterAdapter,
+      AnnouncementStrip: EverydayRetailStripAdapter,
+    },
   },
 
   'taobao-style': {
