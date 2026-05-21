@@ -37,6 +37,7 @@
  */
 
 import type { TemplateId } from '@/lib/templates/types';
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
 
 // ---------------------------------------------------------------------------
 // Token shape (mirrors trust.ts — colors / typography / radius / spacing)
@@ -197,10 +198,10 @@ export const ELECTRONICS_TECH_TOKENS: ElectronicsTechTokens = {
 
 /**
  * Template IDs that belong to the electronics-tech TemplateGroup.
- * Mirrors `templateGroups['electronics-tech']` in lib/templates/registry.ts.
+ * Derived from the single source in lib/templates/template-groups.ts.
  */
 export const ELECTRONICS_TECH_TEMPLATE_IDS: ReadonlySet<TemplateId> =
-  new Set<TemplateId>(['tech-compare']);
+  templateIdsForGroup('electronics-tech');
 
 /**
  * Operator-facing `landingThemeVariant` values that should also render

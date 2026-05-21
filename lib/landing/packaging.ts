@@ -7,12 +7,12 @@
  * "packaging-supply".
  */
 
-const PACKAGING_TEMPLATE_IDS: ReadonlySet<string> = new Set([
-  'packaging-supply',
-  'packhub',
-]);
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
 
-const PACKAGING_VARIANT_VALUES: ReadonlySet<string> = new Set(['packaging']);
+const PACKAGING_TEMPLATE_IDS: ReadonlySet<string> = templateIdsForGroup('packaging');
+
+// Legacy alias — 'packhub' was the old template name.
+const PACKAGING_VARIANT_VALUES: ReadonlySet<string> = new Set(['packaging', 'packhub']);
 
 export function isPackagingStore(input: {
   templateId?: string | null;

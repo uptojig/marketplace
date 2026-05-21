@@ -612,63 +612,16 @@ const DOC_RECIPES: Partial<Record<TemplateId, RecipePages>> = {
   },
 };
 
-// ─── Group-of-TemplateId lookup ─────────────────────────────────────────
-//
-// Mirrors the registry's templateId → group mapping. Hard-coded here
-// (rather than importing the templates record) to keep this module
-// importable from any layer without dragging the heavy registry —
-// `lib/templates/registry.ts` pulls in dozens of adapter components,
-// each with their own dynamic imports, which would balloon the seed
-// path. The list is short and changes rarely; if a new template ships
-// without updating this map, `groupForTemplate` returns "specialty"
-// (the most populated group) as a safe default.
 
-const TEMPLATE_GROUPS: Record<TemplateId, TemplateGroup> = {
-  classic: "trust",
-  lookbook: "fashion-beauty",
-  "tech-compare": "electronics-tech",
-  "sport-active": "lifestyle",
-  "live-commerce": "community",
-  "wholesale-b2b": "business-model",
-  handmade: "specialty",
-  "bikini-beach": "fashion-beauty",
-  "eco-pack": "business-model",
-  "mega-store": "lifestyle",
-  "everyday-retail": "everyday",
-  "taobao-style": "taobao",
-  "packaging-supply": "packaging",
-  "sai-sing": "specialty",
-  "talad-see-sod": "specialty",
-  "brutalist-thai": "specialty",
-  "mono-eight": "fashion-beauty",
-  "lila-modest": "fashion-beauty",
-  "atelier-27": "trust",
-  "bulkbox-industrial": "specialty",
-  "caldera-skin": "specialty",
-  "carbon-era-cameras": "specialty",
-  "glow-lamp-co": "specialty",
-  "hinoki-apothecary": "specialty",
-  "inkstone-paper": "specialty",
-  "keystroke-lab": "specialty",
-  "korakot-house": "specialty",
-  "linen-and-loom": "specialty",
-  "mai-hatthakam": "specialty",
-  "pastel-pack": "specialty",
-  "petit-cote": "specialty",
-  "pigment-studio": "specialty",
-  "reclaim-leather": "specialty",
-  "saluki-yoga": "specialty",
-  "sirin-womenswear": "specialty",
-  "smartloop-home": "specialty",
-  "tinyhand-wooden-toys": "specialty",
-  "trailcraft-outdoors": "specialty",
-  "wavelength-audio": "specialty",
-  "yumeiro-lip": "specialty",
-};
+// Derived from the single source of truth — no more manual sync.
+import {
+  groupForTemplate as _groupForTemplate,
+} from "@/lib/templates/template-groups";
 
 function groupForTemplate(id: TemplateId): TemplateGroup {
-  return TEMPLATE_GROUPS[id] ?? "specialty";
+  return _groupForTemplate(id) ?? "specialty";
 }
+
 
 // ─── Builder — recipe + theme → UIConfig ───────────────────────────────
 

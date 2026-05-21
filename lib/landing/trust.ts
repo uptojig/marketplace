@@ -36,6 +36,7 @@
  */
 
 import type { TemplateId } from '@/lib/templates/types';
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
 
 // ---------------------------------------------------------------------------
 // Token shape (mirrors fashion-beauty.ts — colors / typography / radius / spacing)
@@ -187,12 +188,9 @@ export const TRUST_TOKENS: TrustTokens = {
 
 /**
  * Template IDs that belong to the trust TemplateGroup.
- * Mirrors `templateGroups.trust` in lib/templates/registry.ts.
+ * Derived from the single source in lib/templates/template-groups.ts.
  */
-export const TRUST_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
-  'classic',
-  'atelier-27',
-]);
+export const TRUST_TEMPLATE_IDS: ReadonlySet<TemplateId> = templateIdsForGroup('trust');
 
 /**
  * Operator-facing `landingThemeVariant` values that should also render

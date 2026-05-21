@@ -30,6 +30,7 @@
  */
 
 import type { TemplateId } from '@/lib/templates/types';
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
 
 // ---------------------------------------------------------------------------
 // Token shape (per spec — must include colors / typography / radius / spacing)
@@ -166,16 +167,9 @@ export const FASHION_BEAUTY_TOKENS: FashionBeautyTokens = {
 
 /**
  * Template IDs that belong to the fashion-beauty TemplateGroup.
- * Mirrors `templateGroups['fashion-beauty']` in lib/templates/registry.ts.
- * Listed here separately so we don't drag the full registry into
- * shop layouts that only need the membership check.
+ * Derived from the single source in lib/templates/template-groups.ts.
  */
-export const FASHION_BEAUTY_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
-  'lookbook',
-  'bikini-beach',
-  'mono-eight',
-  'lila-modest',
-]);
+export const FASHION_BEAUTY_TEMPLATE_IDS: ReadonlySet<TemplateId> = templateIdsForGroup('fashion-beauty');
 
 /**
  * Operator-facing `landingThemeVariant` values that should also

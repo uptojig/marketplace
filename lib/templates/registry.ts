@@ -1283,26 +1283,7 @@ export function getRecommendedTemplates(niche: string, limit = 3): Template[] {
   return ids.slice(0, limit).map(getTemplate);
 }
 
-export const templateGroups: Record<string, TemplateId[]> = {
-  trust: ['classic', 'atelier-27'],
-  'fashion-beauty': [
-    'lookbook', 'bikini-beach', 'brutalist-thai', 'mono-eight', 'lila-modest',
-    'caldera-skin', 'hinoki-apothecary', 'linen-and-loom', 'reclaim-leather',
-    'sirin-womenswear', 'yumeiro-lip',
-  ],
-  'electronics-tech': [
-    'tech-compare', 'carbon-era-cameras', 'keystroke-lab',
-    'smartloop-home', 'wavelength-audio',
-  ],
-  lifestyle: [
-    'sport-active', 'mega-store', 'glow-lamp-co', 'inkstone-paper',
-    'korakot-house', 'petit-cote', 'saluki-yoga',
-    'tinyhand-wooden-toys', 'trailcraft-outdoors',
-  ],
-  community: ['live-commerce'],
-  'business-model': ['wholesale-b2b', 'eco-pack', 'bulkbox-industrial'],
-  specialty: ['handmade', 'sai-sing', 'mai-hatthakam', 'pigment-studio'],
-  everyday: ['everyday-retail', 'talad-see-sod'],
-  taobao: ['taobao-style'],
-  packaging: ['packaging-supply', 'pastel-pack'],
-};
+// Re-export from the single source of truth.
+// Import TEMPLATE_GROUPS_MAP and alias for backwards compat.
+export { TEMPLATE_GROUPS_MAP as templateGroups } from './template-groups';
+

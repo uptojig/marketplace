@@ -40,6 +40,7 @@
  */
 
 import type { TemplateId } from '@/lib/templates/types';
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
 
 // ---------------------------------------------------------------------------
 // Token shape (per spec — must include colors / typography / radius / spacing)
@@ -184,9 +185,7 @@ export const SPECIALTY_TOKENS: SpecialtyTokens = {
  * Listed here separately so we don't drag the full registry into
  * shop layouts that only need the membership check.
  */
-export const SPECIALTY_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
-  'handmade',
-]);
+export const SPECIALTY_TEMPLATE_IDS: ReadonlySet<TemplateId> = templateIdsForGroup('specialty');
 
 /**
  * Operator-facing `landingThemeVariant` values that should also

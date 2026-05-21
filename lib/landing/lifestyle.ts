@@ -37,6 +37,7 @@
  */
 
 import type { TemplateId } from '@/lib/templates/types';
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
 
 // ---------------------------------------------------------------------------
 // Token shape (mirrors trust.ts / fashion-beauty.ts — colors / typography
@@ -199,10 +200,7 @@ export const LIFESTYLE_TOKENS: LifestyleTokens = {
  * Template IDs that belong to the lifestyle TemplateGroup.
  * Mirrors `templateGroups.lifestyle` in lib/templates/registry.ts.
  */
-export const LIFESTYLE_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
-  'sport-active',
-  'mega-store',
-]);
+export const LIFESTYLE_TEMPLATE_IDS: ReadonlySet<TemplateId> = templateIdsForGroup('lifestyle');
 
 /**
  * Operator-facing `landingThemeVariant` values that should also render

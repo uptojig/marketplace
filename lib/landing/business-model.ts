@@ -35,6 +35,7 @@
  */
 
 import type { TemplateId } from '@/lib/templates/types';
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
 
 // ---------------------------------------------------------------------------
 // Token shape (mirrors trust.ts — colors / typography / radius / spacing)
@@ -190,10 +191,7 @@ export const BUSINESS_MODEL_TOKENS: BusinessModelTokens = {
  * Template IDs that belong to the business-model TemplateGroup.
  * Mirrors `templateGroups['business-model']` in lib/templates/registry.ts.
  */
-export const BUSINESS_MODEL_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
-  'wholesale-b2b',
-  'eco-pack',
-]);
+export const BUSINESS_MODEL_TEMPLATE_IDS: ReadonlySet<TemplateId> = templateIdsForGroup('business-model');
 
 /**
  * Operator-facing `landingThemeVariant` values that should also render

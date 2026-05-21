@@ -11,12 +11,13 @@
  * how the hero is chosen.
  */
 
-const EVERYDAY_TEMPLATE_IDS: ReadonlySet<string> = new Set([
-  'everyday-retail',
-  'consumer-retail',
-]);
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
 
-const EVERYDAY_VARIANT_VALUES: ReadonlySet<string> = new Set(['everyday']);
+const EVERYDAY_TEMPLATE_IDS: ReadonlySet<string> = templateIdsForGroup('everyday');
+
+// Legacy alias — 'consumer-retail' was the old template name; catch it
+// via variant match so old stores still route correctly.
+const EVERYDAY_VARIANT_VALUES: ReadonlySet<string> = new Set(['everyday', 'consumer-retail']);
 
 export function isEverydayStore(input: {
   templateId?: string | null;

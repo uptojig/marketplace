@@ -7,12 +7,12 @@
  * "marketplace-hot".
  */
 
-const TAOBAO_TEMPLATE_IDS: ReadonlySet<string> = new Set([
-  'marketplace-hot',
-  'taobao-style',
-]);
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
 
-const TAOBAO_VARIANT_VALUES: ReadonlySet<string> = new Set(['taobao']);
+const TAOBAO_TEMPLATE_IDS: ReadonlySet<string> = templateIdsForGroup('taobao');
+
+// Legacy alias — 'marketplace-hot' was the old template name.
+const TAOBAO_VARIANT_VALUES: ReadonlySet<string> = new Set(['taobao', 'marketplace-hot']);
 
 export function isTaobaoStore(input: {
   templateId?: string | null;

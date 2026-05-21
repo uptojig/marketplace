@@ -5,9 +5,9 @@
  * templates from the 20-template registry.
  */
 
-const COMMUNITY_TEMPLATE_IDS: ReadonlySet<string> = new Set([
-  'live-commerce',
-]);
+import { templateIdsForGroup } from '@/lib/templates/template-groups';
+
+const COMMUNITY_TEMPLATE_IDS: ReadonlySet<string> = templateIdsForGroup('community');
 
 const COMMUNITY_VARIANT_VALUES: ReadonlySet<string> = new Set(['community']);
 
