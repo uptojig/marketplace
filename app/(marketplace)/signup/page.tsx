@@ -9,7 +9,7 @@
  * transition). Per-store buyer signup lives separately.
  */
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
@@ -167,7 +167,7 @@ function SignUpPageContent() {
   const [agentName, setAgentName] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  useState(() => {
+  useEffect(() => {
     // Read code from URL or localStorage
     const urlRef = searchParams.get("ref");
     const storedRef = typeof window !== "undefined" ? window.localStorage.getItem("agent.ref.code") : null;
@@ -204,7 +204,8 @@ function SignUpPageContent() {
       .finally(() => {
         setIsValidating(false);
       });
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isValidating) {
     return (

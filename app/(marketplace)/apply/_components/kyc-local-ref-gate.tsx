@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Loader2, AlertCircle } from "lucide-react";
 
 export function KycLocalRefGate() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -16,13 +15,14 @@ export function KycLocalRefGate() {
     const storedRef = window.localStorage.getItem("agent.ref.code");
     if (storedRef) {
       // Re-trigger /apply with the ref parameter
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
       params.set("ref", storedRef);
       router.replace(`/apply?${params.toString()}`);
     } else {
       setLoading(false);
     }
-  }, [router, searchParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading) {
     return (
