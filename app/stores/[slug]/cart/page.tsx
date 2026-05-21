@@ -24,12 +24,7 @@ import { EverydayCartPage } from "@/components/storefront/themes/everyday/Everyd
 import { TaobaoCartPage } from "@/components/storefront/themes/taobao/TaobaoCartPage";
 import { PackagingCartPage } from "@/components/storefront/themes/packaging/PackagingCartPage";
 import { CommunityCartPage } from "@/components/storefront/themes/community/CommunityCartPage";
-import { parseUIConfig } from "@/lib/store/ui-config";
-import { hasBlock } from "@/lib/registry/block-registry";
-import {
-  SingleBlockRenderer,
-  storeToSummary,
-} from "@/components/storefront/block-renderer";
+import { storeToSummary } from "@/components/storefront/block-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -54,25 +49,6 @@ export default async function StoreCartPage({
     },
   });
   if (!store) notFound();
-
-  // ── Server-driven UI (uiConfig.pages.cart) ─────────────────────────
-  const landingContentRow = await prisma.storeLandingContent.findUnique({
-    where: { storeId: store.id },
-  });
-  const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
-  // Only short-circuit when the picked block id is actually registered —
-  // a stale recipe (block removed from registry) would otherwise render
-  // a blank cart. Fall through to the template/family fallbacks.
-  if (uiConfig?.pages.cart && hasBlock(uiConfig.pages.cart)) {
-    return (
-      <SingleBlockRenderer
-        id={uiConfig.pages.cart}
-        type="cart"
-        store={storeToSummary(store)}
-        content={landingContentRow}
-      />
-    );
-  }
 
   // ── Template bespoke cart page (highest-priority generic dispatch) ──
   // Templates registered in STORE_TEMPLATES that ship their own

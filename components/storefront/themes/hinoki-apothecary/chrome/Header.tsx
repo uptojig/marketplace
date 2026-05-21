@@ -40,9 +40,8 @@ export function HinokiHeader({ store }: { store: any }) {
             </button>
 
             <nav className="hidden lg:flex space-x-8">
-              <Link href="#" className="text-sm font-[family:var(--font-prompt)] text-[#3f2e1e] hover:text-[#a87a4b] transition-colors">เรื่องเล่า</Link>
-              <Link href="#" className="text-sm font-[family:var(--font-prompt)] text-[#3f2e1e] hover:text-[#a87a4b] transition-colors">น้ำหอม</Link>
-              <Link href="#" className="text-sm font-[family:var(--font-prompt)] text-[#3f2e1e] hover:text-[#a87a4b] transition-colors">เทียนหอม</Link>
+              <Link href={`/stores/${store.slug}/about`} className="text-sm font-[family:var(--font-prompt)] text-[#3f2e1e] hover:text-[#a87a4b] transition-colors">เรื่องเล่า</Link>
+              <Link href={`/stores/${store.slug}/category`} className="text-sm font-[family:var(--font-prompt)] text-[#3f2e1e] hover:text-[#a87a4b] transition-colors">สินค้าทั้งหมด</Link>
             </nav>
           </div>
 
@@ -57,11 +56,11 @@ export function HinokiHeader({ store }: { store: any }) {
           </Link>
 
           <div className="flex-1 flex items-center justify-end space-x-4 sm:space-x-6">
-            <button className="text-[#3f2e1e] hover:text-[#a87a4b] transition-colors p-2">
+            <Link href={`/stores/${store.slug}/category`} className="text-[#3f2e1e] hover:text-[#a87a4b] transition-colors p-2">
               <span className="sr-only">ค้นหา</span>
               <Search className="h-4 w-4" />
-            </button>
-            <button className="text-[#3f2e1e] hover:text-[#a87a4b] transition-colors p-2 relative">
+            </Link>
+            <Link href={`/stores/${store.slug}/cart`} className="text-[#3f2e1e] hover:text-[#a87a4b] transition-colors p-2 relative">
               <span className="sr-only">ตะกร้าสินค้า</span>
               <ShoppingBag className="h-4 w-4" />
               {cartCount > 0 && (
@@ -69,7 +68,7 @@ export function HinokiHeader({ store }: { store: any }) {
                   {cartCount}
                 </span>
               )}
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -91,9 +90,9 @@ export function HinokiHeader({ store }: { store: any }) {
               </button>
             </div>
             <div className="flex flex-col space-y-6">
-              <Link href="#" className="text-lg font-[family:var(--font-prompt)] text-[#3f2e1e]">เรื่องเล่า</Link>
-              <Link href="#" className="text-lg font-[family:var(--font-prompt)] text-[#3f2e1e]">น้ำหอม</Link>
-              <Link href="#" className="text-lg font-[family:var(--font-prompt)] text-[#3f2e1e]">เทียนหอม</Link>
+              <Link href={`/stores/${store.slug}/about`} className="text-lg font-[family:var(--font-prompt)] text-[#3f2e1e]">เรื่องเล่า</Link>
+              <Link href={`/stores/${store.slug}/category`} className="text-lg font-[family:var(--font-prompt)] text-[#3f2e1e]">สินค้าทั้งหมด</Link>
+              <Link href={`/stores/${store.slug}/cart`} className="text-lg font-[family:var(--font-prompt)] text-[#3f2e1e]">ตะกร้า</Link>
             </div>
           </div>
         </div>

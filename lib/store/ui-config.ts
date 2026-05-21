@@ -43,12 +43,15 @@ export type UIConfigBlock = z.infer<typeof uiConfigBlockSchema>;
 export const uiConfigPagesSchema = z.object({
   /** Ordered block list rendered top-to-bottom on the storefront home. */
   home: z.array(uiConfigBlockSchema).min(1).max(20),
-  /** Single block id for the product-detail page. */
-  pdp: z.string().min(1).max(80),
-  /** Single block id for the catalog / category listing. */
-  catalog: z.string().min(1).max(80),
-  /** Single block id for the cart. */
-  cart: z.string().min(1).max(80),
+  /** Optional — pdp block id. PDP/catalog/cart blocks in shadcn-studio
+   *  require typed demo props (productList, cartItems, …) that the
+   *  generic BlockProps adapter does not provide. Until a per-block
+   *  data adapter exists, these routes render via the family/template
+   *  dispatch instead, and these fields are intentionally unused. Kept
+   *  in the schema so existing seeded rows still validate. */
+  pdp: z.string().min(1).max(80).optional(),
+  catalog: z.string().min(1).max(80).optional(),
+  cart: z.string().min(1).max(80).optional(),
   /** Optional — checkout block id. Falls back to default when absent. */
   checkout: z.string().min(1).max(80).optional(),
   /** Optional — about page block id. */

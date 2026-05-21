@@ -27,14 +27,14 @@ export function SalukiHeader({ storeSlug, storeName, logoUrl }: SalukiHeaderProp
             <Link href={`/stores/${storeSlug}`} className="hover:text-[#064e3b] transition-colors">
               หน้าแรก
             </Link>
-            <Link href={`/stores/${storeSlug}?category=leggings`} className="hover:text-[#064e3b] transition-colors">
+            <Link href={`/stores/${storeSlug}/category`} className="hover:text-[#064e3b] transition-colors">
+              สินค้าทั้งหมด
+            </Link>
+            <Link href={`/stores/${storeSlug}/category?cat=leggings`} className="hover:text-[#064e3b] transition-colors">
               เลกกิ้ง
             </Link>
-            <Link href={`/stores/${storeSlug}?category=tops`} className="hover:text-[#064e3b] transition-colors">
+            <Link href={`/stores/${storeSlug}/category?cat=tops`} className="hover:text-[#064e3b] transition-colors">
               เสื้อครอป
-            </Link>
-            <Link href={`/stores/${storeSlug}?category=accessories`} className="hover:text-[#064e3b] transition-colors">
-              อุปกรณ์โยคะ
             </Link>
           </nav>
         </div>
@@ -50,15 +50,23 @@ export function SalukiHeader({ storeSlug, storeName, logoUrl }: SalukiHeaderProp
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          <button className="text-[#064e3b] hover:text-[#0f766e] transition-colors p-2">
+          <Link
+            href={`/stores/${storeSlug}/category`}
+            aria-label="ค้นหาสินค้า"
+            className="text-[#064e3b] hover:text-[#0f766e] transition-colors p-2"
+          >
             <Search className="w-5 h-5" />
-          </button>
+          </Link>
           <div className="relative">
-            <button className="text-[#064e3b] hover:text-[#0f766e] transition-colors p-2 flex items-center">
+            <Link
+              href={`/stores/${storeSlug}/cart`}
+              aria-label="ตะกร้าสินค้า"
+              className="text-[#064e3b] hover:text-[#0f766e] transition-colors p-2 flex items-center"
+            >
               <ShoppingBag className="w-5 h-5" />
-            </button>
+            </Link>
             {itemCount > 0 && (
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-[#064e3b] bg-[#a7f3d0] rounded-full transform translate-x-1/4 -translate-y-1/4 border-2 border-[#ecfdf5]">
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-[#064e3b] bg-[#a7f3d0] rounded-full transform translate-x-1/4 -translate-y-1/4 border-2 border-[#ecfdf5] pointer-events-none">
                 {itemCount}
               </span>
             )}

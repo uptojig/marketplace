@@ -39,13 +39,21 @@ export function LinenAndLoomHeader({ store }: { store: any }) {
           </div>
 
           <div className="flex items-center gap-4 text-[#475569]">
-            <button className="p-2 hover:bg-[#f1f5f9] rounded-full transition-colors hidden sm:block">
+            <Link
+              href={`/stores/${store.slug}/category`}
+              aria-label="ค้นหาสินค้า"
+              className="p-2 hover:bg-[#f1f5f9] rounded-full transition-colors hidden sm:block"
+            >
               <Search className="w-5 h-5" />
-            </button>
-            <button className="p-2 hover:bg-[#f1f5f9] rounded-full transition-colors relative">
+            </Link>
+            <Link
+              href={`/stores/${store.slug}/cart`}
+              aria-label="ตะกร้าสินค้า"
+              className="p-2 hover:bg-[#f1f5f9] rounded-full transition-colors relative"
+            >
               <ShoppingBag className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-[#94a3b8] rounded-full"></span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>

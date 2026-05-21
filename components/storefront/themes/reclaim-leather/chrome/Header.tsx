@@ -51,17 +51,25 @@ export function ReclaimLeatherHeader({ store }: HeaderProps) {
           </Link>
 
           <div className="flex items-center gap-4">
-            <button className="p-2 text-[#2a1a09] hover:bg-[#e6d7b8] rounded-full transition-colors hidden sm:block">
+            <Link
+              href={`/stores/${store.slug}/category`}
+              aria-label="ค้นหาสินค้า"
+              className="p-2 text-[#2a1a09] hover:bg-[#e6d7b8] rounded-full transition-colors hidden sm:block"
+            >
               <Search size={22} />
-            </button>
-            <button className="p-2 text-[#2a1a09] hover:bg-[#e6d7b8] rounded-full transition-colors relative">
+            </Link>
+            <Link
+              href={`/stores/${store.slug}/cart`}
+              aria-label="ตะกร้าสินค้า"
+              className="p-2 text-[#2a1a09] hover:bg-[#e6d7b8] rounded-full transition-colors relative"
+            >
               <ShoppingBag size={22} />
               {cartCount > 0 && (
                 <span className="absolute top-0 right-0 bg-[#c9974b] text-[#f4ead8] text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#f4ead8]">
                   {cartCount}
                 </span>
               )}
-            </button>
+            </Link>
           </div>
         </div>
       </div>

@@ -45,17 +45,25 @@ export function GlowLampCoHeader({ store }: HeaderProps) {
         </nav>
 
         <div className="flex items-center gap-4 text-[#f8fafc] relative z-10">
-          <button className="p-2 hover:bg-white/10 rounded-full transition-colors hidden sm:block">
+          <Link
+            href={`/stores/${store.slug}/category`}
+            aria-label="สินค้าทั้งหมด"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors hidden sm:block"
+          >
             <Search className="w-5 h-5" />
-          </button>
-          <button className="p-2 hover:bg-white/10 rounded-full transition-colors relative">
+          </Link>
+          <Link
+            href={`/stores/${store.slug}/cart`}
+            aria-label="ตะกร้าสินค้า"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors relative"
+          >
             <ShoppingBag className="w-5 h-5" />
             {cartCount > 0 && (
               <span className="absolute top-0 right-0 w-5 h-5 bg-[#f59e0b] text-[#0f172a] text-xs font-bold rounded-full flex items-center justify-center transform translate-x-1/4 -translate-y-1/4 shadow-sm">
                 {cartCount}
               </span>
             )}
-          </button>
+          </Link>
         </div>
       </div>
     </header>

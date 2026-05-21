@@ -781,9 +781,9 @@ export function validateAllRecipes():
     // know about BlockRegistry.
     const ids: string[] = [
       ...config.pages.home.map((b) => b.id),
-      config.pages.pdp,
-      config.pages.catalog,
-      config.pages.cart,
+      ...(config.pages.pdp ? [config.pages.pdp] : []),
+      ...(config.pages.catalog ? [config.pages.catalog] : []),
+      ...(config.pages.cart ? [config.pages.cart] : []),
       ...(config.pages.checkout ? [config.pages.checkout] : []),
       ...(config.pages.about ? [config.pages.about] : []),
     ];

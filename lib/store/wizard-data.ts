@@ -42,6 +42,7 @@ export const NICHES: Niche[] = [
 // preview cards + niche ranking only.
 
 export type TemplateId =
+  // Identity sub-templates (27 specific looks)
   | "sai-sing"
   | "talad-see-sod"
   | "brutalist-thai"
@@ -68,7 +69,21 @@ export type TemplateId =
   | "tinyhand-wooden-toys"
   | "trailcraft-outdoors"
   | "wavelength-audio"
-  | "yumeiro-lip";
+  | "yumeiro-lip"
+  // Family-default templates — written by THEME_OPTIONS when user picks
+  // the main family card (not a specific sub-template). All exist in
+  // `lib/templates/registry.ts` and are recognized by every storefront
+  // dispatcher.
+  | "classic"
+  | "lookbook"
+  | "catalog-dense"
+  | "home-living"
+  | "flash-deal"
+  | "handmade"
+  | "video-feed"
+  | "everyday-retail"
+  | "taobao-style"
+  | "packaging-supply";
 
 export type TemplateGroup =
   | "trust"
@@ -143,6 +158,9 @@ export const TEMPLATES: Template[] = [
     name: "Sai Sing",
     description: "ธีมสายมู โทนสีเข้มขลัง เสริมดวงบารมี",
     group: "specialty",
+    // NOTE: each TEMPLATES entry's `group` MUST match its character so the
+    // hierarchical wizard picker (phase-layout.tsx) shows it under the right
+    // family header. The 10 families come from `TemplateGroup` in types.ts.
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { storyBlock: true, makerPortrait: true },
@@ -151,7 +169,7 @@ export const TEMPLATES: Template[] = [
     id: "talad-see-sod",
     name: "Talad See Sod",
     description: "ตลาดสด ของกินของฝาก สีสันจัดจ้าน",
-    group: "specialty",
+    group: "everyday",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -160,7 +178,7 @@ export const TEMPLATES: Template[] = [
     id: "brutalist-thai",
     name: "Brutalist Thai",
     description: "ดิบๆ เท่ๆ แฟชั่นแนวสตรีทและตัวอักษรใหญ่",
-    group: "specialty",
+    group: "fashion-beauty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { heroSize: "none" },
@@ -169,7 +187,7 @@ export const TEMPLATES: Template[] = [
     id: "mono-eight",
     name: "Mono Eight",
     description: "มินิมอล ญี่ปุ่น โทนขาวดำ",
-    group: "specialty",
+    group: "lifestyle",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -178,7 +196,7 @@ export const TEMPLATES: Template[] = [
     id: "lila-modest",
     name: "Lila Modest",
     description: "เสื้อผ้ามุสลิม เรียบหรู อ่อนโยน",
-    group: "specialty",
+    group: "fashion-beauty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { heroSize: "portrait", productCardStyle: "editorial" },
@@ -196,7 +214,7 @@ export const TEMPLATES: Template[] = [
     id: "bulkbox-industrial",
     name: "Bulkbox Industrial",
     description: "ขายส่ง เครื่องจักร อุตสาหกรรม B2B",
-    group: "specialty",
+    group: "business-model",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { productCardStyle: "spec-rows", badgeSlot: "b2b" },
@@ -205,7 +223,7 @@ export const TEMPLATES: Template[] = [
     id: "caldera-skin",
     name: "Caldera Skin",
     description: "สกินแคร์ เครื่องสำอาง คลินิก สไตล์คลีน",
-    group: "specialty",
+    group: "fashion-beauty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { productCardStyle: "spec-rows" },
@@ -214,7 +232,7 @@ export const TEMPLATES: Template[] = [
     id: "carbon-era-cameras",
     name: "Carbon Era Cameras",
     description: "กล้องถ่ายรูป อุปกรณ์ไอที สายลุย",
-    group: "specialty",
+    group: "electronics-tech",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -223,7 +241,7 @@ export const TEMPLATES: Template[] = [
     id: "glow-lamp-co",
     name: "Glow Lamp Co",
     description: "โคมไฟ ของตกแต่งบ้าน โทนอบอุ่น",
-    group: "specialty",
+    group: "lifestyle",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { productCardStyle: "editorial" },
@@ -232,7 +250,7 @@ export const TEMPLATES: Template[] = [
     id: "hinoki-apothecary",
     name: "Hinoki Apothecary",
     description: "สปา น้ำหอม สมุนไพร โทนไม้และธรรมชาติ",
-    group: "specialty",
+    group: "fashion-beauty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { storyBlock: true },
@@ -241,7 +259,7 @@ export const TEMPLATES: Template[] = [
     id: "inkstone-paper",
     name: "Inkstone Paper",
     description: "เครื่องเขียน อุปกรณ์โต๊ะทำงาน มินิมอล",
-    group: "specialty",
+    group: "lifestyle",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -250,7 +268,7 @@ export const TEMPLATES: Template[] = [
     id: "keystroke-lab",
     name: "Keystroke Lab",
     description: "คีย์บอร์ด ไอที เกมมิ่ง ดุดัน",
-    group: "specialty",
+    group: "electronics-tech",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -259,7 +277,7 @@ export const TEMPLATES: Template[] = [
     id: "korakot-house",
     name: "Korakot House",
     description: "เฟอร์นิเจอร์ไม้ แต่งบ้าน โฮมมี่",
-    group: "specialty",
+    group: "lifestyle",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { heroSize: "large", productCardStyle: "editorial" },
@@ -268,7 +286,7 @@ export const TEMPLATES: Template[] = [
     id: "linen-and-loom",
     name: "Linen And Loom",
     description: "เสื้อผ้าฝ้าย ลินิน โทนละมุน",
-    group: "specialty",
+    group: "fashion-beauty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -286,7 +304,7 @@ export const TEMPLATES: Template[] = [
     id: "pastel-pack",
     name: "Pastel Pack",
     description: "แพ็คเกจจิ้ง ของขวัญ สีพาสเทลน่ารัก",
-    group: "specialty",
+    group: "packaging",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -295,7 +313,7 @@ export const TEMPLATES: Template[] = [
     id: "petit-cote",
     name: "Petit Cote",
     description: "เสื้อผ้าเด็ก ของใช้แม่และเด็ก ละมุน",
-    group: "specialty",
+    group: "lifestyle",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -313,7 +331,7 @@ export const TEMPLATES: Template[] = [
     id: "reclaim-leather",
     name: "Reclaim Leather",
     description: "งานหนังทำมือ เท่ กระเป๋า เครื่องหนัง",
-    group: "specialty",
+    group: "fashion-beauty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -322,7 +340,7 @@ export const TEMPLATES: Template[] = [
     id: "saluki-yoga",
     name: "Saluki Yoga",
     description: "โยคะ สายสุขภาพ กีฬา",
-    group: "specialty",
+    group: "lifestyle",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -331,7 +349,7 @@ export const TEMPLATES: Template[] = [
     id: "sirin-womenswear",
     name: "Sirin Womenswear",
     description: "เสื้อผ้าผู้หญิง แฟชั่น เรียบหรู",
-    group: "specialty",
+    group: "fashion-beauty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { heroSize: "portrait", productCardStyle: "editorial" },
@@ -340,7 +358,7 @@ export const TEMPLATES: Template[] = [
     id: "smartloop-home",
     name: "Smartloop Home",
     description: "สมาร์ทโฮม แก็ดเจ็ต ล้ำสมัย",
-    group: "specialty",
+    group: "electronics-tech",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -349,7 +367,7 @@ export const TEMPLATES: Template[] = [
     id: "tinyhand-wooden-toys",
     name: "Tinyhand Wooden Toys",
     description: "ของเล่นไม้ เสริมพัฒนาการเด็ก",
-    group: "specialty",
+    group: "lifestyle",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
@@ -358,16 +376,16 @@ export const TEMPLATES: Template[] = [
     id: "trailcraft-outdoors",
     name: "Trailcraft Outdoors",
     description: "แคมป์ปิ้ง อุปกรณ์เดินป่า สายลุย",
-    group: "specialty",
+    group: "lifestyle",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { heroSize: "large", productCardStyle: "sharp" },
+    behavior: { heroSize: "large", productCardStyle: "minimal" },
   },
   {
     id: "wavelength-audio",
     name: "Wavelength Audio",
     description: "เครื่องเสียง หูฟัง ออดิโอไฟล์ พรีเมียม",
-    group: "specialty",
+    group: "electronics-tech",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { heroSize: "large", singleProductMode: true },
@@ -376,7 +394,7 @@ export const TEMPLATES: Template[] = [
     id: "yumeiro-lip",
     name: "Yumeiro Lip",
     description: "ลิปสติก บิวตี้ สีสันสดใส",
-    group: "specialty",
+    group: "fashion-beauty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { swatchRow: true },
