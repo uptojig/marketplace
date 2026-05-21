@@ -3,8 +3,6 @@ import Link from "next/link";
 import { OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
-import { StoreRenderer } from "@/lib/templates/renderer";
-import { mapStoreFromPrisma } from "@/lib/store/map-store";
 import type { TemplateId } from "@/lib/templates/types";
 import { Clock } from "lucide-react";
 import { ShopAddButton } from "@/components/shop/ShopAddButton";
@@ -308,17 +306,7 @@ export default async function StorePage({
       return <CommunityHomepage store={baseStore} />;
   }
 
-  // ── New scaffold-based template (vendor wizard v2) ──────────
-  // Stores whose templateId is in STORE_TEMPLATES but have no
-  // bespoke `pages.home` AND no family match fall through to
-  // StoreRenderer (block dispatcher + desktop pattern). Legacy
-  // stores have templateId = null and fall through to the
-  // landingBlocks paths below.
-  if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
-    const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
-    const store = await mapStoreFromPrisma(baseStore);
-    return <StoreRenderer store={store} template={template} />;
-  }
+
 
   // ── HTML schema (new: unique designs) ────────────────────────
   if (baseStore.landingBlocks && isHtmlSchema(baseStore.landingBlocks)) {

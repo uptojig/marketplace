@@ -61,8 +61,7 @@ export function LivePreview({ state }: Props) {
       <div className="flex items-center justify-between text-[11px] text-zinc-500">
         <span className="font-mono">{slug}.basketplace.co</span>
         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">
-          {template ? template.name : "ยังไม่เลือกเลย์เอาต์"} ·{" "}
-          {template ? `Pattern ${template.desktopPattern}` : "default"}
+          {template ? template.name : "ยังไม่เลือกเลย์เอาต์"}
         </span>
       </div>
 
