@@ -7,8 +7,6 @@
 
 const COMMUNITY_TEMPLATE_IDS: ReadonlySet<string> = new Set([
   'live-commerce',
-  'video-feed',
-  'storyteller',
 ]);
 
 const COMMUNITY_VARIANT_VALUES: ReadonlySet<string> = new Set(['community']);

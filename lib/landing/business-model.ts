@@ -192,8 +192,6 @@ export const BUSINESS_MODEL_TOKENS: BusinessModelTokens = {
  */
 export const BUSINESS_MODEL_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
   'wholesale-b2b',
-  'flash-deal',
-  'subscription',
   'eco-pack',
 ]);
 

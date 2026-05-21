@@ -186,7 +186,6 @@ export const SPECIALTY_TOKENS: SpecialtyTokens = {
  */
 export const SPECIALTY_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
   'handmade',
-  'vintage',
 ]);
 
 /**

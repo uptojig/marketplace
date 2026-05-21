@@ -172,9 +172,9 @@ export const FASHION_BEAUTY_TOKENS: FashionBeautyTokens = {
  */
 export const FASHION_BEAUTY_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
   'lookbook',
-  'beauty-swatch',
-  'boutique',
   'bikini-beach',
+  'mono-eight',
+  'lila-modest',
 ]);
 
 /**

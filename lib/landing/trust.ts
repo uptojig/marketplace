@@ -191,8 +191,7 @@ export const TRUST_TOKENS: TrustTokens = {
  */
 export const TRUST_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
   'classic',
-  'official-brand',
-  'premium-luxury',
+  'atelier-27',
 ]);
 
 /**

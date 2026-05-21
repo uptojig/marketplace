@@ -200,9 +200,7 @@ export const LIFESTYLE_TOKENS: LifestyleTokens = {
  * Mirrors `templateGroups.lifestyle` in lib/templates/registry.ts.
  */
 export const LIFESTYLE_TEMPLATE_IDS: ReadonlySet<TemplateId> = new Set<TemplateId>([
-  'home-living',
   'sport-active',
-  'kids-toys',
   'mega-store',
 ]);
 

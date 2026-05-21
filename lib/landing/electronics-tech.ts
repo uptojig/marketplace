@@ -200,7 +200,7 @@ export const ELECTRONICS_TECH_TOKENS: ElectronicsTechTokens = {
  * Mirrors `templateGroups['electronics-tech']` in lib/templates/registry.ts.
  */
 export const ELECTRONICS_TECH_TEMPLATE_IDS: ReadonlySet<TemplateId> =
-  new Set<TemplateId>(['catalog-dense', 'tech-compare', 'single-product']);
+  new Set<TemplateId>(['tech-compare']);
 
 /**
  * Operator-facing `landingThemeVariant` values that should also render
