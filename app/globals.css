@@ -282,12 +282,39 @@
    to maintain visual consistency with the store's design family. */
 
 @layer components {
-  /* Page wrapper — consistent background + font for all store pages */
+  /* Page wrapper — consistent background + font for all store pages.
+     Also bridges --shop-* tokens → tailwind design tokens so shadcn
+     blocks (product-category, shopping-cart, checkout-page, etc.)
+     rendered inside store pages automatically inherit the store's
+     theme colors without per-block overrides. */
   .shop-page {
     background: var(--shop-bg);
     color: var(--shop-ink);
     font-family: var(--shop-font);
     min-height: 100vh;
+
+    /* ── Tailwind ↔ Shop token bridge ──
+       shadcn blocks use `bg-primary`, `bg-muted`, `text-foreground`,
+       etc. which resolve through --primary, --background, --foreground.
+       We re-map those to the store's --shop-* values so every block
+       picks up the store accent/bg/ink without code changes. */
+    --background: var(--shop-bg);
+    --foreground: var(--shop-ink);
+    --primary: var(--shop-primary);
+    --primary-foreground: #ffffff;
+    --muted: color-mix(in srgb, var(--shop-bg) 85%, var(--shop-ink));
+    --muted-foreground: var(--shop-ink-muted);
+    --card: var(--shop-card);
+    --card-foreground: var(--shop-ink);
+    --border: var(--shop-border);
+    --input: var(--shop-border);
+    --ring: var(--shop-primary);
+    --accent: color-mix(in srgb, var(--shop-primary) 12%, var(--shop-bg));
+    --accent-foreground: var(--shop-ink);
+    --secondary: color-mix(in srgb, var(--shop-bg) 90%, var(--shop-ink));
+    --secondary-foreground: var(--shop-ink);
+    --popover: var(--shop-card);
+    --popover-foreground: var(--shop-ink);
   }
 
   /* Card — product cards, order summary, form containers */
