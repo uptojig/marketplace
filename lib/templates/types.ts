@@ -218,11 +218,38 @@ export interface Template {
 // keeps rendering, so the existing 20 templates remain valid without
 // modification.
 
+/**
+ * Outer page skeleton variant — `app/stores/[slug]/layout.tsx`
+ * branches on this to differentiate the wrapper markup across
+ * templates so storefronts don't all share the same shell shape.
+ *
+ *   centered      current default — max-w + centered, header/main/footer
+ *   sidebar-left  240px sticky left nav on desktop, content fills the rest
+ *   split-hero    relative-positioned header so children can overlap it
+ *   full-bleed    absolute-positioned header floats over the first viewport
+ *   magazine      wide outer gutters on desktop, asymmetric grid friendly
+ *
+ * Absent or 'centered' = the current default markup. Templates opt
+ * into other shapes via `chrome.shellShape` in lib/templates/registry.ts.
+ */
+export type ShellShape =
+  | 'centered'
+  | 'sidebar-left'
+  | 'split-hero'
+  | 'full-bleed'
+  | 'magazine';
+
 /** Bespoke chrome the template renders instead of the default ShopHeader / ShopFooter. */
 export interface TemplateChrome {
   Header: ComponentType<HeaderProps>;
   Footer: ComponentType<FooterProps>;
   AnnouncementStrip?: ComponentType<AnnouncementStripProps>;
+  /**
+   * Outer page skeleton variant — `app/stores/[slug]/layout.tsx`
+   * branches on this. Absent or 'centered' = the current default
+   * markup. See `ShellShape` for the full list.
+   */
+  shellShape?: ShellShape;
 }
 
 /** Bespoke page components the template renders for each per-store route. */

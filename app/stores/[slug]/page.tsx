@@ -44,6 +44,12 @@ import { EverydayHomepage } from "@/components/storefront/themes/everyday/Everyd
 import { TaobaoHomepage } from "@/components/storefront/themes/taobao/TaobaoHomepage";
 import { PackagingHomepage } from "@/components/storefront/themes/packaging/PackagingHomepage";
 import { CommunityHomepage } from "@/components/storefront/themes/community/CommunityHomepage";
+import { parseUIConfig } from "@/lib/store/ui-config";
+import { hasBlock } from "@/lib/registry/block-registry";
+import {
+  BlockRenderer,
+  storeToSummary,
+} from "@/components/storefront/block-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -215,20 +221,91 @@ export default async function StorePage({
   const baseStore = await getStoreBySlug(params.slug);
   if (!baseStore) notFound();
 
-  // ── Theme dispatch (content) — single source of truth ───────
-  // resolveStoreTheme() reproduces the previous cascade EXACTLY:
-  //   1. pet-house / case-studio singletons first (by slug/templateId/variant)
-  //   2. then the family ladder via effectiveTemplateId() — the legacy
-  //      slug→templateId fallback for pre-wizard-v2 stores — including everyday.
-  // This runs BEFORE the wizard StoreRenderer below so a store whose templateId
-  // is in a known family gets the bespoke homepage instead of the generic
-  // block-renderer output. See lib/storefront/resolve-store-theme.ts.
+  // ── Server-driven UI (uiConfig) — highest-priority dispatch ──────
+  // When the operator (or wizard seed) has saved a `uiConfig` JSON on
+  // the store's landing-content row, the storefront renders via the
+  // data-driven BlockRenderer pipeline. Falling through (null parse OR
+  // no known block ids) keeps every legacy store working unchanged so
+  // the migration to data-driven is opt-in per store.
+  const landingContentRow = await prisma.storeLandingContent.findUnique({
+    where: { storeId: baseStore.id },
+  });
+  const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
+  const uiConfigHasKnownHomeBlock =
+    !!uiConfig && uiConfig.pages.home.some((b) => hasBlock(b.id));
+  if (uiConfig && uiConfigHasKnownHomeBlock) {
+    return (
+      <BlockRenderer
+        blocks={uiConfig.pages.home}
+        store={storeToSummary(baseStore)}
+        content={landingContentRow}
+      />
+    );
+  }
+
+  // ── Theme key — single source of truth for content theme ─────────
+  // resolveStoreTheme() reproduces the pre-Phase-1 cascade EXACTLY:
+  // singletons (pet-house/case-studio) first, then family ladder via
+  // effectiveTemplateId(). We bracket two early-returns around it so
+  // (a) slug-pinned bespoke pages still win, and (b) STORE_TEMPLATES
+  // .pages.home wins over the family ladder.
   const { themeKey } = resolveStoreTheme(baseStore);
+
+  // (a) Slug-pinned bespoke pages — pet-house (fluffyhouse) and
+  // case-studio (casethep) are hard slug overrides and must win over
+  // STORE_TEMPLATES.pages.home below.
+  if (themeKey === "pet-house") {
+    return <PetHouseHomepage store={baseStore} />;
+  }
+  if (themeKey === "case-studio") {
+    return <CaseStudioHomepage store={baseStore} />;
+  }
+
+  // effectiveTemplateId() applies the legacy slug→templateId fallback;
+  // needed by BOTH the template-pages.home block below AND the
+  // scaffold StoreRenderer further down.
+  const effectiveTpl = effectiveTemplateId(baseStore);
+
+  // (b) Template bespoke homepage — STORE_TEMPLATES.pages.home MUST
+  // beat the family switch below. Otherwise ~50 bespoke templates get
+  // silently overridden by 10 generic family homepages whenever
+  // landingThemeVariant is set (which after the backfill migration is
+  // now 8/9 stores). Templates that exist in STORE_TEMPLATES but have
+  // NO bespoke pages.home fall through to the family switch → then to
+  // StoreRenderer.
+  if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
+    const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
+    const TemplateHomepage = template?.pages?.home;
+    if (TemplateHomepage) {
+      const dbProducts = await prisma.product.findMany({
+        where: { storeId: baseStore.id, active: true },
+        orderBy: { createdAt: "desc" },
+        take: 60,
+      });
+      const products = dbProducts.map((p) => ({
+        id: p.id,
+        title: p.titleTh ?? p.title,
+        priceTHB: Number(p.priceTHB),
+        compareAtPriceTHB: p.compareAtPriceTHB ? Number(p.compareAtPriceTHB) : null,
+        imageUrl: p.imageUrl,
+        categoryName: p.categoryName,
+      }));
+      const categories = Array.from(
+        new Set(products.map((p) => p.categoryName).filter((c): c is string => !!c))
+      ).slice(0, 8);
+
+      return (
+        <TemplateHomepage
+          store={storeToSummary(baseStore)}
+          products={products}
+          categories={categories}
+        />
+      );
+    }
+  }
+
+  // ── 10 design-family bespoke homepages (fallback) ────────────────
   switch (themeKey) {
-    case "pet-house":
-      return <PetHouseHomepage store={baseStore} />;
-    case "case-studio":
-      return <CaseStudioHomepage store={baseStore} />;
     case "fashion-beauty":
       return <FashionBeautyHomepage store={baseStore} />;
     case "trust":
@@ -251,15 +328,12 @@ export default async function StorePage({
       return <CommunityHomepage store={baseStore} />;
   }
 
-  // effectiveTemplateId() applies the legacy slug→templateId fallback; still
-  // needed by the scaffold StoreRenderer branch below.
-  const effectiveTpl = effectiveTemplateId(baseStore);
-
   // ── New scaffold-based template (vendor wizard v2) ──────────
-  // Stores created via the new /create-store wizard set `templateId` to
-  // one of the 20 registry entries. Render via StoreRenderer (block
-  // dispatcher + desktop pattern). Legacy stores have templateId = null
-  // and fall through to the landingBlocks paths below.
+  // Stores whose templateId is in STORE_TEMPLATES but have no
+  // bespoke `pages.home` AND no family match fall through to
+  // StoreRenderer (block dispatcher + desktop pattern). Legacy
+  // stores have templateId = null and fall through to the
+  // landingBlocks paths below.
   if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
     const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
     const store = await mapStoreFromPrisma(baseStore);

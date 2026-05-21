@@ -2,6 +2,7 @@
 
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import type { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSpacesConfigured, uploadBuffer } from "@/lib/storage/spaces";
@@ -12,6 +13,7 @@ import {
   type WizardState,
 } from "@/lib/store/wizard-data";
 import { deriveLandingThemeVariant } from "@/lib/store/template-fields";
+import { seedUiConfigForTemplate } from "@/lib/store/seed-ui-config";
 
 /** Hard cap on Phase 3 picks. CJ throttles ~1 req/sec, so 20 selected
  *  → ~22s wizard submit. Anything bigger (e.g. the 50-pack) imports
@@ -121,6 +123,40 @@ export async function createStoreFromWizard(
       addressLine1: nonEmpty(state.identity.contact.address),
     },
   });
+
+  // Seed the per-store data-driven UI recipe. Without this row the
+  // BlockRenderer chain falls back to the legacy family-detector path
+  // (which means the 47 shadcn-studio blocks composed by
+  // `lib/registry/block-registry.tsx` never render for the store).
+  //
+  // Soft-fail by design: if the seed function returns a config that
+  // somehow fails the StoreLandingContent upsert (e.g. unique-constraint
+  // race against a parallel write), the wizard MUST still complete —
+  // the operator can re-seed from /admin/stores/[id]/landing-content.
+  // We log instead of throwing for the same reason.
+  try {
+    const uiConfig = seedUiConfigForTemplate(
+      state.layout.templateId,
+      state.identity.paletteId,
+    );
+    if (uiConfig) {
+      await prisma.storeLandingContent.upsert({
+        where: { storeId: store.id },
+        create: {
+          storeId: store.id,
+          uiConfig: uiConfig as Prisma.InputJsonValue,
+        },
+        update: {
+          uiConfig: uiConfig as Prisma.InputJsonValue,
+        },
+      });
+    }
+  } catch (err) {
+    console.warn(
+      `[wizard] uiConfig seed failed for store ${store.id} (template=${state.layout.templateId ?? "null"}):`,
+      err instanceof Error ? err.message : err,
+    );
+  }
 
   // Phase 3 — import the products the merchant picked. Two-phase:
   // (1) create lightweight Product stubs synchronously from the

@@ -13,6 +13,7 @@ import {
   testimonialSchema,
   type ColorOverrides,
 } from "@/lib/store/landing-content";
+import { parseUIConfig } from "@/lib/store/ui-config";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +36,18 @@ export default async function AdminLandingContentPage({
       id: true,
       slug: true,
       name: true,
+      templateId: true,
+      paletteId: true,
       landingContent: true,
     },
   });
   if (!store) notFound();
 
   const c = store.landingContent;
+  // parseUIConfig returns null when uiConfig is null/undefined OR fails
+  // validation — the editor renders an empty-state in both cases so the
+  // operator can re-seed instead of editing a broken object.
+  const uiConfig = parseUIConfig(c?.uiConfig);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
@@ -64,6 +71,8 @@ export default async function AdminLandingContentPage({
       <LandingContentForm
         endpoint={`/api/admin/stores/${store.id}/landing-content`}
         storeUrl={`/stores/${store.slug}`}
+        templateId={store.templateId}
+        paletteId={store.paletteId}
         defaultValues={{
           heroHeadline: c?.heroHeadline ?? "",
           heroSubheadline: c?.heroSubheadline ?? "",
@@ -87,6 +96,7 @@ export default async function AdminLandingContentPage({
           faqItems: readRepeatable(c?.faqItems, faqItemSchema),
           testimonials: readRepeatable(c?.testimonials, testimonialSchema),
           colorOverrides: (c?.colorOverrides as ColorOverrides | null) ?? {},
+          uiConfig,
         }}
       />
     </div>

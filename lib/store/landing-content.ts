@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { uiConfigSchema } from "./ui-config";
 
 // Editable storefront content (`StoreLandingContent`) — validation schemas
 // shared between the admin PATCH endpoint, the vendor self-serve endpoint,
@@ -153,6 +154,11 @@ export const landingContentSchema = z.object({
 
   // Bespoke per-template overflow
   extras: z.record(z.unknown()).nullable().optional(),
+
+  // Server-driven UI config (full shape validated by `uiConfigSchema`).
+  // Pass `null` to clear back to the legacy family-detector path; omit
+  // entirely (undefined) to leave the column untouched.
+  uiConfig: uiConfigSchema.nullable().optional(),
 });
 
 export type LandingContentInput = z.infer<typeof landingContentSchema>;

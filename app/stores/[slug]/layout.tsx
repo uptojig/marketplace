@@ -40,10 +40,133 @@ import {
 } from "@/lib/store/landing-content-runtime";
 import type { ColorOverrides } from "@/lib/store/landing-content";
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
-import type { TemplateId } from "@/lib/templates/types";
+import type { ShellShape, TemplateId } from "@/lib/templates/types";
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Outer page skeleton variants — each template can opt into a shape
+ * via `chrome.shellShape`. Same inputs (className / theme vars /
+ * announcement strip / header / main / footer / floating chrome)
+ * compose into different wrappers so storefronts feel structurally
+ * distinct, not just visually re-skinned.
+ *
+ * The `className` we receive already encodes the theme + family +
+ * shop-page hooks the CSS cascade needs — we keep it intact and let
+ * Tailwind's last-wins ordering layer the shape's layout on top.
+ * Non-centered shapes therefore pass `min-h-screen` via the input
+ * className and add their own grid/positioning utilities.
+ */
+function StoreShell({
+  shape,
+  className,
+  style,
+  strip,
+  header,
+  main,
+  footer,
+  floating,
+}: {
+  shape: ShellShape;
+  className: string;
+  style: React.CSSProperties;
+  strip: React.ReactNode;
+  header: React.ReactNode;
+  main: React.ReactNode;
+  footer: React.ReactNode;
+  floating: React.ReactNode;
+}) {
+  switch (shape) {
+    case "sidebar-left":
+      // 240px sticky nav on desktop, header collapses to a horizontal
+      // strip on mobile. Header renders TWICE — once inside the
+      // <aside> for desktop and once above <main> for mobile — and
+      // the CSS-only `lg:hidden` / `hidden lg:block` toggles pick the
+      // right one without any JS-side viewport detection.
+      return (
+        <div
+          className={`${className} lg:grid lg:grid-cols-[240px_1fr]`}
+          style={style}
+        >
+          <aside
+            className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto border-r"
+            style={{ borderColor: "var(--shop-border)" }}
+          >
+            {header}
+          </aside>
+          <div className="flex flex-col lg:min-h-screen">
+            <div className="lg:hidden">{header}</div>
+            {strip}
+            <main className="flex-1">{main}</main>
+            {footer}
+          </div>
+          {floating}
+        </div>
+      );
+
+    case "split-hero":
+      // Header renders directly under {strip}; <main> overlaps with `-mt-px`
+      // and templates can pull their hero up via `-mt-16 relative z-10` on
+      // the first child. The header keeps the outer shop-page wrapper as its
+      // containing block, so any `position: sticky` inside the bespoke
+      // Header component continues to work after scroll.
+      return (
+        <div className={className} style={style}>
+          {strip}
+          {header}
+          <main className="flex-1 -mt-px">{main}</main>
+          {footer}
+          {floating}
+        </div>
+      );
+
+    case "full-bleed":
+      // Header is absolutely positioned across the top so the hero
+      // can extend edge-to-edge under it. Templates using this shape
+      // must add their own top padding (or a tall hero) so content
+      // clears the floating chrome. `relative` is added so the
+      // absolutely-positioned header anchors to this wrapper.
+      return (
+        <div className={`${className} relative`} style={style}>
+          {strip}
+          <div className="absolute inset-x-0 top-0 z-30">{header}</div>
+          <main className="flex-1 pt-0">{main}</main>
+          {footer}
+          {floating}
+        </div>
+      );
+
+    case "magazine":
+      // Marker shape for editorial / handmade templates. Templates that
+      // opt in own their internal layout (max-w + px-* on their own
+      // sections); the shell stays pass-through so we don't compound
+      // gutters with the template's existing containers.
+      return (
+        <div className={className} style={style}>
+          {strip}
+          {header}
+          <main className="flex-1">{main}</main>
+          {footer}
+          {floating}
+        </div>
+      );
+
+    case "centered":
+    default:
+      // Input className already carries the centered defaults
+      // (`shop-page min-h-screen flex flex-col` plus theme + family).
+      return (
+        <div className={className} style={style}>
+          {strip}
+          {header}
+          <main className="flex-1">{main}</main>
+          {footer}
+          {floating}
+        </div>
+      );
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -308,33 +431,48 @@ export default async function ShopLayout({
     // Family E retains its theme-cyber back-compat alias.
     const themeClassFinal = `${themeClass ? `${themeClass} ` : ""}${familyCode === "E" ? "theme-cyber " : ""}theme-${familyCode}`;
 
+    // The AI Multi-page path doesn't consult the registry's
+    // `chrome.shellShape` (the schema-driven flow predates per-template
+    // chrome adapters), but routing it through StoreShell keeps the
+    // markup consistent with the other render paths and means adding
+    // an AI-multi-page-specific shape in the future is a one-line
+    // change here.
     return (
-      <div
+      <StoreShell
+        shape="centered"
         className={`shop-page min-h-screen flex flex-col ${fontClass} ${themeClassFinal} ${familyClass}`.trim()}
         style={{ ...tokensToCssVars(tokens), ...familyVars, ...lcColorVars }}
-      >
-        <ShopHeader
-          storeSlug={store.slug}
-          storeName={store.name}
-          storeLogoUrl={store.logoUrl}
-          categories={navCategories}
-          accent={familyAccent ?? tokens.accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-          announcement={lcAnnouncement ?? tokens.announcement}
-          buttonShape={familyButtonShape ?? tokens.buttonShape}
-        />
-        <main className="flex-1">{children}</main>
-        <ShopFooter
-          store={store}
-          categories={navCategories}
-          accent={familyAccent ?? tokens.accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-        />
-        <CookiesBar />
-        <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
-      </div>
+        strip={null}
+        header={
+          <ShopHeader
+            storeSlug={store.slug}
+            storeName={store.name}
+            storeLogoUrl={store.logoUrl}
+            categories={navCategories}
+            accent={familyAccent ?? tokens.accent}
+            decorationGlyph={tokens.decorationGlyph}
+            glyphStyle={tokens.glyphStyle}
+            announcement={lcAnnouncement ?? tokens.announcement}
+            buttonShape={familyButtonShape ?? tokens.buttonShape}
+          />
+        }
+        main={children}
+        footer={
+          <ShopFooter
+            store={store}
+            categories={navCategories}
+            accent={familyAccent ?? tokens.accent}
+            decorationGlyph={tokens.decorationGlyph}
+            glyphStyle={tokens.glyphStyle}
+          />
+        }
+        floating={
+          <>
+            <CookiesBar />
+            <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
+          </>
+        }
+      />
     );
   }
 
@@ -375,52 +513,65 @@ export default async function ShopLayout({
   const CustomFooter = template?.chrome?.Footer;
   const CustomStrip = template?.chrome?.AnnouncementStrip;
   const accent = familyAccent ?? tokens.accent;
+  // Resolved shell shape — registry-defined per template. Absent
+  // (or 'centered') keeps the current default markup; other values
+  // re-shape the outer skeleton via StoreShell so storefronts feel
+  // structurally distinct, not just visually re-skinned.
+  const shellShape: ShellShape = template?.chrome?.shellShape ?? "centered";
 
   return (
-    <div
+    <StoreShell
+      shape={shellShape}
       className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
       style={{ ...tokensToCssVars(tokens), ...familyVars, ...lcColorVars }}
-    >
-      {CustomStrip && <CustomStrip storeName={store.name} />}
-      {CustomHeader ? (
-        <CustomHeader
-          storeSlug={store.slug}
-          storeName={store.name}
-          storeLogoUrl={store.logoUrl}
-          categories={categories}
-          accent={accent}
-        />
-      ) : (
-        <ShopHeader
-          storeSlug={store.slug}
-          storeName={store.name}
-          storeLogoUrl={store.logoUrl}
-          categories={categories}
-          accent={accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-          announcement={lcAnnouncement ?? tokens.announcement}
-          buttonShape={familyButtonShape ?? tokens.buttonShape}
-        />
-      )}
-      <main className="flex-1">{children}</main>
-      {CustomFooter ? (
-        <CustomFooter
-          store={store}
-          categories={categories}
-          accent={accent}
-        />
-      ) : (
-        <ShopFooter
-          store={store}
-          categories={categories}
-          accent={accent}
-          decorationGlyph={tokens.decorationGlyph}
-          glyphStyle={tokens.glyphStyle}
-        />
-      )}
-      <CookiesBar />
-      <ShopFloatingButtons primaryColor={accent} />
-    </div>
+      strip={CustomStrip ? <CustomStrip storeName={store.name} /> : null}
+      header={
+        CustomHeader ? (
+          <CustomHeader
+            storeSlug={store.slug}
+            storeName={store.name}
+            storeLogoUrl={store.logoUrl}
+            categories={categories}
+            accent={accent}
+          />
+        ) : (
+          <ShopHeader
+            storeSlug={store.slug}
+            storeName={store.name}
+            storeLogoUrl={store.logoUrl}
+            categories={categories}
+            accent={accent}
+            decorationGlyph={tokens.decorationGlyph}
+            glyphStyle={tokens.glyphStyle}
+            announcement={lcAnnouncement ?? tokens.announcement}
+            buttonShape={familyButtonShape ?? tokens.buttonShape}
+          />
+        )
+      }
+      main={children}
+      footer={
+        CustomFooter ? (
+          <CustomFooter
+            store={store}
+            categories={categories}
+            accent={accent}
+          />
+        ) : (
+          <ShopFooter
+            store={store}
+            categories={categories}
+            accent={accent}
+            decorationGlyph={tokens.decorationGlyph}
+            glyphStyle={tokens.glyphStyle}
+          />
+        )
+      }
+      floating={
+        <>
+          <CookiesBar />
+          <ShopFloatingButtons primaryColor={accent} />
+        </>
+      }
+    />
   );
 }

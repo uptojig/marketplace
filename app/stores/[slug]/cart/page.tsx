@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -23,6 +25,7 @@ import { TaobaoCartPage } from "@/components/storefront/themes/taobao/TaobaoCart
 import { PackagingCartPage } from "@/components/storefront/themes/packaging/PackagingCartPage";
 import { CommunityCartPage } from "@/components/storefront/themes/community/CommunityCartPage";
 import { parseUIConfig } from "@/lib/store/ui-config";
+import { hasBlock } from "@/lib/registry/block-registry";
 import {
   SingleBlockRenderer,
   storeToSummary,
@@ -57,7 +60,10 @@ export default async function StoreCartPage({
     where: { storeId: store.id },
   });
   const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
-  if (uiConfig?.pages.cart) {
+  // Only short-circuit when the picked block id is actually registered —
+  // a stale recipe (block removed from registry) would otherwise render
+  // a blank cart. Fall through to the template/family fallbacks.
+  if (uiConfig?.pages.cart && hasBlock(uiConfig.pages.cart)) {
     return (
       <SingleBlockRenderer
         id={uiConfig.pages.cart}
@@ -66,6 +72,29 @@ export default async function StoreCartPage({
         content={landingContentRow}
       />
     );
+  }
+
+  // ── Template bespoke cart page (highest-priority generic dispatch) ──
+  // Templates registered in STORE_TEMPLATES that ship their own
+  // `pages.cart` component (e.g. eco-pack, bikini-beach, mega-store)
+  // MUST win over the 10 family detectors below. Otherwise these
+  // bespoke cart designs get silently overridden by the family
+  // cart pages whenever `landingThemeVariant` is set.
+  // Cart adapters are client components that read line items from
+  // the zustand cart themselves, so server-side `items: []` is fine —
+  // the prop only exists to satisfy the CartProps contract.
+  const effectiveTpl = effectiveTemplateId(store);
+  if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
+    const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
+    const TemplateCartPage = template?.pages?.cart;
+    if (TemplateCartPage) {
+      return (
+        <TemplateCartPage
+          store={storeToSummary(store)}
+          items={[]}
+        />
+      );
+    }
   }
 
   // Tell the cart client which design family to render under. The
@@ -77,43 +106,43 @@ export default async function StoreCartPage({
   // FB takes precedence — they're disjoint in practice but we pick a
   // consistent winner if a future store row somehow matched multiple.
   const isFB = isFashionBeautyStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isTrust = !isFB && isTrustStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isLifestyle = !isFB && !isTrust && !isBusinessModel && isLifestyleStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isElectronicsTech = !isFB && !isTrust && !isBusinessModel && !isLifestyle && isElectronicsTechStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isSpecialty = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && isSpecialtyStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isEveryday = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && !isSpecialty && isEverydayStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isTaobao = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && isTaobaoStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isPackaging = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && isPackagingStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
   const isCommunity = !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech && !isSpecialty && !isEveryday && !isTaobao && !isPackaging && isCommunityStore({
-    templateId: effectiveTemplateId(store),
+    templateId: effectiveTpl,
     landingThemeVariant: store.landingThemeVariant,
   });
 

@@ -84,7 +84,18 @@ export async function PUT(req: Request) {
 function patchFromInput(input: LandingContentInput): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(input)) {
-    if (v !== undefined) out[k] = v;
+    if (v === undefined) continue;
+    // `uiConfig` is a JSONB column — Prisma rejects raw `null` for nullable
+    // JSON fields. Translate to `Prisma.JsonNull` so the operator can clear
+    // the config back to the legacy renderer chain.
+    if (k === "uiConfig") {
+      out[k] =
+        v === null
+          ? Prisma.JsonNull
+          : (v as unknown as Prisma.InputJsonValue);
+      continue;
+    }
+    out[k] = v;
   }
   return out;
 }

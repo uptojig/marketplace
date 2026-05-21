@@ -605,6 +605,10 @@ export const templates: Record<TemplateId, Template> = {
       Header: BikiniHeaderAdapter,
       Footer: BikiniFooterAdapter,
       AnnouncementStrip: BikiniStripAdapter,
+      // Beach lookbook hero spans the full viewport with the header
+      // floating over the imagery — see app/stores/[slug]/layout.tsx
+      // for shape semantics.
+      shellShape: 'full-bleed',
     },
     pages: {
       home: BikiniHomepageAdapter,
@@ -642,6 +646,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: EcoPackHeaderAdapter,
       Footer: EcoPackFooterAdapter,
       AnnouncementStrip: EcoPackStripAdapter,
+      // Edge-to-edge nature photography under a floating header so the
+      // hero reads as a single immersive frame.
+      shellShape: 'full-bleed',
     },
     pages: {
       home: EcoPackHomepageAdapter,
@@ -677,6 +684,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: MegaStoreHeaderAdapter,
       Footer: MegaStoreFooterAdapter,
       AnnouncementStrip: MegaStoreStripAdapter,
+      // Taobao-style high-density storefront — header floats over the
+      // dense banner grid so promos can claim the full first viewport.
+      shellShape: 'full-bleed',
     },
     pages: {
       home: MegaStoreHomepageAdapter,
@@ -862,6 +872,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: LilaModestHeaderAdapter,
       Footer: LilaModestFooterAdapter,
       AnnouncementStrip: LilaModestStripAdapter,
+      // Editorial modest-fashion lookbook — wider desktop gutters give
+      // imagery room to breathe alongside long-form captions.
+      shellShape: 'magazine',
     },
     pages: {
       home: LilaModestHomepageAdapter,
@@ -887,6 +900,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: Atelier27HeaderAdapter,
       Footer: Atelier27FooterAdapter,
       AnnouncementStrip: Atelier27StripAdapter,
+      // Atelier-style editorial — asymmetric grids land better with
+      // extra desktop gutters than against the viewport edge.
+      shellShape: 'magazine',
     },
     pages: {
       home: Atelier27HomepageAdapter,
@@ -912,6 +928,10 @@ export const templates: Record<TemplateId, Template> = {
       Header: BulkboxHeaderAdapter,
       Footer: BulkboxFooterAdapter,
       AnnouncementStrip: BulkboxStripAdapter,
+      // TODO(sidebar-left): the bespoke BulkboxHeaderAdapter is a horizontal
+      // bar; rendering it inside the 240px sidebar-left aside collapses the
+      // nav. Re-enable shellShape: 'sidebar-left' after a vertical SidebarNav
+      // adapter ships for this template.
     },
     pages: {
       home: BulkboxHomepageAdapter,
@@ -937,6 +957,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: CalderaSkinHeaderAdapter,
       Footer: CalderaSkinFooterAdapter,
       AnnouncementStrip: CalderaSkinStripAdapter,
+      // Skincare brand site — hero shot of the bottle overlaps the
+      // header for that magazine-cover feeling.
+      shellShape: 'split-hero',
     },
     pages: {
       home: CalderaSkinHomepageAdapter,
@@ -962,6 +985,8 @@ export const templates: Record<TemplateId, Template> = {
       Header: CarbonEraCamerasHeaderAdapter,
       Footer: CarbonEraCamerasFooterAdapter,
       AnnouncementStrip: CarbonEraCamerasStripAdapter,
+      // TODO(sidebar-left): see Bulkbox note — horizontal header doesn't
+      // fit the 240px aside; re-enable once a vertical adapter ships.
     },
     pages: {
       home: CarbonEraCamerasHomepageAdapter,
@@ -1062,6 +1087,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: KeystrokeLabHeaderAdapter,
       Footer: KeystrokeLabFooterAdapter,
       AnnouncementStrip: KeystrokeLabStripAdapter,
+      // Mechanical keyboard launch site — the hero shot of the focus
+      // board overlaps the header for a hardware-reveal hierarchy.
+      shellShape: 'split-hero',
     },
     pages: {
       home: KeystrokeLabHomepageAdapter,
@@ -1112,6 +1140,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: LinenAndLoomHeaderAdapter,
       Footer: LinenAndLoomFooterAdapter,
       AnnouncementStrip: LinenAndLoomStripAdapter,
+      // Slow-textile editorial — wider gutters echo the printed-catalog
+      // feeling the brand voice leans on.
+      shellShape: 'magazine',
     },
     pages: {
       home: LinenAndLoomHomepageAdapter,
@@ -1187,6 +1218,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: PetitCoteHeaderAdapter,
       Footer: PetitCoteFooterAdapter,
       AnnouncementStrip: PetitCoteStripAdapter,
+      // Petit-Cote leans editorial-boutique — magazine gutters keep
+      // its product stories feeling curated, not crammed.
+      shellShape: 'magazine',
     },
     pages: {
       home: PetitCoteHomepageAdapter,
@@ -1212,6 +1246,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: PigmentStudioHeaderAdapter,
       Footer: PigmentStudioFooterAdapter,
       AnnouncementStrip: PigmentStudioStripAdapter,
+      // Pigment Studio is a maker/atelier brand — magazine gutters
+      // frame the colourway swatches like a printed lookbook.
+      shellShape: 'magazine',
     },
     pages: {
       home: PigmentStudioHomepageAdapter,
@@ -1287,6 +1324,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: SirinHeaderAdapter,
       Footer: SirinFooterAdapter,
       AnnouncementStrip: SirinStripAdapter,
+      // Sirin womenswear — editorial lookbook style benefits from
+      // wider outer gutters on desktop for asymmetric imagery.
+      shellShape: 'magazine',
     },
     pages: {
       home: SirinHomepageAdapter,
@@ -1312,6 +1352,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: SmartloopHomeHeaderAdapter,
       Footer: SmartloopHomeFooterAdapter,
       AnnouncementStrip: SmartloopHomeStripAdapter,
+      // Smart-home hardware brand — flagship product hero rises into
+      // the header band for a launch-page hierarchy.
+      shellShape: 'split-hero',
     },
     pages: {
       home: SmartloopHomeHomepageAdapter,
@@ -1387,6 +1430,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: WavelengthAudioHeaderAdapter,
       Footer: WavelengthAudioFooterAdapter,
       AnnouncementStrip: WavelengthAudioStripAdapter,
+      // Hi-fi audio — product hero overlaps the header for a single-
+      // product launch feeling on the homepage.
+      shellShape: 'split-hero',
     },
     pages: {
       home: WavelengthAudioHomepageAdapter,
@@ -1412,6 +1458,9 @@ export const templates: Record<TemplateId, Template> = {
       Header: YumeiroLipHeaderAdapter,
       Footer: YumeiroLipFooterAdapter,
       AnnouncementStrip: YumeiroLipStripAdapter,
+      // Yumeiro lip — beauty editorial. Magazine gutters keep the
+      // colour-story imagery centered like a glossy spread.
+      shellShape: 'magazine',
     },
     pages: {
       home: YumeiroLipHomepageAdapter,

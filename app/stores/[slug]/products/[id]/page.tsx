@@ -56,6 +56,7 @@ import {
 // aliases so the merge resolution doesn't have to rewrite either side.
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
 import { parseUIConfig } from "@/lib/store/ui-config";
+import { hasBlock } from "@/lib/registry/block-registry";
 import {
   SingleBlockRenderer,
   storeToSummary,
@@ -106,7 +107,7 @@ export default async function ShopProductPage({
     where: { storeId: product.store.id },
   });
   const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
-  if (uiConfig?.pages.pdp) {
+  if (uiConfig?.pages.pdp && hasBlock(uiConfig.pages.pdp)) {
     return (
       <SingleBlockRenderer
         id={uiConfig.pages.pdp}

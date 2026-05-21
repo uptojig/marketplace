@@ -14,6 +14,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { parseUIConfig } from "@/lib/store/ui-config";
+import { hasBlock } from "@/lib/registry/block-registry";
 import {
   SingleBlockRenderer,
   storeToSummary,
@@ -121,7 +122,7 @@ export default async function CategoryIndexPage({
     where: { storeId: store.id },
   });
   const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
-  if (uiConfig?.pages.catalog) {
+  if (uiConfig?.pages.catalog && hasBlock(uiConfig.pages.catalog)) {
     return (
       <SingleBlockRenderer
         id={uiConfig.pages.catalog}
