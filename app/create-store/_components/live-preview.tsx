@@ -47,7 +47,8 @@ export function LivePreview({ state }: Props) {
   const slug = slugify(state.identity.name) || "your-store";
   const palette = getPalette(state.identity.paletteId);
   const bespoke = isBespokeTemplate(state.layout.templateId);
-  const availablePages = getAvailablePages(state.layout.templateId);
+  const allPages = getAvailablePages(state.layout.templateId);
+  const availablePages = allPages.slice(0, 4); // max 4 tabs
 
   const [active, setActive] = useState<RealPageKey>("home");
 
