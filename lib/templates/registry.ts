@@ -781,7 +781,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'talad-see-sod',
     name: 'Talad See Sod',
     description: 'ร้านขายไอทีแกดเจ็ต สีสันสดใส เน้นโปรโมชั่นสะดุดตา',
-    group: 'specialty',
+    group: 'everyday',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -806,7 +806,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'brutalist-thai',
     name: 'Brutalist Thai',
     description: 'โรงพิมพ์และร้านขายโปสเตอร์อาร์ต ดีไซน์ดิบ ดุดัน สไตล์ Brutalist',
-    group: 'specialty',
+    group: 'fashion-beauty',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -913,7 +913,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'bulkbox-industrial',
     name: 'Bulkbox Industrial',
     description: 'Auto-generated theme for bulkbox-industrial',
-    group: 'specialty',
+    group: 'business-model',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -942,7 +942,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'caldera-skin',
     name: 'Caldera Skin',
     description: 'Auto-generated theme for caldera-skin',
-    group: 'specialty',
+    group: 'fashion-beauty',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -970,7 +970,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'carbon-era-cameras',
     name: 'Carbon Era Cameras',
     description: 'Auto-generated theme for carbon-era-cameras',
-    group: 'specialty',
+    group: 'electronics-tech',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -997,7 +997,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'glow-lamp-co',
     name: 'Glow Lamp Co',
     description: 'Auto-generated theme for glow-lamp-co',
-    group: 'specialty',
+    group: 'lifestyle',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1022,7 +1022,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'hinoki-apothecary',
     name: 'Hinoki Apothecary',
     description: 'Auto-generated theme for hinoki-apothecary',
-    group: 'specialty',
+    group: 'fashion-beauty',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1047,7 +1047,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'inkstone-paper',
     name: 'Inkstone Paper',
     description: 'Auto-generated theme for inkstone-paper',
-    group: 'specialty',
+    group: 'lifestyle',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1072,7 +1072,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'keystroke-lab',
     name: 'Keystroke Lab',
     description: 'Auto-generated theme for keystroke-lab',
-    group: 'specialty',
+    group: 'electronics-tech',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1100,7 +1100,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'korakot-house',
     name: 'Korakot House',
     description: 'Auto-generated theme for korakot-house',
-    group: 'specialty',
+    group: 'lifestyle',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1125,7 +1125,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'linen-and-loom',
     name: 'Linen And Loom',
     description: 'Auto-generated theme for linen-and-loom',
-    group: 'specialty',
+    group: 'fashion-beauty',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1178,7 +1178,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'pastel-pack',
     name: 'Pastel Pack',
     description: 'Auto-generated theme for pastel-pack',
-    group: 'specialty',
+    group: 'packaging',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1203,7 +1203,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'petit-cote',
     name: 'Petit Cote',
     description: 'Auto-generated theme for petit-cote',
-    group: 'specialty',
+    group: 'lifestyle',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1259,7 +1259,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'reclaim-leather',
     name: 'Reclaim Leather',
     description: 'Auto-generated theme for reclaim-leather',
-    group: 'specialty',
+    group: 'fashion-beauty',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1284,7 +1284,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'saluki-yoga',
     name: 'Saluki Yoga',
     description: 'Auto-generated theme for saluki-yoga',
-    group: 'specialty',
+    group: 'lifestyle',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1309,7 +1309,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'sirin-womenswear',
     name: 'Sirin Womenswear',
     description: 'Auto-generated theme for sirin-womenswear',
-    group: 'specialty',
+    group: 'fashion-beauty',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1337,7 +1337,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'smartloop-home',
     name: 'Smartloop Home',
     description: 'Auto-generated theme for smartloop-home',
-    group: 'specialty',
+    group: 'electronics-tech',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1365,7 +1365,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'tinyhand-wooden-toys',
     name: 'Tinyhand Wooden Toys',
     description: 'Auto-generated theme for tinyhand-wooden-toys',
-    group: 'specialty',
+    group: 'lifestyle',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1390,7 +1390,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'trailcraft-outdoors',
     name: 'Trailcraft Outdoors',
     description: 'Auto-generated theme for trailcraft-outdoors',
-    group: 'specialty',
+    group: 'lifestyle',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1415,7 +1415,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'wavelength-audio',
     name: 'Wavelength Audio',
     description: 'Auto-generated theme for wavelength-audio',
-    group: 'specialty',
+    group: 'electronics-tech',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },
@@ -1443,7 +1443,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'yumeiro-lip',
     name: 'Yumeiro Lip',
     description: 'Auto-generated theme for yumeiro-lip',
-    group: 'specialty',
+    group: 'fashion-beauty',
     mobileBlocks: [
       { type: 'hero', variant: 'cover', id: 'hero' },
       { type: 'store-header', variant: 'compact', id: 'header' },

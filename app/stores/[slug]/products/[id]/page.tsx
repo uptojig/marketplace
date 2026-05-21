@@ -113,9 +113,7 @@ export default async function ShopProductPage({
   // via the `ProductDetailProps` contract in
   // lib/templates/types.ts.
   const tplStore = product.store;
-  const effectiveTpl =
-    tplStore.templateId ??
-    (tplStore.slug ? null /* legacy slug remapping handled by family helpers */ : null);
+  const effectiveTpl = effectiveTemplateId(tplStore);
   const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
     ? STORE_TEMPLATES[effectiveTpl as TemplateId]
     : null;

@@ -44,12 +44,7 @@ import { EverydayHomepage } from "@/components/storefront/themes/everyday/Everyd
 import { TaobaoHomepage } from "@/components/storefront/themes/taobao/TaobaoHomepage";
 import { PackagingHomepage } from "@/components/storefront/themes/packaging/PackagingHomepage";
 import { CommunityHomepage } from "@/components/storefront/themes/community/CommunityHomepage";
-import { parseUIConfig } from "@/lib/store/ui-config";
-import { hasBlock } from "@/lib/registry/block-registry";
-import {
-  BlockRenderer,
-  storeToSummary,
-} from "@/components/storefront/block-renderer";
+import { storeToSummary } from "@/components/storefront/block-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -221,27 +216,12 @@ export default async function StorePage({
   const baseStore = await getStoreBySlug(params.slug);
   if (!baseStore) notFound();
 
-  // ── Server-driven UI (uiConfig) — highest-priority dispatch ──────
-  // When the operator (or wizard seed) has saved a `uiConfig` JSON on
-  // the store's landing-content row, the storefront renders via the
-  // data-driven BlockRenderer pipeline. Falling through (null parse OR
-  // no known block ids) keeps every legacy store working unchanged so
-  // the migration to data-driven is opt-in per store.
-  const landingContentRow = await prisma.storeLandingContent.findUnique({
-    where: { storeId: baseStore.id },
-  });
-  const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
-  const uiConfigHasKnownHomeBlock =
-    !!uiConfig && uiConfig.pages.home.some((b) => hasBlock(b.id));
-  if (uiConfig && uiConfigHasKnownHomeBlock) {
-    return (
-      <BlockRenderer
-        blocks={uiConfig.pages.home}
-        store={storeToSummary(baseStore)}
-        content={landingContentRow}
-      />
-    );
-  }
+  // NOTE: We intentionally skip the uiConfig BlockRenderer path here.
+  // Seeded recipes reference shadcn-studio blocks that require typed
+  // demo props (productItems, cartItems, ...) which the generic
+  // BlockProps adapter cannot synthesize — they crash at render. We
+  // route via STORE_TEMPLATES.pages.home below instead so each template
+  // renders the bespoke homepage component its author wrote.
 
   // ── Theme key — single source of truth for content theme ─────────
   // resolveStoreTheme() reproduces the pre-Phase-1 cascade EXACTLY:

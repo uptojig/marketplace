@@ -187,7 +187,7 @@ export const TEMPLATES: Template[] = [
     id: "mono-eight",
     name: "Mono Eight",
     description: "มินิมอล ญี่ปุ่น โทนขาวดำ",
-    group: "lifestyle",
+    group: "fashion-beauty",
     desktopPattern: "C",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},

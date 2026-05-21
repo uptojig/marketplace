@@ -131,6 +131,41 @@ export function PhaseIdentity({ state, onChange }: Props) {
         </div>
       </Field>
 
+      <Field label="ชุดสี (Palette)" hint="สีหลักและสี accent ของร้าน">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {PALETTES.map((p) => {
+            const active = identity.paletteId === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onChange({ paletteId: p.id })}
+                aria-pressed={active}
+                className={`flex items-center gap-2 rounded-lg border p-2 text-left transition ${
+                  active
+                    ? "border-mp-coral ring-2 ring-mp-coral/20"
+                    : "border-mp-border hover:border-mp-coral/60"
+                }`}
+              >
+                <span className="flex shrink-0 overflow-hidden rounded-md border border-mp-border">
+                  <span
+                    aria-hidden
+                    className="block h-7 w-5"
+                    style={{ backgroundColor: p.primary }}
+                  />
+                  <span
+                    aria-hidden
+                    className="block h-7 w-5"
+                    style={{ backgroundColor: p.accent }}
+                  />
+                </span>
+                <span className="truncate text-xs font-medium">{p.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+
       <div className="grid grid-cols-2 gap-3">
         <Field label="โลโก้">
           <button
