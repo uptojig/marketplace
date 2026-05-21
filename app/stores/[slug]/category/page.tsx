@@ -46,6 +46,7 @@ import { LifestyleCategoryPage } from "@/components/storefront/themes/lifestyle/
 import { ElectronicsTechCategoryPage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechCategoryPage";
 import { SpecialtyCategoryPage } from "@/components/storefront/themes/specialty/SpecialtyCategoryPage";
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import { CatalogBridge } from "@/components/storefront/CatalogBridge";
 import type { TemplateId, BehaviorFlags } from "@/lib/templates/types";
 
 const TRUST_DISPLAY_FONT =
@@ -304,19 +305,29 @@ export default async function CategoryIndexPage({
   };
 
   // ── Multi-page template dispatch ────────────────────────────
-  // A template that ships its own `pages.catalog` component
-  // beats the family-bespoke pages below. We hand it the
-  // already-built `sharedCategoryProps` plus the store summary
-  // so the contract matches `CatalogProps` in
-  // lib/templates/types.ts.
+  // Templates that ship their own `pages.catalog` are usually
+  // 'use client' adapters. Functions can't cross the RSC boundary,
+  // so we pre-compute every URL as a serializable map and use
+  // CatalogBridge (a client component) to reconstruct buildUrl /
+  // buildSortUrl from those maps on the client side.
   const effectiveTpl = effectiveTemplateId(store);
   const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
     ? STORE_TEMPLATES[effectiveTpl as TemplateId]
     : null;
   const TemplateCatalogPage = template?.pages?.catalog;
   if (TemplateCatalogPage) {
+    // Pre-compute URL maps → all strings, fully serializable.
+    const _catToggleUrls: Record<string, string> = {};
+    for (const name of categoryNames) _catToggleUrls[name] = buildUrl(name);
+    const _clearUrl = buildUrl();
+    const _sortUrls: Record<string, string> = {};
+    for (const sk of Object.keys(SORT_OPTIONS)) _sortUrls[sk] = buildSortUrl(sk);
+    const _pageUrls: Record<string, string> = {};
+    for (let p = 1; p <= totalPages; p++) _pageUrls[String(p)] = buildUrl(undefined, p);
+
     return (
-      <TemplateCatalogPage
+      <CatalogBridge
+        Component={TemplateCatalogPage}
         store={{
           id: store.id,
           slug: store.slug,
@@ -335,8 +346,10 @@ export default async function CategoryIndexPage({
         currentPage={sharedCategoryProps.currentPage}
         totalPages={sharedCategoryProps.totalPages}
         filteredCount={sharedCategoryProps.filteredCount}
-        buildUrl={sharedCategoryProps.buildUrl}
-        buildSortUrl={sharedCategoryProps.buildSortUrl}
+        catToggleUrls={_catToggleUrls}
+        clearUrl={_clearUrl}
+        sortUrls={_sortUrls}
+        pageUrls={_pageUrls}
       />
     );
   }
