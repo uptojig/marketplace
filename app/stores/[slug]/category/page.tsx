@@ -20,6 +20,11 @@ import { Breadcrumbs } from "@/components/storefront/Breadcrumbs";
 import { RecentlyViewedRail } from "@/components/storefront/RecentlyViewed";
 import { WishlistButton } from "@/components/storefront/Wishlist";
 import { StoryQuickViewTrigger } from "@/components/storefront/StoryQuickView";
+import { resolveStoreTemplate } from "@/lib/landing/template-dispatch";
+import { BikiniCatalogAdapter } from "@/components/storefront/themes/bikini-beach/adapters";
+import { EcoPackCatalogAdapter } from "@/components/storefront/themes/eco-pack/adapters";
+import { MegaStoreCatalogAdapter } from "@/components/storefront/themes/mega-store/adapters";
+import type { CatalogProps as ScaffoldCatalogProps } from "@/lib/templates/types";
 
 export const dynamic = "force-dynamic";
 
@@ -114,6 +119,60 @@ export default async function CategoryIndexPage({
     const qs = params.toString();
     return `/stores/${store.slug}/category${qs ? `?${qs}` : ""}`;
   };
+
+  // ── Per-template bespoke catalog pages ─────────────────────────
+  // pet-house only has a hero block (no full Catalog adapter), so it
+  // keeps falling through to the generic grid below — same as before.
+  const tplId = resolveStoreTemplate(store);
+  if (
+    tplId === "bikini-beach" ||
+    tplId === "eco-pack" ||
+    tplId === "mega-store"
+  ) {
+    const buildSortUrl = (sort: string) => {
+      const params = new URLSearchParams();
+      if (sort && sort !== "newest") params.set("sort", sort);
+      for (const c of selectedCats) params.append("cat", c);
+      const qs = params.toString();
+      return `/stores/${store.slug}/category${qs ? `?${qs}` : ""}`;
+    };
+    const scaffoldProps: ScaffoldCatalogProps = {
+      store: {
+        id: store.id,
+        slug: store.slug,
+        name: store.name,
+        description: store.description,
+        tagline: store.tagline,
+        logoUrl: store.logoUrl,
+        bannerUrl: store.bannerUrl,
+        primaryColor: store.primaryColor,
+      },
+      pageProducts: pageProducts.map((p) => ({
+        id: p.id,
+        title: p.titleTh ?? p.title,
+        imageUrl: p.imageUrl ?? null,
+        priceTHB: Number(p.priceTHB),
+        compareAtPriceTHB: p.compareAtPriceTHB ? Number(p.compareAtPriceTHB) : null,
+        categoryName: p.categoryName ?? null,
+      })),
+      categoryNames,
+      categoryCounts,
+      selectedCats,
+      sortKey,
+      currentPage,
+      totalPages,
+      filteredCount: totalCount,
+      buildUrl,
+      buildSortUrl,
+    };
+    if (tplId === "bikini-beach") {
+      return <BikiniCatalogAdapter {...scaffoldProps} />;
+    }
+    if (tplId === "eco-pack") {
+      return <EcoPackCatalogAdapter {...scaffoldProps} />;
+    }
+    return <MegaStoreCatalogAdapter {...scaffoldProps} />;
+  }
 
   return (
     <div className="bg-[var(--shop-bg)] min-h-screen">

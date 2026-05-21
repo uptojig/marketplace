@@ -12,6 +12,12 @@ import {
 } from "@/components/storefront/RecentlyViewed";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { resolveFamily, type ThemeVariant } from "@/lib/landing/families";
+import { resolveStoreTemplate } from "@/lib/landing/template-dispatch";
+import { BikiniProductDetailAdapter } from "@/components/storefront/themes/bikini-beach/adapters";
+import { EcoPackProductDetailAdapter } from "@/components/storefront/themes/eco-pack/adapters";
+import { MegaStoreProductDetailAdapter } from "@/components/storefront/themes/mega-store/adapters";
+import { PetHouseProductPage } from "@/components/storefront/themes/pet-house/PetHouseProductPage";
+import type { ProductDetailProps as ScaffoldProductDetailProps } from "@/lib/templates/types";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +61,73 @@ export default async function ShopProductPage({
 
   const family = resolveFamily(blocksData?.designFamily || store.landingThemeVariant);
   const primaryColor = isAiMultiPage ? (family?.themeColor ?? store.primaryColor ?? "#008BF8") : (store.primaryColor ?? "#2563eb");
+
+  // ── Per-template bespoke product pages ──────────────────────
+  // Mirror of the homepage dispatcher in app/stores/[slug]/page.tsx.
+  // Themes that ship a full ProductDetail page (not just a hero block)
+  // get rendered here so visitors don't see the generic PDP after
+  // clicking a card from the bespoke homepage.
+  const tplId = resolveStoreTemplate(store);
+  if (tplId === "pet-house") {
+    return <PetHouseProductPage product={product} images={images} />;
+  }
+  if (
+    tplId === "bikini-beach" ||
+    tplId === "eco-pack" ||
+    tplId === "mega-store"
+  ) {
+    const scaffoldProps: ScaffoldProductDetailProps = {
+      store: {
+        id: store.id,
+        slug: store.slug,
+        name: store.name,
+        description: store.description,
+        tagline: store.tagline,
+        logoUrl: store.logoUrl,
+        bannerUrl: store.bannerUrl,
+        primaryColor: store.primaryColor,
+      },
+      product: {
+        id: product.id,
+        title: product.titleTh ?? product.title,
+        description: cleanDescription(
+          product.descriptionTh ?? product.description,
+        ),
+        priceTHB: Number(product.priceTHB),
+        originalPriceTHB: product.compareAtPriceTHB
+          ? Number(product.compareAtPriceTHB)
+          : null,
+        imageUrl: product.imageUrl ?? null,
+        images,
+        variants: product.variants.map((v) => ({
+          id: v.id,
+          attributes: (v.attributes as Record<string, string>) ?? {},
+          priceTHB: Number(v.priceTHB),
+          imageUrl: v.imageUrl ?? null,
+          inventory: v.inventory,
+        })),
+        categoryName: product.categoryName ?? null,
+      },
+      related: related.map((r) => ({
+        id: r.id,
+        title: r.titleTh ?? r.title,
+        imageUrl: r.imageUrl ?? null,
+        priceTHB: Number(r.priceTHB),
+        compareAtPriceTHB: r.compareAtPriceTHB
+          ? Number(r.compareAtPriceTHB)
+          : null,
+        categoryName: r.categoryName ?? null,
+      })),
+    };
+
+    if (tplId === "bikini-beach") {
+      return <BikiniProductDetailAdapter {...scaffoldProps} />;
+    }
+    if (tplId === "eco-pack") {
+      return <EcoPackProductDetailAdapter {...scaffoldProps} />;
+    }
+    return <MegaStoreProductDetailAdapter {...scaffoldProps} />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col">

@@ -8,6 +8,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { MultiPageRenderer } from "@/components/storefront/MultiPageRenderer";
+import { resolveStoreTemplate } from "@/lib/landing/template-dispatch";
+import { BikiniAboutAdapter } from "@/components/storefront/themes/bikini-beach/adapters";
+import { EcoPackAboutAdapter } from "@/components/storefront/themes/eco-pack/adapters";
+import { MegaStoreAboutAdapter } from "@/components/storefront/themes/mega-store/adapters";
+import type { AboutProps as ScaffoldAboutProps } from "@/lib/templates/types";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +23,32 @@ export default async function AboutPage({
 }) {
   const store = await prisma.store.findUnique({ where: { slug: params.slug } });
   if (!store) notFound();
+
+  // ── Per-template bespoke About pages ───────────────────────────
+  // Designer-built About lives in the adapter; takes precedence over
+  // the v12 schema fallback below.
+  const tplId = resolveStoreTemplate(store);
+  if (
+    tplId === "bikini-beach" ||
+    tplId === "eco-pack" ||
+    tplId === "mega-store"
+  ) {
+    const scaffoldProps: ScaffoldAboutProps = {
+      store: {
+        id: store.id,
+        slug: store.slug,
+        name: store.name,
+        description: store.description,
+        tagline: store.tagline,
+        logoUrl: store.logoUrl,
+        bannerUrl: store.bannerUrl,
+        primaryColor: store.primaryColor,
+      },
+    };
+    if (tplId === "bikini-beach") return <BikiniAboutAdapter {...scaffoldProps} />;
+    if (tplId === "eco-pack") return <EcoPackAboutAdapter {...scaffoldProps} />;
+    return <MegaStoreAboutAdapter {...scaffoldProps} />;
+  }
 
   // Only render if store has v12 multi-page schema with an "about" page
   if (
