@@ -223,36 +223,6 @@ import {
 } from '@/components/storefront/themes/yumeiro-lip/adapters';
 
 import {
-  ClassicHeaderAdapter,
-  ClassicFooterAdapter,
-  ClassicStripAdapter,
-} from '@/components/storefront/themes/classic/adapters';
-import {
-  LookbookHeaderAdapter,
-  LookbookFooterAdapter,
-  LookbookStripAdapter,
-} from '@/components/storefront/themes/lookbook/adapters';
-import {
-  TechCompareHeaderAdapter,
-  TechCompareFooterAdapter,
-  TechCompareStripAdapter,
-} from '@/components/storefront/themes/tech-compare/adapters';
-import {
-  SportActiveHeaderAdapter,
-  SportActiveFooterAdapter,
-  SportActiveStripAdapter,
-} from '@/components/storefront/themes/sport-active/adapters';
-import {
-  LiveCommerceHeaderAdapter,
-  LiveCommerceFooterAdapter,
-  LiveCommerceStripAdapter,
-} from '@/components/storefront/themes/live-commerce/adapters';
-import {
-  WholesaleB2bHeaderAdapter,
-  WholesaleB2bFooterAdapter,
-  WholesaleB2bStripAdapter,
-} from '@/components/storefront/themes/wholesale-b2b/adapters';
-import {
   EverydayRetailHeaderAdapter,
   EverydayRetailFooterAdapter,
   EverydayRetailStripAdapter,
@@ -260,119 +230,12 @@ import {
 
 import { makeCatalogAdapter } from '@/components/storefront/themes/_shared/catalog-adapter';
 import { makePdpAdapter } from '@/components/storefront/themes/_shared/pdp-adapter';
+import { enhanceHomepage } from '@/components/storefront/themes/_shared/homepage-enhancer';
+
+
 
 
 export const templates: Record<TemplateId, Template> = {
-  classic: {
-    id: 'classic',
-    name: 'Classic',
-    description: 'Balanced default for general retail',
-    group: 'trust',
-    behavior: { bottomNav: 'visible', showTabs: true },
-      chrome: {
-      Header: ClassicHeaderAdapter,
-      Footer: ClassicFooterAdapter,
-      AnnouncementStrip: ClassicStripAdapter,
-    },
-      pages: {
-      catalog: makeCatalogAdapter('01'),
-      pdp: makePdpAdapter('01', '02'),
-    },
-  },
-
-
-
-  lookbook: {
-    id: 'lookbook',
-    name: 'Lookbook',
-    description: 'Editorial fashion with portrait hero',
-    group: 'fashion-beauty',
-    behavior: { bottomNav: 'visible', hideRatingsCount: true },
-      chrome: {
-      Header: LookbookHeaderAdapter,
-      Footer: LookbookFooterAdapter,
-      AnnouncementStrip: LookbookStripAdapter,
-    },
-      pages: {
-      catalog: makeCatalogAdapter('03'),
-      pdp: makePdpAdapter('07', '03'),
-    },
-  },
-
-
-
-
-  'tech-compare': {
-    id: 'tech-compare',
-    name: 'Tech compare',
-    description: 'Spec comparison cards',
-    group: 'electronics-tech',
-    behavior: { bottomNav: 'visible' },
-    chrome: {
-      Header: TechCompareHeaderAdapter,
-      Footer: TechCompareFooterAdapter,
-      AnnouncementStrip: TechCompareStripAdapter,
-    },
-      pages: {
-      catalog: makeCatalogAdapter('06'),
-      pdp: makePdpAdapter('06', '05'),
-    },
-  },
-
-
-
-  'sport-active': {
-    id: 'sport-active',
-    name: 'Sport & active',
-    description: 'Performance badges and action imagery',
-    group: 'lifestyle',
-    behavior: { bottomNav: 'visible', performanceBadges: 'visible' },
-    chrome: {
-      Header: SportActiveHeaderAdapter,
-      Footer: SportActiveFooterAdapter,
-      AnnouncementStrip: SportActiveStripAdapter,
-    },
-      pages: {
-      catalog: makeCatalogAdapter('02'),
-      pdp: makePdpAdapter('01', '02'),
-    },
-  },
-
-
-  'live-commerce': {
-    id: 'live-commerce',
-    name: 'Live commerce',
-    description: 'Live stream + replay + products from live',
-    group: 'community',
-    behavior: { bottomNav: 'visible', liveBlock: 'visible' },
-    chrome: {
-      Header: LiveCommerceHeaderAdapter,
-      Footer: LiveCommerceFooterAdapter,
-      AnnouncementStrip: LiveCommerceStripAdapter,
-    },
-      pages: {
-      catalog: makeCatalogAdapter('02'),
-      pdp: makePdpAdapter('02', '03'),
-    },
-  },
-
-
-
-  'wholesale-b2b': {
-    id: 'wholesale-b2b',
-    name: 'Wholesale B2B',
-    description: 'Pricing tiers, MOQ, business buyer',
-    group: 'business-model',
-    behavior: { bottomNav: 'visible', b2bMode: true },
-    chrome: {
-      Header: WholesaleB2bHeaderAdapter,
-      Footer: WholesaleB2bFooterAdapter,
-      AnnouncementStrip: WholesaleB2bStripAdapter,
-    },
-  },
-
-
-
   handmade: {
     id: 'handmade',
     name: 'Handmade artisan',
@@ -406,7 +269,7 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('06', '02'),
       catalog: makeCatalogAdapter('12'),
       catalog: makeCatalogAdapter('12'),
-      home: BikiniHomepageAdapter,
+      home: enhanceHomepage(enhanceHomepage, '03')(BikiniHomepageAdapter, '01'),
       catalog: BikiniCatalogAdapter,
       pdp: BikiniProductDetailAdapter,
       cart: BikiniCartAdapter,
@@ -436,7 +299,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'full-bleed',
     },
     pages: {
-      home: EcoPackHomepageAdapter,
+      home: enhanceHomepage(EcoPackHomepageAdapter, '04'),
       catalog: EcoPackCatalogAdapter,
       pdp: EcoPackProductDetailAdapter,
       cart: EcoPackCartAdapter,
@@ -464,7 +327,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'full-bleed',
     },
     pages: {
-      home: MegaStoreHomepageAdapter,
+      home: enhanceHomepage(MegaStoreHomepageAdapter, '02'),
       catalog: MegaStoreCatalogAdapter,
       pdp: MegaStoreProductDetailAdapter,
       cart: MegaStoreCartAdapter,
@@ -519,7 +382,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       catalog: makeCatalogAdapter('01'),
       pdp: makePdpAdapter('08', '03'),
-      home: SaiSingHomepageAdapter,
+      home: enhanceHomepage(enhanceHomepage, '06')(enhanceHomepage, '08')(enhanceHomepage, '07')(SaiSingHomepageAdapter, '05'),
       catalog: makeCatalogAdapter('01'),
     },
   },
@@ -536,7 +399,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: TaladSeeSodStripAdapter,
     },
     pages: {
-      home: TaladSeeSodHomepageAdapter,
+      home: enhanceHomepage(TaladSeeSodHomepageAdapter, '09'),
     },
   },
 
@@ -552,7 +415,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: BrutalistThaiStripAdapter,
     },
     pages: {
-      home: BrutalistThaiHomepageAdapter,
+      home: enhanceHomepage(BrutalistThaiHomepageAdapter, '01'),
       catalog: makeCatalogAdapter('07'),
       pdp: makePdpAdapter('05', '04'),
     },
@@ -570,7 +433,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: MonoEightStripAdapter,
     },
     pages: {
-      home: MonoEightHomepageAdapter,
+      home: enhanceHomepage(MonoEightHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('05'),
       pdp: makePdpAdapter('09', '05'),
     },
@@ -591,7 +454,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'magazine',
     },
     pages: {
-      home: LilaModestHomepageAdapter,
+      home: enhanceHomepage(LilaModestHomepageAdapter, '05'),
     },
   },
 
@@ -610,7 +473,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'magazine',
     },
     pages: {
-      home: Atelier27HomepageAdapter,
+      home: enhanceHomepage(Atelier27HomepageAdapter, '02'),
       catalog: makeCatalogAdapter('12'),
       pdp: makePdpAdapter('02', '03'),
     },
@@ -633,7 +496,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       catalog: makeCatalogAdapter('12'),
-      home: BulkboxHomepageAdapter,
+      home: enhanceHomepage(BulkboxHomepageAdapter, '08'),
     },
   },
 
@@ -652,7 +515,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'split-hero',
     },
     pages: {
-      home: CalderaSkinHomepageAdapter,
+      home: enhanceHomepage(CalderaSkinHomepageAdapter, '04'),
       catalog: makeCatalogAdapter('05'),
       pdp: makePdpAdapter('04', '03'),
     },
@@ -673,7 +536,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       catalog: makeCatalogAdapter('09'),
-      home: CarbonEraCamerasHomepageAdapter,
+      home: enhanceHomepage(CarbonEraCamerasHomepageAdapter, '07'),
     },
   },
 
@@ -689,7 +552,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: GlowLampCoStripAdapter,
     },
     pages: {
-      home: GlowLampCoHomepageAdapter,
+      home: enhanceHomepage(GlowLampCoHomepageAdapter, '06'),
     },
   },
 
@@ -705,7 +568,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: HinokiStripAdapter,
     },
     pages: {
-      home: HinokiHomepageAdapter,
+      home: enhanceHomepage(HinokiHomepageAdapter, '09'),
       catalog: makeCatalogAdapter('09'),
       pdp: makePdpAdapter('08', '04'),
     },
@@ -723,7 +586,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: InkstonePaperStripAdapter,
     },
     pages: {
-      home: InkstonePaperHomepageAdapter,
+      home: enhanceHomepage(InkstonePaperHomepageAdapter, '01'),
     },
   },
 
@@ -742,7 +605,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'split-hero',
     },
     pages: {
-      home: KeystrokeLabHomepageAdapter,
+      home: enhanceHomepage(KeystrokeLabHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('06'),
       pdp: makePdpAdapter('06', '03'),
     },
@@ -760,7 +623,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: KorakotHouseStripAdapter,
     },
     pages: {
-      home: KorakotHouseHomepageAdapter,
+      home: enhanceHomepage(KorakotHouseHomepageAdapter, '05'),
     },
   },
 
@@ -779,7 +642,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'magazine',
     },
     pages: {
-      home: LinenAndLoomHomepageAdapter,
+      home: enhanceHomepage(LinenAndLoomHomepageAdapter, '02'),
       catalog: makeCatalogAdapter('04'),
       pdp: makePdpAdapter('01', '05'),
     },
@@ -798,7 +661,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       catalog: makeCatalogAdapter('04'),
-      home: MaiHatthakamHomepageAdapter,
+      home: enhanceHomepage(MaiHatthakamHomepageAdapter, '04'),
     },
   },
 
@@ -814,7 +677,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: PastelPackStripAdapter,
     },
     pages: {
-      home: PastelPackHomepageAdapter,
+      home: enhanceHomepage(PastelPackHomepageAdapter, '06'),
     },
   },
 
@@ -833,7 +696,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'magazine',
     },
     pages: {
-      home: PetitCoteHomepageAdapter,
+      home: enhanceHomepage(PetitCoteHomepageAdapter, '07'),
       catalog: makeCatalogAdapter('02'),
       pdp: makePdpAdapter('05', '02'),
     },
@@ -854,7 +717,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'magazine',
     },
     pages: {
-      home: PigmentStudioHomepageAdapter,
+      home: enhanceHomepage(PigmentStudioHomepageAdapter, '08'),
     },
   },
 
@@ -870,7 +733,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: ReclaimLeatherStripAdapter,
     },
     pages: {
-      home: ReclaimLeatherHomepageAdapter,
+      home: enhanceHomepage(ReclaimLeatherHomepageAdapter, '09'),
       catalog: makeCatalogAdapter('07'),
       pdp: makePdpAdapter('06', '02'),
     },
@@ -888,7 +751,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: SalukiYogaStripAdapter,
     },
     pages: {
-      home: SalukiYogaHomepageAdapter,
+      home: enhanceHomepage(SalukiYogaHomepageAdapter, '01'),
     },
   },
 
@@ -907,7 +770,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'magazine',
     },
     pages: {
-      home: SirinHomepageAdapter,
+      home: enhanceHomepage(SirinHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('03'),
       pdp: makePdpAdapter('07', '03'),
     },
@@ -928,7 +791,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'split-hero',
     },
     pages: {
-      home: SmartloopHomeHomepageAdapter,
+      home: enhanceHomepage(SmartloopHomeHomepageAdapter, '02'),
       catalog: makeCatalogAdapter('09'),
       pdp: makePdpAdapter('08', '04'),
     },
@@ -946,7 +809,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: TinyhandWoodenToysStripAdapter,
     },
     pages: {
-      home: TinyhandWoodenToysHomepageAdapter,
+      home: enhanceHomepage(TinyhandWoodenToysHomepageAdapter, '04'),
       catalog: makeCatalogAdapter('02'),
       pdp: makePdpAdapter('04', '04'),
     },
@@ -964,7 +827,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: TrailcraftStripAdapter,
     },
     pages: {
-      home: TrailcraftHomepageAdapter,
+      home: enhanceHomepage(TrailcraftHomepageAdapter, '05'),
       catalog: makeCatalogAdapter('07'),
       pdp: makePdpAdapter('09', '05'),
     },
@@ -985,7 +848,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'split-hero',
     },
     pages: {
-      home: WavelengthAudioHomepageAdapter,
+      home: enhanceHomepage(WavelengthAudioHomepageAdapter, '06'),
     },
   },
 
@@ -1004,7 +867,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'magazine',
     },
     pages: {
-      home: YumeiroLipHomepageAdapter,
+      home: enhanceHomepage(YumeiroLipHomepageAdapter, '07'),
       catalog: makeCatalogAdapter('05'),
       pdp: makePdpAdapter('04', '04'),
     },

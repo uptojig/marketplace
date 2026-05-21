@@ -38,12 +38,6 @@ export type TemplateGroup =
   | 'packaging';
 
 export type TemplateId =
-  | 'classic'
-  | 'lookbook'
-  | 'tech-compare'
-  | 'sport-active'
-  | 'live-commerce'
-  | 'wholesale-b2b'
   | 'handmade'
   | 'bikini-beach'
   | 'eco-pack'
