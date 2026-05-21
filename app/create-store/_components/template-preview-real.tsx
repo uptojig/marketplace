@@ -187,7 +187,7 @@ export function TemplatePreviewReal({
     | React.ComponentType<Record<string, unknown>>
     | undefined;
 
-  // Build page-specific props
+  // Build page-specific props matching actual interfaces
   const pageProps = useMemo(() => {
     const base = {
       store: mockStore,
@@ -196,13 +196,44 @@ export function TemplatePreviewReal({
     };
     switch (page) {
       case "home":
-      case "catalog":
       case "lookbook":
         return base;
-      case "pdp":
+      case "catalog":
+        // CatalogProps shape
         return {
-          ...base,
-          product: MOCK_PRODUCTS[0],
+          store: mockStore,
+          pageProducts: MOCK_PRODUCTS,
+          categoryNames: MOCK_CATEGORIES,
+          categoryCounts: Object.fromEntries(
+            MOCK_CATEGORIES.map((c) => [
+              c,
+              MOCK_PRODUCTS.filter((p) => p.categoryName === c).length,
+            ]),
+          ),
+          selectedCats: [],
+          sortKey: "newest",
+          currentPage: 1,
+          totalPages: 1,
+          filteredCount: MOCK_PRODUCTS.length,
+        };
+      case "pdp":
+        // ProductDetailProps shape
+        return {
+          store: mockStore,
+          product: {
+            id: MOCK_PRODUCTS[0].id,
+            title: MOCK_PRODUCTS[0].title,
+            description: "สินค้าตัวอย่าง คุณภาพดี จัดส่งไวทั่วไทย",
+            priceTHB: MOCK_PRODUCTS[0].priceTHB,
+            originalPriceTHB: MOCK_PRODUCTS[0].compareAtPriceTHB,
+            imageUrl: MOCK_PRODUCTS[0].imageUrl,
+            images: [MOCK_PRODUCTS[0].imageUrl, MOCK_PRODUCTS[1].imageUrl],
+            variants: [
+              { id: "v1", attributes: {}, colorLabel: "ดำ", sizeLabel: "M", materialLabel: null, priceTHB: MOCK_PRODUCTS[0].priceTHB, imageUrl: null },
+              { id: "v2", attributes: {}, colorLabel: "ขาว", sizeLabel: "L", materialLabel: null, priceTHB: MOCK_PRODUCTS[0].priceTHB, imageUrl: null },
+            ],
+            categoryName: MOCK_PRODUCTS[0].categoryName,
+          },
           relatedProducts: MOCK_PRODUCTS.slice(1, 4),
         };
       case "cart":
