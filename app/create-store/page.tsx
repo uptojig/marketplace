@@ -13,7 +13,7 @@ export const metadata = {
 export default async function CreateStorePage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    redirect("/api/auth/signin?callbackUrl=/create-store");
+    redirect("/signin?callbackUrl=/create-store");
   }
 
   // Defend against stale JWTs whose userId no longer maps to a User row
@@ -25,7 +25,7 @@ export default async function CreateStorePage() {
     select: { id: true, role: true },
   });
   if (!owner) {
-    redirect("/api/auth/signout?callbackUrl=/signin?callbackUrl=/create-store");
+    redirect("/signout");
   }
 
   // Vendors are 1:1 with stores — if they already have one, send them home.
@@ -37,7 +37,7 @@ export default async function CreateStorePage() {
       where: { ownerId: session.user.id },
       select: { slug: true },
     });
-    if (existing) redirect(`/dashboard?store=${existing.slug}`);
+    if (existing) redirect(`/dashboard?storeSlug=${existing.slug}`);
 
     const approved = await hasApprovedKyc(session.user.id);
     if (!approved) {

@@ -131,7 +131,7 @@ export async function SimpleHomepage({
                   className="mt-1 text-sm italic"
                   style={{ color: 'var(--shop-ink-muted, #525252)' }}
                 >
-                  "{extra.tagline}"
+                  &quot;{extra.tagline}&quot;
                 </p>
               )}
             </div>

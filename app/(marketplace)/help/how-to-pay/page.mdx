@@ -1,0 +1,263 @@
+import { QrCode, CreditCard, Wallet, Calendar, Banknote, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+
+export const metadata = {
+  title: 'วิธีการชำระเงิน — Basketplace',
+};
+
+# วิธีการชำระเงิน
+
+ปรับปรุงล่าสุด: 11 พฤษภาคม 2026
+
+Basketplace ร่วมมือกับ **Anypay** เพื่อให้บริการระบบชำระเงินที่ปลอดภัย รวดเร็ว และครอบคลุมความต้องการของทั้งผู้ซื้อและผู้ขาย โดยเรามีช่องทางการชำระเงินให้เลือกถึง 5 รูปแบบ ดังนี้:
+
+---
+
+## ช่องทางที่รองรับ
+
+<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 my-8 not-prose">
+  {/* PromptPay */}
+  <div className="mp-card-lift rounded-2xl border border-mp-border bg-mp-surface p-6 transition-all duration-200 hover:border-mp-coral/30 hover:shadow-md flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-3">
+        <div className="rounded-xl bg-mp-coral/10 p-2.5 text-mp-coral">
+          <QrCode className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-mp-ink">PromptPay QR</h3>
+          <span className="text-[10px] font-semibold text-mp-coral uppercase tracking-wider">สแกนง่าย • ทันที</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs leading-relaxed text-mp-ink-muted">
+        สแกนชำระผ่านแอปพลิเคชันธนาคารชั้นนำทุกแห่งในประเทศไทย สะดวกและปลอดภัยสูงสุด
+      </p>
+      <ul className="mt-4 space-y-1.5 text-xs text-mp-ink/80">
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-coral" />
+          <span>ไม่มีค่าธรรมเนียมการชำระเงิน</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-coral" />
+          <span>ยืนยันยอดทันทีใน 1-3 วินาที</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-coral" />
+          <span>QR มีอายุการใช้งาน 15 นาที</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  {/* Credit/Debit Card */}
+  <div className="mp-card-lift rounded-2xl border border-mp-border bg-mp-surface p-6 transition-all duration-200 hover:border-mp-coral/30 hover:shadow-md flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-3">
+        <div className="rounded-xl bg-mp-forest/10 p-2.5 text-mp-forest">
+          <CreditCard className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-mp-ink">บัตรเครดิต / เดบิต</h3>
+          <span className="text-[10px] font-semibold text-mp-forest uppercase tracking-wider">Visa, Mastercard, JCB</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs leading-relaxed text-mp-ink-muted">
+        จ่ายผ่านบัตรเครดิตและเดบิตได้อย่างราบรื่น ปลอดภัยด้วยมาตรฐานระดับสากล
+      </p>
+      <ul className="mt-4 space-y-1.5 text-xs text-mp-ink/80">
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-forest" />
+          <span>ค่าธรรมเนียม 0% (ร้านค้ารับผิดชอบ)</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-forest" />
+          <span>ปลอดภัยสูงด้วยระบบ 3D Secure</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-forest" />
+          <span>อนุมัติยอดและปรับสถานะทันที</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  {/* Anypay Wallet */}
+  <div className="mp-card-lift rounded-2xl border border-mp-border bg-mp-surface p-6 transition-all duration-200 hover:border-mp-coral/30 hover:shadow-md flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-3">
+        <div className="rounded-xl bg-mp-warning/15 p-2.5 text-mp-warning">
+          <Wallet className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-mp-ink">Anypay Wallet</h3>
+          <span className="text-[10px] font-semibold text-mp-warning uppercase tracking-wider">เครือ TAS • คุ้มค่า</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs leading-relaxed text-mp-ink-muted">
+        กระเป๋าเงินออนไลน์ Anypay โอนเข้าฟรี และใช้จ่ายภายในระบบนิเวศน์ของเราได้อย่างสะดวก
+      </p>
+      <ul className="mt-4 space-y-1.5 text-xs text-mp-ink/80">
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-warning" />
+          <span>โอนเงินเข้า Wallet ฟรีทุกธนาคาร</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-warning" />
+          <span>ใช้จ่ายที่ Basketplace และร้านในเครือ</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  {/* BNPL Installment */}
+  <div className="mp-card-lift rounded-2xl border border-mp-border bg-mp-surface p-6 transition-all duration-200 hover:border-mp-coral/30 hover:shadow-md flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-3">
+        <div className="rounded-xl bg-mp-coral/10 p-2.5 text-mp-coral">
+          <Calendar className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-mp-ink">ผ่อนชำระ 0% (BNPL)</h3>
+          <span className="text-[10px] font-semibold text-mp-coral uppercase tracking-wider">ซื้อก่อน จ่ายทีหลัง</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs leading-relaxed text-mp-ink-muted">
+        แบ่งชำระเบาๆ ไม่มีดอกเบี้ย ช่วยเพิ่มสภาพคล่องในการช้อปปิ้งของคุณ
+      </p>
+      <ul className="mt-4 space-y-1.5 text-xs text-mp-ink/80">
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-coral" />
+          <span>ผ่อนชำระนานสูงสุดถึง 6 งวด</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-coral" />
+          <span>ยอดสั่งซื้อขั้นต่ำ ฿1,500</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-coral" />
+          <span>ต้องใช้เครดิตอนุมัติของ Anypay</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  {/* COD */}
+  <div className="mp-card-lift rounded-2xl border border-mp-border bg-mp-surface p-6 transition-all duration-200 hover:border-mp-coral/30 hover:shadow-md flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-3">
+        <div className="rounded-xl bg-mp-forest/10 p-2.5 text-mp-forest">
+          <Banknote className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-mp-ink">เก็บเงินปลายทาง (COD)</h3>
+          <span className="text-[10px] font-semibold text-mp-forest uppercase tracking-wider">มั่นใจ • จ่ายหน้าบ้าน</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs leading-relaxed text-mp-ink-muted">
+        ชำระเงินเมื่อได้รับสินค้าปลายทาง ปลอดภัยและเหมาะสำหรับผู้ที่ไม่อยากโอนเงินล่วงหน้า
+      </p>
+      <ul className="mt-4 space-y-1.5 text-xs text-mp-ink/80">
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-forest" />
+          <span>ชำระด้วยเงินสดเมื่อของส่งถึงมือ</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-forest" />
+          <span>มีค่าธรรมเนียมเพิ่มเติม +฿20 ต่อออเดอร์</span>
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-mp-forest" />
+          <span>ยอดสูงสุดจำกัดไม่เกิน ฿5,000</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+---
+
+## ความปลอดภัยของระบบชำระเงิน
+
+<div className="my-8 rounded-2xl border border-mp-forest/20 bg-mp-forest/5 p-6 flex flex-col sm:flex-row gap-5 items-start not-prose">
+  <div className="rounded-xl bg-mp-forest/10 p-3 text-mp-forest shrink-0">
+    <ShieldCheck className="h-8 w-8" />
+  </div>
+  <div className="space-y-2">
+    <h3 className="text-lg font-bold text-mp-forest">มาตรฐานความปลอดภัยระดับสากล</h3>
+    <p className="text-sm leading-relaxed text-mp-ink/90">
+      ข้อมูลทางการเงินและข้อมูลบัตรเครดิตของคุณจะไม่ถูกจัดเก็บไว้บนเซิร์ฟเวอร์ของ Basketplace แต่อย่างใด 
+      โดยธุรกรรมทั้งหมดจะถูกส่งผ่านระบบเข้ารหัสความปลอดภัย TLS 1.3 ตรงเข้าสู่ระบบ **Anypay** ซึ่งได้รับการรับรองมาตรฐานความปลอดภัยระดับสูงสุด **PCI-DSS Level 1**
+    </p>
+    <p className="text-sm leading-relaxed text-mp-ink/90">
+      นอกจากนี้ ทุกคำสั่งซื้อยังได้รับความคุ้มครองโดยนโยบาย **Anypay Buyer Protection** ซึ่งจะดูแลและคืนเงินให้คุณโดยอัตโนมัติหากสินค้าชำรุด ไม่ตรงปก หรือไม่ถูกจัดส่ง
+    </p>
+  </div>
+</div>
+
+---
+
+## ขั้นตอนการชำระเงิน
+
+<div className="relative border-l-2 border-mp-border/80 pl-6 ml-4 my-8 space-y-6 not-prose">
+  <div className="relative">
+    <span className="absolute -left-10 top-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-mp-coral text-xs font-bold text-white shadow-sm">1</span>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">เลือกช่องทางชำระเงิน</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">ในหน้าตรวจสอบคำสั่งซื้อ (Checkout) เลือกวิธีการชำระเงินที่คุณต้องการจากตัวเลือก</p>
+  </div>
+  
+  <div className="relative">
+    <span className="absolute -left-10 top-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-mp-coral text-xs font-bold text-white shadow-sm">2</span>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">ส่งคำสั่งซื้อ</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">กดปุ่ม "สั่งซื้อ" ระบบจะทำการส่งข้อมูลความต้องการชำระเงิน (Payment Intent) ไปยัง Anypay</p>
+  </div>
+
+  <div className="relative">
+    <span className="absolute -left-10 top-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-mp-coral text-xs font-bold text-white shadow-sm">3</span>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">ดำเนินการชำระตามระบบ</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">ทำตามขั้นตอนเฉพาะของช่องทางนั้นๆ เช่น การสแกน QR Code บนมือถือ การกรอกเลขบัตรและรหัส OTP หรือการยืนยันแอปกระเป๋าเงิน</p>
+  </div>
+
+  <div className="relative">
+    <span className="absolute -left-10 top-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-mp-coral text-xs font-bold text-white shadow-sm">4</span>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">ยืนยันผลการทำรายการสำเร็จ</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">ระบบจะได้รับสัญญาณตอบรับจาก Anypay และทำการอัปเดตสถานะเป็น "ชำระเงินแล้ว" ทันทีภายในเวลาไม่กี่วินาที พร้อมส่งใบเสร็จรับเงินทางอีเมล</p>
+  </div>
+</div>
+
+---
+
+## การแก้ไขปัญหาเบื้องต้น
+
+<div className="space-y-4 my-8 not-prose">
+  <div className="rounded-xl border border-mp-border bg-mp-surface p-5">
+    <h4 className="flex items-center gap-2 font-bold text-mp-ink text-sm sm:text-base">
+      <AlertCircle className="h-5 w-5 text-mp-coral shrink-0" />
+      ทำไมกดปุ่มชำระเงินแล้วระบบไม่มีการตอบสนอง?
+    </h4>
+    <p className="mt-2 text-xs sm:text-sm text-mp-ink-muted leading-relaxed pl-7">
+      กรุณารอประมวลผลประมาณ 30 วินาที หากไม่มีการตอบกลับ แนะนำให้ทดสอบรีเฟรชหน้าเว็บหรือตรวจสอบสัญญาณอินเทอร์เน็ต ระบบจะไม่หักเงินหากธุรกรรมไม่สมบูรณ์
+    </p>
+  </div>
+
+  <div className="rounded-xl border border-mp-border bg-mp-surface p-5">
+    <h4 className="flex items-center gap-2 font-bold text-mp-ink text-sm sm:text-base">
+      <AlertCircle className="h-5 w-5 text-mp-coral shrink-0" />
+      สแกน QR Code แล้วหน้าจอแสดงผลว่า QR หมดอายุ?
+    </h4>
+    <p className="mt-2 text-xs sm:text-sm text-mp-ink-muted leading-relaxed pl-7">
+      เพื่อความปลอดภัย รหัส PromptPay QR จะมีอายุการใช้งาน 15 นาที หากเกินเวลาดังกล่าว คุณสามารถย้อนกลับไปที่ตะกร้าสินค้าเพื่อทำรายการชำระเงินใหม่ได้ทันที
+    </p>
+  </div>
+
+  <div className="rounded-xl border border-mp-border bg-mp-surface p-5">
+    <h4 className="flex items-center gap-2 font-bold text-mp-ink text-sm sm:text-base">
+      <AlertCircle className="h-5 w-5 text-mp-coral shrink-0" />
+      บัตรเครดิต/เดบิต ถูกปฏิเสธการชำระเงิน?
+    </h4>
+    <p className="mt-2 text-xs sm:text-sm text-mp-ink-muted leading-relaxed pl-7">
+      โปรดตรวจสอบยอดเงินในบัตร ตรวจสอบว่าได้ทำการเปิดใช้งานบัตรสำหรับทำธุรกรรมออนไลน์แล้ว หรือติดต่อธนาคารผู้ออกบัตรเพื่ออนุมัติวงเงินชั่วคราว
+    </p>
+  </div>
+</div>
+
+---
+
+ต้องการความช่วยเหลือเพิ่มเติมเกี่ยวกับการจ่ายเงิน? [ติดต่อเจ้าหน้าที่ฝ่ายบริการลูกค้า](/help/contact)

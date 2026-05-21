@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { normalizeLinkCode, isValidLinkCodeFormat, generateLinkCode } from "@/lib/agents/link-code";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // Helper to check admin access
@@ -62,7 +65,16 @@ export async function GET() {
   }
 }
 
-// POST /api/admin/agents - Admin directly creates an agent
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// POST /api/admin/agents - Admin appoints an agent.
+//
+// Two modes (chosen by the shape of the body):
+//   • Existing user — { ownerId, displayName?, linkCode? }
+//       Promotes an existing User row to AGENT.
+//   • New account   — { email, password, displayName?, linkCode? }
+//       Creates a brand-new User (role AGENT, with a bcrypt password so
+//       they can sign in immediately via /signin) and the Agent profile.
 export async function POST(req: Request) {
   try {
     if (!(await checkAdmin())) {
@@ -70,43 +82,59 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { ownerId } = body;
+    const isNewAccount = !body.ownerId;
 
-    if (!ownerId) {
-      return NextResponse.json({ ok: false, error: "owner_id_required", detail: "กรุณาระบุ User ID เจ้าของตัวแทน" }, { status: 400 });
+    // ── Validate mode-specific inputs ────────────────────────────────
+    let ownerUser: { id: string; name: string | null; email: string | null } | null = null;
+    let newEmail = "";
+    let passwordHash: string | null = null;
+
+    if (isNewAccount) {
+      newEmail = String(body.email ?? "").trim().toLowerCase();
+      const password = String(body.password ?? "");
+      if (!EMAIL_RE.test(newEmail)) {
+        return NextResponse.json({ ok: false, error: "invalid_email", detail: "กรุณากรอกอีเมลให้ถูกต้อง" }, { status: 400 });
+      }
+      if (password.length < 8) {
+        return NextResponse.json({ ok: false, error: "weak_password", detail: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร" }, { status: 400 });
+      }
+      // Friendly pre-check; the unique constraint (P2002) below is the
+      // real guard against a race.
+      const existing = await prisma.user.findUnique({ where: { email: newEmail }, select: { id: true } });
+      if (existing) {
+        return NextResponse.json(
+          { ok: false, error: "email_already_in_use", detail: "อีเมลนี้มีบัญชีอยู่แล้ว — ให้เลือกจากรายการสมาชิกที่มีอยู่แทน" },
+          { status: 409 },
+        );
+      }
+      passwordHash = await bcrypt.hash(password, 12);
+    } else {
+      const user = await prisma.user.findUnique({
+        where: { id: body.ownerId },
+        include: { agentProfile: true },
+      });
+      if (!user) {
+        return NextResponse.json({ ok: false, error: "user_not_found", detail: "ไม่พบข้อมูลผู้ใช้ในระบบ" }, { status: 404 });
+      }
+      if (user.agentProfile) {
+        return NextResponse.json({ ok: false, error: "already_agent", detail: "ผู้ใช้นี้ได้รับการแต่งตั้งเป็นตัวแทนอยู่แล้ว" }, { status: 400 });
+      }
+      ownerUser = { id: user.id, name: user.name, email: user.email };
     }
 
-    // Verify user exists
-    const user = await prisma.user.findUnique({
-      where: { id: ownerId },
-      include: { agentProfile: true },
-    });
-
-    if (!user) {
-      return NextResponse.json({ ok: false, error: "user_not_found", detail: "ไม่พบข้อมูลผู้ใช้ในระบบ" }, { status: 404 });
-    }
-
-    if (user.agentProfile) {
-      return NextResponse.json({ ok: false, error: "already_agent", detail: "ผู้ใช้นี้ได้รับการแต่งตั้งเป็นตัวแทนอยู่แล้ว" }, { status: 400 });
-    }
-
+    // ── Resolve link code (shared by both modes) ─────────────────────
     let linkCode = body.linkCode ? String(body.linkCode).trim() : null;
     if (linkCode) {
       const normalized = normalizeLinkCode(linkCode);
       if (!isValidLinkCodeFormat(normalized)) {
         return NextResponse.json({ ok: false, error: "invalid_link_code", detail: "Link Code ไม่ถูกต้อง" }, { status: 400 });
       }
-
-      // Check duplicate
-      const duplicate = await prisma.agent.findFirst({
-        where: { linkCode: normalized },
-      });
+      const duplicate = await prisma.agent.findFirst({ where: { linkCode: normalized } });
       if (duplicate) {
         return NextResponse.json({ ok: false, error: "duplicate_link_code", detail: "Link Code นี้ถูกใช้งานแล้ว" }, { status: 400 });
       }
       linkCode = normalized;
     } else {
-      // Auto generate unique code
       let unique = false;
       let attempts = 0;
       while (!unique && attempts < 5) {
@@ -123,30 +151,52 @@ export async function POST(req: Request) {
       }
     }
 
-    const displayName = body.displayName ? String(body.displayName).trim() : (user.name || user.email || "ตัวแทนแนะนำร้านค้า");
+    const explicitName = body.displayName ? String(body.displayName).trim() : "";
+    const displayName =
+      explicitName ||
+      (isNewAccount ? newEmail : ownerUser!.name || ownerUser!.email) ||
+      "ตัวแทนแนะนำร้านค้า";
 
-    // Start transaction to update user role and create Agent profile
-    const result = await prisma.$transaction(async (tx) => {
-      // Update user role to AGENT
-      await tx.user.update({
-        where: { id: ownerId },
-        data: { role: "AGENT" },
+    // ── Create within a transaction ──────────────────────────────────
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        let userId: string;
+        if (isNewAccount) {
+          const created = await tx.user.create({
+            data: {
+              email: newEmail,
+              name: explicitName || null,
+              role: "AGENT",
+              passwordHash,
+            },
+            select: { id: true },
+          });
+          userId = created.id;
+        } else {
+          await tx.user.update({ where: { id: ownerUser!.id }, data: { role: "AGENT" } });
+          userId = ownerUser!.id;
+        }
+
+        return tx.agent.create({
+          data: {
+            userId,
+            displayName,
+            linkCode: linkCode!,
+            status: "ACTIVE", // Admin-created agents are ACTIVE by default
+          },
+        });
       });
 
-      // Create agent profile
-      const newAgent = await tx.agent.create({
-        data: {
-          userId: ownerId,
-          displayName,
-          linkCode: linkCode!,
-          status: "ACTIVE", // Admin created is ACTIVE by default
-        },
-      });
-
-      return newAgent;
-    });
-
-    return NextResponse.json({ ok: true, agent: result });
+      return NextResponse.json({ ok: true, agent: result });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+        return NextResponse.json(
+          { ok: false, error: "email_already_in_use", detail: "อีเมลนี้มีบัญชีอยู่แล้ว — ให้เลือกจากรายการสมาชิกที่มีอยู่แทน" },
+          { status: 409 },
+        );
+      }
+      throw e;
+    }
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });

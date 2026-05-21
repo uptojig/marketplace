@@ -7,10 +7,11 @@ const withMDX = createMDX({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Standalone needed for the production droplet's Docker image. Toggle
-  // off locally on Windows where Node can't make symlinks without admin
-  // (`NEXT_DISABLE_STANDALONE=1 pnpm build`).
-  output: process.env.NEXT_DISABLE_STANDALONE === "1" ? undefined : "standalone",
+  output:
+    process.env.NEXT_DISABLE_STANDALONE?.trim() === "1" ||
+    process.env.NEXT_DISABLE_STANDALONE?.trim() === "true"
+      ? undefined
+      : "standalone",
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   eslint: {
     // ESLint runs in CI/dev; production build shouldn't gate on lint errors

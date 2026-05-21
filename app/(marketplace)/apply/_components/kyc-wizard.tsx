@@ -1205,7 +1205,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
           onClick={() => {
             let redirectUrl = `/signin?phone=${encodeURIComponent(createdVendorCreds.phone)}`;
             if (createdVendorCreds.refCode) {
-              redirectUrl += `&ref=${encodeURIComponent(createdVendorCreds.refCode)}`;
+              redirectUrl += `&c=${encodeURIComponent(createdVendorCreds.refCode)}`;
             }
             router.push(redirectUrl);
           }}
@@ -2904,7 +2904,7 @@ function StepSummaryReview({
         clearCache();
         let redirectUrl = `/signin?phone=${encodeURIComponent(data.phone)}`;
         if (data.refCode) {
-          redirectUrl += `&ref=${encodeURIComponent(data.refCode)}`;
+          redirectUrl += `&c=${encodeURIComponent(data.refCode)}`;
         }
         router.push(redirectUrl);
       }

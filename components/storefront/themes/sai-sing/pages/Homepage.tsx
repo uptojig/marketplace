@@ -284,7 +284,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
             RIDER TESTIMONIAL
           </span>
           <p className="font-[family:var(--font-prompt)] text-lg sm:text-xl font-medium tracking-tight text-[#e5e5e5] italic leading-relaxed">
-            "อะไหล่ของแต่งคาร์บอนและท่อสูตร ฟิตลงตัวพอดีกับรถ CB650R ของผมเป๊ะๆ เลยครับ สั่งเช้าได้บ่าย ทันขี่ออกทริปเช้าวันเสาร์พอดี แนะนำเลยร้านนี้!"
+            &quot;อะไหล่ของแต่งคาร์บอนและท่อสูตร ฟิตลงตัวพอดีกับรถ CB650R ของผมเป๊ะๆ เลยครับ สั่งเช้าได้บ่าย ทันขี่ออกทริปเช้าวันเสาร์พอดี แนะนำเลยร้านนี้!&quot;
           </p>
           <div className="flex items-center justify-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#facc15]" />

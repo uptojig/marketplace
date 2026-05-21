@@ -1,0 +1,111 @@
+import { Truck, MapPin, BadgeAlert, AlertTriangle, Calendar, DollarSign, ListOrdered, CheckCircle2 } from 'lucide-react';
+
+export const metadata = {
+  title: 'ค่าจัดส่งและระยะเวลาจัดส่ง — Basketplace',
+};
+
+# ค่าจัดส่งและระยะเวลาจัดส่ง
+
+ปรับปรุงล่าสุด: 21 พฤษภาคม 2026
+
+Basketplace ร่วมมือกับพันธมิตรผู้ให้บริการโลจิสติกส์ชั้นนำในไทย เพื่อส่งมอบสินค้าให้กับคุณด้วยมาตรฐานความรวดเร็วและปลอดภัยระดับสูง โดยระบบรองรับการคำนวณแยกผู้ขายเมื่อสั่งซื้อสินค้าจากหลากหลายร้านค้าพร้อมๆ กัน
+
+---
+
+## 📅 ตารางระยะเวลาการจัดส่งโดยประมาณ
+
+ระยะเวลาจะเริ่มนับเมื่อผู้ขายได้จัดทำรายการส่งมอบพัสดุเข้าสู่ระบบของบริษัทขนส่งเรียบร้อยแล้ว (ไม่นับวันอาทิตย์และวันหยุดของขนส่ง):
+
+<div className="my-6 overflow-x-auto rounded-2xl border border-mp-border bg-mp-surface shadow-sm not-prose">
+  <table className="w-full text-left border-collapse text-xs sm:text-sm">
+    <thead>
+      <tr className="bg-mp-cream-alt text-mp-forest font-bold border-b border-mp-border">
+        <th className="px-6 py-4 font-semibold">พื้นที่ปลายทาง</th>
+        <th className="px-6 py-4 font-semibold">ระยะเวลาโดยประมาณ</th>
+        <th className="px-6 py-4 font-semibold">ผู้ให้บริการขนส่ง</th>
+      </tr>
+    </thead>
+    <tbody className="divide-y divide-mp-border/50 text-mp-ink/80">
+      <tr className="hover:bg-mp-cream/20 transition-colors">
+        <td className="px-6 py-4 font-semibold text-mp-forest">กรุงเทพฯ และปริมณฑล</td>
+        <td className="px-6 py-4 font-medium">1 - 2 วันทำการ</td>
+        <td className="px-6 py-4">Flash Express, Kerry, ไปรษณีย์ไทย (EMS)</td>
+      </tr>
+      <tr className="hover:bg-mp-cream/20 transition-colors">
+        <td className="px-6 py-4 font-semibold text-mp-forest">ต่างจังหวัด (หัวเมืองใหญ่)</td>
+        <td className="px-6 py-4 font-medium">2 - 3 วันทำการ</td>
+        <td className="px-6 py-4">Flash Express, ไปรษณีย์ไทย, J&T Express</td>
+      </tr>
+      <tr className="hover:bg-mp-cream/20 transition-colors">
+        <td className="px-6 py-4 font-semibold text-mp-forest">พื้นที่ห่างไกล / เกาะ / 3 จังหวัดชายแดนใต้</td>
+        <td className="px-6 py-4 font-medium">3 - 5 วันทำการ</td>
+        <td className="px-6 py-4">ไปรษณีย์ไทย (EMS/ลงทะเบียน), Flash Express</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+*\*หมายเหตุ: ในช่วงมหกรรมแคมเปญลดราคาพิเศษหรือวันหยุดยาวเทศกาล พัสดุอาจมีการล่าช้ากว่ารอบปกติ 1-2 วันทำการ*
+
+---
+
+## 💰 วิธีการคิดอัตราค่าจัดส่งสินค้า
+
+ระบบคำนวณค่าจัดส่งในส่วน Checkout ให้อัตโนมัติโดยอิงจากองค์ประกอบเหล่านี้:
+
+<div className="grid gap-6 sm:grid-cols-3 my-8 not-prose">
+  <div className="rounded-2xl border border-mp-border bg-white p-5 flex gap-4 items-start">
+    <div className="rounded-xl bg-mp-coral/10 p-2.5 text-mp-coral shrink-0">
+      <Truck className="h-5 w-5" />
+    </div>
+    <div>
+      <h4 className="font-bold text-sm text-mp-ink">น้ำหนักและมิติ</h4>
+      <p className="mt-2 text-xs text-mp-ink-muted leading-relaxed">คำนวณตามขนาดพัสดุและน้ำหนักรวมของสินค้าจริง</p>
+    </div>
+  </div>
+
+  <div className="rounded-2xl border border-mp-border bg-white p-5 flex gap-4 items-start">
+    <div className="rounded-xl bg-mp-forest/10 p-2.5 text-mp-forest shrink-0">
+      <MapPin className="h-5 w-5" />
+    </div>
+    <div>
+      <h4 className="font-bold text-sm text-mp-ink">ระยะทางจัดส่ง</h4>
+      <p className="mt-2 text-xs text-mp-ink-muted leading-relaxed">คิดจากระยะทางจริงระหว่างคลังผู้ขายถึงที่อยู่ของคุณ</p>
+    </div>
+  </div>
+
+  <div className="rounded-2xl border border-mp-border bg-white p-5 flex gap-4 items-start">
+    <div className="rounded-xl bg-mp-warning/15 p-2.5 text-mp-warning shrink-0">
+      <DollarSign className="h-5 w-5" />
+    </div>
+    <div>
+      <h4 className="font-bold text-sm text-mp-ink">ประเภทของบริการ</h4>
+      <p className="mt-2 text-xs text-mp-ink-muted leading-relaxed">ต่างกันไปตามการส่งแบบประหยัด หรือส่งด่วนพิเศษ</p>
+    </div>
+  </div>
+</div>
+
+> 💡 **เทคนิคประหยัดค่าส่ง:** หากสั่งสินค้าหลายรายการจาก **ร้านค้าเดียวกัน** ระบบจะมัดรวมเป็นกล่องเดียว ทำให้อัตราเฉลี่ยค่าขนส่งถูกกว่าการแยกบิลสั่งซื้ออย่างมีนัยสำคัญ
+
+---
+
+## ⚠️ คำแนะนำสำคัญเพื่อรักษาสิทธิ์ของท่าน
+
+<div className="my-8 rounded-2xl border border-mp-warning/35 bg-mp-warning/5 p-6 flex flex-col sm:flex-row gap-5 items-start not-prose">
+  <div className="rounded-xl bg-mp-warning/20 p-3 text-mp-warning shrink-0 animate-pulse">
+    <AlertTriangle className="h-8 w-8" />
+  </div>
+  <div className="space-y-2">
+    <h3 className="text-lg font-bold text-mp-warning">ต้องถ่ายคลิปวิดีโอขณะแกะกล่องสินค้า</h3>
+    <p className="text-sm leading-relaxed text-mp-ink/90">
+      เพื่อสิทธิ์ในการขอเคลมและประกันสินค้าในกรณีเสียหายหรือสูญหายระหว่างเดินทาง **โปรดถ่ายวิดีโออย่างต่อเนื่องแบบไม่มีการตัดต่อ** ตั้งแต่เริ่มลงมือกรีดเทปกล่องจนกระทั่งนำสินค้าออกมาตรวจสอบจนเสร็จสิ้น
+    </p>
+  </div>
+</div>
+
+- **การแยกพัสดุรับของ:** เมื่อสั่งสินค้าข้ามร้านในคำสั่งซื้อเดียว สินค้าแต่ละชิ้นจะจัดส่งแยกจากร้านผู้ขายแต่ละราย ทำให้คุณจะได้รับเลขพัสดุและกล่องพัสดุแยกตามจำนวนร้านค้า
+- **การปฏิเสธรับสินค้า COD:** ในกรณีใช้ช่องทางเก็บเงินปลายทางแล้วเลือกปฏิเสธการเซ็นรับสินค้าโดยไม่มีเหตุผลสมควร บัญชีผู้ซื้อของคุณอาจมีความเสี่ยงโดนระงับทางเลือกชำระเงิน COD เป็นการชั่วคราว
+
+---
+
+มีข้อสงสัยเพิ่มเติมเรื่องการส่งสินค้า? [ตรวจสอบสถานะพัสดุของคุณ](/help/tracking) หรือ [ติดต่อพนักงานแอดมินของเรา](/help/contact)

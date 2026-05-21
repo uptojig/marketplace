@@ -123,7 +123,7 @@ export function HinokiHomepage({ store, products, categories }: HinokiHomepagePr
                   <div className="text-[#3f2e1e]/80 mb-10 leading-loose mx-auto lg:mx-0">
                     <p className="indent-8 text-justify">{story.prose}</p>
                     <blockquote className="border-l-2 border-[#a87a4b] pl-6 my-8 text-[#a87a4b] font-light italic text-lg text-left">
-                      "{story.quote}"
+                      &quot;{story.quote}&quot;
                     </blockquote>
                   </div>
 

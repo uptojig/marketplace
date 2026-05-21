@@ -34,7 +34,7 @@ export function Cart({ items, freeShippingThreshold = 5000, currentSubtotal, onU
       <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[var(--shop-bg)]">
          <Package size={64} className="text-[var(--shop-border)] mb-4" />
          <h2 className="text-2xl font-bold text-[var(--shop-ink)] mb-2">Your Cart is Empty</h2>
-         <p className="text-[var(--shop-ink-muted)] mb-6">Looks like you haven't added any packaging yet.</p>
+         <p className="text-[var(--shop-ink-muted)] mb-6">Looks like you haven&apos;t added any packaging yet.</p>
          <a href={shopUrl} className="bg-[var(--shop-primary)] text-white px-8 py-3 rounded-md font-semibold">Start Shopping</a>
       </div>
     );

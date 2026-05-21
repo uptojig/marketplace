@@ -277,7 +277,7 @@ export default function SellerImportPage() {
                       เลือกทุกอันที่แสดง ({selectableIds.length})
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={selectAccepted}>
-                      เลือกเฉพาะ "ผ่าน IP" ({acceptedIds.length})
+                      เลือกเฉพาะ &quot;ผ่าน IP&quot; ({acceptedIds.length})
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={invertSelection}>
                       สลับการเลือก

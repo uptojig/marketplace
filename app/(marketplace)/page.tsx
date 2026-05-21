@@ -104,10 +104,10 @@ export default async function Home() {
             </p>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
               <Link
-                href="/apply"
+                href="/signin"
                 className="inline-flex items-center justify-center h-11 px-8 bg-mp-coral text-white text-[15px] font-semibold rounded-xl shadow-sm hover:bg-mp-coral-dark hover:-translate-y-px transition-all"
               >
-                เปิดร้านฟรี <ArrowRight className="w-4 h-4 ml-2" />
+                เข้าสู่ระบบ <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
               <Link
                 href="#featured"
@@ -397,10 +397,10 @@ export default async function Home() {
                 ))}
               </ul>
               <Link
-                href="/apply"
+                href="/signin"
                 className="w-full inline-flex items-center justify-center h-11 bg-mp-coral text-white text-[15px] font-semibold rounded-xl hover:bg-mp-coral-dark transition-colors"
               >
-                เปิดร้านฟรี
+                เข้าสู่ระบบ
               </Link>
             </div>
 
@@ -531,10 +531,10 @@ export default async function Home() {
             พร้อมเปิดร้านเป็นของคุณเองหรือยัง?
           </h2>
           <Link
-            href="/apply"
+            href="/signin"
             className="inline-flex items-center justify-center h-14 px-10 bg-white text-mp-coral text-base font-semibold rounded-xl shadow-md hover:-translate-y-px hover:shadow-lg transition-all"
           >
-            เริ่มเปิดร้านเลย <ArrowRight className="w-5 h-5 ml-2" />
+            เข้าสู่ระบบ <ArrowRight className="w-5 h-5 ml-2" />
           </Link>
         </div>
       </section>

@@ -200,7 +200,7 @@ export function StoreCartClient({
                 fontFamily: SPECIALTY_HAND_FONT,
               }}
             >
-              the maker's basket
+              the maker&apos;s basket
             </p>
           )}
           <h1

@@ -1,0 +1,151 @@
+import { ShieldCheck, RotateCcw, HelpCircle, CheckCircle2, AlertOctagon, HelpCircle as HelpIcon, ArrowRight } from 'lucide-react';
+
+export const metadata = {
+  title: 'นโยบายการคืนและเปลี่ยนสินค้า — Basketplace',
+};
+
+# นโยบายการคืนและเปลี่ยนสินค้า
+
+ปรับปรุงล่าสุด: 21 พฤษภาคม 2026
+
+ที่ Basketplace ความพึงพอใจของคุณคือสิ่งสำคัญที่สุด หากสินค้าที่คุณได้รับชำรุด เสียหาย ได้รับไม่ครบถ้วน หรือส่งผิดพลาด คุณสามารถทำเรื่องขอยื่นคืนสินค้าหรือส่งเปลี่ยนชิ้นใหม่ได้ทันทีภายในเงื่อนไขและระยะเวลาที่กำหนด
+
+---
+
+## 📋 เงื่อนไขและเกณฑ์การพิจารณาคืน/เปลี่ยนสินค้า
+
+ผู้ซื้อสามารถกดทำเรื่องยื่นขอคืนเงินหรือเปลี่ยนสินค้าได้ภายใน **7 วัน นับจากวันที่ระบบระบุว่าจัดส่งพัสดุสำเร็จ** โดยมีรายละเอียดเงื่อนไขดังต่อไปนี้:
+
+<div className="grid gap-6 sm:grid-cols-2 my-8 not-prose">
+  {/* Accepted */}
+  <div className="rounded-2xl border border-mp-forest/20 bg-mp-forest/5 p-6 space-y-4">
+    <div className="flex items-center gap-3">
+      <div className="rounded-lg bg-mp-forest/10 p-2 text-mp-forest">
+        <CheckCircle2 className="h-6 w-6" />
+      </div>
+      <h3 className="font-bold text-mp-forest">กรณีที่สามารถยื่นคืน/เปลี่ยนได้</h3>
+    </div>
+    <ul className="space-y-2.5 text-xs sm:text-sm text-mp-ink/90 pl-1">
+      <li className="flex items-start gap-2.5">
+        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mp-forest" />
+        <span>สินค้าบุบสลาย เสียหาย ชำรุด หรือเปิดใช้งานไม่ได้ตั้งแต่แกะกล่อง</span>
+      </li>
+      <li className="flex items-start gap-2.5">
+        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mp-forest" />
+        <span>ผู้จัดส่งส่งสินค้าผิดรุ่น ผิดเฉดสี ผิดไซส์ หรือผิดพลาดจากรายการสั่งซื้อ</span>
+      </li>
+      <li className="flex items-start gap-2.5">
+        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mp-forest" />
+        <span>ตรวจสอบพบว่าเป็นของปลอม หรือไม่ตรงกับรายละเอียดคำอธิบายโฆษณา</span>
+      </li>
+      <li className="flex items-start gap-2.5">
+        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mp-forest" />
+        <span>ได้รับอุปกรณ์เสริมไม่ครบถ้วน ชิ้นส่วนสูญหาย หรือไม่สมบูรณ์</span>
+      </li>
+    </ul>
+  </div>
+
+  {/* Rejected */}
+  <div className="rounded-2xl border border-mp-coral/20 bg-mp-coral/5 p-6 space-y-4">
+    <div className="flex items-center gap-3">
+      <div className="rounded-lg bg-mp-coral/10 p-2 text-mp-coral">
+        <AlertOctagon className="h-6 w-6" />
+      </div>
+      <h3 className="font-bold text-mp-coral">กรณีที่ไม่สามารถดำเนินการคืน/เปลี่ยนได้</h3>
+    </div>
+    <ul className="space-y-2.5 text-xs sm:text-sm text-mp-ink/90 pl-1">
+      <li className="flex items-start gap-2.5">
+        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mp-coral" />
+        <span>สินค้าชำรุดเสียหายที่เกิดจากการใช้งานผิดจุดประสงค์ ตกหล่น หรืออุบัติเหตุจากฝั่งผู้ซื้อ</span>
+      </li>
+      <li className="flex items-start gap-2.5">
+        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mp-coral" />
+        <span>สินค้าผ่านขั้นตอนการพยายามแกะซ่อมแซม ดัดแปลง ดัดแปลงสภาพ หรือมีคราบสกปรกหนัก</span>
+      </li>
+      <li className="flex items-start gap-2.5">
+        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mp-coral" />
+        <span>สินค้าประเภทดาวน์โหลด โค้ดเกม คีย์ซอฟต์แวร์ หรือสิทธิ์ดิจิทัลที่ผู้ใช้เปิดอ่านคีย์แล้ว</span>
+      </li>
+      <li className="flex items-start gap-2.5">
+        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-mp-coral" />
+        <span>การขอคืน/เปลี่ยนสินค้าเนื่องจากเปลี่ยนใจ (โดยสินค้าไม่ได้มีปัญหาด้านคุณภาพการผลิต)</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
+---
+
+## 🛠️ ขั้นตอนการขอยื่นส่งคืน / เปลี่ยนสินค้าใหม่
+
+หากพบปัญหาและต้องการคืนหรือเปลี่ยนสินค้า โปรดดำเนินรายการผ่านระบบตาม 4 ขั้นตอนนี้:
+
+<div className="relative border-l-2 border-mp-coral/30 pl-8 ml-6 my-10 space-y-10 not-prose">
+  {/* Step 1 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">1</div>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">แชทแนะแนวปัญหาแก่ผู้ขาย</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">
+      ไปที่หน้ารายละเอียดคำสั่งซื้อนั้นๆ และกดปุ่มแชทติดต่อผู้ขายเพื่อชี้แจงหัวข้อปัญหาที่พบเบื้องต้นเพื่อให้ร้านค้าตรวจสอบรับทราบ
+    </p>
+  </div>
+
+  {/* Step 2 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">2</div>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">เตรียมข้อมูลหลักฐานสำคัญ</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">
+      ถ่ายรูปภาพนิ่งชิ้นงานที่เสียหายหรือผิดเฉดสีอย่างชัดเจน และเตรียมไฟล์คลิปวิดีโอขณะลงมือเปิดกล่องแกะสินค้า (ถ้ามี)
+    </p>
+  </div>
+
+  {/* Step 3 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">3</div>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">กดขอส่งคืนเงินในหน้าระบบ</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">
+      กดปุ่ม **"ขอคืนเงิน/คืนสินค้า"** ในเมนูหน้ารายละเอียดคำสั่งซื้อ ระบุสาเหตุ แนบหลักฐานรูปภาพ แล้วกดส่งข้อมูลเพื่อให้ผู้ขายอนุมัติ
+    </p>
+  </div>
+
+  {/* Step 4 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">4</div>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">แพ็คและจัดส่งพัสดุกลับคืน</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">
+      เมื่อร้านค้ากดรับข้อมูลแล้ว ระบบจะแสดงที่อยู่ปลายทางสำหรับจัดส่ง ให้ผู้ซื้อแพ็คสินค้าชิ้นเดิมส่งกลับภายใน 3 วันทำการและแจ้งเลขพัสดุลงระบบ
+    </p>
+  </div>
+</div>
+
+---
+
+## 💸 นโยบายความรับผิดชอบค่าใช้จ่ายจัดส่งคืน
+
+- **หากเป็นความรับผิดชอบของร้านค้า:** (เช่น ส่งสินค้าผิดชำรุด) ร้านค้าจะเป็นผู้รับผิดชอบค่าขนส่งคืนทั้งหมด ระบบจะทำการคืนเงินชดเชยค่าจัดส่งให้เมื่อตรวจเช็คพัสดุตีกลับเรียบร้อย
+- **หากเป็นการขอเปลี่ยนเนื่องจากเลือกผิดสเปกเอง:** (เช่น เสื้อผ้าขนาดเล็กเกินไป) ผู้ซื้อจะต้องเป็นผู้รับผิดชอบค่าจัดส่งทั้งฝั่งส่งกลับและฝั่งส่งแลกเปลี่ยนชิ้นใหม่ทดแทน
+
+---
+
+## ⌛ ระยะเวลารอรับยอดเงินคืนผ่านระบบ Anypay
+
+เมื่อผู้ขายกดยืนยันตรวจสภาพพัสดุรับคืนที่ส่งกลับเรียบร้อยแล้ว ระบบ Anypay จะทำรายการโอนคืนทันทีตามแต่ละช่องทางการจ่ายเงินเดิม:
+
+<div className="grid gap-4 sm:grid-cols-2 my-6 not-prose">
+  <div className="p-4 rounded-xl border border-mp-border bg-mp-surface flex justify-between items-center">
+    <div>
+      <span className="text-xs text-mp-ink-muted block">PromptPay / Anypay Wallet</span>
+      <span className="text-sm font-bold text-mp-forest">คืนยอดทันทีใน 1 - 3 นาที</span>
+    </div>
+  </div>
+  <div className="p-4 rounded-xl border border-mp-border bg-mp-surface flex justify-between items-center">
+    <div>
+      <span className="text-xs text-mp-ink-muted block">บัตรเครดิต / บัตรเดบิต</span>
+      <span className="text-sm font-bold text-mp-forest">ภายใน 7 - 14 วันทำการ (ตามรอบบัตร)</span>
+    </div>
+  </div>
+</div>
+
+---
+
+ต้องการข้อมูลเพิ่มเติมหรือมีความเห็นขัดแย้งกับผู้ขาย? [ติดต่อแอดมินฝ่ายบริการลูกค้า](/help/contact)

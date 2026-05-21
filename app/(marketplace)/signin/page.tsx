@@ -17,13 +17,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { workspaceHomeFor } from "@/lib/auth/workspace";
 
 function sanitizeNext(raw: string | null, fallback: string): string {
   if (!raw) return fallback;
   if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
   return fallback;
 }
-import { Loader2, AlertCircle, ShieldCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const ERROR_MESSAGES: Record<string, string> = {
   Configuration: "OAuth ตั้งค่าผิด ตรวจสอบ env vars",
@@ -60,8 +61,8 @@ function GoogleIcon() {
 function CredentialsForm({ refCode }: { refCode?: string }) {
   const router = useRouter();
   const params = useSearchParams();
-  const ref = params.get("ref") || refCode;
-  const defaultNext = ref ? `/apply?ref=${encodeURIComponent(ref)}` : "/dashboard";
+  const ref = params.get("c") || refCode;
+  const defaultNext = ref ? `/apply?c=${encodeURIComponent(ref)}` : "/dashboard";
   const next = useMemo(() => {
     const rawNext = params.get("next") || params.get("callbackUrl");
     return sanitizeNext(rawNext, defaultNext);
@@ -113,7 +114,22 @@ function CredentialsForm({ refCode }: { refCode?: string }) {
         );
         return;
       }
-      router.push(next);
+      
+      const sessionRes = await fetch("/api/auth/session");
+      const sessionData = await sessionRes.json();
+      const role = sessionData?.user?.role;
+      
+      const rawNext = params.get("next") || params.get("callbackUrl");
+      if (rawNext && rawNext !== "/dashboard") {
+        router.push(sanitizeNext(rawNext, "/dashboard"));
+      } else {
+        if (role === "ADMIN" || role === "AGENT" || role === "VENDOR") {
+          router.push(workspaceHomeFor(role));
+        } else {
+          const finalRef = ref;
+          router.push(finalRef ? `/apply?c=${encodeURIComponent(finalRef)}` : "/apply");
+        }
+      }
       router.refresh();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "network error");
@@ -124,12 +140,6 @@ function CredentialsForm({ refCode }: { refCode?: string }) {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      {ref && (
-        <div className="rounded-xl border border-mp-border bg-white/60 p-3 text-xs text-mp-ink-muted">
-          เข้าสู่ระบบเพื่อดำเนินการต่อผ่านตัวแทน รหัส: <strong>{ref}</strong>
-        </div>
-      )}
-
       {/* Login Mode Switcher */}
       <div className="flex border-b border-mp-border mb-4">
         <button
@@ -231,208 +241,79 @@ function SignInPageContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
 
-  const [isValidating, setIsValidating] = useState(true);
-  const [isValidRef, setIsValidRef] = useState(false);
   const [refCode, setRefCode] = useState("");
-  const [agentName, setAgentName] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [unlockCode, setUnlockCode] = useState("");
-  const [unlockBusy, setUnlockBusy] = useState(false);
-  const [unlockError, setUnlockError] = useState("");
 
-  const urlRef = searchParams.get("ref");
-  const defaultNext = refCode ? `/apply?ref=${encodeURIComponent(refCode)}` : "/dashboard";
+  const urlRef = searchParams.get("c");
+  const defaultNext = refCode ? `/apply?c=${encodeURIComponent(refCode)}` : "/dashboard";
   const next = useMemo(() => {
     const rawNext = searchParams.get("next") || searchParams.get("callbackUrl");
     return sanitizeNext(rawNext, defaultNext);
   }, [searchParams, defaultNext]);
 
+  const googleCallbackUrl = useMemo(() => {
+    if (typeof window === "undefined") return "/signin";
+    return `/signin${window.location.search}`;
+  }, [searchParams]);
+
+  // Silently capture + persist the invite code (from ?c= or storage) so it
+  // can be carried into /apply. The code is plumbing only — it is never shown
+  // to the user. We still validate it so we don't persist a bogus value.
   useEffect(() => {
-    const storedRef = typeof window !== "undefined" ? window.localStorage.getItem("agent.ref.code") : null;
+    const storedRef = typeof window !== "undefined" ? window.localStorage.getItem("bp.ref") : null;
     const finalCode = urlRef || storedRef;
 
     if (!finalCode) {
-      setIsValidating(false);
-      setIsValidRef(false);
       return;
     }
 
-    setIsValidating(true);
-    fetch(`/api/agents/validate?code=${encodeURIComponent(finalCode)}`)
+    fetch(`/api/access/validate?code=${encodeURIComponent(finalCode)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.ok) {
-          setIsValidRef(true);
           setRefCode(finalCode.toUpperCase());
-          setAgentName(data.agentName);
           if (typeof window !== "undefined") {
-            window.localStorage.setItem("agent.ref.code", finalCode.toUpperCase());
+            window.localStorage.setItem("bp.ref", finalCode.toUpperCase());
           }
         } else {
-          setIsValidRef(false);
-          setErrorMsg(data.detail || "Link Code ไม่ถูกต้อง หรือ ตัวแทนไม่พร้อมใช้งาน");
           if (typeof window !== "undefined") {
-            window.localStorage.removeItem("agent.ref.code");
+            window.localStorage.removeItem("bp.ref");
           }
         }
       })
-      .catch(() => {
-        setIsValidRef(false);
-        setErrorMsg("ไม่สามารถตรวจสอบข้อมูลตัวแทนได้ในขณะนี้");
-      })
-      .finally(() => {
-        setIsValidating(false);
-      });
+      .catch(() => {});
   }, [urlRef]);
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push(next);
-    }
-  }, [status, next, router]);
+    if (status === "authenticated" && session?.user) {
+      const role = (session.user as any).role;
+      const rawNext = searchParams.get("next") || searchParams.get("callbackUrl");
 
-  async function handleUnlockSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!unlockCode.trim()) return;
-
-    setUnlockBusy(true);
-    setUnlockError("");
-
-    try {
-      const res = await fetch(`/api/agents/validate?code=${encodeURIComponent(unlockCode.trim())}`);
-      const data = await res.json();
-      if (data.ok) {
-        setIsValidRef(true);
-        setRefCode(unlockCode.trim().toUpperCase());
-        setAgentName(data.agentName);
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem("agent.ref.code", unlockCode.trim().toUpperCase());
-        }
+      if (rawNext && rawNext !== "/dashboard") {
+        router.push(sanitizeNext(rawNext, "/dashboard"));
       } else {
-        setUnlockError(data.detail || "รหัสแนะนำไม่ถูกต้อง");
+        if (role === "ADMIN" || role === "AGENT" || role === "VENDOR") {
+          router.push(workspaceHomeFor(role));
+        } else {
+          const finalRef = refCode || urlRef;
+          router.push(finalRef ? `/apply?c=${encodeURIComponent(finalRef)}` : "/apply");
+        }
       }
-    } catch {
-      setUnlockError("เกิดข้อผิดพลาดในการตรวจสอบรหัสแนะนำ");
-    } finally {
-      setUnlockBusy(false);
+      router.refresh();
     }
-  }
+  }, [status, session, searchParams, refCode, urlRef, router]);
 
-  if (status === "loading" || isValidating) {
+  if (status === "loading") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-mp-cream">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-mp-coral animate-spin mx-auto mb-3" />
-          <p className="text-[15px] text-mp-ink-muted">กำลังตรวจสอบสิทธิ์การเข้าใช้งาน...</p>
+          <p className="text-[15px] text-mp-ink-muted">กำลังโหลด...</p>
         </div>
       </div>
     );
   }
 
-  const bypassGate = next.startsWith("/agent") || next.startsWith("/admin");
 
-  if (!isValidRef && status !== "authenticated" && !bypassGate) {
-    return (
-      <div className="mx-auto max-w-[1440px] min-h-[calc(100vh-4rem)] grid lg:grid-cols-[60%_40%] bg-mp-cream">
-        {/* LEFT — editorial brand panel (desktop only) */}
-        <aside
-          className="hidden lg:flex flex-col justify-between bg-mp-forest text-mp-cream p-12 relative overflow-hidden"
-          aria-hidden="true"
-        >
-          <div className="absolute inset-0">
-            <Image
-              src="/editorial_bg.png"
-              alt=""
-              fill
-              className="object-cover"
-              sizes="60vw"
-              priority
-            />
-            <div className="absolute inset-0 bg-black/40" />
-          </div>
-          <div className="relative z-10">
-            <span className="text-[13px] font-medium uppercase tracking-[0.16em] text-mp-cream/70">
-              Basketplace
-            </span>
-          </div>
-          <blockquote
-            className="relative z-10 max-w-md text-2xl lg:text-3xl leading-snug text-mp-cream font-semibold"
-            style={{ fontFamily: "var(--mp-font-display)" }}
-          >
-            “เข้าใช้งานด้วยระบบตัวแทนเท่านั้น”
-          </blockquote>
-        </aside>
-
-        {/* RIGHT — Unlock / Entry Gate */}
-        <div className="flex items-center justify-center px-6 py-12 lg:py-16 bg-mp-cream">
-          <div className="w-full max-w-[400px] text-center lg:text-left">
-            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 text-left">
-              <div className="flex items-start gap-3 text-red-700">
-                <AlertCircle className="w-6 h-6 shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="text-[16px] font-semibold mb-1">
-                    การเข้าใช้งานถูกจำกัด 🔒
-                  </h3>
-                  <p className="text-[14px] leading-relaxed text-red-700/80">
-                    {errorMsg || "คุณต้องเข้าใช้งานผ่านลิงก์แนะนำของตัวแทน (Agent) หรือกรอกรหัสแนะนำตัวแทนเพื่อปลดล็อกการเข้าสู่ระบบ"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <form onSubmit={handleUnlockSubmit} className="space-y-4 mb-6">
-              <div>
-                <label htmlFor="unlock-code" className="block text-[14px] font-medium text-mp-ink mb-1.5 text-left">
-                  กรอก Agent Code เพื่อเข้าใช้งาน
-                </label>
-                <input
-                  id="unlock-code"
-                  type="text"
-                  required
-                  placeholder="เช่น AGEN-XXXX"
-                  value={unlockCode}
-                  onChange={(e) => setUnlockCode(e.target.value)}
-                  disabled={unlockBusy}
-                  className="w-full h-11 rounded-[10px] border border-mp-border bg-white px-4 text-[15px] text-mp-ink focus:border-mp-coral focus:outline-none focus:ring-2 focus:ring-mp-coral/20 transition-colors uppercase"
-                />
-              </div>
-              {unlockError && (
-                <div className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700 text-left">
-                  {unlockError}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={unlockBusy}
-                className="flex w-full h-11 items-center justify-center gap-2 rounded-xl bg-mp-coral px-4 text-[15px] font-semibold text-white shadow-sm hover:bg-mp-coral-dark transition-all"
-              >
-                {unlockBusy && <Loader2 className="h-4 w-4 animate-spin" />}
-                ยืนยันเพื่อเข้าใช้งาน
-              </button>
-            </form>
-
-            <div className="space-y-4 pt-4 border-t border-mp-border">
-              <p className="text-sm text-mp-ink-muted text-left">หากคุณต้องการเปิดร้านและยังไม่มีตัวแทนผู้แนะนำ หรือสนใจร่วมทีมกับเรา:</p>
-              <div className="grid grid-cols-1 gap-2.5">
-                <Link
-                  href="/agent/register"
-                  className="flex w-full h-11 items-center justify-center rounded-xl border border-mp-border bg-white text-[15px] font-semibold text-mp-ink hover:bg-mp-cream-alt/40 transition-all animate-pulse"
-                >
-                  สมัครเป็นตัวแทน (Agent)
-                </Link>
-                <Link
-                  href="/signin?next=/agent/dashboard"
-                  className="flex w-full h-11 items-center justify-center rounded-xl bg-mp-forest/10 text-[15px] font-semibold text-mp-forest hover:bg-mp-forest/20 transition-all"
-                >
-                  เข้าสู่ระบบสำหรับตัวแทน (Agent Login)
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-[1440px] min-h-[calc(100vh-4rem)] grid lg:grid-cols-[60%_40%] bg-mp-cream">
@@ -497,29 +378,12 @@ function SignInPageContent() {
 
           <button
             type="button"
-            onClick={() => signIn("google", { callbackUrl: defaultNext })}
+            onClick={() => signIn("google", { callbackUrl: googleCallbackUrl })}
             className="w-full h-11 flex items-center justify-center gap-2.5 rounded-xl bg-white border border-mp-border text-[15px] font-medium text-mp-ink hover:bg-mp-cream-alt/40 transition-colors"
           >
             <GoogleIcon />
             ดำเนินการต่อด้วย Google
           </button>
-
-          {agentName && (
-            <div className="mt-4 rounded-xl border border-mp-forest/20 bg-mp-forest/5 p-3 text-xs text-mp-forest flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span>รหัสตัวแทนที่ผูกไว้: <strong>{agentName}</strong> ({refCode})</span>
-            </div>
-          )}
-
-          <p className="mt-8 text-center text-[14px] text-mp-ink-muted">
-            ยังไม่มีบัญชี?{" "}
-            <Link
-              href={refCode ? `/signup?ref=${encodeURIComponent(refCode)}` : "/signup"}
-              className="font-semibold text-mp-coral hover:underline"
-            >
-              สมัครสมาชิก
-            </Link>
-          </p>
 
           <p className="mt-6 text-center text-[12px] text-mp-ink-muted/80">
             การเข้าสู่ระบบหมายความว่าคุณยอมรับ{" "}

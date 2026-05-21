@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import { AccountMenu } from '@/components/account/account-menu';
 
 interface NavItem {
   label: string;
@@ -79,21 +80,8 @@ export function MarketplaceMobileNav({ items }: Props) {
           ))}
         </nav>
 
-        <div className="border-t border-mp-border p-4 space-y-3">
-          <Link
-            href="/signin"
-            onClick={() => setOpen(false)}
-            className="block w-full text-center px-4 py-3 text-[15px] font-semibold text-mp-ink rounded-xl border border-mp-border hover:bg-mp-cream-alt transition-colors"
-          >
-            เข้าสู่ระบบ
-          </Link>
-          <Link
-            href="/apply"
-            onClick={() => setOpen(false)}
-            className="block w-full text-center px-4 py-3 text-[15px] font-semibold text-white bg-mp-coral rounded-xl hover:bg-mp-coral-dark transition-colors"
-          >
-            เปิดร้าน
-          </Link>
+        <div className="border-t border-mp-border p-4">
+          <AccountMenu layout="inline" onNavigate={() => setOpen(false)} />
         </div>
       </div>
     </div>

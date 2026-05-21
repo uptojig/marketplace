@@ -1,0 +1,125 @@
+import { Search, ShoppingBag, Checklist, CheckSquare, ShieldCheck, Truck, HelpCircle } from 'lucide-react';
+
+export const metadata = {
+  title: 'วิธีการสั่งซื้อ — Basketplace',
+};
+
+# วิธีการสั่งซื้อ
+
+ปรับปรุงล่าสุด: 11 พฤษภาคม 2026
+
+คุณสามารถทำการสั่งซื้อสินค้าบน Basketplace ได้ง่ายๆ ภายในเวลาไม่ถึง 2 นาที เพียงทำตามขั้นตอนดังต่อไปนี้:
+
+---
+
+## ขั้นตอนการทำรายการสั่งซื้อ
+
+<div className="relative border-l-2 border-mp-coral/30 pl-8 ml-6 my-10 space-y-12 not-prose">
+  {/* Step 1 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">1</div>
+    <div className="flex items-center gap-3">
+      <Search className="h-5 w-5 text-mp-coral" />
+      <h3 className="text-lg font-bold text-mp-ink">ค้นหาสินค้าที่ต้องการ</h3>
+    </div>
+    <p className="mt-2 text-sm leading-relaxed text-mp-ink-muted">
+      ใช้ช่องค้นหาด้านบนสุดเพื่อหาคำสำคัญ ชื่อสินค้า ชื่อร้านค้า หรือแบรนด์ที่คุณต้องการ หรือเลือกดูสินค้าแยกตามหมวดหมู่จากหน้าแรก เมื่อพบสินค้าที่ถูกใจ ให้คลิกที่รูปภาพสินค้าเพื่อดูรายละเอียด รีวิว และข้อมูลผู้ขาย
+    </p>
+  </div>
+
+  {/* Step 2 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">2</div>
+    <div className="flex items-center gap-3">
+      <ShoppingBag className="h-5 w-5 text-mp-coral" />
+      <h3 className="text-lg font-bold text-mp-ink">เลือกตัวเลือกและเพิ่มเข้าตะกร้า</h3>
+    </div>
+    <p className="mt-2 text-sm leading-relaxed text-mp-ink-muted">
+      ในหน้าสินค้า ให้เลือกรุ่น สี ขนาด หรือตัวเลือกย่อยที่ต้องการระบุ ปรับแก้จำนวนสินค้าให้เรียบร้อย จากนั้นกดปุ่ม **"Add to cart"** เพื่อเก็บเข้าตะกร้าชั่วคราว หรือกด **"Buy now"** หากต้องการชำระเงินสินค้ารายการนี้ทันที
+    </p>
+    <div className="mt-3 rounded-xl border border-mp-forest/20 bg-mp-forest/5 p-4 text-xs text-mp-ink/80 leading-relaxed">
+      💡 **ข้อมูลที่เป็นประโยชน์:** สินค้าที่ถูกเพิ่มลงตะกร้าจะถูกบันทึกไว้ในระบบของคุณโดยอัตโนมัติ แม้ว่าคุณจะปิดหน้าต่างเบราว์เซอร์ไปแล้วก็ตาม
+    </div>
+  </div>
+
+  {/* Step 3 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">3</div>
+    <div className="flex items-center gap-3">
+      <CheckSquare className="h-5 w-5 text-mp-coral" />
+      <h3 className="text-lg font-bold text-mp-ink">ตรวจสอบรายละเอียดตะกร้าสินค้า</h3>
+    </div>
+    <p className="mt-2 text-sm leading-relaxed text-mp-ink-muted">
+      เข้าไปยังหน้าตะกร้าสินค้าของคุณ โดยการคลิกไอคอนตะกร้าสินค้าที่มุมขวาบน ตรวจสอบรายการสินค้า เลือกติ๊กหน้ากล่องเช็คบ็อกซ์เฉพาะรายการที่ต้องการสั่งชำระเงิน (สินค้าของแต่ละร้านค้าจะถูกจัดกลุ่มและคำนวณราคาแยกกันเพื่อความสะดวก) ใส่คูปองโค้ดส่วนลด (ถ้ามี) แล้วกดปุ่ม **"ชำระเงิน"**
+    </p>
+  </div>
+
+  {/* Step 4 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">4</div>
+    <div className="flex items-center gap-3">
+      <ShieldCheck className="h-5 w-5 text-mp-coral" />
+      <h3 className="text-lg font-bold text-mp-ink">ระบุที่อยู่และชำระเงินผ่าน Anypay</h3>
+    </div>
+    <p className="mt-2 text-sm leading-relaxed text-mp-ink-muted">
+      เข้าสู่ระบบชำระเงินที่ปลอดภัยของ Anypay โดยกรอกข้อมูลหลักใน 3 ส่วน:
+    </p>
+    <ul className="mt-2 pl-4 list-decimal space-y-1.5 text-xs sm:text-sm text-mp-ink/80">
+      <li>**ระบุที่อยู่จัดส่ง** — เลือกที่อยู่ที่บันทึกไว้ หรือกดสร้างใหม่ พร้อมเลือกขนส่งที่ชอบ</li>
+      <li>**เลือกวิธีชำระเงิน** — จ่ายผ่าน PromptPay, บัตรเครดิต, Anypay Wallet, ผ่อน หรือ COD</li>
+      <li>**ตรวจสอบความถูกต้อง** — ยืนยันข้อมูลทั้งหมด ยอมรับเงื่อนไข แล้วกด "สั่งซื้อ" เพื่อทำการชำระเงิน</li>
+    </ul>
+  </div>
+
+  {/* Step 5 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">5</div>
+    <div className="flex items-center gap-3">
+      <Truck className="h-5 w-5 text-mp-coral" />
+      <h3 className="text-lg font-bold text-mp-ink">เสร็จสิ้นและติดตามพัสดุ</h3>
+    </div>
+    <p className="mt-2 text-sm leading-relaxed text-mp-ink-muted">
+      หลังการทำรายการสำเร็จ ระบบจะแสดงหมายเลขออเดอร์ และส่งข้อมูลสรุปใบสั่งซื้อไปยังอีเมลของคุณทันที ผู้ขายจะดำเนินการแพ็คพัสดุและส่งเลขติดตามมาให้คุณภายในระบบ คุณสามารถเข้าไปตรวจสอบสถานะขนส่งเรียลไทม์ได้ตลอดเวลาที่หน้าข้อมูลคำสั่งซื้อส่วนตัว
+    </p>
+  </div>
+</div>
+
+---
+
+## คำถามที่พบบ่อยเกี่ยวกับการสั่งซื้อ
+
+<div className="space-y-4 my-8 not-prose">
+  <div className="rounded-xl border border-mp-border bg-mp-surface p-5">
+    <h4 className="flex items-center gap-2 font-bold text-mp-ink text-sm sm:text-base">
+      <HelpCircle className="h-5 w-5 text-mp-coral shrink-0" />
+      สั่งซื้อของจากหลากหลายร้านค้าพร้อมกันในรอบเดียวได้ไหม?
+    </h4>
+    <p className="mt-2 text-xs sm:text-sm text-mp-ink-muted leading-relaxed pl-7">
+      ได้ ระบบตะกร้าสินค้าส่วนกลางรองรับการรวบรวมสินค้าจากต่างร้านค้า คุณสามารถกด Checkout ชำระเงินรวมกันในคราวเดียวได้ โดยระบบจะทำการแยกรายการคำสั่งซื้อ ขนส่ง และใบเสร็จส่งให้กับทางแต่ละร้านค้าปลายทางให้แบบอัตโนมัติ
+    </p>
+  </div>
+
+  <div className="rounded-xl border border-mp-border bg-mp-surface p-5">
+    <h4 className="flex items-center gap-2 font-bold text-mp-ink text-sm sm:text-base">
+      <HelpCircle className="h-5 w-5 text-mp-coral shrink-0" />
+      หลังกดยืนยันออเดอร์แล้ว ต้องการขอยกเลิกหรือแก้ไขได้ไหม?
+    </h4>
+    <p className="mt-2 text-xs sm:text-sm text-mp-ink-muted leading-relaxed pl-7">
+      ได้ ตราบใดที่สถานะคำสั่งซื้อยังอยู่ในช่วง "รอจัดเตรียมสินค้า" (ร้านค้ายังไม่สแกนส่งมอบให้ขนส่ง) คุณสามารถกดยกเลิกรายการเองได้ทันทีที่หน้าประวัติการสั่งซื้อ หรือส่งข้อความคุยแชทแจ้งผู้ขายเพื่อแก้ไขสเปคสินค้า
+    </p>
+  </div>
+
+  <div className="rounded-xl border border-mp-border bg-mp-surface p-5">
+    <h4 className="flex items-center gap-2 font-bold text-mp-ink text-sm sm:text-base">
+      <HelpCircle className="h-5 w-5 text-mp-coral shrink-0" />
+      สามารถเลือกใช้คูปองส่วนลดของแพลตฟอร์มร่วมกับโค้ดส่วนลดของร้านค้าได้หรือไม่?
+    </h4>
+    <p className="mt-2 text-xs sm:text-sm text-mp-ink-muted leading-relaxed pl-7">
+      ได้ ในขั้นตอนการคิดเงิน คุณสามารถป้อนรหัสคูปองส่วนลดเฉพาะของทางร้านค้านั้นๆ ร่วมกับคูปองส่วนลดพิเศษของแพลตฟอร์ม Basketplace เพื่อรับข้อเสนอและส่วนลดที่คุ้มค่ามากที่สุด
+    </p>
+  </div>
+</div>
+
+---
+
+ต้องการความช่วยเหลือเพิ่มเติมเกี่ยวกับการทำรายการ? [ติดต่อเจ้าหน้าที่ฝ่ายบริการลูกค้า](/help/contact)

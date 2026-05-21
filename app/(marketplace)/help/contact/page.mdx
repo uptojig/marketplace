@@ -1,0 +1,118 @@
+import { PhoneCall, MessageCircle, Mail, Building2, Clock, ChevronRight } from 'lucide-react';
+
+export const metadata = {
+  title: 'ติดต่อเรา — Basketplace',
+};
+
+# ติดต่อเรา
+
+ปรับปรุงล่าสุด: 21 พฤษภาคม 2026
+
+หากคุณไม่พบคำตอบสำหรับคำถามของคุณ หรือมีปัญหาเกี่ยวกับการชำระเงิน การจัดส่ง และการใช้งานระบบ ทีมงานบริการลูกค้าของ Basketplace พร้อมที่จะช่วยเหลือและให้บริการคุณผ่านช่องทางการติดต่อด้านล่างนี้:
+
+---
+
+<div className="grid gap-6 sm:grid-cols-2 my-8 not-prose">
+  {/* Call Center */}
+  <div className="mp-card-lift rounded-2xl border border-mp-border bg-white p-6 shadow-sm transition duration-200 hover:shadow-md flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-4">
+        <div className="rounded-xl bg-mp-coral/10 p-3 text-mp-coral">
+          <PhoneCall className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-mp-ink">ฝ่ายบริการลูกค้า (Call Center)</h3>
+          <span className="text-[10px] font-semibold text-mp-coral uppercase tracking-wider">ติดต่อเรื่องเร่งด่วน</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs sm:text-sm leading-relaxed text-mp-ink-muted">
+        ติดต่อพูดคุยกับเจ้าหน้าที่ฝ่ายบริการลูกค้าของเราโดยตรงเพื่อสอบถามข้อมูลการใช้งานหรือช่วยเหลือแก้ไขปัญหาคำสั่งซื้อเร่งด่วน
+      </p>
+      <div className="mt-5 space-y-1">
+        <p className="text-lg font-bold text-mp-coral">โทร: 02-123-4567</p>
+        <p className="text-xs text-mp-ink-muted">เปิดให้บริการทุกวัน: 09:00 น. - 18:00 น.</p>
+      </div>
+    </div>
+  </div>
+
+  {/* LINE OA */}
+  <div className="mp-card-lift rounded-2xl border border-mp-border bg-white p-6 shadow-sm transition duration-200 hover:shadow-md flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-4">
+        <div className="rounded-xl bg-mp-forest/10 p-3 text-mp-forest">
+          <MessageCircle className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-mp-ink">LINE Official Account</h3>
+          <span className="text-[10px] font-semibold text-mp-forest uppercase tracking-wider">แชทคุยกับแอดมิน</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs sm:text-sm leading-relaxed text-mp-ink-muted">
+        แอดไลน์ไอดีเพื่อคุยสอบถาม ส่งภาพถ่ายสลิป/หลักฐานปัญหาเรื่องสินค้า หรือแจ้งติดตามสถานะการคืนเงินได้สะดวกรวดเร็ว
+      </p>
+      <div className="mt-5 space-y-1">
+        <p className="text-lg font-bold text-mp-forest">LINE ID: @basketplace</p>
+        <p className="text-xs text-mp-ink-muted">ตอบกลับเร็วใน 30 นาที (เฉพาะช่วงเวลาทำการ)</p>
+      </div>
+    </div>
+  </div>
+
+  {/* Email */}
+  <div className="mp-card-lift rounded-2xl border border-mp-border bg-white p-6 shadow-sm transition duration-200 hover:shadow-md flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-4">
+        <div className="rounded-xl bg-mp-warning/15 p-3 text-mp-warning">
+          <Mail className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-mp-ink">อีเมลฝ่ายการขาย / สนับสนุน</h3>
+          <span className="text-[10px] font-semibold text-mp-warning uppercase tracking-wider">ติดต่อธุรกิจหรือแจ้งเรื่อง</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs sm:text-sm leading-relaxed text-mp-ink-muted">
+        ส่งข้อเสนอแนะ ร้องเรียนการบริการ หรือติดต่อเจรจาพาร์ทเนอร์ทางธุรกิจ รวมถึงการส่งเอกสารใบกำกับภาษีอย่างเป็นทางการ
+      </p>
+      <div className="mt-5 space-y-1">
+        <p className="text-lg font-bold text-mp-warning">support@basketplace.com</p>
+        <p className="text-xs text-mp-ink-muted">ติดต่อกลับภายใน 24 ชั่วโมงทำการ</p>
+      </div>
+    </div>
+  </div>
+
+  {/* Head Office */}
+  <div className="mp-card-lift rounded-2xl border border-mp-border bg-white p-6 shadow-sm transition duration-200 hover:shadow-md flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-4">
+        <div className="rounded-xl bg-mp-cream-alt p-3 text-mp-ink">
+          <Building2 className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-mp-ink">สำนักงานใหญ่</h3>
+          <span className="text-[10px] font-semibold text-mp-ink-muted uppercase tracking-wider">ติดต่อตามนัดหมาย</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs sm:text-sm leading-relaxed text-mp-ink-muted">
+        บริษัท บาสเก็ตเพลส จำกัด (สำนักงานใหญ่) <br />
+        เลขที่ 123 อาคารสเปซทาวเวอร์ ชั้น 15 ถนนพหลโยธิน แขวงสามเสนใน เขตพญาไท กรุงเทพฯ 10400
+      </p>
+      <div className="mt-5 text-xs text-mp-coral font-medium">
+        *โปรดทำการติดต่อและนัดหมายล่วงหน้าก่อนเข้าพบเจ้าหน้าที่
+      </div>
+    </div>
+  </div>
+</div>
+
+---
+
+## <div className="flex items-center gap-2 text-mp-forest"><Clock className="h-5 w-5" /><span>ระยะเวลาการตอบกลับและดำเนินการโดยประมาณ</span></div>
+
+เพื่อการให้บริการที่รวดเร็ว ทีมงานของเราจะคัดกรองจัดลำดับและช่วยเหลือตามระดับความเร่งด่วนของเคส:
+
+- **ปัญหาด้านการทำธุรกรรม (ชำระเงินไม่ผ่าน/โดนตัดยอดแต่ล้มเหลว):** ดำเนินการตรวจสอบด่วนที่สุดภายใน 1 ชั่วโมง
+- **การประสานงานขอเปลี่ยน คืนสินค้า หรือพัสดุชำรุดจากการขนส่ง:** ตรวจสอบข้อมูลภายใน 24 ชั่วโมง
+- **การออกเอกสารใบกำกับภาษีเต็มรูปแบบ:** จัดการและจัดส่งภายใน 3-5 วันทำการ
+- **ติดต่อด้านพันธมิตรแบรนด์หรือลงทะเบียนเปิดร้านค้า:** ติดต่อกลับเสนอแผนงานภายใน 1-3 วันทำการ
+
+---
+
+ต้องการกลับไปตรวจสอบข้อมูลความช่วยเหลือในหัวข้ออื่น? [ศูนย์ช่วยเหลือหลัก](/help)

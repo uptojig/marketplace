@@ -522,7 +522,7 @@ function ItemRow({
               {isRejected ? (
                 <span>ถูกปฏิเสธ — จะไม่ถูกแปล (เหตุ: {item.product.ipReason})</span>
               ) : (
-                <span>ยังไม่ได้แปล กดปุ่ม "แปลทั้งหมด" ด้านบน</span>
+                <span>ยังไม่ได้แปล กดปุ่ม &quot;แปลทั้งหมด&quot; ด้านบน</span>
               )}
             </div>
           )}

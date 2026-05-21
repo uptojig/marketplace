@@ -164,7 +164,7 @@ export function InkstonePaperHomepage({
       <section className="bg-[#3a2e22] text-[#f7f1e3] py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <span className="text-[#c9974b] font-[family:var(--font-kanit)] text-xl italic tracking-widest">
-            The Maker's Mark
+            The Maker&apos;s Mark
           </span>
           <h2 className="text-3xl md:text-5xl font-[family:var(--font-kanit)] font-light leading-snug">
             ศิลปะแห่งการเขียน <br className="hidden md:block" /> ที่สืบทอดจากรุ่นสู่รุ่น

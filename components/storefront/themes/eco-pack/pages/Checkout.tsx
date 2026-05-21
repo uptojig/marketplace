@@ -119,7 +119,7 @@ export function Checkout({ items, address, shippingOptions, paymentMethods, curr
                  <CheckCircle2 size={40} />
                </div>
                <h2 className="text-2xl font-bold text-[var(--shop-ink)] mb-2">Order Confirmed!</h2>
-               <p className="text-[var(--shop-ink-muted)] mb-8">Thank you for your eco-friendly choice. We've sent a confirmation email to you.</p>
+               <p className="text-[var(--shop-ink-muted)] mb-8">Thank you for your eco-friendly choice. We&apos;ve sent a confirmation email to you.</p>
                <a href={shopUrl} className="text-[var(--shop-primary)] font-medium hover:underline">Continue Shopping</a>
             </div>
           )}

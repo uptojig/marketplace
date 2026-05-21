@@ -256,7 +256,7 @@ export async function createStoreAndRedirect(state: WizardState) {
   // extra store) → admin store-detail view, since /dashboard is hard-
   // wired to render only the session user's own store.
   if (result.ownedBySession) {
-    redirect(`/dashboard?store=${result.slug}`);
+    redirect(`/dashboard?storeSlug=${result.slug}`);
   } else {
     redirect(`/admin/stores/${result.storeId}`);
   }

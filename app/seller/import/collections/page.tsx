@@ -38,7 +38,7 @@ export default function CollectionsListPage() {
           <Card className="flex flex-col items-center py-16 text-center">
             <FolderPlus className="h-12 w-12 text-muted-foreground/50" />
             <p className="mt-3 text-sm text-muted-foreground">
-              ยังไม่มีคอลเลคชั่น ไปค้นหาสินค้าแล้วกด "เพิ่มในคอลเลคชั่น"
+              ยังไม่มีคอลเลคชั่น ไปค้นหาสินค้าแล้วกด &quot;เพิ่มในคอลเลคชั่น&quot;
             </p>
             <Button asChild className="mt-4">
               <Link href="/seller/import">ไปค้นหาสินค้า</Link>

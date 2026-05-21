@@ -165,7 +165,7 @@ export function FilterSidebar({ onApply }: FilterSidebarProps) {
               key={top.slug}
               top={top.slug}
               label={top.label}
-              children={top.children?.map((c) => ({ slug: c.slug, label: c.label })) ?? []}
+              childCategories={top.children?.map((c) => ({ slug: c.slug, label: c.label })) ?? []}
               selected={f.selectedCategories}
               onToggle={toggleCategory}
             />
@@ -504,18 +504,18 @@ function Chip({
 function CategoryGroup({
   top,
   label,
-  children,
+  childCategories,
   selected,
   onToggle,
 }: {
   top: string;
   label: string;
-  children: Array<{ slug: string; label: string }>;
+  childCategories: Array<{ slug: string; label: string }>;
   selected: string[];
   onToggle: (slug: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const childSelectedCount = children.filter((c) => selected.includes(c.slug)).length;
+  const childSelectedCount = childCategories.filter((c) => selected.includes(c.slug)).length;
   const isTopSelected = selected.includes(top);
 
   return (
@@ -541,7 +541,7 @@ function CategoryGroup({
       </div>
       {open && (
         <div className="ml-5 mt-0.5 space-y-0.5">
-          {children.map((c) => (
+          {childCategories.map((c) => (
             <label
               key={c.slug}
               className="flex cursor-pointer items-center gap-1.5 py-0.5 text-[11px]"

@@ -36,11 +36,12 @@ export function ApplyStartButton({ agentLinkCode }: ApplyStartButtonProps) {
       const data = await res.json().catch(() => ({}));
       const sid = data.session_id ?? data.id;
       if (sid) {
-        // Keep the ref parameter in the URL when transitioning to the wizard
+        // Keep the opaque invite code (`c`) in the URL when transitioning
+        // to the wizard.
         const queryParams = new URLSearchParams();
         queryParams.set("sid", sid);
         if (agentLinkCode) {
-          queryParams.set("ref", agentLinkCode);
+          queryParams.set("c", agentLinkCode);
         }
         router.push(`/apply?${queryParams.toString()}`);
         router.refresh();

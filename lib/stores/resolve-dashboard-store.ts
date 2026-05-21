@@ -161,7 +161,13 @@ export async function resolveDashboardStore(
   if (!store) {
     // Signed-in user with no owned store and either not admin OR no
     // stores exist anywhere on the platform yet.
-    redirect(noStoreRedirect);
+    if (user.role === "ADMIN") {
+      redirect("/admin");
+    } else if (user.role === "AGENT") {
+      redirect("/agent/dashboard");
+    } else {
+      redirect("/apply");
+    }
   }
 
   return {

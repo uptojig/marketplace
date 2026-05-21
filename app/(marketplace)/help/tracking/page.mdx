@@ -1,0 +1,138 @@
+import { Clipboard, ListTodo, Search, ExternalLink, HelpCircle, ArrowRight, UserCheck } from 'lucide-react';
+
+export const metadata = {
+  title: 'การติดตามสถานะพัสดุ — Basketplace',
+};
+
+# การติดตามสถานะพัสดุ
+
+ปรับปรุงล่าสุด: 21 พฤษภาคม 2026
+
+หลังจากที่คุณทำการสั่งซื้อและชำระเงินเรียบร้อยแล้ว ร้านผู้ขายจะดำเนินการเตรียมแพ็คสินค้าและทำการส่งออกภายใน 1-3 วันทำการ คุณสามารถเช็คตำแหน่งและสถานะจัดส่งอัปเดตแบบเรียลไทม์ได้ตลอดเวลา
+
+---
+
+## 🔍 วิธีการตรวจสอบสถานะพัสดุบน Basketplace
+
+การเช็คสถานะพัสดุผ่านบัญชีผู้ใช้งานของคุณ มีขั้นตอนง่ายๆ ดังนี้:
+
+<div className="relative border-l-2 border-mp-forest/30 pl-8 ml-6 my-10 space-y-10 not-prose">
+  {/* Step 1 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-forest text-white font-bold shadow-md">1</div>
+    <div className="flex items-center gap-3">
+      <UserCheck className="h-5 w-5 text-mp-forest" />
+      <h3 className="text-base sm:text-lg font-bold text-mp-ink">เข้าสู่หน้า "การสั่งซื้อของฉัน"</h3>
+    </div>
+    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-mp-ink-muted">
+      ล็อคอินเข้าสู่ระบบของคุณ จากนั้นคลิกที่รูปโปรไฟล์ที่แถบนำทางขวาบน เลือกเมนู **"การสั่งซื้อของฉัน"** หรือสามารถเข้าไปโดยตรงที่ลิงก์ [/account/orders](/account/orders)
+    </p>
+  </div>
+
+  {/* Step 2 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-forest text-white font-bold shadow-md">2</div>
+    <div className="flex items-center gap-3">
+      <ListTodo className="h-5 w-5 text-mp-forest" />
+      <h3 className="text-base sm:text-lg font-bold text-mp-ink">เลือกรายการคำสั่งซื้อที่ต้องการตรวจสอบ</h3>
+    </div>
+    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-mp-ink-muted">
+      ในรายการออเดอร์ ค้นหาเลขที่คำสั่งซื้อที่คุณต้องการตรวจสอบ จากนั้นกดปุ่ม **"ดูรายละเอียด"** หรือคลิกที่รายการสินค้าเพื่อเปิดดูข้อมูลแบบเต็มรูปแบบ
+    </p>
+  </div>
+
+  {/* Step 3 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-forest text-white font-bold shadow-md">3</div>
+    <div className="flex items-center gap-3">
+      <Clipboard className="h-5 w-5 text-mp-forest" />
+      <h3 className="text-base sm:text-lg font-bold text-mp-ink">คัดลอกเลขพัสดุหรือคลิกลิงก์ติดตาม</h3>
+    </div>
+    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-mp-ink-muted">
+      เมื่อร้านค้าจัดส่งแล้ว จะมีข้อมูลชื่อของบริษัทผู้จัดส่ง และหมายเลขติดตามพัสดุ (Tracking Number) ปรากฏขึ้น คุณสามารถคลิกไอคอนลอกรหัส หรือกดลิงก์ติดตามด่วนระบบจะนำทางไปยังเว็บขนส่งให้อัตโนมัติ
+    </p>
+  </div>
+</div>
+
+---
+
+## 🌐 ลิงก์ตรวจสอบสถานะภายนอกโดยตรง
+
+หากคุณต้องการนำเลขพัสดุไปกรอกและติดตามอย่างละเอียด หรือโทรติดต่อประสานงานกับขนส่งแต่ละรายโดยตรง สามารถใช้ช่องทางด้านล่างนี้ได้:
+
+<div className="grid gap-4 sm:grid-cols-3 my-8 not-prose">
+  {/* Thailand Post */}
+  <a href="https://track.thailandpost.co.th/" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-2xl border border-mp-border bg-white hover:border-mp-coral/30 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+    <div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-bold text-mp-ink">ไปรษณีย์ไทย</span>
+        <ExternalLink className="h-4 w-4 text-mp-ink-muted group-hover:text-mp-coral" />
+      </div>
+      <p className="mt-2 text-xs text-mp-ink-muted">ตรวจสอบบริการส่งด่วน EMS และไปรษณีย์ลงทะเบียน</p>
+    </div>
+    <div className="mt-4 flex items-center gap-1 text-[11px] font-bold text-mp-coral">
+      <span>เช็คสถานะไปรษณีย์ไทย</span>
+      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+    </div>
+  </a>
+
+  {/* Flash */}
+  <a href="https://www.flashexpress.co.th/tracking/" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-2xl border border-mp-border bg-white hover:border-mp-coral/30 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+    <div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-bold text-mp-ink">Flash Express</span>
+        <ExternalLink className="h-4 w-4 text-mp-ink-muted group-hover:text-mp-coral" />
+      </div>
+      <p className="mt-2 text-xs text-mp-ink-muted">บริการขนส่งด่วนยอดนิยมทั่วประเทศ รวดเร็ว แม่นยำ</p>
+    </div>
+    <div className="mt-4 flex items-center gap-1 text-[11px] font-bold text-mp-coral">
+      <span>เช็คสถานะ Flash Express</span>
+      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+    </div>
+  </a>
+
+  {/* J&T */}
+  <a href="https://www.jtexpress.co.th/index/query/gzquery" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-2xl border border-mp-border bg-white hover:border-mp-coral/30 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+    <div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-bold text-mp-ink">J&T Express</span>
+        <ExternalLink className="h-4 w-4 text-mp-ink-muted group-hover:text-mp-coral" />
+      </div>
+      <p className="mt-2 text-xs text-mp-ink-muted">ติดตามสถานะขนส่ง รวดเร็ว ปลอดภัย เปิดทำการไม่มีวันหยุด</p>
+    </div>
+    <div className="mt-4 flex items-center gap-1 text-[11px] font-bold text-mp-coral">
+      <span>เช็คสถานะ J&T Express</span>
+      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+    </div>
+  </a>
+</div>
+
+---
+
+## ❓ คำถามที่พบบ่อยด้านการติดตาม
+
+<div className="space-y-4 my-8 not-prose">
+  <div className="rounded-xl border border-mp-border bg-mp-surface p-5">
+    <h4 className="flex items-center gap-2 font-bold text-mp-ink text-sm sm:text-base">
+      <HelpCircle className="h-5 w-5 text-mp-coral shrink-0" />
+      ผู้ขายแจ้งจัดส่งแล้ว แต่ทำไมค้นหาเลขพัสดุในเว็บขนส่งไม่พบข้อมูล?
+    </h4>
+    <p className="mt-2 text-xs sm:text-sm text-mp-ink-muted leading-relaxed pl-7">
+      หลังจากที่ร้านค้าแพ็คของและพิมพ์บาร์โค้ดแล้ว ขนส่งจะทำการเข้ารับพัสดุและนำเข้าสู่ระบบคัดแยกส่วนกลาง ซึ่งอาจใช้เวลาประมวลผล 4-12 ชั่วโมงในการอัปเดตเข้าระบบอินเทอร์เน็ต แนะนำให้รอเวลาและเช็คสถานะอีกครั้งในช่วงเย็นของวันนั้นๆ
+    </p>
+  </div>
+
+  <div className="rounded-xl border border-mp-border bg-mp-surface p-5">
+    <h4 className="flex items-center gap-2 font-bold text-mp-ink text-sm sm:text-base">
+      <HelpCircle className="h-5 w-5 text-mp-coral shrink-0" />
+      ทำไมสั่งซื้อสินค้าออเดอร์เดียว แต่ได้เลขติดตามและพัสดุหลายกล่องแยกกัน?
+    </h4>
+    <p className="mt-2 text-xs sm:text-sm text-mp-ink-muted leading-relaxed pl-7">
+      เนื่องจาก Basketplace เป็นระบบ Marketplace ที่มีร้านค้าผู้ขายอิสระหลายราย หากในตะกร้าของคุณมีสินค้าจากมากกว่าหนึ่งร้านค้า ร้านค้าแต่ละแห่งจะทำการแยกแพ็คกล่องและส่งออกจากโกดังของตัวเอง ทำให้คุณได้รับเลขติดตามพัสดุและเวลาจัดส่งของแต่ละชิ้นแยกต่างหาก
+    </p>
+  </div>
+</div>
+
+---
+
+พบปัญหาพัสดุตกหล่นหรือล่าช้าเกินกำหนด? [ติดต่อฝ่ายบริการลูกค้าของ Basketplace](/help/contact)

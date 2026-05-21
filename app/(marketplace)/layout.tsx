@@ -1,7 +1,8 @@
 /**
  * Marketplace shell — the brand-side chrome that wraps every page
- * under `app/(marketplace)/*` (home, /signin, /signup, /apply,
- * /create-store, /dashboard, etc.).
+ * under `app/(marketplace)/*` (home, /signin, /signup, /apply, etc.).
+ * Operator workspaces (`/admin`, `/dashboard`, `/agent/*`) live in
+ * `app/(operator)` so they use their own dashboard chrome.
  *
  * Replaces the original 39-line MVP placeholder (text "Marketplace"
  * logo + 2-link nav + dev-copy footer). The new shell pulls in:

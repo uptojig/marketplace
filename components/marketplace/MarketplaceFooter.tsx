@@ -21,14 +21,12 @@ interface FooterLink {
 
 const COL_PRODUCT: ReadonlyArray<FooterLink> = [
   { label: 'ตัวอย่างร้านค้า', href: '/stores' },
-  { label: 'เปิดร้านใหม่', href: '/apply' },
   { label: 'ราคา', href: '/#pricing' },
   { label: 'คุณสมบัติ', href: '/#why-us' },
 ];
 
 const COL_START: ReadonlyArray<FooterLink> = [
   { label: 'วิธีใช้งาน', href: '/help/how-to-order' },
-  { label: 'สมัครเป็นผู้ขาย', href: '/apply' },
   { label: 'เลือกธีมร้าน', href: '/#featured' },
   { label: 'ระบบจ่ายเงิน', href: '/help/how-to-pay' },
 ];

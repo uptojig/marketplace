@@ -1,0 +1,131 @@
+import { Ban, CheckCircle2, AlertCircle, HelpCircle, XCircle, Info } from 'lucide-react';
+
+export const metadata = {
+  title: 'การยกเลิกคำสั่งซื้อ — Basketplace',
+};
+
+# การยกเลิกคำสั่งซื้อ
+
+ปรับปรุงล่าสุด: 21 พฤษภาคม 2026
+
+หากคุณต้องการเปลี่ยนใจ เปลี่ยนแปลงข้อมูล หรือเลือกซื้อผิดพลาด คุณสามารถทำเรื่องยกเลิกรายการออเดอร์คำสั่งซื้อของคุณได้ตามเงื่อนไขที่แพลตฟอร์มกำหนดไว้ด้านล่างนี้
+
+---
+
+## 🚦 เงื่อนไขและสถานะความสามารถในการยกเลิกออเดอร์
+
+การทำรายการขอยกเลิกคำสั่งซื้อจะขึ้นอยู่กับ **ขั้นตอนจัดส่ง** ของสินค้าเป็นหลักสำคัญ โดยมีรายละเอียด 3 รูปแบบ ดังนี้:
+
+<div className="grid gap-6 sm:grid-cols-3 my-8 not-prose">
+  {/* Status 1 */}
+  <div className="rounded-2xl border border-mp-forest/20 bg-mp-forest/5 p-6 flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-3">
+        <div className="rounded-lg bg-mp-forest/10 p-2 text-mp-forest">
+          <CheckCircle2 className="h-5 w-5" />
+        </div>
+        <h3 className="font-bold text-mp-forest text-sm">1. รอจัดเตรียมสินค้า</h3>
+      </div>
+      <span className="mt-2 inline-block rounded-full bg-mp-forest/15 px-2 py-0.5 text-[10px] font-bold text-mp-forest uppercase">ยกเลิกได้ทันที</span>
+      <p className="mt-3 text-xs leading-relaxed text-mp-ink-muted">
+        พัสดุยังไม่เริ่มจัดเตรียมหรือบรรจุกล่อง คุณสามารถกดยกเลิกในระบบได้เองทันที ยอดเงินคืนอนุมัติกลับอัตโนมัติ
+      </p>
+    </div>
+  </div>
+
+  {/* Status 2 */}
+  <div className="rounded-2xl border border-mp-warning/30 bg-mp-warning/5 p-6 flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-3">
+        <div className="rounded-lg bg-mp-warning/20 p-2 text-mp-warning">
+          <Info className="h-5 w-5" />
+        </div>
+        <h3 className="font-bold text-mp-warning text-sm">2. กำลังจัดเตรียมสินค้า</h3>
+      </div>
+      <span className="mt-2 inline-block rounded-full bg-mp-warning/20 px-2 py-0.5 text-[10px] font-bold text-mp-warning uppercase">ต้องรอร้านค้ากดยืนยัน</span>
+      <p className="mt-3 text-xs leading-relaxed text-mp-ink-muted">
+        ร้านค้ายืนยันรับออเดอร์และอยู่ในขั้นเตรียมแพ็คของ ปุ่มยกเลิกจะส่งคำขอไปยังระบบร้านค้าเพื่อกดยอมรับยกเลิกคำขอร่วมกัน
+      </p>
+    </div>
+  </div>
+
+  {/* Status 3 */}
+  <div className="rounded-2xl border border-mp-coral/20 bg-mp-coral/5 p-6 flex flex-col justify-between">
+    <div>
+      <div className="flex items-center gap-3">
+        <div className="rounded-lg bg-mp-coral/10 p-2 text-mp-coral">
+          <XCircle className="h-5 w-5" />
+        </div>
+        <h3 className="font-bold text-mp-coral text-sm">3. สินค้าถูกจัดส่งแล้ว</h3>
+      </div>
+      <span className="mt-2 inline-block rounded-full bg-mp-coral/15 px-2 py-0.5 text-[10px] font-bold text-mp-coral uppercase">ไม่สามารถยกเลิกได้</span>
+      <p className="mt-3 text-xs leading-relaxed text-mp-ink-muted">
+        พัสดุเข้าสู่กระบวนการนำจ่ายของขนส่งแล้ว โปรดรอเซ็นรับสินค้าและใช้สิทธิ์ขอคืนตาม [นโยบายการคืนสินค้า](/help/returns)
+      </p>
+    </div>
+  </div>
+</div>
+
+---
+
+## 📱 ขั้นตอนวิธีการกดยกเลิกคำสั่งซื้อบนเว็บไซต์
+
+คุณสามารถดำเนินการขอยกเลิกคำสั่งซื้อผ่านเมนูส่วนตัวได้ดังขั้นตอนต่อไปนี้:
+
+<div className="relative border-l-2 border-mp-coral/30 pl-8 ml-6 my-10 space-y-8 not-prose">
+  {/* Step 1 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">1</div>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">เปิดหน้าประวัติคำสั่งซื้อ</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">
+      ไปที่เมนูประวัติการสั่งซื้อ หรือลิงก์บัญชีผู้ใช้อ้างอิงโดยตรง [/account/orders](/account/orders)
+    </p>
+  </div>
+
+  {/* Step 2 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">2</div>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">กดปุ่มยกเลิกรายการ</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">
+      เลือกคำสั่งซื้อที่ต้องการกดยกเลิก และกดปุ่ม **"ยกเลิกคำสั่งซื้อ"** (ปุ่มนี้จะแสดงผลเฉพาะออเดอร์ที่ยังไม่เสร็จสิ้นการส่งมอบของ)
+    </p>
+  </div>
+
+  {/* Step 3 */}
+  <div className="relative">
+    <div className="absolute -left-12.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-mp-coral text-white font-bold shadow-md">3</div>
+    <h3 className="font-bold text-mp-ink text-sm sm:text-base">ระบุเหตุผลในการยกเลิกและยืนยัน</h3>
+    <p className="mt-1 text-xs sm:text-sm text-mp-ink-muted leading-relaxed">
+      เลือกระบุสาเหตุที่ต้องการขอยกเลิก (เช่น กรอกที่อยู่ผิด, ลืมใส่ส่วนลด, เปลี่ยนใจ) จากนั้นกดยืนยันเพื่อบันทึกประวัติเข้าระบบ
+    </p>
+  </div>
+</div>
+
+---
+
+## 💸 นโยบายและระยะเวลาคืนยอดเงินหลังยกเลิกเสร็จสิ้น
+
+การยกเลิกที่เสร็จสมบูรณ์ ระบบจะทำรายการคืนเงินเข้าบัญชีเดิมให้เต็มจำนวนโดยไม่มีค่าปรับการบริการ:
+
+- **PromptPay QR / Anypay Wallet:** ยอดเงินจะถูกโอนกลับเข้าสู่บัญชีปลายทางและกระเป๋าเงินทันทีใน 1-3 นาที
+- **บัตรเครดิต / เดบิต:** ยอดวงเงินคืนเข้าบัตรเดิมของคุณภายใน 7-14 วันทำการ (ขึ้นอยู่กับประมวลผลรอบบัญชีธนาคารต้นสังกัด)
+
+---
+
+## ⚠️ คำเตือนสำคัญเรื่องอัตรายกเลิกบ่อยครั้ง
+
+<div className="my-8 rounded-2xl border border-mp-warning/35 bg-mp-warning/5 p-6 flex flex-col sm:flex-row gap-5 items-start not-prose">
+  <div className="rounded-xl bg-mp-warning/20 p-3 text-mp-warning shrink-0 animate-pulse">
+    <AlertCircle className="h-8 w-8" />
+  </div>
+  <div className="space-y-2">
+    <h3 className="text-lg font-bold text-mp-warning">จำกัดสิทธิ์ผู้ใช้ที่มีการปฏิเสธหรือยกเลิกบ่อยเกินไป</h3>
+    <p className="text-sm leading-relaxed text-mp-ink/90">
+      หากผู้ใช้งานมีการยกเลิกรายการออเดอร์ในระยะเวลากระชั้นชิดบ่อยครั้ง หรือทำเรื่องปฏิเสธการเซ็นรับของปลายทาง (COD) เกิน 3 ครั้ง ภายในระยะเวลา 30 วันติดต่อกัน ระบบความปลอดภัยอาจพิจารณาจำกัดสิทธิ์การสั่งชำระเงินด้วยช่องทาง COD ชั่วคราวเพื่อปกป้องสิทธิ์ในการจัดเตรียมงานของร้านค้าผู้ขาย
+    </p>
+  </div>
+</div>
+
+---
+
+ต้องการประสานงานหรือกดยกเลิกสินค้าไม่สำเร็จ? [ติดต่อประสานงานแอดมินฝ่ายบริการลูกค้า](/help/contact)

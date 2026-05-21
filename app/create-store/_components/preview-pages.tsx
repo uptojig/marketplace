@@ -28,7 +28,7 @@
  */
 
 import { useState } from "react";
-import { getTemplate, type Template } from "@/lib/store/wizard-data";
+import { getTemplate, type Behavior, type Template } from "@/lib/store/wizard-data";
 import { themeColorsFor } from "@/lib/storefront/theme-vars";
 
 export type PageKey =
@@ -64,6 +64,13 @@ type Family =
   | "packaging"
   | "community"
   | "default";
+
+type PreviewBehavior = Partial<
+  Omit<Behavior, "liveBlock" | "storyBlock"> & {
+    liveBlock: Behavior["liveBlock"] | "visible" | "hidden";
+    storyBlock: Behavior["storyBlock"] | "inline-visible" | "hidden";
+  }
+>;
 
 // Family is derived from the template's design `group` in PageMockup (the same
 // collapse the real resolveContentThemeKey does) — no separate templateId→family
@@ -342,7 +349,7 @@ export function PageMockup({
   // Behavior flags drive template-level variation inside the same family
   // (e.g. official-brand vs classic vs premium-luxury — all "trust"). The
   // home mock reads these so templates differ visibly in the wizard preview.
-  const b = template?.behavior ?? {};
+  const b: PreviewBehavior = template?.behavior ?? {};
 
   const shell = (children: React.ReactNode) => (
     <div
@@ -356,8 +363,7 @@ export function PageMockup({
 
   switch (page) {
     case "home":
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wizard-data `Behavior` and HomeMock's inline behavior shape diverged across the PR #105 / per-template merge; the actual fields consumed are a subset and runtime-safe.
-      return shell(<HomeMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} behavior={b as any} />);
+      return shell(<HomeMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} behavior={b} />);
     case "category":
       return shell(<CategoryMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
     case "pdp":
@@ -524,23 +530,15 @@ function HomeMock({
   eyebrow: string;
   title: string;
   headingFont: string;
-  behavior: Partial<{
-    countdownBanner: 'visible' | 'hidden';
-    badgeSlot: 'official' | 'b2b' | 'condition' | 'performance';
-    productCardStyle: 'default' | 'minimal' | 'editorial' | 'spec-rows';
-    hideRatingsCount: boolean;
-    heroSize: 'cover' | 'large' | 'portrait' | 'video' | 'live-tile' | 'none';
-    storyBlock: 'inline-visible' | 'hidden';
-    liveBlock: 'visible' | 'hidden';
-  }>;
+  behavior: PreviewBehavior;
 }) {
   const showCountdown = behavior.countdownBanner === 'visible' || family === 'business-model';
   const isOfficial = behavior.badgeSlot === 'official';
   const isMinimalCards = behavior.productCardStyle === 'minimal';
   const isEditorialCards = behavior.productCardStyle === 'editorial';
   const isLargeHero = behavior.heroSize === 'large' || behavior.heroSize === 'cover';
-  const hasStoryBlock = behavior.storyBlock === 'inline-visible';
-  const hasLiveBlock = behavior.liveBlock === 'visible';
+  const hasStoryBlock = behavior.storyBlock === true || behavior.storyBlock === 'inline-visible';
+  const hasLiveBlock = behavior.liveBlock === true || behavior.liveBlock === 'visible';
   return (
     <div className="px-4 py-4 space-y-3">
       {/* Optional countdown stripe — fires when template.behavior says so

@@ -124,8 +124,9 @@
   --color-destructive-foreground: var(--destructive-foreground);
 
   /* Marketplace shell brand tokens (Editorial Merchant — Stitch DESIGN.md).
-     Used by basketplace.co/, /apply, /signin, /create-store, dashboard +
-     admin chrome. Vendor storefronts use `--shop-*` instead — keep the
+     Used by basketplace.co/, /apply, /signin, /signup, /create-store.
+     Operator workspaces use shadcn/radix semantic tokens instead.
+     Vendor storefronts use `--shop-*` instead — keep the
      namespaces separate so a theme swap on either side can never bleed
      into the other. Source: lib/landing/marketplace.ts. */
   --color-mp-coral: #e85d3c;
@@ -272,6 +273,62 @@
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
   }
+
+  /* ── Operator workspace theme (BackOffice / vendor / agent) ──
+     Remaps the shadcn semantic tokens to the warm Editorial-Merchant
+     palette (the Orders/BackOffice look) so every operator page +
+     primitive renders coral/cream/ink WITHOUT each page hardcoding
+     mp-* utilities. Values mirror the --color-mp-* brand tokens
+     defined in @theme inline above (coral #e85d3c, cream #faf7f2,
+     surface #fcf9f8, cream-alt #f0ebe2, ink #1a1a1a, ink-muted
+     #6b6b6b, border #e5ddd0).
+
+     Two selectors on purpose:
+       .theme-operator                  — wraps in-tree page content
+                                          (SSR-correct, no flash).
+       body[data-operator-theme="true"] — Radix overlays (Dialog,
+                                          Select, Popover, DropdownMenu)
+                                          portal to <body>, OUTSIDE the
+                                          .theme-operator subtree. The
+                                          body attribute (toggled by
+                                          OperatorThemeBody on operator
+                                          routes) makes portalled
+                                          surfaces inherit the same
+                                          palette so overlays match the
+                                          page behind them. Operator is
+                                          light-only — no .dark variant. */
+  .theme-operator,
+  body[data-operator-theme="true"] {
+    --background: #faf7f2;
+    --foreground: #1a1a1a;
+    --card: #fcf9f8;
+    --card-foreground: #1a1a1a;
+    --popover: #fcf9f8;
+    --popover-foreground: #1a1a1a;
+    --primary: #e85d3c;
+    --primary-foreground: #ffffff;
+    --secondary: #f0ebe2;
+    --secondary-foreground: #1a1a1a;
+    --muted: #f0ebe2;
+    --muted-foreground: #6b6b6b;
+    --accent: #f0ebe2;
+    --accent-foreground: #1a1a1a;
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: #ffffff;
+    --border: #e5ddd0;
+    --input: #e5ddd0;
+    --ring: #e85d3c;
+    /* OperatorShell chrome (reads --color-sidebar-* via the shell). */
+    --sidebar: #fcf9f8;
+    --sidebar-foreground: #1a1a1a;
+    --sidebar-primary: #e85d3c;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f0ebe2;
+    --sidebar-accent-foreground: #1a1a1a;
+    --sidebar-border: #e5ddd0;
+    --sidebar-ring: #e85d3c;
+  }
+
   html {
     @apply font-sans;
   }
@@ -2586,9 +2643,8 @@
 
 /* ── Marketplace shell (Editorial Merchant — Stitch DESIGN.md) ──────
    Activated when app/(marketplace)/layout.tsx adds the
-   `theme-marketplace` class for the platform-side pages:
-     /, /apply, /signin, /signup, /create-store,
-     /dashboard chrome, /admin chrome.
+   `theme-marketplace` class for the public platform-side pages:
+     /, /apply, /signin, /signup, /create-store.
 
    Token namespace is `--mp-*` (vs `--shop-*` for vendor templates) so
    touching one cascade cannot leak into the other. Brand source of
@@ -2596,6 +2652,35 @@
    utilities are exported via @theme inline above so components can
    write `bg-mp-coral`, `text-mp-ink`, etc. directly. */
 .theme-marketplace {
+  --background: #faf7f2;
+  --foreground: #1a1a1a;
+  --card: #fcf9f8;
+  --card-foreground: #1a1a1a;
+  --popover: #fcf9f8;
+  --popover-foreground: #1a1a1a;
+  --primary: #e85d3c;
+  --primary-foreground: #ffffff;
+  --secondary: #f0ebe2;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f0ebe2;
+  --muted-foreground: #6b6b6b;
+  --accent: #f0ebe2;
+  --accent-foreground: #1a1a1a;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --border: #e5ddd0;
+  --input: #e5ddd0;
+  --ring: #e85d3c;
+  /* Sidebar tokens */
+  --sidebar: #fcf9f8;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #e85d3c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0ebe2;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #e5ddd0;
+  --sidebar-ring: #e85d3c;
+
   background-color: var(--color-mp-cream);
   color: var(--color-mp-ink);
   /* IBM Plex Sans Thai for editorial headings (h1/h2/h3 only — body

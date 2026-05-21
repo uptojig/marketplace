@@ -1,7 +1,7 @@
 /**
  * Marketplace shell tokens — the brand-side design system for
- * basketplace.co's own pages (home, /apply, /signin, /create-store,
- * /dashboard chrome, /admin chrome).
+ * basketplace.co's own pages (home, /apply, /signin, /create-store).
+ * Operator workspaces use the shadcn/radix operator shell instead.
  *
  * Sibling of lib/landing/{business-model,trust,fashion-beauty,...}.ts —
  * but those theme PER-STORE vendor templates. This one themes the
@@ -36,7 +36,7 @@ export const MARKETPLACE_TOKENS = {
   description:
     'Warm coral + forest green + cream palette for the Basketplace platform shell. ' +
     'IBM Plex Sans Thai headings, Prompt body, JetBrains Mono numerics. ' +
-    'Used on basketplace.co/, /apply, /signin, /create-store, and dashboard/admin chrome.',
+    'Used on basketplace.co/, /apply, /signin, /signup, and /create-store.',
   colors: {
     primary: '#E85D3C',          // warm coral — CTAs
     primaryDark: '#A93013',      // M3-derived deeper coral — hover

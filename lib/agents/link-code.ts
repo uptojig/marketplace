@@ -1,14 +1,14 @@
 const SAFE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 /**
- * Generates a random alphanumeric code with "AGEN-" prefix.
- * e.g., "AGEN-X7K9"
+ * Generates a random 6-char alphanumeric code with no prefix.
+ * e.g., "X7K9AB" — deliberately neutral so an invite link never hints
+ * at an "agent" / referral system to the vendor receiving it.
  */
 export function generateLinkCode(): string {
-  const suffix = Array.from({ length: 4 }, () =>
+  return Array.from({ length: 6 }, () =>
     SAFE_ALPHABET[Math.floor(Math.random() * SAFE_ALPHABET.length)]
   ).join("");
-  return `AGEN-${suffix}`;
 }
 
 /**

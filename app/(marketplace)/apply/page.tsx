@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import {
   Clock,
   ShieldCheck,
@@ -8,7 +9,6 @@ import {
   Hourglass,
   ArrowRight,
   MessageCircle,
-  AlertCircle,
 } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -47,7 +47,7 @@ const IN_PROGRESS = new Set([
 export default async function ApplyPage({
   searchParams,
 }: {
-  searchParams: { retry?: string; sid?: string; ref?: string };
+  searchParams: { retry?: string; sid?: string; c?: string };
 }) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
@@ -72,7 +72,7 @@ export default async function ApplyPage({
     hasAgentBound = !!dbUser?.agentId;
 
     if (!isBypassedRole && !hasAgentBound) {
-      const refParam = searchParams.ref?.trim().toUpperCase();
+      const refParam = searchParams.c?.trim().toUpperCase();
       if (!refParam) {
         return <KycLocalRefGate />;
       }
@@ -81,31 +81,13 @@ export default async function ApplyPage({
         select: { id: true, displayName: true, status: true },
       });
       if (!agent || agent.status !== "ACTIVE") {
-        return (
-          <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-mp-cream px-6">
-            <div className="w-full max-w-[400px] text-center">
-              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 text-left text-red-700">
-                <AlertCircle className="w-6 h-6 shrink-0 mb-2" />
-                <h3 className="text-[16px] font-semibold mb-1">Link Code ไม่ถูกต้อง หรือไม่พร้อมใช้งาน 🔒</h3>
-                <p className="text-[14px] leading-relaxed text-red-700/80">
-                  รหัสแนะนำตัวแทน "{refParam}" ที่คุณใช้งาน ไม่พบบัญชีตัวแทนในระบบ หรือยังไม่ได้รับการอนุมัติ กรุณาติดต่อตัวแทนของคุณอีกครั้ง
-                </p>
-              </div>
-              <Link
-                href="/agent/register"
-                className="flex w-full h-11 items-center justify-center rounded-xl bg-mp-coral text-[15px] font-semibold text-white hover:bg-mp-coral-dark transition-all"
-              >
-                สมัครเป็นตัวแทน (Agent)
-              </Link>
-            </div>
-          </div>
-        );
+        notFound();
       }
       validatedAgentLinkCode = refParam;
     }
   } else {
-    // Anonymous user: must have a valid ref param
-    const refParam = searchParams.ref?.trim().toUpperCase();
+    // Anonymous user: must have a valid invite code (the opaque `c` param)
+    const refParam = searchParams.c?.trim().toUpperCase();
     if (!refParam) {
       return <KycLocalRefGate />;
     }
@@ -114,25 +96,7 @@ export default async function ApplyPage({
       select: { id: true, displayName: true, status: true },
     });
     if (!agent || agent.status !== "ACTIVE") {
-      return (
-        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-mp-cream px-6">
-          <div className="w-full max-w-[400px] text-center">
-            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 text-left text-red-700">
-              <AlertCircle className="w-6 h-6 shrink-0 mb-2" />
-              <h3 className="text-[16px] font-semibold mb-1">Link Code ไม่ถูกต้อง หรือไม่พร้อมใช้งาน 🔒</h3>
-              <p className="text-[14px] leading-relaxed text-red-700/80">
-                รหัสแนะนำตัวแทน "{refParam}" ที่คุณใช้งาน ไม่พบบัญชีตัวแทนในระบบ หรือยังไม่ได้รับการอนุมัติ กรุณาติดต่อตัวแทนของคุณอีกครั้ง
-              </p>
-            </div>
-            <Link
-              href="/agent/register"
-              className="flex w-full h-11 items-center justify-center rounded-xl bg-mp-coral text-[15px] font-semibold text-white hover:bg-mp-coral-dark transition-all"
-            >
-              สมัครเป็นตัวแทน (Agent)
-            </Link>
-          </div>
-        </div>
-      );
+      notFound();
     }
     validatedAgentLinkCode = refParam;
   }

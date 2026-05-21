@@ -129,7 +129,7 @@ export function SirinHomepage({ store, products, categories }: SirinHomepageProp
           {featuredProducts.length > 1 && (
             <div className="md:col-span-5 space-y-8">
               <div className="p-8 bg-[#fce7f3] rounded-sm text-center">
-                <p className="font-[family:var(--font-prompt)] text-[#be185d] text-sm uppercase tracking-widest mb-4 font-semibold">Designer's Note</p>
+                <p className="font-[family:var(--font-prompt)] text-[#be185d] text-sm uppercase tracking-widest mb-4 font-semibold">Designer&apos;s Note</p>
                 <h3 className="font-[family:var(--font-kanit)] text-2xl text-[#3f0f24] font-semibold mb-4">Timeless Elegance</h3>
                 <p className="font-[family:var(--font-prompt)] font-normal text-[#3f0f24]/70 leading-relaxed">
                   เราเชื่อว่าเสื้อผ้าที่ดีต้องไม่เพียงแต่สวยงาม แต่ต้องสวมใส่สบาย และตอบโจทย์ชีวิตประจำวัน คอลเลกชันนี้เน้นโทนสีที่สุภาพ ตัดเย็บด้วยผ้าเนื้อดี ทิ้งตัวสวย

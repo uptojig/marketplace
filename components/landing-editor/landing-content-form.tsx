@@ -797,7 +797,7 @@ function RepeatableList<T>({
       </div>
       {items.length === 0 && (
         <p className="rounded-md border border-dashed py-6 text-center text-sm text-muted-foreground">
-          ยังไม่มีรายการ — กด "เพิ่ม" เพื่อเริ่มต้น
+          ยังไม่มีรายการ — กด &quot;เพิ่ม&quot; เพื่อเริ่มต้น
         </p>
       )}
       <div className="space-y-3">
