@@ -41,66 +41,19 @@ export const NICHES: Niche[] = [
 // This local TEMPLATES list is the wizard's lightweight catalog used for
 // preview cards + niche ranking only.
 
-export type TemplateId =
-  // Identity sub-templates (27 specific looks)
-  | "sai-sing"
-  | "talad-see-sod"
-  | "brutalist-thai"
-  | "mono-eight"
-  | "lila-modest"
-  | "atelier-27"
-  | "bulkbox-industrial"
-  | "caldera-skin"
-  | "carbon-era-cameras"
-  | "glow-lamp-co"
-  | "hinoki-apothecary"
-  | "inkstone-paper"
-  | "keystroke-lab"
-  | "korakot-house"
-  | "linen-and-loom"
-  | "mai-hatthakam"
-  | "pastel-pack"
-  | "petit-cote"
-  | "pigment-studio"
-  | "reclaim-leather"
-  | "saluki-yoga"
-  | "sirin-womenswear"
-  | "smartloop-home"
-  | "tinyhand-wooden-toys"
-  | "trailcraft-outdoors"
-  | "wavelength-audio"
-  | "yumeiro-lip"
-  // Family-default templates — written by THEME_OPTIONS when user picks
-  // the main family card (not a specific sub-template). All exist in
-  // `lib/templates/registry.ts` and are recognized by every storefront
-  // dispatcher.
-  | "classic"
-  | "lookbook"
-  | "tech-compare"
-  | "sport-active"
-  | "wholesale-b2b"
-  | "handmade"
-  | "live-commerce"
-  | "eco-pack"
-  | "bikini-beach"
-  | "mega-store"
-  | "everyday-retail"
-  | "taobao-style"
-  | "packaging-supply";
+// ─── Re-export canonical types from the rendering layer ────────────────────
+// These were previously duplicated here. Now single-source from types.ts
+// to prevent desync when templates are added or removed.
+import type {
+  TemplateId as _TemplateId,
+  TemplateGroup as _TemplateGroup,
+  DesktopPattern as _DesktopPattern,
+} from "@/lib/templates/types";
 
-export type TemplateGroup =
-  | "trust"
-  | "fashion-beauty"
-  | "electronics-tech"
-  | "lifestyle"
-  | "community"
-  | "business-model"
-  | "specialty"
-  | "everyday"
-  | "taobao"
-  | "packaging";
-
-export type DesktopPattern = "A" | "B" | "C" | "D";
+// Re-export so consumers that import from wizard-data keep working.
+export type TemplateId = _TemplateId;
+export type TemplateGroup = _TemplateGroup;
+export type DesktopPattern = _DesktopPattern;
 
 export type ThemeTokens = {
   spacing: "compact" | "default" | "airy";
