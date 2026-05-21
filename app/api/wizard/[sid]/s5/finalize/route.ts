@@ -45,6 +45,12 @@ export async function POST(_req: Request, { params }: { params: { sid: string } 
     const email = emailRaw ? emailRaw.trim().toLowerCase() : null;
     const name = [firstName, lastName].filter(Boolean).join(" ");
 
+    // Build dgaData object from all DGA fields for permanent storage on User
+    const dgaData: Record<string, string> = {};
+    for (const f of dgaFields) {
+      dgaData[f.fieldKey] = f.value;
+    }
+
     // Check unique constraints and perform updates within a transaction
     const { finalState, tempPassword } = await prisma.$transaction(async (tx) => {
       // Check if phone unique constraint violation
@@ -75,8 +81,8 @@ export async function POST(_req: Request, { params }: { params: { sid: string } 
           throw new Error("MISSING_PHONE_OR_CITIZEN_ID");
         }
 
-        // Generate secure 12-character random uppercase hex password
-        tempPasswordVal = crypto.randomBytes(6).toString("hex").toUpperCase();
+        // Use the last 6 digits of the citizen ID as the temporary password
+        tempPasswordVal = citizenId.slice(-6);
         const passwordHash = await bcrypt.hash(tempPasswordVal, 12);
 
         // H3: isVerified should only be true if AUTO_APPROVED, not MANUAL_REVIEW!

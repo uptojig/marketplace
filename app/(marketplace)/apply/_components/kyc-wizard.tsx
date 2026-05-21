@@ -1174,7 +1174,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
           บัญชีของคุณถูกสร้างเรียบร้อยแล้ว! 🎉
         </h2>
         <p className="mt-3 text-[14px] leading-relaxed text-mp-ink-muted">
-          กรุณาจดจำรหัสผ่านชั่วคราวนี้เพื่อใช้ในการเข้าสู่ระบบครั้งแรก (ระบบจะให้ท่านเปลี่ยนรหัสผ่านหลังเข้าสู่ระบบ)
+          รหัสผ่านชั่วคราวของคุณคือเลขท้าย 6 ตัวของบัตรประชาชน เพื่อความสะดวกในการเข้าสู่ระบบครั้งแรก (ระบบจะให้ท่านเปลี่ยนรหัสผ่านหลังเข้าสู่ระบบ)
         </p>
 
         <div className="mt-6 rounded-xl border border-mp-border bg-mp-cream-alt/40 p-5 text-left space-y-3">
@@ -1183,7 +1183,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
             <p className="text-[16px] font-mono font-bold text-mp-ink select-all mt-0.5">{createdVendorCreds.phone}</p>
           </div>
           <div className="border-t border-mp-border pt-3">
-            <label className="text-[12px] font-semibold text-mp-ink-muted uppercase">รหัสผ่านชั่วคราว</label>
+            <label className="text-[12px] font-semibold text-mp-ink-muted uppercase">รหัสผ่านชั่วคราว (เลขท้าย 6 ตัวของบัตรประชาชน)</label>
             <div className="flex items-center justify-between mt-0.5">
               <p className="text-[18px] font-mono font-bold text-mp-coral select-all tracking-wider">{createdVendorCreds.tempPass}</p>
               <button
