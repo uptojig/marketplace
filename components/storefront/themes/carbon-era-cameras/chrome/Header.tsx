@@ -18,7 +18,7 @@ export function CarbonEraCamerasHeader({ store, categories }: HeaderProps) {
             <button className="sm:hidden text-[#0a0a0a]">
               <Menu className="w-6 h-6" />
             </button>
-            <Link href={`/${store.slug}`} className="flex items-center gap-3">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-3">
               {store.logoUrl && (
                 <img src={store.logoUrl} alt={store.name} className="w-10 h-10 object-contain rounded-sm grayscale" />
               )}
@@ -30,7 +30,7 @@ export function CarbonEraCamerasHeader({ store, categories }: HeaderProps) {
               {categories.slice(0, 4).map((cat) => (
                 <Link
                   key={cat.id}
-                  href={`/${store.slug}/category/${cat.slug}`}
+                  href={`/stores/${store.slug}/category/${cat.slug}`}
                   className="text-sm font-[family:var(--font-prompt)] font-medium text-[#0a0a0a]/70 hover:text-[#0a0a0a] transition-colors uppercase tracking-wider"
                 >
                   {cat.name}
@@ -42,7 +42,7 @@ export function CarbonEraCamerasHeader({ store, categories }: HeaderProps) {
             <button className="text-[#0a0a0a]/70 hover:text-[#0a0a0a]">
               <Search className="w-5 h-5" />
             </button>
-            <Link href="/cart" className="relative text-[#0a0a0a]">
+            <Link href={`/stores/${storeSlug}/cart`} className="relative text-[#0a0a0a]">
               <ShoppingBag className="w-6 h-6" />
               {cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#0a0a0a] text-[#fafafa] text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full font-[family:var(--font-prompt)]">

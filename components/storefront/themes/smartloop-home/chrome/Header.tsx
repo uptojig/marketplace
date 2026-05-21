@@ -27,7 +27,7 @@ export function SmartloopHomeHeader({ store }: { store: Store }) {
       
       {/* Main header */}
       <div className="px-4 py-3 flex flex-wrap lg:flex-nowrap items-center gap-4 max-w-[1400px] mx-auto">
-        <Link href={`/${store.slug}`} className="flex items-center gap-2 flex-shrink-0">
+        <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 flex-shrink-0">
           {store.logoUrl ? (
             <img src={store.logoUrl} alt={store.name} className="h-8 object-contain bg-white p-1 rounded-sm" />
           ) : (

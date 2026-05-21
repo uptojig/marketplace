@@ -24,22 +24,22 @@ export function SalukiHeader({ storeSlug, storeName, logoUrl }: SalukiHeaderProp
             <Menu className="w-6 h-6" />
           </button>
           <nav className="hidden lg:flex items-center gap-8 text-[#0f766e] font-medium text-sm">
-            <Link href={`/${storeSlug}`} className="hover:text-[#064e3b] transition-colors">
+            <Link href={`/stores/${storeSlug}`} className="hover:text-[#064e3b] transition-colors">
               หน้าแรก
             </Link>
-            <Link href={`/${storeSlug}?category=leggings`} className="hover:text-[#064e3b] transition-colors">
+            <Link href={`/stores/${storeSlug}?category=leggings`} className="hover:text-[#064e3b] transition-colors">
               เลกกิ้ง
             </Link>
-            <Link href={`/${storeSlug}?category=tops`} className="hover:text-[#064e3b] transition-colors">
+            <Link href={`/stores/${storeSlug}?category=tops`} className="hover:text-[#064e3b] transition-colors">
               เสื้อครอป
             </Link>
-            <Link href={`/${storeSlug}?category=accessories`} className="hover:text-[#064e3b] transition-colors">
+            <Link href={`/stores/${storeSlug}?category=accessories`} className="hover:text-[#064e3b] transition-colors">
               อุปกรณ์โยคะ
             </Link>
           </nav>
         </div>
 
-        <Link href={`/${storeSlug}`} className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+        <Link href={`/stores/${storeSlug}`} className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
           {logoUrl ? (
             <img src={logoUrl} alt={storeName} className="h-10 w-auto object-contain" />
           ) : (

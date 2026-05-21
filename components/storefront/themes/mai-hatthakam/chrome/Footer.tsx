@@ -19,7 +19,7 @@ export function MaiHatthakamFooter({ store }: MaiHatthakamFooterProps) {
           
           {/* Brand Info */}
           <div className="md:col-span-5 lg:col-span-4">
-            <Link href={`/${store.slug}`} className="inline-block mb-6">
+            <Link href={`/stores/${store.slug}`} className="inline-block mb-6">
               <span className="text-2xl font-bold text-[#fef9f1] tracking-wider font-[family:var(--font-prompt)] uppercase">
                 {store.name}
               </span>
@@ -68,17 +68,17 @@ export function MaiHatthakamFooter({ store }: MaiHatthakamFooterProps) {
               <h3 className="text-sm font-semibold text-[#fef9f1] tracking-wider uppercase mb-6 font-[family:var(--font-kanit)]">ร้านค้า</h3>
               <ul className="space-y-4">
                 <li>
-                  <Link href={`/${store.slug}/c/all`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                  <Link href={`/stores/${store.slug}/c/all`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
                     สินค้าทั้งหมด
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/${store.slug}/c/new`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                  <Link href={`/stores/${store.slug}/c/new`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
                     ล็อตล่าสุด (Batch 20)
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/${store.slug}/about`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                  <Link href={`/stores/${store.slug}/about`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
                     เรื่องราวของเตาเผา
                   </Link>
                 </li>
@@ -88,17 +88,17 @@ export function MaiHatthakamFooter({ store }: MaiHatthakamFooterProps) {
               <h3 className="text-sm font-semibold text-[#fef9f1] tracking-wider uppercase mb-6 font-[family:var(--font-kanit)]">ช่วยเหลือ</h3>
               <ul className="space-y-4">
                 <li>
-                  <Link href={`/${store.slug}/faq`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                  <Link href={`/stores/${store.slug}/faq`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
                     คำถามที่พบบ่อย
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/${store.slug}/shipping`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                  <Link href={`/stores/${store.slug}/shipping`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
                     การจัดส่ง
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/${store.slug}/care`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+                  <Link href={`/stores/${store.slug}/care`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
                     การดูแลรักษาเซรามิก
                   </Link>
                 </li>
@@ -113,10 +113,10 @@ export function MaiHatthakamFooter({ store }: MaiHatthakamFooterProps) {
             &copy; {new Date().getFullYear()} {store.name}. สงวนลิขสิทธิ์
           </p>
           <div className="mt-4 md:mt-0 flex space-x-6">
-            <Link href={`/${store.slug}/terms`} className="text-xs text-[#fde8c8]/50 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+            <Link href={`/stores/${store.slug}/terms`} className="text-xs text-[#fde8c8]/50 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
               ข้อตกลงและเงื่อนไข
             </Link>
-            <Link href={`/${store.slug}/privacy`} className="text-xs text-[#fde8c8]/50 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
+            <Link href={`/stores/${store.slug}/privacy`} className="text-xs text-[#fde8c8]/50 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">
               นโยบายความเป็นส่วนตัว
             </Link>
           </div>

@@ -19,19 +19,19 @@ export function CarbonEraCamerasFooter({ store }: FooterProps) {
           <div>
             <h4 className="font-[family:var(--font-prompt)] font-bold mb-4 uppercase tracking-widest text-xs text-[#a1a1aa]">Explore</h4>
             <ul className="space-y-3 font-[family:var(--font-prompt)] text-sm">
-              <li><Link href={`/${store.slug}`} className="hover:text-white transition-colors">Leica</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-white transition-colors">Hasselblad</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-white transition-colors">Rolleiflex</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-white transition-colors">Lenses</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-white transition-colors">Leica</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-white transition-colors">Hasselblad</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-white transition-colors">Rolleiflex</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-white transition-colors">Lenses</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-[family:var(--font-prompt)] font-bold mb-4 uppercase tracking-widest text-xs text-[#a1a1aa]">Support</h4>
             <ul className="space-y-3 font-[family:var(--font-prompt)] text-sm">
-              <li><Link href={`/${store.slug}`} className="hover:text-white transition-colors">Condition Grading</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-white transition-colors">Inspection Process</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-white transition-colors">Warranty Info</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-white transition-colors">Contact Us</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-white transition-colors">Condition Grading</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-white transition-colors">Inspection Process</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-white transition-colors">Warranty Info</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-white transition-colors">Contact Us</Link></li>
             </ul>
           </div>
         </div>

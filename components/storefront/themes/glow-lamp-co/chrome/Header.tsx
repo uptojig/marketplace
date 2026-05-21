@@ -26,7 +26,7 @@ export function GlowLampCoHeader({ store }: HeaderProps) {
           <button className="md:hidden p-2 hover:bg-white/10 rounded-full transition-colors">
             <Menu className="w-5 h-5 text-[#f8fafc]" />
           </button>
-          <Link href={`/${store.slug}`} className="flex items-center gap-3 group">
+          <Link href={`/stores/${store.slug}`} className="flex items-center gap-3 group">
             {store.logoUrl ? (
               <img src={store.logoUrl} alt={store.name} className="h-10 w-auto rounded" />
             ) : (
@@ -39,9 +39,9 @@ export function GlowLampCoHeader({ store }: HeaderProps) {
         </div>
         
         <nav className="hidden md:flex gap-8 items-center font-medium relative z-10">
-          <Link href={`/${store.slug}/category/desk-lamps`} className="text-[#e2e8f0] hover:text-[#f59e0b] transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[#f59e0b] hover:after:w-full after:transition-all">โคมตั้งโต๊ะ</Link>
-          <Link href={`/${store.slug}/category/ceiling-lamps`} className="text-[#e2e8f0] hover:text-[#f59e0b] transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[#f59e0b] hover:after:w-full after:transition-all">โคมเพดาน</Link>
-          <Link href={`/${store.slug}/category/bulbs`} className="text-[#e2e8f0] hover:text-[#f59e0b] transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[#f59e0b] hover:after:w-full after:transition-all">หลอดไฟ</Link>
+          <Link href={`/stores/${store.slug}/category/desk-lamps`} className="text-[#e2e8f0] hover:text-[#f59e0b] transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[#f59e0b] hover:after:w-full after:transition-all">โคมตั้งโต๊ะ</Link>
+          <Link href={`/stores/${store.slug}/category/ceiling-lamps`} className="text-[#e2e8f0] hover:text-[#f59e0b] transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[#f59e0b] hover:after:w-full after:transition-all">โคมเพดาน</Link>
+          <Link href={`/stores/${store.slug}/category/bulbs`} className="text-[#e2e8f0] hover:text-[#f59e0b] transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-[#f59e0b] hover:after:w-full after:transition-all">หลอดไฟ</Link>
         </nav>
 
         <div className="flex items-center gap-4 text-[#f8fafc] relative z-10">

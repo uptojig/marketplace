@@ -30,7 +30,7 @@ export function PetitCoteHeader({ store, categories, cartItemCount }: HeaderProp
             >
               <Menu className="h-6 w-6" />
             </button>
-            <Link href={`/${store.slug}`} className="flex items-center ml-2 sm:ml-0">
+            <Link href={`/stores/${store.slug}`} className="flex items-center ml-2 sm:ml-0">
               {store.logoUrl ? (
                 <img src={store.logoUrl} alt={store.name} className="h-10 w-auto" />
               ) : (
@@ -43,14 +43,14 @@ export function PetitCoteHeader({ store, categories, cartItemCount }: HeaderProp
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/${store.slug}/category/${category.id}`}
+                href={`/stores/${store.slug}/category/${category.id}`}
                 className="text-sm text-[#525252] hover:text-[#fbcfe8] transition-colors uppercase tracking-widest"
               >
                 {category.name}
               </Link>
             ))}
             <Link
-              href={`/${store.slug}/registry`}
+              href={`/stores/${store.slug}/registry`}
               className="text-sm text-[#fbcfe8] font-medium flex items-center gap-1 hover:text-[#525252] transition-colors uppercase tracking-widest"
             >
               <Gift className="h-4 w-4" />
@@ -60,7 +60,7 @@ export function PetitCoteHeader({ store, categories, cartItemCount }: HeaderProp
 
           <div className="flex items-center">
             <Link
-              href={`/${store.slug}/cart`}
+              href={`/stores/${store.slug}/cart`}
               className="p-2 text-[#525252] hover:text-[#fbcfe8] transition-colors relative flex items-center"
             >
               <ShoppingBag className="h-5 w-5" />
@@ -86,7 +86,7 @@ export function PetitCoteHeader({ store, categories, cartItemCount }: HeaderProp
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/${store.slug}/category/${category.id}`}
+                href={`/stores/${store.slug}/category/${category.id}`}
                 className="text-lg text-[#525252] tracking-widest uppercase"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -94,7 +94,7 @@ export function PetitCoteHeader({ store, categories, cartItemCount }: HeaderProp
               </Link>
             ))}
             <Link
-              href={`/${store.slug}/registry`}
+              href={`/stores/${store.slug}/registry`}
               className="text-lg text-[#fbcfe8] flex items-center gap-2 font-medium tracking-widest uppercase"
               onClick={() => setMobileMenuOpen(false)}
             >

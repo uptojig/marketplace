@@ -41,16 +41,16 @@ export function SalukiFooter({ storeSlug, storeName, tagline }: SalukiFooterProp
             <h4 className="text-lg font-medium text-white mb-6">คอลเลกชัน</h4>
             <ul className="space-y-4 text-sm">
               <li>
-                <Link href={`/${storeSlug}?category=leggings`} className="hover:text-white transition-colors">เลกกิ้งรีไซเคิล</Link>
+                <Link href={`/stores/${storeSlug}?category=leggings`} className="hover:text-white transition-colors">เลกกิ้งรีไซเคิล</Link>
               </li>
               <li>
-                <Link href={`/${storeSlug}?category=tops`} className="hover:text-white transition-colors">สปอร์ตบรา & ครอป</Link>
+                <Link href={`/stores/${storeSlug}?category=tops`} className="hover:text-white transition-colors">สปอร์ตบรา & ครอป</Link>
               </li>
               <li>
-                <Link href={`/${storeSlug}?category=sets`} className="hover:text-white transition-colors">เซ็ตเข้าชุด</Link>
+                <Link href={`/stores/${storeSlug}?category=sets`} className="hover:text-white transition-colors">เซ็ตเข้าชุด</Link>
               </li>
               <li>
-                <Link href={`/${storeSlug}?category=accessories`} className="hover:text-white transition-colors">เสื่อและอุปกรณ์</Link>
+                <Link href={`/stores/${storeSlug}?category=accessories`} className="hover:text-white transition-colors">เสื่อและอุปกรณ์</Link>
               </li>
             </ul>
           </div>

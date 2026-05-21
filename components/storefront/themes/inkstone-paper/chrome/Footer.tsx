@@ -23,16 +23,16 @@ export function InkstonePaperFooter({ store }: FooterProps) {
           <div className="flex flex-col items-center space-y-4">
             <h3 className="text-sm uppercase tracking-[0.2em] font-[family:var(--font-prompt)] text-[#c9974b] mb-2">Explore</h3>
             <nav className="flex flex-col space-y-3 text-sm font-[family:var(--font-prompt)] font-light">
-              <Link href={`/${store.slug}`} className="hover:text-[#c9974b] transition-colors">
+              <Link href={`/stores/${store.slug}`} className="hover:text-[#c9974b] transition-colors">
                 คอลเลกชันทั้งหมด
               </Link>
-              <Link href={`/${store.slug}`} className="hover:text-[#c9974b] transition-colors">
+              <Link href={`/stores/${store.slug}`} className="hover:text-[#c9974b] transition-colors">
                 เรื่องราวของเรา
               </Link>
-              <Link href={`/${store.slug}`} className="hover:text-[#c9974b] transition-colors">
+              <Link href={`/stores/${store.slug}`} className="hover:text-[#c9974b] transition-colors">
                 การดูแลรักษา
               </Link>
-              <Link href={`/${store.slug}`} className="hover:text-[#c9974b] transition-colors">
+              <Link href={`/stores/${store.slug}`} className="hover:text-[#c9974b] transition-colors">
                 ติดต่อเรา
               </Link>
             </nav>

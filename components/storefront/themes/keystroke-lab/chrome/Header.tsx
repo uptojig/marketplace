@@ -17,7 +17,7 @@ export function KeystrokeLabHeader({ store, categories }: any) {
             <button className="md:hidden text-[#22d3ee] hover:text-white transition-colors">
               <Menu className="w-5 h-5" />
             </button>
-            <Link href={`/${store.slug}`} className="flex items-center gap-2 group">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 group">
               {store.logoUrl ? (
                 <img src={store.logoUrl} alt={store.name} className="h-8 w-8 object-contain rounded-md" />
               ) : (
@@ -32,13 +32,13 @@ export function KeystrokeLabHeader({ store, categories }: any) {
           </div>
 
           <nav className="hidden md:flex space-x-8">
-            <Link href={`/${store.slug}/products`} className="font-[family:var(--font-kanit)] text-sm text-[#e2e8f0] hover:text-[#22d3ee] transition-colors tracking-[0.1em]">
+            <Link href={`/stores/${store.slug}/products`} className="font-[family:var(--font-kanit)] text-sm text-[#e2e8f0] hover:text-[#22d3ee] transition-colors tracking-[0.1em]">
               สินค้าทั้งหมด
             </Link>
             {categories.slice(0, 3).map((category: any) => (
               <Link 
                 key={category.id} 
-                href={`/${store.slug}/categories/${category.slug}`} 
+                href={`/stores/${store.slug}/categories/${category.slug}`} 
                 className="font-[family:var(--font-kanit)] text-sm text-[#e2e8f0] hover:text-[#22d3ee] transition-colors tracking-[0.1em]"
               >
                 {category.name}
@@ -50,7 +50,7 @@ export function KeystrokeLabHeader({ store, categories }: any) {
             <button className="text-[#e2e8f0] hover:text-[#22d3ee] transition-colors">
               <Search className="w-5 h-5" />
             </button>
-            <Link href={`/${store.slug}/cart`} className="relative text-[#e2e8f0] hover:text-[#22d3ee] transition-colors group">
+            <Link href={`/stores/${store.slug}/cart`} className="relative text-[#e2e8f0] hover:text-[#22d3ee] transition-colors group">
               <ShoppingCart className="w-5 h-5" />
               {itemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#22d3ee] text-[#020617] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center font-[family:var(--font-prompt)] group-hover:bg-white transition-colors tabular-nums">

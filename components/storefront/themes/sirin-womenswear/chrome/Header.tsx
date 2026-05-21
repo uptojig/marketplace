@@ -33,20 +33,20 @@ export function SirinHeader({ store }: SirinHeaderProps) {
               <Menu className="h-6 w-6" />
             </button>
             <nav className="hidden md:flex space-x-8">
-              <Link href={`/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] hover:text-[#be185d] transition-colors uppercase tracking-widest">
+              <Link href={`/stores/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] hover:text-[#be185d] transition-colors uppercase tracking-widest">
                 คอลเลกชัน
               </Link>
-              <Link href={`/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] hover:text-[#be185d] transition-colors uppercase tracking-widest">
+              <Link href={`/stores/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] hover:text-[#be185d] transition-colors uppercase tracking-widest">
                 ทั้งหมด
               </Link>
-              <Link href={`/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] hover:text-[#be185d] transition-colors uppercase tracking-widest">
+              <Link href={`/stores/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] hover:text-[#be185d] transition-colors uppercase tracking-widest">
                 เกี่ยวกับเรา
               </Link>
             </nav>
           </div>
 
           <div className="flex-1 flex justify-center">
-            <Link href={`/${store.slug}`} className="flex items-center space-x-2">
+            <Link href={`/stores/${store.slug}`} className="flex items-center space-x-2">
               {store.logoUrl ? (
                 <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
               ) : (
@@ -76,13 +76,13 @@ export function SirinHeader({ store }: SirinHeaderProps) {
       {isMenuOpen && (
         <div className="md:hidden absolute top-20 left-0 w-full bg-[#fff5f7] border-b border-[#fce7f3] py-4 px-4 shadow-lg">
           <nav className="flex flex-col space-y-4">
-            <Link href={`/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] uppercase tracking-widest pb-2 border-b border-[#fce7f3]">
+            <Link href={`/stores/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] uppercase tracking-widest pb-2 border-b border-[#fce7f3]">
               คอลเลกชัน
             </Link>
-            <Link href={`/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] uppercase tracking-widest pb-2 border-b border-[#fce7f3]">
+            <Link href={`/stores/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] uppercase tracking-widest pb-2 border-b border-[#fce7f3]">
               ทั้งหมด
             </Link>
-            <Link href={`/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] uppercase tracking-widest pb-2">
+            <Link href={`/stores/${store.slug}`} className="text-sm font-[family:var(--font-prompt)] text-[#3f0f24] uppercase tracking-widest pb-2">
               เกี่ยวกับเรา
             </Link>
           </nav>

@@ -41,10 +41,10 @@ export function SirinFooter({ store }: SirinFooterProps) {
               ร้านค้า
             </h4>
             <ul className="space-y-3 font-[family:var(--font-prompt)] text-sm opacity-80">
-              <li><Link href={`/${store.slug}`} className="hover:text-[#be185d] transition-colors">คอลเลกชันใหม่</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-[#be185d] transition-colors">เดรส</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-[#be185d] transition-colors">เสื้อเชิ้ต & บลูส</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-[#be185d] transition-colors">กระโปรง</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-[#be185d] transition-colors">คอลเลกชันใหม่</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-[#be185d] transition-colors">เดรส</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-[#be185d] transition-colors">เสื้อเชิ้ต & บลูส</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-[#be185d] transition-colors">กระโปรง</Link></li>
             </ul>
           </div>
           
@@ -53,10 +53,10 @@ export function SirinFooter({ store }: SirinFooterProps) {
               บริการลูกค้า
             </h4>
             <ul className="space-y-3 font-[family:var(--font-prompt)] text-sm opacity-80">
-              <li><Link href={`/${store.slug}`} className="hover:text-[#be185d] transition-colors">การจัดส่ง</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-[#be185d] transition-colors">นโยบายการเปลี่ยนคืน</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-[#be185d] transition-colors">คำถามที่พบบ่อย</Link></li>
-              <li><Link href={`/${store.slug}`} className="hover:text-[#be185d] transition-colors">ติดต่อเรา</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-[#be185d] transition-colors">การจัดส่ง</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-[#be185d] transition-colors">นโยบายการเปลี่ยนคืน</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-[#be185d] transition-colors">คำถามที่พบบ่อย</Link></li>
+              <li><Link href={`/stores/${store.slug}`} className="hover:text-[#be185d] transition-colors">ติดต่อเรา</Link></li>
             </ul>
           </div>
         </div>

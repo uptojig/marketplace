@@ -15,7 +15,7 @@ export function ReclaimLeatherFooter({ store }: FooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
-            <Link href={`/${store.slug}`} className="inline-block font-[family:var(--font-prompt)] font-bold text-3xl text-[#c9974b] mb-4">
+            <Link href={`/stores/${store.slug}`} className="inline-block font-[family:var(--font-prompt)] font-bold text-3xl text-[#c9974b] mb-4">
               {store.name}
             </Link>
             <p className="font-[family:var(--font-kanit)] text-[#e6d7b8]/80 text-lg max-w-sm mb-6">
@@ -31,20 +31,20 @@ export function ReclaimLeatherFooter({ store }: FooterProps) {
           <div>
             <h3 className="font-[family:var(--font-prompt)] font-semibold text-xl text-[#f4ead8] mb-6">สินค้าของเรา</h3>
             <ul className="space-y-3 font-[family:var(--font-kanit)] text-[#e6d7b8]/80">
-              <li><Link href={`/${store.slug}/category/bags`} className="hover:text-[#c9974b] transition-colors">กระเป๋าสะพายข้าง</Link></li>
-              <li><Link href={`/${store.slug}/category/wallets`} className="hover:text-[#c9974b] transition-colors">วอลเล็ต</Link></li>
-              <li><Link href={`/${store.slug}/category/accessories`} className="hover:text-[#c9974b] transition-colors">พวงกุญแจและอื่นๆ</Link></li>
-              <li><Link href={`/${store.slug}/collections/new`} className="hover:text-[#c9974b] transition-colors">สินค้ามาใหม่</Link></li>
+              <li><Link href={`/stores/${store.slug}/category/bags`} className="hover:text-[#c9974b] transition-colors">กระเป๋าสะพายข้าง</Link></li>
+              <li><Link href={`/stores/${store.slug}/category/wallets`} className="hover:text-[#c9974b] transition-colors">วอลเล็ต</Link></li>
+              <li><Link href={`/stores/${store.slug}/category/accessories`} className="hover:text-[#c9974b] transition-colors">พวงกุญแจและอื่นๆ</Link></li>
+              <li><Link href={`/stores/${store.slug}/collections/new`} className="hover:text-[#c9974b] transition-colors">สินค้ามาใหม่</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-[family:var(--font-prompt)] font-semibold text-xl text-[#f4ead8] mb-6">ช่วยเหลือ</h3>
             <ul className="space-y-3 font-[family:var(--font-kanit)] text-[#e6d7b8]/80">
-              <li><Link href={`/${store.slug}/repair`} className="hover:text-[#c9974b] transition-colors">ส่งซ่อม (Repair-for-life)</Link></li>
-              <li><Link href={`/${store.slug}/shipping`} className="hover:text-[#c9974b] transition-colors">การจัดส่ง</Link></li>
-              <li><Link href={`/${store.slug}/care`} className="hover:text-[#c9974b] transition-colors">วิธีดูแลรักษาเครื่องหนัง</Link></li>
-              <li><Link href={`/${store.slug}/contact`} className="hover:text-[#c9974b] transition-colors">ติดต่อเรา</Link></li>
+              <li><Link href={`/stores/${store.slug}/repair`} className="hover:text-[#c9974b] transition-colors">ส่งซ่อม (Repair-for-life)</Link></li>
+              <li><Link href={`/stores/${store.slug}/shipping`} className="hover:text-[#c9974b] transition-colors">การจัดส่ง</Link></li>
+              <li><Link href={`/stores/${store.slug}/care`} className="hover:text-[#c9974b] transition-colors">วิธีดูแลรักษาเครื่องหนัง</Link></li>
+              <li><Link href={`/stores/${store.slug}/contact`} className="hover:text-[#c9974b] transition-colors">ติดต่อเรา</Link></li>
             </ul>
           </div>
         </div>

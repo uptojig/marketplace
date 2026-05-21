@@ -17,7 +17,7 @@ export function TinyhandHeader({ storeName, storeSlug }: { storeName: string; st
               <Menu className="w-6 h-6" />
             </button>
             <Link 
-              href={`/${storeSlug}`} 
+              href={`/stores/${storeSlug}`} 
               className="text-[#3a2e22] text-xl font-bold font-[family:var(--font-kanit)] tracking-wide"
             >
               {storeName}
@@ -25,13 +25,13 @@ export function TinyhandHeader({ storeName, storeSlug }: { storeName: string; st
           </div>
 
           <nav className="hidden lg:flex items-center gap-8 font-[family:var(--font-prompt)] text-[#3a2e22] font-medium text-sm">
-            <Link href={`/${storeSlug}`} className="hover:text-[#c9974b] transition-colors">หน้าแรก</Link>
-            <Link href={`/${storeSlug}/products`} className="hover:text-[#c9974b] transition-colors">ของเล่นทั้งหมด</Link>
-            <Link href={`/${storeSlug}/about`} className="hover:text-[#c9974b] transition-colors">เรื่องราวของเรา</Link>
+            <Link href={`/stores/${storeSlug}`} className="hover:text-[#c9974b] transition-colors">หน้าแรก</Link>
+            <Link href={`/stores/${storeSlug}/products`} className="hover:text-[#c9974b] transition-colors">ของเล่นทั้งหมด</Link>
+            <Link href={`/stores/${storeSlug}/about`} className="hover:text-[#c9974b] transition-colors">เรื่องราวของเรา</Link>
           </nav>
 
           <div className="flex items-center">
-            <Link href="/cart" className="relative p-2 text-[#3a2e22] hover:text-[#c9974b] transition-colors">
+            <Link href={`/stores/${storeSlug}/cart`} className="relative p-2 text-[#3a2e22] hover:text-[#c9974b] transition-colors">
               <ShoppingCart className="w-6 h-6" />
               {itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[#c9974b] text-[#f7f1e3] text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center font-[family:var(--font-kanit)]">

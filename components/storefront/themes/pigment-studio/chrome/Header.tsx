@@ -35,7 +35,7 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
               {categories.slice(0, 4).map((category) => (
                 <Link
                   key={category.id}
-                  href={`/${store.slug}/category/${category.slug}`}
+                  href={`/stores/${store.slug}/category/${category.slug}`}
                   className="font-[family:var(--font-prompt)] text-[#7c2d12] hover:text-[#f97316] font-medium transition-colors relative group"
                 >
                   {category.name}
@@ -46,7 +46,7 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
           </div>
 
           <div className="flex-shrink-0 flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-            <Link href={`/${store.slug}`} className="flex items-center gap-2 group">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 group">
               {store.logoUrl ? (
                 <img
                   src={store.logoUrl}
@@ -69,7 +69,7 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
               <Search className="w-6 h-6" />
             </button>
             <Link
-              href="/cart"
+              href={`/stores/${storeSlug}/cart`}
               className="p-2 text-[#7c2d12] hover:bg-[#fed7aa] hover:text-[#f97316] rounded-xl transition-colors relative group"
             >
               <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -89,7 +89,7 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/${store.slug}/category/${category.slug}`}
+                href={`/stores/${store.slug}/category/${category.slug}`}
                 className="block px-4 py-3 font-[family:var(--font-prompt)] text-[#7c2d12] font-medium hover:bg-[#fed7aa] hover:text-[#f97316] rounded-xl transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >

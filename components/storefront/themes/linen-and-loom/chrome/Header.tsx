@@ -14,20 +14,20 @@ export function LinenAndLoomHeader({ store }: { store: any }) {
               <Menu className="w-5 h-5" />
             </button>
             <nav className="hidden md:flex gap-8 font-[family:var(--font-prompt)] text-[#475569] text-sm">
-              <Link href={`/${store.slug}`} className="hover:text-[#0f172a] transition-colors">
+              <Link href={`/stores/${store.slug}`} className="hover:text-[#0f172a] transition-colors">
                 หน้าแรก
               </Link>
-              <Link href={`/${store.slug}/products`} className="hover:text-[#0f172a] transition-colors">
+              <Link href={`/stores/${store.slug}/products`} className="hover:text-[#0f172a] transition-colors">
                 สินค้าทั้งหมด
               </Link>
-              <Link href={`/${store.slug}/about`} className="hover:text-[#0f172a] transition-colors">
+              <Link href={`/stores/${store.slug}/about`} className="hover:text-[#0f172a] transition-colors">
                 เกี่ยวกับเรา
               </Link>
             </nav>
           </div>
           
           <div className="flex-1 md:flex-none flex justify-center">
-            <Link href={`/${store.slug}`} className="flex items-center gap-2">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-2">
               {store.logoUrl ? (
                 <img src={store.logoUrl} alt={store.name} className="h-8 object-contain" />
               ) : (

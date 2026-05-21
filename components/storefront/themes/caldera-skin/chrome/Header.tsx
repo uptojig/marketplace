@@ -18,7 +18,7 @@ export function CalderaSkinHeader({ store }: HeaderProps) {
             <button className="sm:hidden p-2 -ml-2 text-[#0b3d4a] hover:bg-[#cdd9dc]/30 rounded-md">
               <Menu className="w-5 h-5" />
             </button>
-            <Link href={`/${store.slug}`} className="flex items-center gap-2 group">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 group">
               <FlaskConical className="w-6 h-6 text-[#5cbac7] group-hover:text-[#0b3d4a] transition-colors" />
               <span className="font-[family:var(--font-kanit)] font-medium text-xl tracking-tight uppercase">
                 {store.name}
@@ -27,13 +27,13 @@ export function CalderaSkinHeader({ store }: HeaderProps) {
           </div>
 
           <nav className="hidden sm:flex items-center gap-8 font-[family:var(--font-prompt)] uppercase tracking-[0.12em] text-xs">
-            <Link href={`/${store.slug}/products`} className="hover:text-[#5cbac7] transition-colors">
+            <Link href={`/stores/${store.slug}/products`} className="hover:text-[#5cbac7] transition-colors">
               FORMULATIONS
             </Link>
-            <Link href={`/${store.slug}/about`} className="hover:text-[#5cbac7] transition-colors">
+            <Link href={`/stores/${store.slug}/about`} className="hover:text-[#5cbac7] transition-colors">
               CLINICAL DATA
             </Link>
-            <Link href={`/${store.slug}/contact`} className="hover:text-[#5cbac7] transition-colors">
+            <Link href={`/stores/${store.slug}/contact`} className="hover:text-[#5cbac7] transition-colors">
               RESEARCH LAB
             </Link>
           </nav>
@@ -43,7 +43,7 @@ export function CalderaSkinHeader({ store }: HeaderProps) {
               <Search className="w-5 h-5" />
             </button>
             <Link 
-              href={`/${store.slug}/cart`} 
+              href={`/stores/${store.slug}/cart`} 
               className="flex items-center gap-2 p-2 hover:bg-[#cdd9dc]/30 rounded-md transition-colors relative"
             >
               <ShoppingCart className="w-5 h-5" />

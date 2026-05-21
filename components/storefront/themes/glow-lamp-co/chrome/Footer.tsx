@@ -19,7 +19,7 @@ export function GlowLampCoFooter({ store }: FooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-12">
           <div className="space-y-4">
-            <Link href={`/${store.slug}`} className="flex items-center gap-3 group inline-flex">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-3 group inline-flex">
               <div className="w-8 h-8 bg-[#f59e0b] rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.4)] group-hover:shadow-[0_0_20px_rgba(245,158,11,0.7)] transition-all">
                 <Lightbulb className="w-5 h-5 text-[#0f172a]" />
               </div>
@@ -33,20 +33,20 @@ export function GlowLampCoFooter({ store }: FooterProps) {
           <div>
             <h4 className="text-[#f8fafc] font-semibold mb-6 text-lg tracking-wide font-[family:var(--font-kanit)]">หมวดหมู่</h4>
             <ul className="space-y-3 text-sm">
-              <li><Link href={`/${store.slug}/category/desk`} className="hover:text-[#f59e0b] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]/50"></span>โคมตั้งโต๊ะ</Link></li>
-              <li><Link href={`/${store.slug}/category/ceiling`} className="hover:text-[#f59e0b] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]/50"></span>โคมเพดาน</Link></li>
-              <li><Link href={`/${store.slug}/category/bedside`} className="hover:text-[#f59e0b] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]/50"></span>โคมข้างเตียง</Link></li>
-              <li><Link href={`/${store.slug}/category/bulbs`} className="hover:text-[#f59e0b] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]/50"></span>หลอดไฟ LED CRI 95+</Link></li>
+              <li><Link href={`/stores/${store.slug}/category/desk`} className="hover:text-[#f59e0b] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]/50"></span>โคมตั้งโต๊ะ</Link></li>
+              <li><Link href={`/stores/${store.slug}/category/ceiling`} className="hover:text-[#f59e0b] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]/50"></span>โคมเพดาน</Link></li>
+              <li><Link href={`/stores/${store.slug}/category/bedside`} className="hover:text-[#f59e0b] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]/50"></span>โคมข้างเตียง</Link></li>
+              <li><Link href={`/stores/${store.slug}/category/bulbs`} className="hover:text-[#f59e0b] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]/50"></span>หลอดไฟ LED CRI 95+</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-[#f8fafc] font-semibold mb-6 text-lg tracking-wide font-[family:var(--font-kanit)]">บริการลูกค้า</h4>
             <ul className="space-y-3 text-sm">
-              <li><Link href={`/${store.slug}/contact`} className="hover:text-[#f59e0b] transition-colors">ติดต่อเรา</Link></li>
-              <li><Link href={`/${store.slug}/shipping`} className="hover:text-[#f59e0b] transition-colors">การจัดส่งสินค้า</Link></li>
-              <li><Link href={`/${store.slug}/returns`} className="hover:text-[#f59e0b] transition-colors">แลกหลอดเก่า/คืนสินค้า</Link></li>
-              <li><Link href={`/${store.slug}/warranty`} className="hover:text-[#f59e0b] transition-colors">การรับประกัน</Link></li>
+              <li><Link href={`/stores/${store.slug}/contact`} className="hover:text-[#f59e0b] transition-colors">ติดต่อเรา</Link></li>
+              <li><Link href={`/stores/${store.slug}/shipping`} className="hover:text-[#f59e0b] transition-colors">การจัดส่งสินค้า</Link></li>
+              <li><Link href={`/stores/${store.slug}/returns`} className="hover:text-[#f59e0b] transition-colors">แลกหลอดเก่า/คืนสินค้า</Link></li>
+              <li><Link href={`/stores/${store.slug}/warranty`} className="hover:text-[#f59e0b] transition-colors">การรับประกัน</Link></li>
             </ul>
           </div>
 
@@ -77,8 +77,8 @@ export function GlowLampCoFooter({ store }: FooterProps) {
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm opacity-60">
           <p>&copy; {new Date().getFullYear()} {store.name}. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href={`/${store.slug}/privacy`} className="hover:text-[#f59e0b] transition-colors">Privacy Policy</Link>
-            <Link href={`/${store.slug}/terms`} className="hover:text-[#f59e0b] transition-colors">Terms of Service</Link>
+            <Link href={`/stores/${store.slug}/privacy`} className="hover:text-[#f59e0b] transition-colors">Privacy Policy</Link>
+            <Link href={`/stores/${store.slug}/terms`} className="hover:text-[#f59e0b] transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>

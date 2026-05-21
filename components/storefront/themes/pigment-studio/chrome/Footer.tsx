@@ -21,7 +21,7 @@ export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-2">
-            <Link href={`/${store.slug}`} className="flex items-center gap-2 group mb-4">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 group mb-4">
               <Brush className="w-8 h-8 text-[#facc15] group-hover:-rotate-12 transition-transform duration-300" />
               <span className="font-[family:var(--font-kanit)] font-bold text-2xl tracking-tight text-[#fff7ed]">
                 {store.name}
@@ -52,22 +52,22 @@ export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
             </h3>
             <ul className="space-y-3 font-[family:var(--font-prompt)]">
               <li>
-                <Link href={`/${store.slug}/about`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
+                <Link href={`/stores/${store.slug}/about`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                   เกี่ยวกับเรา
                 </Link>
               </li>
               <li>
-                <Link href={`/${store.slug}/workshop`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
+                <Link href={`/stores/${store.slug}/workshop`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                   เวิร์คช็อป
                 </Link>
               </li>
               <li>
-                <Link href={`/${store.slug}/blog`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
+                <Link href={`/stores/${store.slug}/blog`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                   บทความศิลปะ
                 </Link>
               </li>
               <li>
-                <Link href={`/${store.slug}/contact`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
+                <Link href={`/stores/${store.slug}/contact`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                   ติดต่อสตูดิโอ
                 </Link>
               </li>
@@ -80,17 +80,17 @@ export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
             </h3>
             <ul className="space-y-3 font-[family:var(--font-prompt)]">
               <li>
-                <Link href={`/${store.slug}/shipping`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
+                <Link href={`/stores/${store.slug}/shipping`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                   การจัดส่ง
                 </Link>
               </li>
               <li>
-                <Link href={`/${store.slug}/returns`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
+                <Link href={`/stores/${store.slug}/returns`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                   การคืนสินค้า
                 </Link>
               </li>
               <li>
-                <Link href={`/${store.slug}/faq`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
+                <Link href={`/stores/${store.slug}/faq`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                   คำถามที่พบบ่อย
                 </Link>
               </li>

@@ -19,20 +19,20 @@ export function InkstonePaperHeader({ store }: HeaderProps) {
               <Menu className="w-5 h-5" />
             </button>
             <nav className="hidden md:flex gap-8">
-              <Link href={`/${store.slug}`} className="text-[#3a2e22] hover:text-[#c9974b] font-[family:var(--font-prompt)] text-sm uppercase tracking-widest transition-colors">
+              <Link href={`/stores/${store.slug}`} className="text-[#3a2e22] hover:text-[#c9974b] font-[family:var(--font-prompt)] text-sm uppercase tracking-widest transition-colors">
                 Shop
               </Link>
-              <Link href={`/${store.slug}`} className="text-[#3a2e22] hover:text-[#c9974b] font-[family:var(--font-prompt)] text-sm uppercase tracking-widest transition-colors">
+              <Link href={`/stores/${store.slug}`} className="text-[#3a2e22] hover:text-[#c9974b] font-[family:var(--font-prompt)] text-sm uppercase tracking-widest transition-colors">
                 Journal
               </Link>
-              <Link href={`/${store.slug}`} className="text-[#3a2e22] hover:text-[#c9974b] font-[family:var(--font-prompt)] text-sm uppercase tracking-widest transition-colors">
+              <Link href={`/stores/${store.slug}`} className="text-[#3a2e22] hover:text-[#c9974b] font-[family:var(--font-prompt)] text-sm uppercase tracking-widest transition-colors">
                 About
               </Link>
             </nav>
           </div>
 
           <div className="flex-1 flex justify-center">
-            <Link href={`/${store.slug}`} className="flex flex-col items-center group">
+            <Link href={`/stores/${store.slug}`} className="flex flex-col items-center group">
               {store.logoUrl ? (
                 <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
               ) : (
@@ -52,7 +52,7 @@ export function InkstonePaperHeader({ store }: HeaderProps) {
             <button className="p-2 text-[#3a2e22] hover:text-[#c9974b] transition-colors hidden sm:block">
               <Search className="w-5 h-5" />
             </button>
-            <Link href={`/${store.slug}/cart`} className="p-2 text-[#3a2e22] hover:text-[#c9974b] transition-colors relative flex items-center">
+            <Link href={`/stores/${store.slug}/cart`} className="p-2 text-[#3a2e22] hover:text-[#c9974b] transition-colors relative flex items-center">
               <ShoppingCart className="w-5 h-5" />
               {itemCount > 0 && (
                 <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-[#f7f1e3] transform translate-x-1/4 -translate-y-1/4 bg-[#c9974b] rounded-full font-[family:var(--font-prompt)]">

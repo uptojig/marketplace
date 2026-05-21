@@ -33,7 +33,7 @@ export function KorakotHouseHeader({ store }: HeaderProps) {
           </div>
 
           <div className="flex-shrink-0 flex items-center justify-center">
-            <Link href={`/${store.slug}`} className="flex flex-col items-center">
+            <Link href={`/stores/${store.slug}`} className="flex flex-col items-center">
               {store.logoUrl ? (
                 <img src={store.logoUrl} alt={store.name} className="h-10 w-auto" />
               ) : (
@@ -52,7 +52,7 @@ export function KorakotHouseHeader({ store }: HeaderProps) {
               <User className="w-5 h-5" />
             </button>
             <Link 
-              href={`/${store.slug}/cart`}
+              href={`/stores/${store.slug}/cart`}
               className="p-2 text-[#7c4a1e] hover:bg-[#e8d5b7]/50 rounded-full transition-colors relative"
             >
               <ShoppingCart className="w-5 h-5" />

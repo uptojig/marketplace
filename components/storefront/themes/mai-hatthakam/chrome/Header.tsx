@@ -46,14 +46,14 @@ export function MaiHatthakamHeader({ store, categories }: MaiHatthakamHeaderProp
             {categories.slice(0, 4).map((category) => (
               <Link
                 key={category.id}
-                href={`/${store.slug}/c/${category.slug}`}
+                href={`/stores/${store.slug}/c/${category.slug}`}
                 className="text-[#3a1a07] hover:text-[#7c2d12] text-sm font-medium font-[family:var(--font-kanit)] transition-colors"
               >
                 {category.name}
               </Link>
             ))}
             <Link
-              href={`/${store.slug}/about`}
+              href={`/stores/${store.slug}/about`}
               className="text-[#3a1a07] hover:text-[#7c2d12] text-sm font-medium font-[family:var(--font-kanit)] transition-colors"
             >
               เกี่ยวกับเตาเผา
@@ -62,7 +62,7 @@ export function MaiHatthakamHeader({ store, categories }: MaiHatthakamHeaderProp
 
           {/* Center: Logo */}
           <div className="flex-shrink-0 flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-            <Link href={`/${store.slug}`} className="flex flex-col items-center group">
+            <Link href={`/stores/${store.slug}`} className="flex flex-col items-center group">
               {store.logoUrl ? (
                 <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
               ) : (
@@ -83,7 +83,7 @@ export function MaiHatthakamHeader({ store, categories }: MaiHatthakamHeaderProp
             <button className="p-2 text-[#3a1a07] hover:text-[#7c2d12] transition-colors hidden sm:block">
               <Search className="h-5 w-5" />
             </button>
-            <Link href="/cart" className="p-2 text-[#3a1a07] hover:text-[#7c2d12] transition-colors relative flex items-center">
+            <Link href={`/stores/${storeSlug}/cart`} className="p-2 text-[#3a1a07] hover:text-[#7c2d12] transition-colors relative flex items-center">
               <ShoppingBag className="h-5 w-5" />
               {cartItemCount > 0 && (
                 <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-[#fef9f1] transform translate-x-1/4 -translate-y-1/4 bg-[#7c2d12] rounded-full font-[family:var(--font-kanit)]">
@@ -102,7 +102,7 @@ export function MaiHatthakamHeader({ store, categories }: MaiHatthakamHeaderProp
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/${store.slug}/c/${category.slug}`}
+                href={`/stores/${store.slug}/c/${category.slug}`}
                 className="block pl-3 pr-4 py-3 border-l-4 border-transparent text-[#3a1a07] hover:bg-[#fde8c8]/30 hover:border-[#7c2d12] hover:text-[#7c2d12] text-base font-medium font-[family:var(--font-kanit)] transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -110,7 +110,7 @@ export function MaiHatthakamHeader({ store, categories }: MaiHatthakamHeaderProp
               </Link>
             ))}
             <Link
-              href={`/${store.slug}/about`}
+              href={`/stores/${store.slug}/about`}
               className="block pl-3 pr-4 py-3 border-l-4 border-transparent text-[#3a1a07] hover:bg-[#fde8c8]/30 hover:border-[#7c2d12] hover:text-[#7c2d12] text-base font-medium font-[family:var(--font-kanit)] transition-all"
               onClick={() => setIsMobileMenuOpen(false)}
             >

@@ -25,7 +25,7 @@ export function YumeiroLipHeader({ store, categories }: YumeiroLipHeaderProps) {
             <Menu className="w-6 h-6" />
           </button>
           
-          <Link href={`/${store.slug}`} className="flex items-center gap-2">
+          <Link href={`/stores/${store.slug}`} className="flex items-center gap-2">
             {store.logoUrl ? (
               <img src={store.logoUrl} alt={store.name} className="h-8 w-auto object-contain rounded-full" />
             ) : (
@@ -35,11 +35,11 @@ export function YumeiroLipHeader({ store, categories }: YumeiroLipHeaderProps) {
         </div>
 
         <nav className="hidden lg:flex items-center gap-6">
-          <Link href={`/${store.slug}`} className="text-[#831843] hover:text-[#ec4899] font-medium transition-colors">
+          <Link href={`/stores/${store.slug}`} className="text-[#831843] hover:text-[#ec4899] font-medium transition-colors">
             หน้าแรก
           </Link>
           {categories.slice(0, 4).map((cat) => (
-            <Link key={cat.id} href={`/${store.slug}/category/${cat.id}`} className="text-[#831843] hover:text-[#ec4899] font-medium transition-colors">
+            <Link key={cat.id} href={`/stores/${store.slug}/category/${cat.id}`} className="text-[#831843] hover:text-[#ec4899] font-medium transition-colors">
               {cat.name}
             </Link>
           ))}
@@ -49,7 +49,7 @@ export function YumeiroLipHeader({ store, categories }: YumeiroLipHeaderProps) {
           <button className="hover:text-[#ec4899] transition-colors">
             <Search className="w-5 h-5" />
           </button>
-          <Link href={`/${store.slug}/cart`} className="hover:text-[#ec4899] transition-colors relative">
+          <Link href={`/stores/${store.slug}/cart`} className="hover:text-[#ec4899] transition-colors relative">
             <ShoppingBag className="w-5 h-5" />
             {itemCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-[#ec4899] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">

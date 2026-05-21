@@ -10,7 +10,7 @@ export function CalderaSkinFooter({ store }: FooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-8">
           <div className="md:col-span-1">
-            <Link href={`/${store.slug}`} className="flex items-center gap-2 mb-4">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 mb-4">
               <FlaskConical className="w-6 h-6 text-[#9cd6df]" />
               <span className="font-[family:var(--font-kanit)] font-medium text-xl tracking-tight uppercase">
                 {store.name}

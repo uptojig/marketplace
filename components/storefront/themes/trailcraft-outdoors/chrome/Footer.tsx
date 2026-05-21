@@ -11,7 +11,7 @@ export function TrailcraftFooter({ store }: FooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
-            <Link href={`/${store.slug}`} className="flex items-center gap-2 mb-6 text-[#facc15]">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 mb-6 text-[#facc15]">
               <Mountain className="h-8 w-8" />
               <span className="font-[family:var(--font-kanit)] font-bold text-3xl uppercase tracking-wider">
                 {store.name}

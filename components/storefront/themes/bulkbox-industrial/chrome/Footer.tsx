@@ -11,7 +11,7 @@ export function BulkboxFooter({ store }: FooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           <div className="space-y-6">
-            <Link href={`/${store.slug}`} className="flex items-center gap-3">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-3">
               {store.logoUrl ? (
                 <img src={store.logoUrl} alt={store.name} className="h-12 w-12 object-contain bg-white rounded p-1" />
               ) : (

@@ -22,17 +22,17 @@ export function KeystrokeLabFooter({ store }: any) {
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href={`/${store.slug}/products`} className="font-[family:var(--font-kanit)] text-sm hover:text-white transition-colors">
+                <Link href={`/stores/${store.slug}/products`} className="font-[family:var(--font-kanit)] text-sm hover:text-white transition-colors">
                   คีย์บอร์ด
                 </Link>
               </li>
               <li>
-                <Link href={`/${store.slug}/products`} className="font-[family:var(--font-kanit)] text-sm hover:text-white transition-colors">
+                <Link href={`/stores/${store.slug}/products`} className="font-[family:var(--font-kanit)] text-sm hover:text-white transition-colors">
                   สวิตช์
                 </Link>
               </li>
               <li>
-                <Link href={`/${store.slug}/products`} className="font-[family:var(--font-kanit)] text-sm hover:text-white transition-colors">
+                <Link href={`/stores/${store.slug}/products`} className="font-[family:var(--font-kanit)] text-sm hover:text-white transition-colors">
                   เมาส์
                 </Link>
               </li>

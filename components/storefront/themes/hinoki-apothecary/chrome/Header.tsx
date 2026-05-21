@@ -46,7 +46,7 @@ export function HinokiHeader({ store }: { store: any }) {
             </nav>
           </div>
 
-          <Link href={`/${store.slug}`} className="flex-1 text-center">
+          <Link href={`/stores/${store.slug}`} className="flex-1 text-center">
             {store.logoUrl ? (
               <img src={store.logoUrl} alt={store.name} className="h-8 mx-auto object-contain" />
             ) : (

@@ -39,20 +39,20 @@ export function PastelPackFooter({ storeName, storeSlug }: PastelPackFooterProps
         <div>
           <h4 className="font-bold text-[#fde68a] mb-6 text-xl font-[family:var(--font-kanit)] tracking-wider">หมวดหมู่สินค้า</h4>
           <ul className="space-y-4">
-            <li><Link href={`/${storeSlug}/category/boxes`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> กล่องลูกฟูก</Link></li>
-            <li><Link href={`/${storeSlug}/category/bags`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> ถุงคราฟท์</Link></li>
-            <li><Link href={`/${storeSlug}/category/stickers`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> สติกเกอร์ย่อยสลายได้</Link></li>
-            <li><Link href={`/${storeSlug}/category/all`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> สินค้าทั้งหมด</Link></li>
+            <li><Link href={`/stores/${storeSlug}/category/boxes`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> กล่องลูกฟูก</Link></li>
+            <li><Link href={`/stores/${storeSlug}/category/bags`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> ถุงคราฟท์</Link></li>
+            <li><Link href={`/stores/${storeSlug}/category/stickers`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> สติกเกอร์ย่อยสลายได้</Link></li>
+            <li><Link href={`/stores/${storeSlug}/category/all`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> สินค้าทั้งหมด</Link></li>
           </ul>
         </div>
 
         <div>
           <h4 className="font-bold text-[#fde68a] mb-6 text-xl font-[family:var(--font-kanit)] tracking-wider">บริการลูกค้า</h4>
           <ul className="space-y-4">
-            <li><Link href={`/${storeSlug}/about`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> เกี่ยวกับเรา</Link></li>
-            <li><Link href={`/${storeSlug}/shipping`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> การจัดส่ง</Link></li>
-            <li><Link href={`/${storeSlug}/returns`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> นโยบายการคืนสินค้า</Link></li>
-            <li><Link href={`/${storeSlug}/contact`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> ติดต่อเรา</Link></li>
+            <li><Link href={`/stores/${storeSlug}/about`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> เกี่ยวกับเรา</Link></li>
+            <li><Link href={`/stores/${storeSlug}/shipping`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> การจัดส่ง</Link></li>
+            <li><Link href={`/stores/${storeSlug}/returns`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> นโยบายการคืนสินค้า</Link></li>
+            <li><Link href={`/stores/${storeSlug}/contact`} className="hover:text-[#fde68a] transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#0f766e]"></span> ติดต่อเรา</Link></li>
           </ul>
         </div>
       </div>
@@ -62,8 +62,8 @@ export function PastelPackFooter({ storeName, storeSlug }: PastelPackFooterProps
           &copy; {new Date().getFullYear()} {storeName}. All rights reserved.
         </p>
         <div className="flex gap-6 opacity-80">
-          <Link href={`/${storeSlug}/privacy`} className="hover:text-[#fde68a]">นโยบายความเป็นส่วนตัว</Link>
-          <Link href={`/${storeSlug}/terms`} className="hover:text-[#fde68a]">ข้อตกลงและเงื่อนไข</Link>
+          <Link href={`/stores/${storeSlug}/privacy`} className="hover:text-[#fde68a]">นโยบายความเป็นส่วนตัว</Link>
+          <Link href={`/stores/${storeSlug}/terms`} className="hover:text-[#fde68a]">ข้อตกลงและเงื่อนไข</Link>
         </div>
       </div>
     </footer>

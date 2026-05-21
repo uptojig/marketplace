@@ -25,19 +25,19 @@ export function ReclaimLeatherHeader({ store }: HeaderProps) {
               <Menu size={24} />
             </button>
             <nav className="hidden md:flex gap-8 font-[family:var(--font-kanit)] text-[#5b3a1e] font-medium tracking-wide">
-              <Link href={`/${store.slug}/category/bags`} className="hover:text-[#c9974b] transition-colors relative after:content-[''] after:absolute after:w-full after:h-[2px] after:bg-[#c9974b] after:bottom-[-4px] after:left-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-bottom-left">
+              <Link href={`/stores/${store.slug}/category/bags`} className="hover:text-[#c9974b] transition-colors relative after:content-[''] after:absolute after:w-full after:h-[2px] after:bg-[#c9974b] after:bottom-[-4px] after:left-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-bottom-left">
                 กระเป๋าสะพาย
               </Link>
-              <Link href={`/${store.slug}/category/wallets`} className="hover:text-[#c9974b] transition-colors relative after:content-[''] after:absolute after:w-full after:h-[2px] after:bg-[#c9974b] after:bottom-[-4px] after:left-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-bottom-left">
+              <Link href={`/stores/${store.slug}/category/wallets`} className="hover:text-[#c9974b] transition-colors relative after:content-[''] after:absolute after:w-full after:h-[2px] after:bg-[#c9974b] after:bottom-[-4px] after:left-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-bottom-left">
                 วอลเล็ต
               </Link>
-              <Link href={`/${store.slug}/about`} className="hover:text-[#c9974b] transition-colors relative after:content-[''] after:absolute after:w-full after:h-[2px] after:bg-[#c9974b] after:bottom-[-4px] after:left-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-bottom-left">
+              <Link href={`/stores/${store.slug}/about`} className="hover:text-[#c9974b] transition-colors relative after:content-[''] after:absolute after:w-full after:h-[2px] after:bg-[#c9974b] after:bottom-[-4px] after:left-0 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-bottom-left">
                 เรื่องราวของเรา
               </Link>
             </nav>
           </div>
 
-          <Link href={`/${store.slug}`} className="absolute left-1/2 -translate-x-1/2 text-center group">
+          <Link href={`/stores/${store.slug}`} className="absolute left-1/2 -translate-x-1/2 text-center group">
             {store.logoUrl ? (
               <img src={store.logoUrl} alt={store.name} className="h-12 w-auto object-contain" />
             ) : (

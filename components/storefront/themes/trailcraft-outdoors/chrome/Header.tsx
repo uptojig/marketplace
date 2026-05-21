@@ -24,7 +24,7 @@ export function TrailcraftHeader({ store, categories }: HeaderProps) {
 
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href={`/${store.slug}`} className="flex items-center gap-3">
+            <Link href={`/stores/${store.slug}`} className="flex items-center gap-3">
               {store.logoUrl ? (
                 <img src={store.logoUrl} alt={store.name} className="h-10 w-auto rounded-md shadow-sm border border-[#84cc16]/30" />
               ) : (
@@ -48,7 +48,7 @@ export function TrailcraftHeader({ store, categories }: HeaderProps) {
             {categories.slice(0, 4).map((category) => (
               <Link
                 key={category.id}
-                href={`/${store.slug}/category/${category.slug}`}
+                href={`/stores/${store.slug}/category/${category.slug}`}
                 className="font-[family:var(--font-prompt)] text-[#1a2e05] hover:text-[#365314] hover:underline decoration-[#facc15] decoration-4 underline-offset-4 font-semibold transition-all"
               >
                 {category.name}
@@ -64,7 +64,7 @@ export function TrailcraftHeader({ store, categories }: HeaderProps) {
             <button className="text-[#1a2e05] hover:text-[#365314] transition-colors hidden sm:block">
               <User className="h-5 w-5" />
             </button>
-            <Link href={`/${store.slug}/cart`} className="text-[#1a2e05] hover:text-[#365314] relative group">
+            <Link href={`/stores/${store.slug}/cart`} className="text-[#1a2e05] hover:text-[#365314] relative group">
               <ShoppingCart className="h-6 w-6 group-hover:scale-110 transition-transform" />
               {cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#facc15] text-[#1a2e05] text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center shadow-sm">

@@ -26,7 +26,7 @@ export function PastelPackHeader({ storeName, storeSlug, logoUrl, categories }: 
         </div>
 
         <div className="flex-1 flex justify-center lg:justify-start">
-          <Link href={`/${storeSlug}`} className="flex items-center gap-2 group">
+          <Link href={`/stores/${storeSlug}`} className="flex items-center gap-2 group">
             {logoUrl ? (
               <img src={logoUrl} alt={storeName} className="h-10 w-auto rounded group-hover:opacity-90 transition-opacity" />
             ) : (
@@ -44,7 +44,7 @@ export function PastelPackHeader({ storeName, storeSlug, logoUrl, categories }: 
           {categories.slice(0, 5).map((category) => (
             <Link 
               key={category.id} 
-              href={`/${storeSlug}/category/${category.slug}`}
+              href={`/stores/${storeSlug}/category/${category.slug}`}
               className="text-[#0f766e] hover:text-[#0f4a44] transition-colors uppercase text-sm font-bold tracking-wider relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[#0f4a44] after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-right hover:after:origin-left"
             >
               {category.name}
@@ -55,7 +55,7 @@ export function PastelPackHeader({ storeName, storeSlug, logoUrl, categories }: 
         <div className="flex items-center gap-4 lg:gap-6 justify-end flex-1 lg:flex-none">
           <Search className="w-5 h-5 hidden lg:block cursor-pointer text-[#0f766e] hover:text-[#0f4a44] transition-colors" />
           <User className="w-5 h-5 hidden lg:block cursor-pointer text-[#0f766e] hover:text-[#0f4a44] transition-colors" />
-          <Link href={`/${storeSlug}/cart`} className="relative group p-2 flex items-center gap-2 bg-[#ccfbf1] hover:bg-[#0f766e] hover:text-[#fde68a] text-[#0f766e] rounded-full transition-all px-4 py-2">
+          <Link href={`/stores/${storeSlug}/cart`} className="relative group p-2 flex items-center gap-2 bg-[#ccfbf1] hover:bg-[#0f766e] hover:text-[#fde68a] text-[#0f766e] rounded-full transition-all px-4 py-2">
             <ShoppingCart className="w-5 h-5" />
             <span className="font-bold font-[family:var(--font-kanit)] hidden sm:block">ตะกร้า</span>
             {cartCount > 0 && (

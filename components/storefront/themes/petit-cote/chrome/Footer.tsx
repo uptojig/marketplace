@@ -16,7 +16,7 @@ export function PetitCoteFooter({ store }: FooterProps) {
   return (
     <footer className="bg-[#fafafa] border-t border-[#f4f4f5] pt-16 pb-8 font-[family:var(--font-kanit)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
-        <Link href={`/${store.slug}`} className="mb-8">
+        <Link href={`/stores/${store.slug}`} className="mb-8">
           {store.logoUrl ? (
             <img src={store.logoUrl} alt={store.name} className="h-12 w-auto" />
           ) : (

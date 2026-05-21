@@ -16,10 +16,10 @@ export function TinyhandFooter({ storeName, storeSlug }: { storeName: string; st
           <div>
             <h4 className="font-bold mb-4 text-[#c9974b]">เลือกซื้อตามอายุ</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href={`/${storeSlug}/category/1-plus`} className="hover:text-[#f7f1e3] transition-colors">1+ ขวบ (เริ่มเรียนรู้)</Link></li>
-              <li><Link href={`/${storeSlug}/category/2-plus`} className="hover:text-[#f7f1e3] transition-colors">2+ ขวบ (พัฒนาการ)</Link></li>
-              <li><Link href={`/${storeSlug}/category/3-plus`} className="hover:text-[#f7f1e3] transition-colors">3+ ขวบ (จินตนาการ)</Link></li>
-              <li><Link href={`/${storeSlug}/category/4-plus`} className="hover:text-[#f7f1e3] transition-colors">4+ ขวบ (ทักษะ)</Link></li>
+              <li><Link href={`/stores/${storeSlug}/category/1-plus`} className="hover:text-[#f7f1e3] transition-colors">1+ ขวบ (เริ่มเรียนรู้)</Link></li>
+              <li><Link href={`/stores/${storeSlug}/category/2-plus`} className="hover:text-[#f7f1e3] transition-colors">2+ ขวบ (พัฒนาการ)</Link></li>
+              <li><Link href={`/stores/${storeSlug}/category/3-plus`} className="hover:text-[#f7f1e3] transition-colors">3+ ขวบ (จินตนาการ)</Link></li>
+              <li><Link href={`/stores/${storeSlug}/category/4-plus`} className="hover:text-[#f7f1e3] transition-colors">4+ ขวบ (ทักษะ)</Link></li>
             </ul>
           </div>
           <div>
