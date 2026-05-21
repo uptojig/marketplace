@@ -76,11 +76,14 @@ export type TemplateId =
   // dispatcher.
   | "classic"
   | "lookbook"
-  | "catalog-dense"
-  | "home-living"
-  | "flash-deal"
+  | "tech-compare"
+  | "sport-active"
+  | "wholesale-b2b"
   | "handmade"
-  | "video-feed"
+  | "live-commerce"
+  | "eco-pack"
+  | "bikini-beach"
+  | "mega-store"
   | "everyday-retail"
   | "taobao-style"
   | "packaging-supply";
@@ -593,11 +596,11 @@ export type ThemeOption = {
 export const THEME_OPTIONS: ThemeOption[] = [
   { key: "trust", name: "คลาสสิก", description: "สะอาด น่าเชื่อถือ เหมาะร้านทั่วไป", templateId: "classic" },
   { key: "fashion-beauty", name: "แฟชั่น & บิวตี้", description: "ลุคบุ๊กภาพใหญ่ โทนอ่อน เหมาะเสื้อผ้า/เครื่องสำอาง", templateId: "lookbook" },
-  { key: "electronics-tech", name: "อิเล็กทรอนิกส์ & ไอที", description: "แคตตาล็อกแน่น ค้นหาง่าย เหมาะสินค้าเยอะ/สเปกละเอียด", templateId: "catalog-dense" },
-  { key: "lifestyle", name: "ไลฟ์สไตล์ & แต่งบ้าน", description: "ภาพบรรยากาศ การ์ดซีน เหมาะของแต่งบ้าน/กีฬา/เด็ก", templateId: "home-living" },
-  { key: "business-model", name: "โปรโมชัน & ดีล", description: "เน้นดีล countdown สต็อก เหมาะ flash sale/ขายส่ง", templateId: "flash-deal" },
+  { key: "electronics-tech", name: "อิเล็กทรอนิกส์ & ไอที", description: "แคตตาล็อกแน่น ค้นหาง่าย เหมาะสินค้าเยอะ/สเปกละเอียด", templateId: "tech-compare" },
+  { key: "lifestyle", name: "ไลฟ์สไตล์ & แต่งบ้าน", description: "ภาพบรรยากาศ การ์ดซีน เหมาะของแต่งบ้าน/กีฬา/เด็ก", templateId: "sport-active" },
+  { key: "business-model", name: "โปรโมชัน & ดีล", description: "เน้นดีล countdown สต็อก เหมาะ flash sale/ขายส่ง", templateId: "wholesale-b2b" },
   { key: "specialty", name: "คราฟต์ & วินเทจ", description: "เล่าเรื่องแบรนด์ โชว์ผู้ผลิต เหมาะงานฝีมือ/มือสอง", templateId: "handmade" },
-  { key: "community", name: "วิดีโอ & ไลฟ์", description: "ฟีดวิดีโอ ไลฟ์สด สไตล์ TikTok/โซเชียล", templateId: "video-feed" },
+  { key: "community", name: "วิดีโอ & ไลฟ์", description: "ฟีดวิดีโอ ไลฟ์สด สไตล์ TikTok/โซเชียล", templateId: "live-commerce" },
   { key: "everyday", name: "ขายปลีกทั่วไป", description: "สไตล์ Shopee ภาพใหญ่ ราคาเด่น แท็บหมวด", templateId: "everyday-retail" },
   { key: "taobao", name: "มาร์เก็ตเพลส", description: "โทนส้ม-แดง-ชมพู ลดทุกวัน อารมณ์ Taobao", templateId: "taobao-style" },
   { key: "packaging", name: "บรรจุภัณฑ์ & ซัพพลาย", description: "พาสเทลสดใส เหมาะสินค้าบรรจุภัณฑ์/ซัพพลาย", templateId: "packaging-supply" },
