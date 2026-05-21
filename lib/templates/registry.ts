@@ -1,5 +1,4 @@
 import type { Template, TemplateId } from './types';
-import { defaultTheme, themePresets } from './theme';
 import {
   EcoPackHeaderAdapter,
   EcoPackFooterAdapter,
@@ -229,9 +228,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Classic',
     description: 'Balanced default for general retail',
     group: 'trust',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible', showTabs: true },
-    gating: {},
   },
 
 
@@ -241,9 +238,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Lookbook',
     description: 'Editorial fashion with portrait hero',
     group: 'fashion-beauty',
-    theme: themePresets.lookbook,
     behavior: { bottomNav: 'visible', hideRatingsCount: true },
-    gating: {},
   },
 
 
@@ -254,9 +249,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Tech compare',
     description: 'Spec comparison cards',
     group: 'electronics-tech',
-    theme: themePresets.catalog,
     behavior: { bottomNav: 'visible' },
-    gating: {},
   },
 
 
@@ -266,9 +259,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Sport & active',
     description: 'Performance badges and action imagery',
     group: 'lifestyle',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible', performanceBadges: 'visible' },
-    gating: {},
   },
 
 
@@ -277,9 +268,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Live commerce',
     description: 'Live stream + replay + products from live',
     group: 'community',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible', liveBlock: 'visible' },
-    gating: { requiresModule: ['live-commerce'] },
   },
 
 
@@ -289,9 +278,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Wholesale B2B',
     description: 'Pricing tiers, MOQ, business buyer',
     group: 'business-model',
-    theme: themePresets.catalog,
     behavior: { bottomNav: 'visible', b2bMode: true },
-    gating: { requiresKYC: 'business-verified' },
   },
 
 
@@ -301,9 +288,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Handmade artisan',
     description: 'Maker portrait + small batch craft',
     group: 'specialty',
-    theme: themePresets.premium,
     behavior: { bottomNav: 'visible', makerPortrait: 'visible', storyBlock: 'inline-visible' },
-    gating: {},
   },
 
 
@@ -317,9 +302,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'BIKINI 551',
     description: 'ชุดว่ายน้ำ ทะเลใส โทนสด · บีกีนี่สำหรับสาวเอเชีย',
     group: 'fashion-beauty',
-    theme: themePresets.lookbook,
     behavior: { bottomNav: 'visible', hideRatingsCount: true },
-    gating: {},
     chrome: {
       Header: BikiniHeaderAdapter,
       Footer: BikiniFooterAdapter,
@@ -350,9 +333,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Eco Pack',
     description: 'บรรจุภัณฑ์รักษ์โลก มินิมอล โทนธรรมชาติ และคราฟท์',
     group: 'business-model',
-    theme: themePresets.classic,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: EcoPackHeaderAdapter,
       Footer: EcoPackFooterAdapter,
@@ -380,9 +361,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Mega Store',
     description: 'ร้านค้าสายช้อป อารมณ์ Taobao ของเยอะ โปรแน่น สีสันสดใส',
     group: 'lifestyle',
-    theme: themePresets.catalog,
     behavior: { bottomNav: 'visible', searchInTopBar: true, productGridDensity: 'dense' },
-    gating: {},
     chrome: {
       Header: MegaStoreHeaderAdapter,
       Footer: MegaStoreFooterAdapter,
@@ -409,9 +388,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Everyday Retail',
     description: 'Shopee-style consumer retail — photo-forward, red CTA',
     group: 'everyday',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
-    gating: {},
   },
 
   'taobao-style': {
@@ -419,9 +396,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Taobao Marketplace',
     description: 'Bold orange/red/pink gradient marketplace · flash deals · countdown',
     group: 'taobao',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible', countdownBanner: 'visible', stockIndicators: 'visible' },
-    gating: {},
   },
 
   'packaging-supply': {
@@ -429,9 +404,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Packaging Supply',
     description: 'Pink / yellow / sky / white cheerful packaging-supply storefront',
     group: 'packaging',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
   },
 
   'sai-sing': {
@@ -439,9 +412,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Sai Sing',
     description: 'ท่อสูตร อะไหล่ซิ่ง รถแต่ง สไตล์มอเตอร์ไซค์สปอร์ต',
     group: 'specialty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: SaiSingHeaderAdapter,
       Footer: SaiSingFooterAdapter,
@@ -457,9 +428,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Talad See Sod',
     description: 'ร้านขายไอทีแกดเจ็ต สีสันสดใส เน้นโปรโมชั่นสะดุดตา',
     group: 'everyday',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: TaladSeeSodHeaderAdapter,
       Footer: TaladSeeSodFooterAdapter,
@@ -475,9 +444,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Brutalist Thai',
     description: 'โรงพิมพ์และร้านขายโปสเตอร์อาร์ต ดีไซน์ดิบ ดุดัน สไตล์ Brutalist',
     group: 'fashion-beauty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: BrutalistThaiHeaderAdapter,
       Footer: BrutalistThaiFooterAdapter,
@@ -493,9 +460,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Mono Eight',
     description: 'แฟชั่นสตรีทแวร์ลิมิเต็ด สไตล์ zine ขาวดำ',
     group: 'fashion-beauty',
-    theme: themePresets.lookbook,
     behavior: { bottomNav: 'visible', hideRatingsCount: true },
-    gating: {},
     chrome: {
       Header: MonoEightHeaderAdapter,
       Footer: MonoEightFooterAdapter,
@@ -511,9 +476,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Lila Modest',
     description: 'เดรสยาวและผ้าคลุม modest-wear โทนอุ่น',
     group: 'fashion-beauty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible', storyBlock: 'inline-visible' },
-    gating: {},
     chrome: {
       Header: LilaModestHeaderAdapter,
       Footer: LilaModestFooterAdapter,
@@ -532,9 +495,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Atelier 27',
     description: 'สูทตัดเฉพาะบุคคล premium luxury สไตล์ Hermès',
     group: 'trust',
-    theme: themePresets.premium,
     behavior: { bottomNav: 'visible', hideRatingsCount: true },
-    gating: {},
     chrome: {
       Header: Atelier27HeaderAdapter,
       Footer: Atelier27FooterAdapter,
@@ -553,9 +514,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Bulkbox Industrial',
     description: 'Auto-generated theme for bulkbox-industrial',
     group: 'business-model',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: BulkboxHeaderAdapter,
       Footer: BulkboxFooterAdapter,
@@ -575,9 +534,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Caldera Skin',
     description: 'Auto-generated theme for caldera-skin',
     group: 'fashion-beauty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: CalderaSkinHeaderAdapter,
       Footer: CalderaSkinFooterAdapter,
@@ -596,9 +553,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Carbon Era Cameras',
     description: 'Auto-generated theme for carbon-era-cameras',
     group: 'electronics-tech',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: CarbonEraCamerasHeaderAdapter,
       Footer: CarbonEraCamerasFooterAdapter,
@@ -616,9 +571,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Glow Lamp Co',
     description: 'Auto-generated theme for glow-lamp-co',
     group: 'lifestyle',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: GlowLampCoHeaderAdapter,
       Footer: GlowLampCoFooterAdapter,
@@ -634,9 +587,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Hinoki Apothecary',
     description: 'Auto-generated theme for hinoki-apothecary',
     group: 'fashion-beauty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: HinokiHeaderAdapter,
       Footer: HinokiFooterAdapter,
@@ -652,9 +603,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Inkstone Paper',
     description: 'Auto-generated theme for inkstone-paper',
     group: 'lifestyle',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: InkstonePaperHeaderAdapter,
       Footer: InkstonePaperFooterAdapter,
@@ -670,9 +619,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Keystroke Lab',
     description: 'Auto-generated theme for keystroke-lab',
     group: 'electronics-tech',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: KeystrokeLabHeaderAdapter,
       Footer: KeystrokeLabFooterAdapter,
@@ -691,9 +638,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Korakot House',
     description: 'Auto-generated theme for korakot-house',
     group: 'lifestyle',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: KorakotHouseHeaderAdapter,
       Footer: KorakotHouseFooterAdapter,
@@ -709,9 +654,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Linen And Loom',
     description: 'Auto-generated theme for linen-and-loom',
     group: 'fashion-beauty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: LinenAndLoomHeaderAdapter,
       Footer: LinenAndLoomFooterAdapter,
@@ -730,9 +673,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Mai Hatthakam',
     description: 'Auto-generated theme for mai-hatthakam',
     group: 'specialty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: MaiHatthakamHeaderAdapter,
       Footer: MaiHatthakamFooterAdapter,
@@ -748,9 +689,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Pastel Pack',
     description: 'Auto-generated theme for pastel-pack',
     group: 'packaging',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: PastelPackHeaderAdapter,
       Footer: PastelPackFooterAdapter,
@@ -766,9 +705,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Petit Cote',
     description: 'Auto-generated theme for petit-cote',
     group: 'lifestyle',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: PetitCoteHeaderAdapter,
       Footer: PetitCoteFooterAdapter,
@@ -787,9 +724,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Pigment Studio',
     description: 'Auto-generated theme for pigment-studio',
     group: 'specialty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: PigmentStudioHeaderAdapter,
       Footer: PigmentStudioFooterAdapter,
@@ -808,9 +743,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Reclaim Leather',
     description: 'Auto-generated theme for reclaim-leather',
     group: 'fashion-beauty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: ReclaimLeatherHeaderAdapter,
       Footer: ReclaimLeatherFooterAdapter,
@@ -826,9 +759,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Saluki Yoga',
     description: 'Auto-generated theme for saluki-yoga',
     group: 'lifestyle',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: SalukiYogaHeaderAdapter,
       Footer: SalukiYogaFooterAdapter,
@@ -844,9 +775,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Sirin Womenswear',
     description: 'Auto-generated theme for sirin-womenswear',
     group: 'fashion-beauty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: SirinHeaderAdapter,
       Footer: SirinFooterAdapter,
@@ -865,9 +794,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Smartloop Home',
     description: 'Auto-generated theme for smartloop-home',
     group: 'electronics-tech',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: SmartloopHomeHeaderAdapter,
       Footer: SmartloopHomeFooterAdapter,
@@ -886,9 +813,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Tinyhand Wooden Toys',
     description: 'Auto-generated theme for tinyhand-wooden-toys',
     group: 'lifestyle',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: TinyhandWoodenToysHeaderAdapter,
       Footer: TinyhandWoodenToysFooterAdapter,
@@ -904,9 +829,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Trailcraft Outdoors',
     description: 'Auto-generated theme for trailcraft-outdoors',
     group: 'lifestyle',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: TrailcraftHeaderAdapter,
       Footer: TrailcraftFooterAdapter,
@@ -922,9 +845,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Wavelength Audio',
     description: 'Auto-generated theme for wavelength-audio',
     group: 'electronics-tech',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: WavelengthAudioHeaderAdapter,
       Footer: WavelengthAudioFooterAdapter,
@@ -943,9 +864,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Yumeiro Lip',
     description: 'Auto-generated theme for yumeiro-lip',
     group: 'fashion-beauty',
-    theme: defaultTheme,
     behavior: { bottomNav: 'visible' },
-    gating: {},
     chrome: {
       Header: YumeiroLipHeaderAdapter,
       Footer: YumeiroLipFooterAdapter,
@@ -960,36 +879,7 @@ export const templates: Record<TemplateId, Template> = {
   },
 };
 
-export function getTemplate(id: TemplateId): Template {
-  const t = templates[id];
-  if (!t) throw new Error(`Template "${id}" not found`);
-  return t;
-}
 
-/**
- * Recommend top templates for a given niche.
- * Real implementation: ML model or admin-curated mapping.
- */
-export function getRecommendedTemplates(niche: string, limit = 3): Template[] {
-  const recommendations: Record<string, TemplateId[]> = {
-    electronics: ['tech-compare', 'classic', 'wholesale-b2b'],
-    fashion: ['lookbook', 'bikini-beach', 'classic'],
-    beauty: ['lookbook', 'pigment-studio', 'classic'],
-    home: ['sport-active', 'classic', 'lookbook'],
-    sport: ['sport-active', 'classic', 'tech-compare'],
-    kids: ['sport-active', 'classic', 'lookbook'],
-    handmade: ['handmade', 'lookbook', 'classic'],
-    vintage: ['handmade', 'lookbook', 'classic'],
-    wholesale: ['wholesale-b2b', 'tech-compare', 'classic'],
-    streaming: ['live-commerce', 'classic', 'lookbook'],
-    subscription: ['wholesale-b2b', 'lookbook', 'classic'],
-    luxury: ['classic', 'atelier-27', 'lookbook'],
-    flash: ['wholesale-b2b', 'classic', 'tech-compare'],
-  };
-
-  const ids = recommendations[niche] ?? ['classic', 'tech-compare', 'lookbook'];
-  return ids.slice(0, limit).map(getTemplate);
-}
 
 // Re-export from the single source of truth.
 // Import TEMPLATE_GROUPS_MAP and alias for backwards compat.

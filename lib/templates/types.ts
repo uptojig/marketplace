@@ -20,24 +20,6 @@ import type { ComponentType } from 'react';
 // StoreRenderer block system. Templates now render via bespoke
 // pages.home components or family switch homepages.
 
-// ============================================================================
-// Theme tokens
-// ============================================================================
-
-export interface ThemeTokens {
-  colors: {
-    primary: string;
-    accent: string;
-    surface: string;
-    text: string;
-  };
-  typography: {
-    titleScale: 'compact' | 'default' | 'editorial';
-    fontFamily: 'default' | 'serif' | 'display';
-  };
-  spacing: 'compact' | 'default' | 'airy';
-  radius: 'sharp' | 'default' | 'round';
-}
 
 // ============================================================================
 // Template configuration
@@ -128,10 +110,6 @@ export interface BehaviorFlags {
   productCardStyle?: 'default' | 'minimal' | 'editorial' | 'spec-rows';
 }
 
-export interface GatingConfig {
-  requiresKYC?: 'basic' | 'brand-verified' | 'business-verified';
-  requiresModule?: ('live-commerce' | 'video-content' | 'subscription')[];
-}
 
 
 
@@ -140,9 +118,7 @@ export interface Template {
   name: string;
   description: string;
   group: TemplateGroup;
-  theme: ThemeTokens;
   behavior: BehaviorFlags;
-  gating: GatingConfig;
   /**
    * Optional bespoke chrome (header / footer / announcement strip).
    * When present, `app/stores/[slug]/layout.tsx` skips the default
@@ -275,16 +251,6 @@ export interface AnnouncementStripProps {
 // ----------------------------------------------------------------------------
 
 /** Bare store identity surfaced on every page (logo + slug + primary color). */
-export interface TemplateStoreSummary {
-  id: string;
-  slug: string;
-  name: string;
-  description?: string | null;
-  tagline?: string | null;
-  logoUrl?: string | null;
-  bannerUrl?: string | null;
-  primaryColor?: string | null;
-}
 
 /** A storefront product card in its lightest form (catalog tiles, related rails, etc). */
 export interface TemplateProductCard {
@@ -412,41 +378,8 @@ export interface HelpProps {
 // Store data
 // ============================================================================
 
-export interface Store {
-  id: string;
-  slug: string;
-  name: string;
-  description?: string;
-  niche: string;
-  branding: StoreBranding;
-  templateId: TemplateId;
-  themeOverrides?: Partial<ThemeTokens>;
-  badges?: StoreBadges;
-  rating: number;
-  followers: number;
-  collections: Collection[];
-  products: Product[];
-  liveStream?: LiveStreamInfo;
-}
 
-export interface StoreBranding {
-  logoUrl?: string;
-  bannerUrl?: string;
-  portraitUrl?: string;
-  videoUrl?: string;
-  colors: {
-    primary: string;
-    accent: string;
-    surface: string;
-    text: string;
-  };
-}
 
-export interface StoreBadges {
-  official?: boolean;
-  b2b?: boolean;
-  verified?: boolean;
-}
 
 export interface Collection {
   id: string;
