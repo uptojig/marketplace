@@ -14,7 +14,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { Loader2, MailCheck, ShieldCheck, Clock, Lock } from "lucide-react";
+import { Loader2, MailCheck, ShieldCheck, Clock, Lock, AlertCircle } from "lucide-react";
 
 const ERROR_MESSAGES: Record<string, string> = {
   Configuration: "OAuth ตั้งค่าผิด ตรวจสอบ env vars",
@@ -49,7 +49,12 @@ function GoogleIcon() {
   );
 }
 
-function EmailForm() {
+interface EmailFormProps {
+  refCode: string;
+  agentName: string;
+}
+
+function EmailForm({ refCode, agentName }: EmailFormProps) {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -61,7 +66,7 @@ function EmailForm() {
     const res = await signIn("email", {
       email: email.trim(),
       redirect: false,
-      callbackUrl: "/apply",
+      callbackUrl: `/apply?ref=${encodeURIComponent(refCode)}`,
     });
     setSubmitting(false);
     if (res?.ok) setSent(true);
@@ -84,12 +89,12 @@ function EmailForm() {
             <h3 className="text-[16px] font-semibold text-mp-ink mb-1">
               ส่งลิงก์ไปที่อีเมลแล้ว ✉️
             </h3>
-            <p className="text-[14px] leading-relaxed text-mp-ink-muted">
+            <p className="text-[14px] leading-relaxed text-mp-ink-muted mb-1">
               เราส่งลิงก์เข้าสู่ระบบไปที่{" "}
               <span className="font-medium text-mp-ink">{email}</span> —
               กรุณาเปิดอีเมลและคลิกลิงก์เพื่อเริ่มใช้งาน
             </p>
-            <p className="mt-2 text-[12px] text-mp-ink-muted/80">
+            <p className="text-[12px] text-mp-ink-muted/80">
               ลิงก์จะหมดอายุภายใน 24 ชั่วโมง
             </p>
           </div>
@@ -120,6 +125,12 @@ function EmailForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {agentName && (
+        <div className="rounded-xl border border-mp-forest/20 bg-mp-forest/5 p-3 text-xs text-mp-forest flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 shrink-0" />
+          <span>แนะนำโดยตัวแทน: <strong>{agentName}</strong> ({refCode})</span>
+        </div>
+      )}
       <div>
         <label htmlFor="signup-email" className="block text-[14px] font-medium text-mp-ink mb-1.5">
           อีเมล
@@ -148,24 +159,149 @@ function EmailForm() {
   );
 }
 
-export default function SignUpPage() {
+function SignUpPageContent() {
+  const searchParams = useSearchParams();
+  const [isValidating, setIsValidating] = useState(true);
+  const [isValidRef, setIsValidRef] = useState(false);
+  const [refCode, setRefCode] = useState("");
+  const [agentName, setAgentName] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useState(() => {
+    // Read code from URL or localStorage
+    const urlRef = searchParams.get("ref");
+    const storedRef = typeof window !== "undefined" ? window.localStorage.getItem("agent.ref.code") : null;
+    const finalCode = urlRef || storedRef;
+
+    if (!finalCode) {
+      setIsValidating(false);
+      setIsValidRef(false);
+      return;
+    }
+
+    fetch(`/api/agents/validate?code=${encodeURIComponent(finalCode)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          setIsValidRef(true);
+          setRefCode(finalCode.toUpperCase());
+          setAgentName(data.agentName);
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem("agent.ref.code", finalCode.toUpperCase());
+          }
+        } else {
+          setIsValidRef(false);
+          setErrorMsg(data.detail || "Link Code ไม่ถูกต้อง หรือ ตัวแทนไม่พร้อมใช้งาน");
+          if (typeof window !== "undefined") {
+            window.localStorage.removeItem("agent.ref.code");
+          }
+        }
+      })
+      .catch(() => {
+        setIsValidRef(false);
+        setErrorMsg("ไม่สามารถตรวจสอบข้อมูลตัวแทนได้ในขณะนี้");
+      })
+      .finally(() => {
+        setIsValidating(false);
+      });
+  });
+
+  if (isValidating) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-mp-cream">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-mp-coral animate-spin mx-auto mb-3" />
+          <p className="text-[15px] text-mp-ink-muted">กำลังตรวจสอบสิทธิ์การเข้าใช้งาน...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isValidRef) {
+    return (
+      <div className="mx-auto max-w-[1440px] min-h-[calc(100vh-4rem)] grid lg:grid-cols-[60%_40%] bg-mp-cream">
+        <aside
+          className="hidden lg:flex flex-col justify-between bg-mp-forest text-mp-cream p-12 relative overflow-hidden"
+          aria-hidden="true"
+        >
+          <div className="absolute inset-0">
+            <Image
+              src="/editorial_bg.png"
+              alt=""
+              fill
+              className="object-cover"
+              sizes="60vw"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
+          <div className="relative z-10">
+            <span className="text-[13px] font-medium uppercase tracking-[0.16em] text-mp-cream/70">
+              Basketplace
+            </span>
+          </div>
+          <blockquote
+            className="relative z-10 max-w-md text-2xl lg:text-3xl leading-snug text-mp-cream font-semibold"
+            style={{ fontFamily: "var(--mp-font-display)" }}
+          >
+            “เข้าใช้งานด้วยระบบตัวแทนเท่านั้น”
+          </blockquote>
+        </aside>
+
+        <div className="flex items-center justify-center px-6 py-12 lg:py-16 bg-mp-cream">
+          <div className="w-full max-w-[400px] text-center lg:text-left">
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 text-left">
+              <div className="flex items-start gap-3 text-red-700">
+                <AlertCircle className="w-6 h-6 shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-[16px] font-semibold mb-1">
+                    การเข้าใช้งานถูกจำกัด 🔒
+                  </h3>
+                  <p className="text-[14px] leading-relaxed text-red-700/80">
+                    {errorMsg || "คุณต้องสมัครสมาชิกและเข้ายืนยันตัวตนผ่านลิงก์แนะนำของตัวแทน (Agent) เท่านั้น จึงจะสามารถเปิดร้านค้ากับเราได้"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-sm text-mp-ink-muted">หากคุณสนใจร่วมทีมและต้องการเป็นตัวแทนผู้แนะนำร้านค้า:</p>
+              <Link
+                href="/agent/register"
+                className="flex w-full h-11 items-center justify-center rounded-xl bg-mp-coral text-[15px] font-semibold text-white hover:bg-mp-coral-dark transition-all"
+              >
+                สมัครเป็นตัวแทน (Agent)
+              </Link>
+              <Link
+                href="/signin"
+                className="flex w-full h-11 items-center justify-center rounded-xl border border-mp-border bg-white text-[15px] font-semibold text-mp-ink hover:bg-mp-cream-alt/40 transition-all"
+              >
+                เข้าสู่ระบบ (ถ้ามีบัญชีแล้ว)
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] grid lg:grid-cols-[60%_40%]">
+    <div className="mx-auto max-w-[1440px] min-h-[calc(100vh-4rem)] grid lg:grid-cols-[60%_40%] bg-mp-cream">
       {/* LEFT — editorial brand panel */}
       <aside
         className="hidden lg:flex flex-col justify-between bg-mp-forest text-mp-cream p-12 relative overflow-hidden"
         aria-hidden="true"
       >
-        <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0">
           <Image
-            src="https://lh3.googleusercontent.com/aida/ADBb0uj0zmNhSKLUFr6Uh4Mn7FA4zICX4lG-W3XOJYgAOytDBlgdZMKmlWn9RB0sPK8BkIAL72JAS3DrU25b90tUeJWV62pP79jZ_wbz_Y2EUZ2zbB2Ctie-LupndgCrLndIdUEv2Il1Rt8EpCjc49_fHL-doyqv6pYiGFs-Yf6HuiZMWbD5tS65OalWNWMyyVgmaNAFNxsfiOXwQR95JpV6y-eKwrzFULILSQShC_iSXanOyB02n8HOZimpMA"
+            src="/editorial_bg.png"
             alt=""
             fill
             className="object-cover"
             sizes="60vw"
             priority
           />
-          <div className="absolute inset-0 bg-mp-forest/50" />
+          <div className="absolute inset-0 bg-black/40" />
         </div>
         <div className="relative z-10">
           <span className="text-[13px] font-medium uppercase tracking-[0.16em] text-mp-cream/70">
@@ -213,9 +349,7 @@ export default function SignUpPage() {
             <ErrorBanner />
           </Suspense>
 
-          <Suspense fallback={null}>
-            <EmailForm />
-          </Suspense>
+          <EmailForm refCode={refCode} agentName={agentName} />
 
           <div className="relative my-6">
             <div className="absolute inset-x-0 top-1/2 h-px bg-mp-border" />
@@ -226,7 +360,7 @@ export default function SignUpPage() {
 
           <button
             type="button"
-            onClick={() => signIn("google", { callbackUrl: "/apply" })}
+            onClick={() => signIn("google", { callbackUrl: `/apply?ref=${encodeURIComponent(refCode)}` })}
             className="w-full h-11 flex items-center justify-center gap-2.5 rounded-xl bg-white border border-mp-border text-[15px] font-medium text-mp-ink hover:bg-mp-cream-alt/40 transition-colors"
           >
             <GoogleIcon />
@@ -236,7 +370,7 @@ export default function SignUpPage() {
           <p className="mt-8 text-center text-[14px] text-mp-ink-muted">
             มีบัญชีอยู่แล้ว?{" "}
             <Link
-              href="/signin"
+              href={`/signin?ref=${encodeURIComponent(refCode)}`}
               className="font-semibold text-mp-coral hover:underline"
             >
               เข้าสู่ระบบ
@@ -256,5 +390,17 @@ export default function SignUpPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-mp-cream">
+        <Loader2 className="w-8 h-8 text-mp-coral animate-spin" />
+      </div>
+    }>
+      <SignUpPageContent />
+    </Suspense>
   );
 }

@@ -22,55 +22,8 @@ const BACKFILL_COOLDOWN_MS = 5 * 60 * 1000;
 import { ShopFloatingButtons } from "@/components/shop/ShopFloatingButtons";
 import { CookiesBar } from "@/components/shop/CookiesBar";
 import { resolveFamily } from "@/lib/landing/families";
-import {
-  FASHION_BEAUTY_BODY_CLASS,
-  fashionBeautyCssVars,
-  isFashionBeautyStore,
-} from "@/lib/landing/fashion-beauty";
-import {
-  TRUST_BODY_CLASS,
-  TRUST_TOKENS,
-  trustCssVars,
-  isTrustStore,
-} from "@/lib/landing/trust";
-import {
-  BUSINESS_MODEL_BODY_CLASS,
-  BUSINESS_MODEL_TOKENS,
-  businessModelCssVars,
-  isBusinessModelStore,
-} from "@/lib/landing/business-model";
-import {
-  LIFESTYLE_BODY_CLASS,
-  LIFESTYLE_TOKENS,
-  lifestyleCssVars,
-  isLifestyleStore,
-} from "@/lib/landing/lifestyle";
-import {
-  PACKAGING_BODY_CLASS,
-  packagingCssVars,
-  isPackagingStore,
-} from "@/lib/landing/packaging";
-import {
-  TAOBAO_BODY_CLASS,
-  taobaoCssVars,
-  isTaobaoStore,
-} from "@/lib/landing/taobao";
-import {
-  COMMUNITY_BODY_CLASS,
-  communityCssVars,
-  isCommunityStore,
-} from "@/lib/landing/community";
-import {
-  ELECTRONICS_TECH_BODY_CLASS,
-  ELECTRONICS_TECH_TOKENS,
-  electronicsTechCssVars,
-  isElectronicsTechStore,
-} from "@/lib/landing/electronics-tech";
-import {
-  SPECIALTY_BODY_CLASS,
-  specialtyCssVars,
-  isSpecialtyStore,
-} from "@/lib/landing/specialty";
+import { resolveStoreTheme } from "@/lib/storefront/resolve-store-theme";
+import { getStoreBySlug } from "@/lib/storefront/get-store";
 import { isV12Schema } from "@/lib/multi-page-migration";
 import { isHtmlSchema } from "@/components/storefront/HtmlRenderer";
 import { isReactTemplateSchema } from "@/components/storefront/templates/registry";
@@ -129,7 +82,7 @@ export default async function ShopLayout({
   children: React.ReactNode;
   params: { slug: string };
 }) {
-  const store = await prisma.store.findUnique({ where: { slug: params.slug } });
+  const store = await getStoreBySlug(params.slug);
   if (!store) notFound();
 
   // Editable storefront content (1:1 with Store) — colors, hero, announcement,
@@ -239,165 +192,16 @@ export default async function ShopLayout({
     return <>{children}</>;
   }
 
-  // Fashion-beauty pilot — single source of truth for the "is this
-  // store in the fashion-beauty family?" check. Consulted by every
-  // render path below to (a) add the .theme-fashion-beauty class and
-  // (b) merge the family's CSS-var palette over the per-page tokens.
-  // Detection looks at both Prisma `templateId` (registry-driven
-  // stores) and `landingThemeVariant` (operator-picked or AI-multi-
-  // page "B" code). See lib/landing/fashion-beauty.ts for the matrix.
-  const isFB = isFashionBeautyStore({
-    templateId: store.templateId,
-    landingThemeVariant: store.landingThemeVariant,
-  });
-  const fbVars = isFB ? fashionBeautyCssVars() : {};
-  const fbClass = isFB ? FASHION_BEAUTY_BODY_CLASS : "";
-
-  // Trust family (DESIGN-B sibling). Stacked alongside FB so we never
-  // break the FB cascade: if both somehow matched, FB wins because its
-  // vars merge in last. In practice the template→group lookup is
-  // disjoint (a store can only be in one TemplateGroup) so this is
-  // belt-and-braces. Reads from lib/landing/trust.ts — same shape as
-  // the fashion-beauty module.
-  const isTrust = !isFB && isTrustStore({
-    templateId: store.templateId,
-    landingThemeVariant: store.landingThemeVariant,
-  });
-  const trustVars = isTrust ? trustCssVars() : {};
-  const trustClass = isTrust ? TRUST_BODY_CLASS : "";
-
-  // Business-model family (DESIGN-B sibling). Targets the deal /
-  // wholesale templates (wholesale-b2b, flash-deal, subscription).
-  // Stacked alongside FB + trust so we never break their cascades:
-  // FB and trust are checked first; this only activates when neither
-  // matched. The detection set is disjoint by template group so a
-  // single store can only ever land in one family. Reads from
-  // lib/landing/business-model.ts — same shape as the trust module.
-  const isBusinessModel = !isFB && !isTrust && isBusinessModelStore({
-    templateId: store.templateId,
-    landingThemeVariant: store.landingThemeVariant,
-  });
-  const bmVars = isBusinessModel ? businessModelCssVars() : {};
-  const bmClass = isBusinessModel ? BUSINESS_MODEL_BODY_CLASS : "";
-
-  // Lifestyle family (warm catalog / outdoorsy). Stacked AFTER trust
-  // and business-model in the chain — template→group is disjoint in
-  // practice so this is belt-and-braces. Reads from
-  // lib/landing/lifestyle.ts.
-  const isLifestyle = !isFB && !isTrust && !isBusinessModel && isLifestyleStore({
-    templateId: store.templateId,
-    landingThemeVariant: store.landingThemeVariant,
-  });
-  const lifestyleVars = isLifestyle ? lifestyleCssVars() : {};
-  const lifestyleClass = isLifestyle ? LIFESTYLE_BODY_CLASS : "";
-
-  // Electronics-tech family (DESIGN-B sibling). Stacked after the four
-  // earlier families so the dispatcher is a strict precedence ladder.
-  // In practice the template→group lookup is disjoint (a store can
-  // only be in one TemplateGroup) so this is belt-and-braces. Reads
-  // from lib/landing/electronics-tech.ts.
-  const isElectronicsTech = !isFB && !isTrust && !isBusinessModel && !isLifestyle && isElectronicsTechStore({
-    templateId: store.templateId,
-    landingThemeVariant: store.landingThemeVariant,
-  });
-  const etVars = isElectronicsTech ? electronicsTechCssVars() : {};
-  const etClass = isElectronicsTech ? ELECTRONICS_TECH_BODY_CLASS : "";
-
-  // Specialty family (artisan / vintage) — DESIGN-B sibling stacked
-  // LAST in the dispatcher chain so the precedence ladder is
-  // FB → trust → business-model → lifestyle → electronics-tech →
-  // specialty. A store can only end up in one family (the template→
-  // group lookup is disjoint); these guards are belt-and-braces. Same
-  // wiring pattern: detect via templateId or landingThemeVariant,
-  // merge CSS vars and add the .theme-specialty class so the kraft +
-  // ochre + slab-serif palette cascades to every sub-page.
-  const isSpecialty =
-    !isFB && !isTrust && !isBusinessModel && !isLifestyle && !isElectronicsTech &&
-    isSpecialtyStore({
-      templateId: store.templateId,
-      landingThemeVariant: store.landingThemeVariant,
-    });
-  const specialtyVars = isSpecialty ? specialtyCssVars() : {};
-  const specialtyClass = isSpecialty ? SPECIALTY_BODY_CLASS : "";
-
-  // Packaging family — vibrant coral + sunshine yellow palette. Same
-  // priority order as specialty (last in chain).
-  const isPackaging =
-    !isFB && !isTrust && !isBusinessModel && !isLifestyle &&
-    !isElectronicsTech && !isSpecialty &&
-    isPackagingStore({
-      templateId: store.templateId,
-      landingThemeVariant: store.landingThemeVariant,
-    });
-  const packagingVars = isPackaging ? packagingCssVars() : {};
-  const packagingClass = isPackaging ? PACKAGING_BODY_CLASS : "";
-
-  // Taobao family — bold marketplace gradient palette. Last in chain.
-  const isTaobao =
-    !isFB && !isTrust && !isBusinessModel && !isLifestyle &&
-    !isElectronicsTech && !isSpecialty && !isPackaging &&
-    isTaobaoStore({
-      templateId: store.templateId,
-      landingThemeVariant: store.landingThemeVariant,
-    });
-  const taobaoVars = isTaobao ? taobaoCssVars() : {};
-  const taobaoClass = isTaobao ? TAOBAO_BODY_CLASS : "";
-
-  // Community family — vivid purple-pink gradient (live-commerce /
-  // video-feed / storyteller). Last in priority chain.
-  const isCommunity =
-    !isFB && !isTrust && !isBusinessModel && !isLifestyle &&
-    !isElectronicsTech && !isSpecialty && !isPackaging && !isTaobao &&
-    isCommunityStore({
-      templateId: store.templateId,
-      landingThemeVariant: store.landingThemeVariant,
-    });
-  const communityVars = isCommunity ? communityCssVars() : {};
-  const communityClass = isCommunity ? COMMUNITY_BODY_CLASS : "";
-
-  // Convenience aliases — the layout's three render paths all want
-  // "give me the active family's class + vars" without recomputing.
-  // FB takes precedence by virtue of being checked first above; trust
-  // is next, business-model, lifestyle, electronics-tech, then specialty.
-  const familyClass = [fbClass, trustClass, bmClass, lifestyleClass, etClass, specialtyClass, packagingClass, taobaoClass, communityClass]
-    .filter(Boolean)
-    .join(" ");
-  // Merge order matters — earlier checks win because their vars
-  // shadow later ones. FB → trust → business-model → lifestyle → ET → specialty → packaging → taobao → community.
-  const familyVars = { ...communityVars, ...taobaoVars, ...packagingVars, ...specialtyVars, ...etVars, ...lifestyleVars, ...bmVars, ...trustVars, ...fbVars };
-  // Active family's accent — used by ShopHeader / ShopFooter to
-  // paint chrome links + glyph fills. FB pink, trust gold, business-
-  // model amber, lifestyle sage, electronics-tech cyan, specialty ochre.
-  // The base primary stays in CTAs via the CSS-var cascade.
-  const familyAccent = isFB
-    ? "#f43f5e"
-    : isTrust
-      ? TRUST_TOKENS.colors.accent
-      : isBusinessModel
-        ? BUSINESS_MODEL_TOKENS.colors.accent
-        : isLifestyle
-          ? LIFESTYLE_TOKENS.colors.accent
-          : isElectronicsTech
-            ? ELECTRONICS_TECH_TOKENS.colors.accent
-            : isSpecialty
-              ? "#ca8a04"
-              : null;
-  // Button shape pinned per-family — FB pills, trust squared,
-  // business-model squared, lifestyle pill, electronics-tech squared.
-  // Falls through to the per-template default when none apply.
-  // Specialty uses its own per-template default (rounded-md is enforced
-  // via the .theme-specialty CSS in globals.css).
-  const familyButtonShape: "pill" | "square" | null = isFB
-    ? "pill"
-    : isTrust
-      ? "square"
-      : isBusinessModel
-        ? "square"
-        : isLifestyle
-          ? "pill"
-          : isElectronicsTech
-            ? "square"
-            : null;
+  // Chrome theme — single source of truth (skin class + CSS vars + accent +
+  // button shape). resolveStoreTheme().chrome reproduces the previous
+  // per-family cascade EXACTLY (raw templateId; precedence FB → trust →
+  // business-model → lifestyle → electronics-tech → specialty → packaging →
+  // taobao → community; FB wins ties). NOTE: this is the CHROME ladder — it
+  // intentionally has no pet-house/case-studio singletons and no `everyday`
+  // (those only affect the CONTENT theme in page.tsx). See
+  // lib/storefront/resolve-store-theme.ts.
+  const { familyClass, familyVars, familyAccent, familyButtonShape } =
+    resolveStoreTheme(store).chrome;
 
   // 2b. React templates — every variant (caselnw-v1, mini-mops-v1, …)
   //     uses the same ShopHeader/ShopFooter pair. Visual personality

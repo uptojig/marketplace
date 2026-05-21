@@ -1,80 +1,90 @@
-/**
- * FashionBeautyHomepage — root composer for the bespoke fashion-beauty
- * landing page. Mirrors the structural pattern of PetHouseHomepage:
- * an async server component that wires together the editorial sub-
- * sections in a single cream-bg wrapper.
- *
- * Section order:
- *   1. FashionBeautyHero            — full-bleed magazine cover
- *   2. FashionBeautyEditorialPicks  — 3-up "Today's pick" spread
- *   3. FashionBeautyBestsellers     — 4-up "Loved this season" grid
- *   4. FashionBeautyBrandStory      — already-shipped editorial panel
- *
- * The shared <ShopHeader /> + <ShopFooter /> chrome (from
- * app/stores/[slug]/layout.tsx) wraps the entire tree, so this
- * composer never renders header/nav/footer of its own.
- *
- * Visual language matches FashionBeautyCategoryPage exactly:
- *   - cream `var(--shop-bg)` ground for the whole page
- *   - serif headings via var(--font-fashion-display)
- *   - rose-500 accents, rose-50 muted, rose-300 borders
- *   - airy section padding (handled inside each sub-section)
- *
- * BrandStory needs `tagline` + `description` but the composer prop
- * is intentionally narrow (`Pick<Store, 'id' | 'slug' | 'name'>`) so
- * callers don't need to over-fetch. We fetch the editorial fields
- * here in a single small Prisma read — same pattern other server
- * sub-sections use.
- */
-
+import { Fragment } from 'react';
 import type { Store } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { applyThemeConfig, parseThemeConfig, type SectionSlot } from '@/lib/storefront/theme-config';
 import { FashionBeautyHero } from './FashionBeautyHero';
 import { FashionBeautyEditorialPicks } from './FashionBeautyEditorialPicks';
 import { FashionBeautyBestsellers } from './FashionBeautyBestsellers';
 import { FashionBeautyBrandStory } from './FashionBeautyBrandStory';
 
 interface Props {
-  store: Pick<Store, 'id' | 'slug' | 'name'>;
+  store: Pick<Store, 'id' | 'slug' | 'name' | 'themeConfig'>;
 }
 
+/**
+ * FashionBeautyHomepage — root composer for the fashion-beauty landing page.
+ *
+ * Sections render in the order declared below (the curated default). Hero is
+ * `locked` (always first). Once Store.themeConfig lands (Phase 3) an operator
+ * can reorder / hide the non-locked sections; passing `null` here keeps the
+ * default order, byte-identical to the previous hardcoded JSX.
+ *
+ * The shared <ShopHeader /> + <ShopFooter /> chrome (from
+ * app/stores/[slug]/layout.tsx) wraps this tree, so the composer never renders
+ * header/nav/footer of its own. Each sub-section fetches its own product slice.
+ */
 export async function FashionBeautyHomepage({ store }: Props) {
-  // Fetch editorial fields (tagline / description / banner) for the
-  // BrandStory + Hero artwork. Kept narrow so this stays cheap on
-  // every storefront render.
+  // Editorial fields (tagline / description / banner) for Hero + BrandStory.
   const editorial = await prisma.store.findUnique({
     where: { id: store.id },
     select: { tagline: true, description: true, bannerUrl: true },
   });
 
-  return (
-    <div style={{ background: 'var(--shop-bg)', minHeight: '100vh' }}>
-      <FashionBeautyHero
-        storeSlug={store.slug}
-        storeName={store.name}
-        bannerUrl={editorial?.bannerUrl ?? null}
-      />
-
-      <FashionBeautyEditorialPicks
-        storeId={store.id}
-        storeSlug={store.slug}
-      />
-
-      <FashionBeautyBestsellers
-        storeId={store.id}
-        storeSlug={store.slug}
-      />
-
-      {/* BrandStory renders nothing if both tagline and description
-       * are empty — safe to mount unconditionally. */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <FashionBeautyBrandStory
+  const slots: SectionSlot[] = [
+    {
+      id: 'hero',
+      locked: true,
+      render: () => (
+        <FashionBeautyHero
           storeSlug={store.slug}
           storeName={store.name}
-          tagline={editorial?.tagline ?? null}
-          description={editorial?.description ?? null}
+          bannerUrl={editorial?.bannerUrl ?? null}
         />
-      </div>
+      ),
+    },
+    {
+      id: 'editorial-picks',
+      hideable: true,
+      reorderable: true,
+      render: () => (
+        <FashionBeautyEditorialPicks storeId={store.id} storeSlug={store.slug} />
+      ),
+    },
+    {
+      id: 'bestsellers',
+      hideable: true,
+      reorderable: true,
+      render: () => (
+        <FashionBeautyBestsellers storeId={store.id} storeSlug={store.slug} />
+      ),
+    },
+    {
+      id: 'brand-story',
+      hideable: true,
+      reorderable: true,
+      // BrandStory renders nothing if both tagline and description are empty —
+      // safe to mount unconditionally.
+      render: () => (
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <FashionBeautyBrandStory
+            storeSlug={store.slug}
+            storeName={store.name}
+            tagline={editorial?.tagline ?? null}
+            description={editorial?.description ?? null}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  // Per-store section order/visibility (null → curated default order).
+  const sections = applyThemeConfig(slots, parseThemeConfig(store.themeConfig));
+
+  return (
+    <div style={{ background: 'var(--shop-bg)', minHeight: '100vh' }}>
+      {sections.map((s) => (
+        <Fragment key={s.id}>{s.render()}</Fragment>
+      ))}
     </div>
   );
 }

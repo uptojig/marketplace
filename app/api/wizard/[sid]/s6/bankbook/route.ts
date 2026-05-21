@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { recordIappCost } from "@/lib/kyc/cost-tracker";
 import { fromIappBookBank } from "@/lib/kyc/identity-extract";
 import { compareIdentities } from "@/lib/kyc/identity-match";
@@ -21,7 +22,7 @@ import {
   type SSEStream,
   type Stopwatch,
 } from "@/lib/kyc/wizard-api";
-import { transitionWizardSession } from "@/lib/kyc/wizard-state";
+import { invalidateWizardSteps, transitionWizardSession } from "@/lib/kyc/wizard-state";
 import { uploadWizardEvidence } from "@/lib/kyc/wizard-storage";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +48,8 @@ async function processBankbook(args: {
   const { sw, sse, sessionId, dga, image, buffer, priorAdvisories } = args;
   lapAndEmit(sw, sse, "session_check");
   lapAndEmit(sw, sse, "form_parse");
+
+  await invalidateWizardSteps(sessionId, "S4_BANKBOOK");
 
   const evidencePromise = uploadWizardEvidence({
     sessionId,
@@ -88,9 +91,29 @@ async function processBankbook(args: {
       : "AUTO_APPROVED"
     : "REJECTED";
 
+  // Load session metadata to preserve existing fields
+  const sessionData = await prisma.wizardSession.findUnique({
+    where: { id: sessionId },
+    select: { metadata: true },
+  });
+  const existingMeta =
+    sessionData?.metadata && typeof sessionData.metadata === "object" && !Array.isArray(sessionData.metadata)
+      ? (sessionData.metadata as Record<string, unknown>)
+      : {};
+
+  await prisma.wizardSession.update({
+    where: { id: sessionId },
+    data: {
+      metadata: {
+        ...existingMeta,
+        pendingDecision: nextState,
+      },
+    },
+  });
+
   const updated = await transitionWizardSession({
     sessionId,
-    toState: nextState,
+    toState: "S5_SUMMARY",
     actor: "system",
     event: "s4.bankbook.ocr_match",
     payload: {
@@ -118,7 +141,21 @@ export async function POST(req: Request, { params }: { params: { sid: string } }
   const useSSE = clientWantsSSE(req);
   try {
     const session = await requireWizardSession(params.sid);
-    if (session.state !== "S4_BANKBOOK_UPLOAD") return jsonError(`Expected S4_BANKBOOK_UPLOAD, got ${session.state}`, 409);
+    const ACTIVE_FLOW_STATES = ["S4_BANKBOOK_UPLOAD", "S5_SUMMARY"];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active bankbook upload state, got ${session.state}`, 409);
+    }
+
+    if (session.state !== "S4_BANKBOOK_UPLOAD") {
+      await transitionWizardSession({
+        sessionId: params.sid,
+        toState: "S4_BANKBOOK_UPLOAD",
+        actor: "vendor",
+        event: "s4.bankbook.reopened_upload",
+        payload: { priorState: session.state },
+      });
+      await invalidateWizardSteps(params.sid, "S4_BANKBOOK");
+    }
 
     const dga = await latestExtractedIdentity(params.sid, DGA_PROVIDER);
     if (!dga) return jsonError("Missing DGA identity for bankbook match", 409);

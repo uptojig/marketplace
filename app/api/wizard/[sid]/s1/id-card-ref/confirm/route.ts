@@ -18,8 +18,20 @@ export async function POST(_req: Request, { params }: { params: { sid: string } 
   const sw = createStopwatch();
   try {
     const session = await requireWizardSession(params.sid);
-    if (session.state !== "S1_ID_CARD_REVIEW") {
-      return jsonError(`Expected S1_ID_CARD_REVIEW, got ${session.state}`, 409);
+    const ACTIVE_FLOW_STATES = [
+      "S1_ID_CARD_REF",
+      "S1_ID_CARD_REVIEW",
+      "S2_EMAIL_PENDING",
+      "S3_OTP_VERIFIED",
+      "S1_DGA_CAPTURE",
+      "S1_DGA_REVIEW",
+      "S2_ID_SELFIE",
+      "S3_PHONE_RESPONSE",
+      "S4_BANKBOOK_UPLOAD",
+      "S5_SUMMARY",
+    ];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active wizard session, got ${session.state}`, 409);
     }
 
     const citizenId = session.citizenId?.trim() || null;

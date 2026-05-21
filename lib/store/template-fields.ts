@@ -97,6 +97,32 @@ export const landingThemeVariantField = z
   .nullable()
   .optional();
 
+// Curated theme system (Phase 3). Intentional accent override (hex) — kept
+// separate from paletteId so a wizard-time brand pick can't silently repaint a
+// curated theme. null clears it back to the theme's curated color.
+export const themeAccentOverrideField = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color")
+  .nullable()
+  .optional();
+
+// Per-store section layout for the theme Homepage: { v:1, sections:[{id,hidden?}] }.
+// null clears it back to the theme's curated default order.
+export const themeConfigField = z
+  .object({
+    v: z.literal(1),
+    sections: z
+      .array(
+        z.object({
+          id: z.string().min(1).max(60),
+          hidden: z.boolean().optional(),
+        }),
+      )
+      .max(40),
+  })
+  .nullable()
+  .optional();
+
 // Zod object slice you can `.extend(templateFieldsSchema.shape)` on
 // existing schemas. Each field is optional; absent = don't touch the column.
 export const templateFieldsSchema = z.object({

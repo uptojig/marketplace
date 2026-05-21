@@ -121,7 +121,7 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="relative w-full aspect-[4/5] lg:aspect-[5/6] rounded-xl overflow-hidden border border-mp-border shadow-md lg:-rotate-2 hover:rotate-0 transition-transform duration-500">
+          <div className="relative w-full max-w-md lg:max-w-none mx-auto aspect-[4/5] lg:aspect-[5/6] rounded-xl overflow-hidden border border-mp-border shadow-md lg:-rotate-2 hover:rotate-0 transition-transform duration-500">
             <Image
               src={STITCH_HERO_MOCKUP}
               alt="ตัวอย่างหน้าร้าน Basketplace"

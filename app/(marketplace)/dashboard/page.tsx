@@ -27,8 +27,8 @@ export default async function VendorDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">ภาพรวมร้านค้า</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-2xl font-semibold text-mp-ink" style={{ fontFamily: "var(--mp-font-display)" }}>ภาพรวมร้านค้า</h1>
+        <p className="text-sm text-mp-ink-muted">
           ยอดล่าสุด จำนวนสินค้า และสถานะการจัดส่ง
         </p>
       </div>
@@ -47,11 +47,11 @@ export default async function VendorDashboard() {
       </div>
 
       <section>
-        <h2 className="mb-3 text-base font-semibold">การชำระเงินล่าสุด</h2>
-        <div className="overflow-hidden rounded-lg border bg-white">
+        <h2 className="mb-3 text-base font-semibold text-mp-ink" style={{ fontFamily: "var(--mp-font-display)" }}>การชำระเงินล่าสุด</h2>
+        <div className="overflow-hidden rounded-lg border border-mp-border bg-mp-surface">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b bg-gray-50 text-left text-xs uppercase tracking-wider text-muted-foreground">
+            <table className="w-full text-sm text-mp-ink">
+              <thead className="border-b border-mp-border bg-mp-cream-alt text-left text-xs uppercase tracking-wider text-mp-ink-muted">
                 <tr>
                   <th className="px-4 py-3">คำสั่งซื้อ</th>
                   <th className="px-4 py-3">ช่องทาง</th>
@@ -61,20 +61,26 @@ export default async function VendorDashboard() {
                   <th className="px-4 py-3">เวลาชำระ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-mp-border">
                 {recentPayments.map((p) => (
                   <tr key={p.id}>
                     <td className="px-4 py-3 font-mono text-xs">{p.orderId.slice(0, 10)}…</td>
                     <td className="px-4 py-3">{p.provider}</td>
-                    <td className="px-4 py-3">{p.status}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                        p.status === "PAID" ? "bg-mp-forest/10 text-mp-forest" : "bg-mp-ink-muted/10 text-mp-ink-muted"
+                      }`}>
+                        {p.status}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 font-mono text-xs">{p.anypayTransactionId ?? "—"}</td>
-                    <td className="px-4 py-3 text-right tabular-nums">{formatTHB(Number(p.amountTHB))}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{p.paidAt ? p.paidAt.toLocaleString("th-TH") : "—"}</td>
+                    <td className="px-4 py-3 text-right tabular-nums font-semibold">{formatTHB(Number(p.amountTHB))}</td>
+                    <td className="px-4 py-3 text-xs text-mp-ink-muted">{p.paidAt ? p.paidAt.toLocaleString("th-TH") : "—"}</td>
                   </tr>
                 ))}
                 {recentPayments.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-mp-ink-muted">
                       ยังไม่มีการชำระเงิน
                     </td>
                   </tr>
@@ -86,11 +92,11 @@ export default async function VendorDashboard() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-base font-semibold">สถานะการจัดส่งล่าสุด</h2>
-        <div className="overflow-hidden rounded-lg border bg-white">
+        <h2 className="mb-3 text-base font-semibold text-mp-ink" style={{ fontFamily: "var(--mp-font-display)" }}>สถานะการจัดส่งล่าสุด</h2>
+        <div className="overflow-hidden rounded-lg border border-mp-border bg-mp-surface">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b bg-gray-50 text-left text-xs uppercase tracking-wider text-muted-foreground">
+            <table className="w-full text-sm text-mp-ink">
+              <thead className="border-b border-mp-border bg-mp-cream-alt text-left text-xs uppercase tracking-wider text-mp-ink-muted">
                 <tr>
                   <th className="px-4 py-3">คำสั่งซื้อ</th>
                   <th className="px-4 py-3">ร้าน</th>
@@ -101,7 +107,7 @@ export default async function VendorDashboard() {
                   <th className="px-4 py-3">เลขพัสดุ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-mp-border">
                 {recentItems.map((it) => (
                   <tr key={it.id}>
                     <td className="px-4 py-3 font-mono text-xs">{it.orderId.slice(0, 8)}…</td>
@@ -115,7 +121,7 @@ export default async function VendorDashboard() {
                 ))}
                 {recentItems.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    <td colSpan={7} className="px-4 py-8 text-center text-sm text-mp-ink-muted">
                       ยังไม่มีรายการจัดส่ง
                     </td>
                   </tr>
@@ -131,11 +137,11 @@ export default async function VendorDashboard() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border bg-card p-4 shadow-sm">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+    <div className="rounded-xl border border-mp-border bg-mp-surface p-4 shadow-sm mp-card-lift">
+      <p className="text-xs uppercase tracking-wider text-mp-ink-muted">
         {label}
       </p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p>
+      <p className="mt-2 text-2xl font-bold tracking-tight text-mp-ink" style={{ fontFamily: "var(--mp-font-display)" }}>{value}</p>
     </div>
   );
 }

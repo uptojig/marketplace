@@ -50,6 +50,7 @@ model VerificationToken {
 enum Role {
   CUSTOMER
   VENDOR
+  AGENT
   ADMIN
   AGENT
 }
@@ -65,23 +66,30 @@ model User {
   // Google OAuth + email magic-link users never set one — they
   // authenticate via the linked Account row instead.
   passwordHash  String?
-  phone         String?
+  phone         String?   @unique
   // Manual phone/ID verification flag, separate from emailVerified.
   // Powers vendor onboarding gates.
   isVerified    Boolean   @default(false)
+  dgaData       Json?     @map("dga_data")
   // Timestamp of the user's first paid order. Drives the
   // `newUsersOnly` coupon eligibility check — null = never paid.
   firstPurchaseAt DateTime?
   createdAt     DateTime  @default(now())
 
-  accounts     Account[]
-  sessions     Session[]
-  store        Store?
-  orders       Order[]
-  addresses    Address[]
-  couponUsages CouponUsage[]
+  accounts       Account[]
+  sessions       Session[]
+  store          Store?
+  orders         Order[]
+  addresses      Address[]
+  couponUsages   CouponUsage[]
   paymentIntents PaymentIntent[]
-  kycSessions  WizardSession[]
+  kycSessions    WizardSession[]
+
+  // Agent referral fields
+  agentId        String?         @map("agent_id")
+  referredByAgent Agent?         @relation("AgentVendors", fields: [agentId], references: [id])
+  agentProfile   Agent?          @relation("AgentUser")
+  agentApprovals Agent[]         @relation("AgentApprover")
 }
 
 // --- Marketplace ---
@@ -123,6 +131,16 @@ model Store {
   // renders via `StoreRenderer` from `lib/templates/renderer.tsx`.
   templateId   String?
   paletteId    String?
+  // ── Curated theme system (Phase 3) ──
+  // Per-store section layout for the theme Homepage:
+  //   { v: 1, sections: [{ id, hidden? }] }  (order = array order)
+  // null = the theme's curated default order. See lib/storefront/theme-config.ts.
+  themeConfig         Json?
+  // Operator's INTENTIONAL accent override (hex, e.g. "#1e40af"). null = use the
+  // theme's curated color. Deliberately separate from `paletteId` (a wizard-time
+  // brand pick that must NOT silently repaint a curated theme — see the
+  // minimop24 red->purple regression). See lib/storefront/resolve-store-theme.ts.
+  themeAccentOverride String?
   // Custom domain (vendor brings their own); subdomain is derived from slug
   customDomain String?  @unique
   // Legal/business info shown on contact page + footer
@@ -992,10 +1010,44 @@ model WizardSession {
   dgaFields           WizardDgaField[]
   outlookCredentials  WizardOutlookCredential[] @relation("WizardOutlookLease")
 
+  // Agent referral fields
+  agentId             String?                   @map("agent_id")
+  agent               Agent?                    @relation(fields: [agentId], references: [id])
+
   @@index([state, expiresAt])
   @@index([citizenId])
   @@index([userId])
+  @@index([agentId])
   @@map("wizard_sessions")
+}
+
+enum AgentStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  REJECTED
+  SUSPENDED
+}
+
+model Agent {
+  id           String      @id @default(cuid())
+  userId       String      @unique @map("user_id")
+  linkCode     String      @unique @map("link_code") @db.VarChar(20)
+  displayName  String      @map("display_name")
+  status       AgentStatus @default(PENDING_APPROVAL)
+  phone        String?
+  lineId       String?     @map("line_id")
+  note         String?     // Admin notes
+  approvedAt   DateTime?   @map("approved_at")
+  approvedById String?     @map("approved_by_id")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  user         User            @relation("AgentUser", fields: [userId], references: [id], onDelete: Cascade)
+  approvedBy   User?           @relation("AgentApprover", fields: [approvedById], references: [id])
+  vendors      User[]          @relation("AgentVendors")
+  sessions     WizardSession[]
+
+  @@map("agents")
 }
 
 model WizardEvidence {

@@ -66,9 +66,10 @@ export async function uploadBuffer(args: {
   filename: string;
   contentType: string;
   body: Buffer | Uint8Array;
+  fixedKey?: string;
 }): Promise<{ key: string; publicUrl: string }> {
   const c = getClient();
-  const key = buildKey(args.prefix, args.filename);
+  const key = args.fixedKey ? args.fixedKey.replace(/^\/+|\/+$/g, "") : buildKey(args.prefix, args.filename);
   await c.send(
     new PutObjectCommand({
       Bucket: bucket!,
@@ -92,9 +93,10 @@ export async function presignUpload(args: {
   filename: string;
   contentType: string;
   expiresIn?: number;
+  fixedKey?: string;
 }): Promise<PresignedUpload> {
   const c = getClient();
-  const key = buildKey(args.prefix, args.filename);
+  const key = args.fixedKey ? args.fixedKey.replace(/^\/+|\/+$/g, "") : buildKey(args.prefix, args.filename);
   const command = new PutObjectCommand({
     Bucket: bucket!,
     Key: key,

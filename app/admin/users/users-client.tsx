@@ -11,7 +11,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-type Role = "ADMIN" | "VENDOR" | "CUSTOMER";
+type Role = "ADMIN" | "VENDOR" | "AGENT" | "CUSTOMER";
 
 export type AdminUserRow = {
   id: string;
@@ -24,12 +24,13 @@ export type AdminUserRow = {
 };
 
 const ROLE_BADGE: Record<Role, string> = {
-  ADMIN: "bg-red-100 text-red-700",
-  VENDOR: "bg-blue-100 text-blue-700",
-  CUSTOMER: "bg-gray-100 text-gray-700",
+  ADMIN: "bg-red-50 text-red-700 border border-red-100",
+  VENDOR: "bg-mp-forest/10 text-mp-forest",
+  AGENT: "bg-mp-coral/10 text-mp-coral",
+  CUSTOMER: "bg-mp-cream-alt text-mp-ink-muted",
 };
 
-const ROLES: Role[] = ["CUSTOMER", "VENDOR", "ADMIN"];
+const ROLES: Role[] = ["CUSTOMER", "VENDOR", "AGENT", "ADMIN"];
 
 export function AdminUsersClient({
   initialUsers,
@@ -100,16 +101,16 @@ export function AdminUsersClient({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-mp-ink">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">ผู้ใช้ทั้งหมด</h1>
-          <p className="text-sm text-muted-foreground">{users.length} คน</p>
+          <h1 className="text-2xl font-bold text-mp-ink" style={{ fontFamily: "var(--mp-font-display)" }}>ผู้ใช้ทั้งหมด</h1>
+          <p className="text-sm text-mp-ink-muted">{users.length} คน</p>
         </div>
         <button
           type="button"
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          className="flex items-center gap-2 rounded-xl bg-mp-coral px-4 py-2 text-sm font-semibold text-white hover:bg-mp-coral-dark shadow-sm transition"
         >
           <Plus className="h-4 w-4" /> สร้างผู้ใช้
         </button>
@@ -120,11 +121,11 @@ export function AdminUsersClient({
           name="q"
           defaultValue={query}
           placeholder="ค้นหาชื่อหรืออีเมล..."
-          className="flex-1 rounded-md border px-3 py-2 text-sm"
+          className="flex-1 rounded-xl border border-mp-border bg-mp-surface px-3 py-2 text-sm text-mp-ink placeholder-mp-ink-muted focus:outline-none focus:ring-2 focus:ring-mp-coral/20"
         />
         <button
           type="submit"
-          className="rounded-md border bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50"
+          className="rounded-xl border border-mp-border bg-mp-surface px-4 py-2 text-sm font-semibold text-mp-ink hover:bg-mp-cream-alt transition"
         >
           ค้นหา
         </button>
@@ -132,24 +133,24 @@ export function AdminUsersClient({
 
       {toast && (
         <div
-          className={`flex items-center gap-2 rounded-md border px-3 py-2 text-sm ${
+          className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
             toast.ok
               ? "border-green-200 bg-green-50 text-green-900"
               : "border-red-200 bg-red-50 text-red-900"
           }`}
         >
           {toast.ok ? (
-            <CheckCircle2 className="h-4 w-4" />
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
           ) : (
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="h-4 w-4 text-red-600" />
           )}
           <span>{toast.msg}</span>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-lg border bg-white">
+      <div className="overflow-hidden rounded-xl border border-mp-border bg-mp-surface">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+          <thead className="border-b border-mp-border bg-mp-cream-alt text-left text-xs font-medium uppercase tracking-wide text-mp-ink-muted">
             <tr>
               <th className="px-4 py-3">อีเมล / ชื่อ</th>
               <th className="px-4 py-3">Role</th>
@@ -159,12 +160,12 @@ export function AdminUsersClient({
               <th className="px-4 py-3 text-right">การจัดการ</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody className="divide-y divide-mp-border">
             {users.length === 0 ? (
               <tr>
                 <td
                   colSpan={6}
-                  className="px-4 py-10 text-center text-muted-foreground"
+                  className="px-4 py-10 text-center text-mp-ink-muted"
                 >
                   ไม่พบผู้ใช้
                 </td>
@@ -174,18 +175,18 @@ export function AdminUsersClient({
                 const isMe = u.id === meId;
                 const isPending = pendingId === u.id;
                 return (
-                  <tr key={u.id} className="hover:bg-gray-50">
+                  <tr key={u.id} className="hover:bg-mp-cream-alt/30 transition-colors">
                     <td className="px-4 py-3">
-                      <p className="font-medium">
+                      <p className="font-medium text-mp-ink">
                         {u.email ?? "—"}
                         {isMe && (
-                          <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+                          <span className="ml-2 rounded bg-mp-coral/10 px-1.5 py-0.5 text-xs font-medium text-mp-coral">
                             คุณ
                           </span>
                         )}
                       </p>
                       {u.name && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-mp-ink-muted">
                           {u.name}
                         </p>
                       )}
@@ -193,7 +194,7 @@ export function AdminUsersClient({
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`rounded px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role]}`}
+                          className={`rounded px-2 py-0.5 text-xs font-medium border ${ROLE_BADGE[u.role]}`}
                         >
                           {u.role}
                         </span>
@@ -203,7 +204,7 @@ export function AdminUsersClient({
                             changeRole(u.id, e.target.value as Role)
                           }
                           disabled={isPending}
-                          className="rounded border px-1 py-0.5 text-xs disabled:bg-gray-100"
+                          className="rounded-lg border border-mp-border bg-mp-surface px-1.5 py-0.5 text-xs text-mp-ink focus:outline-none focus:ring-1 focus:ring-mp-coral/20 disabled:bg-mp-cream-alt"
                           aria-label="Change role"
                         >
                           {ROLES.map((r) => (
@@ -216,18 +217,18 @@ export function AdminUsersClient({
                     </td>
                     <td className="px-4 py-3 text-xs">
                       {u.store ? (
-                        <span>{u.store.name}</span>
+                        <span className="font-medium text-mp-ink">{u.store.name}</span>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-mp-ink-muted">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center">{u.orderCount}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                    <td className="px-4 py-3 text-center font-semibold">{u.orderCount}</td>
+                    <td className="px-4 py-3 text-xs text-mp-ink-muted">
                       {new Date(u.createdAt).toLocaleDateString("th-TH")}
                     </td>
                     <td className="px-4 py-3 text-right">
                       {isPending ? (
-                        <Loader2 className="ml-auto h-4 w-4 animate-spin text-stone-400" />
+                        <Loader2 className="ml-auto h-4 w-4 animate-spin text-mp-ink-muted" />
                       ) : (
                         <button
                           type="button"
@@ -326,14 +327,14 @@ function CreateUserModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-xl border border-mp-border bg-mp-surface p-5 shadow-xl text-mp-ink">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">สร้างผู้ใช้ใหม่</h2>
+          <h2 className="text-lg font-bold text-mp-ink" style={{ fontFamily: "var(--mp-font-display)" }}>สร้างผู้ใช้ใหม่</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1 hover:bg-gray-100"
+            className="rounded p-1 hover:bg-mp-cream-alt text-mp-ink-muted transition"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -341,35 +342,35 @@ function CreateUserModal({
         </div>
         <form onSubmit={submit} className="space-y-3">
           <label className="block">
-            <span className="text-sm font-medium">อีเมล *</span>
+            <span className="text-sm font-medium text-mp-ink">อีเมล *</span>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={busy}
-              className="mt-1 w-full rounded-md border px-3 py-2 text-sm disabled:bg-gray-100"
+              className="mt-1 w-full rounded-xl border border-mp-border bg-mp-surface text-mp-ink px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mp-coral/20 disabled:bg-mp-cream-alt"
               placeholder="user@example.com"
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium">ชื่อ (optional)</span>
+            <span className="text-sm font-medium text-mp-ink">ชื่อ (optional)</span>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={busy}
-              className="mt-1 w-full rounded-md border px-3 py-2 text-sm disabled:bg-gray-100"
+              className="mt-1 w-full rounded-xl border border-mp-border bg-mp-surface text-mp-ink px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mp-coral/20 disabled:bg-mp-cream-alt"
               placeholder="คุณนัท"
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium">Role</span>
+            <span className="text-sm font-medium text-mp-ink">Role</span>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
               disabled={busy}
-              className="mt-1 w-full rounded-md border px-3 py-2 text-sm disabled:bg-gray-100"
+              className="mt-1 w-full rounded-xl border border-mp-border bg-mp-surface text-mp-ink px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mp-coral/20 disabled:bg-mp-cream-alt"
             >
               {ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -379,7 +380,7 @@ function CreateUserModal({
             </select>
           </label>
           <label className="block">
-            <span className="text-sm font-medium">
+            <span className="text-sm font-medium text-mp-ink">
               รหัสผ่านเริ่มต้น (optional)
             </span>
             <input
@@ -389,16 +390,16 @@ function CreateUserModal({
               disabled={busy}
               autoComplete="new-password"
               minLength={8}
-              className="mt-1 w-full rounded-md border px-3 py-2 text-sm disabled:bg-gray-100"
+              className="mt-1 w-full rounded-xl border border-mp-border bg-mp-surface text-mp-ink px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mp-coral/20 disabled:bg-mp-cream-alt"
               placeholder="อย่างน้อย 8 ตัว เว้นว่าง = ใช้ Google/magic-link เท่านั้น"
             />
           </label>
           {err && (
-            <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+            <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
               <AlertCircle className="h-4 w-4" /> {err}
             </div>
           )}
-          <div className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <div className="rounded-xl border border-mp-border/50 bg-mp-cream-alt/60 px-3 py-2 text-xs text-mp-ink-muted">
             ถ้าตั้งรหัสผ่าน → user login ที่ /signin ด้วยอีเมล + รหัสผ่านได้ทันที
             <br />
             ถ้าเว้นว่าง → user ต้อง login ผ่าน Google หรือ email magic-link
@@ -409,14 +410,14 @@ function CreateUserModal({
               type="button"
               onClick={onClose}
               disabled={busy}
-              className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+              className="rounded-xl border border-mp-border bg-mp-surface px-4 py-2 text-sm font-semibold text-mp-ink hover:bg-mp-cream-alt disabled:opacity-50 transition"
             >
               ยกเลิก
             </button>
             <button
               type="submit"
               disabled={busy}
-              className="flex items-center gap-2 rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl bg-mp-coral px-4 py-2 text-sm font-semibold text-white hover:bg-mp-coral-dark disabled:opacity-50 shadow-sm transition"
             >
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
               สร้าง

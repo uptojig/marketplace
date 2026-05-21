@@ -13,7 +13,7 @@ import {
   isLockedField,
   type DgaFieldKey,
 } from "@/lib/kyc/dga-fields";
-import { auditWizardEvent } from "@/lib/kyc/wizard-state";
+import { auditWizardEvent, transitionWizardSession, invalidateWizardSteps } from "@/lib/kyc/wizard-state";
 import {
   createStopwatch,
   jsonError,
@@ -46,8 +46,26 @@ export async function PATCH(
 
   try {
     const session = await requireWizardSession(params.sid);
+    const ACTIVE_FLOW_STATES = [
+      "S1_DGA_REVIEW",
+      "S2_ID_SELFIE",
+      "S3_PHONE_RESPONSE",
+      "S4_BANKBOOK_UPLOAD",
+      "S5_SUMMARY",
+    ];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active wizard session, got ${session.state}`, 409);
+    }
+
     if (session.state !== "S1_DGA_REVIEW") {
-      return jsonError(`Expected S1_DGA_REVIEW, got ${session.state}`, 409);
+      await transitionWizardSession({
+        sessionId: params.sid,
+        toState: "S1_DGA_REVIEW",
+        actor: "vendor",
+        event: "s1.dga_review.reopened_field_edit",
+        payload: { priorState: session.state },
+      });
+      await invalidateWizardSteps(params.sid, "S1_DGA_REVIEW");
     }
 
     if (!ALL_FIELD_KEYS.has(params.fieldKey as DgaFieldKey)) {

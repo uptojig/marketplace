@@ -12,12 +12,14 @@
  * Magic-link email provider is reserved for /signup (signup-only).
  */
 
-import { Suspense, useState } from "react";
+"use client";
+
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 
 const ERROR_MESSAGES: Record<string, string> = {
   Configuration: "OAuth ตั้งค่าผิด ตรวจสอบ env vars",
@@ -51,31 +53,57 @@ function GoogleIcon() {
   );
 }
 
-function CredentialsForm() {
+function CredentialsForm({ refCode }: { refCode?: string }) {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || params.get("callbackUrl") || "/dashboard";
+  const ref = params.get("ref") || refCode;
+  const defaultNext = ref ? `/apply?ref=${encodeURIComponent(ref)}` : "/dashboard";
+  const next = params.get("next") || params.get("callbackUrl") || defaultNext;
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [loginMode, setLoginMode] = useState<"email" | "phone">("email");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    const urlPhone = params.get("phone");
+    if (urlPhone) {
+      setPhone(urlPhone);
+      setLoginMode("phone");
+    }
+  }, [params]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!email.trim() || !password) {
-      setErr("กรอกอีเมลและรหัสผ่าน");
+
+    if (loginMode === "email" && !email.trim()) {
+      setErr("กรุณากรอกอีเมล");
       return;
     }
+    if (loginMode === "phone" && !phone.trim()) {
+      setErr("กรุณากรอกเบอร์โทรศัพท์");
+      return;
+    }
+    if (!password) {
+      setErr("กรุณากรอกรหัสผ่าน");
+      return;
+    }
+
     setBusy(true);
     try {
-      const res = await signIn("credentials", {
-        email: email.trim().toLowerCase(),
-        password,
-        redirect: false,
-      });
+      const loginPayload = loginMode === "email"
+        ? { email: email.trim().toLowerCase(), password, redirect: false }
+        : { phone: phone.trim().replace(/\D+/g, ""), password, redirect: false };
+
+      const res = await signIn("credentials", loginPayload);
       if (res?.error) {
-        setErr(ERROR_MESSAGES[res.error] ?? "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+        setErr(
+          res.error === "CredentialsSignin"
+            ? (loginMode === "email" ? "อีเมลหรือรหัสผ่านไม่ถูกต้อง" : "เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง")
+            : (ERROR_MESSAGES[res.error] ?? "ข้อมูลเข้าสู่ระบบไม่ถูกต้อง")
+        );
         return;
       }
       router.push(next);
@@ -89,22 +117,74 @@ function CredentialsForm() {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <div>
-        <label htmlFor="signin-email" className="block text-[14px] font-medium text-mp-ink mb-1.5">
-          อีเมล
-        </label>
-        <input
-          id="signin-email"
-          type="email"
-          required
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={busy}
-          placeholder="you@example.com"
-          className="w-full h-11 rounded-[10px] border border-mp-border bg-white px-4 text-[15px] text-mp-ink placeholder:text-mp-ink-muted/60 focus:border-mp-coral focus:outline-none focus:ring-2 focus:ring-mp-coral/20 disabled:bg-mp-cream-alt/40 transition-colors"
-        />
+      {ref && (
+        <div className="rounded-xl border border-mp-border bg-white/60 p-3 text-xs text-mp-ink-muted">
+          เข้าสู่ระบบเพื่อดำเนินการต่อผ่านตัวแทน รหัส: <strong>{ref}</strong>
+        </div>
+      )}
+
+      {/* Login Mode Switcher */}
+      <div className="flex border-b border-mp-border mb-4">
+        <button
+          type="button"
+          onClick={() => setLoginMode("email")}
+          className={`flex-1 pb-2.5 text-[14px] font-semibold border-b-2 transition-all ${
+            loginMode === "email"
+              ? "border-mp-coral text-mp-coral"
+              : "border-transparent text-mp-ink-muted hover:text-mp-ink"
+          }`}
+        >
+          ใช้อีเมล
+        </button>
+        <button
+          type="button"
+          onClick={() => setLoginMode("phone")}
+          className={`flex-1 pb-2.5 text-[14px] font-semibold border-b-2 transition-all ${
+            loginMode === "phone"
+              ? "border-mp-coral text-mp-coral"
+              : "border-transparent text-mp-ink-muted hover:text-mp-ink"
+          }`}
+        >
+          ใช้เบอร์โทรศัพท์
+        </button>
       </div>
+
+      {loginMode === "email" ? (
+        <div>
+          <label htmlFor="signin-email" className="block text-[14px] font-medium text-mp-ink mb-1.5">
+            อีเมล
+          </label>
+          <input
+            id="signin-email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={busy}
+            placeholder="you@example.com"
+            className="w-full h-11 rounded-[10px] border border-mp-border bg-white px-4 text-[15px] text-mp-ink placeholder:text-mp-ink-muted/60 focus:border-mp-coral focus:outline-none focus:ring-2 focus:ring-mp-coral/20 disabled:bg-mp-cream-alt/40 transition-colors"
+          />
+        </div>
+      ) : (
+        <div>
+          <label htmlFor="signin-phone" className="block text-[14px] font-medium text-mp-ink mb-1.5">
+            เบอร์โทรศัพท์มือถือ
+          </label>
+          <input
+            id="signin-phone"
+            type="tel"
+            required
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            disabled={busy}
+            placeholder="0812345678"
+            className="w-full h-11 rounded-[10px] border border-mp-border bg-white px-4 text-[15px] text-mp-ink placeholder:text-mp-ink-muted/60 focus:border-mp-coral focus:outline-none focus:ring-2 focus:ring-mp-coral/20 disabled:bg-mp-cream-alt/40 transition-colors"
+          />
+        </div>
+      )}
+
       <div>
         <label htmlFor="signin-password" className="block text-[14px] font-medium text-mp-ink mb-1.5">
           รหัสผ่าน
@@ -120,11 +200,13 @@ function CredentialsForm() {
           className="w-full h-11 rounded-[10px] border border-mp-border bg-white px-4 text-[15px] text-mp-ink focus:border-mp-coral focus:outline-none focus:ring-2 focus:ring-mp-coral/20 disabled:bg-mp-cream-alt/40 transition-colors"
         />
       </div>
+
       {err && (
         <div className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700">
           {err}
         </div>
       )}
+
       <button
         type="submit"
         disabled={busy}
@@ -137,24 +219,216 @@ function CredentialsForm() {
   );
 }
 
-export default function SignInPage() {
+function SignInPageContent() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+
+  const [isValidating, setIsValidating] = useState(true);
+  const [isValidRef, setIsValidRef] = useState(false);
+  const [refCode, setRefCode] = useState("");
+  const [agentName, setAgentName] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [unlockCode, setUnlockCode] = useState("");
+  const [unlockBusy, setUnlockBusy] = useState(false);
+  const [unlockError, setUnlockError] = useState("");
+
+  const urlRef = searchParams.get("ref");
+  const defaultNext = refCode ? `/apply?ref=${encodeURIComponent(refCode)}` : "/dashboard";
+  const next = searchParams.get("next") || searchParams.get("callbackUrl") || defaultNext;
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push(next);
+      return;
+    }
+
+    const storedRef = typeof window !== "undefined" ? window.localStorage.getItem("agent.ref.code") : null;
+    const finalCode = urlRef || storedRef;
+
+    if (!finalCode) {
+      setIsValidating(false);
+      setIsValidRef(false);
+      return;
+    }
+
+    fetch(`/api/agents/validate?code=${encodeURIComponent(finalCode)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          setIsValidRef(true);
+          setRefCode(finalCode.toUpperCase());
+          setAgentName(data.agentName);
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem("agent.ref.code", finalCode.toUpperCase());
+          }
+        } else {
+          setIsValidRef(false);
+          setErrorMsg(data.detail || "Link Code ไม่ถูกต้อง หรือ ตัวแทนไม่พร้อมใช้งาน");
+          if (typeof window !== "undefined") {
+            window.localStorage.removeItem("agent.ref.code");
+          }
+        }
+      })
+      .catch(() => {
+        setIsValidRef(false);
+        setErrorMsg("ไม่สามารถตรวจสอบข้อมูลตัวแทนได้ในขณะนี้");
+      })
+      .finally(() => {
+        setIsValidating(false);
+      });
+  }, [status, urlRef, router, next]);
+
+  async function handleUnlockSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!unlockCode.trim()) return;
+
+    setUnlockBusy(true);
+    setUnlockError("");
+
+    try {
+      const res = await fetch(`/api/agents/validate?code=${encodeURIComponent(unlockCode.trim())}`);
+      const data = await res.json();
+      if (data.ok) {
+        setIsValidRef(true);
+        setRefCode(unlockCode.trim().toUpperCase());
+        setAgentName(data.agentName);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("agent.ref.code", unlockCode.trim().toUpperCase());
+        }
+      } else {
+        setUnlockError(data.detail || "รหัสแนะนำไม่ถูกต้อง");
+      }
+    } catch {
+      setUnlockError("เกิดข้อผิดพลาดในการตรวจสอบรหัสแนะนำ");
+    } finally {
+      setUnlockBusy(false);
+    }
+  }
+
+  if (status === "loading" || isValidating) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-mp-cream">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-mp-coral animate-spin mx-auto mb-3" />
+          <p className="text-[15px] text-mp-ink-muted">กำลังตรวจสอบสิทธิ์การเข้าใช้งาน...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isValidRef && status !== "authenticated") {
+    return (
+      <div className="mx-auto max-w-[1440px] min-h-[calc(100vh-4rem)] grid lg:grid-cols-[60%_40%] bg-mp-cream">
+        {/* LEFT — editorial brand panel (desktop only) */}
+        <aside
+          className="hidden lg:flex flex-col justify-between bg-mp-forest text-mp-cream p-12 relative overflow-hidden"
+          aria-hidden="true"
+        >
+          <div className="absolute inset-0">
+            <Image
+              src="/editorial_bg.png"
+              alt=""
+              fill
+              className="object-cover"
+              sizes="60vw"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
+          <div className="relative z-10">
+            <span className="text-[13px] font-medium uppercase tracking-[0.16em] text-mp-cream/70">
+              Basketplace
+            </span>
+          </div>
+          <blockquote
+            className="relative z-10 max-w-md text-2xl lg:text-3xl leading-snug text-mp-cream font-semibold"
+            style={{ fontFamily: "var(--mp-font-display)" }}
+          >
+            “เข้าใช้งานด้วยระบบตัวแทนเท่านั้น”
+          </blockquote>
+        </aside>
+
+        {/* RIGHT — Unlock / Entry Gate */}
+        <div className="flex items-center justify-center px-6 py-12 lg:py-16 bg-mp-cream">
+          <div className="w-full max-w-[400px] text-center lg:text-left">
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 text-left">
+              <div className="flex items-start gap-3 text-red-700">
+                <AlertCircle className="w-6 h-6 shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-[16px] font-semibold mb-1">
+                    การเข้าใช้งานถูกจำกัด 🔒
+                  </h3>
+                  <p className="text-[14px] leading-relaxed text-red-700/80">
+                    {errorMsg || "คุณต้องเข้าใช้งานผ่านลิงก์แนะนำของตัวแทน (Agent) หรือกรอกรหัสแนะนำตัวแทนเพื่อปลดล็อกการเข้าสู่ระบบ"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleUnlockSubmit} className="space-y-4 mb-6">
+              <div>
+                <label htmlFor="unlock-code" className="block text-[14px] font-medium text-mp-ink mb-1.5 text-left">
+                  กรอก Agent Code เพื่อเข้าใช้งาน
+                </label>
+                <input
+                  id="unlock-code"
+                  type="text"
+                  required
+                  placeholder="เช่น AGEN-XXXX"
+                  value={unlockCode}
+                  onChange={(e) => setUnlockCode(e.target.value)}
+                  disabled={unlockBusy}
+                  className="w-full h-11 rounded-[10px] border border-mp-border bg-white px-4 text-[15px] text-mp-ink focus:border-mp-coral focus:outline-none focus:ring-2 focus:ring-mp-coral/20 transition-colors uppercase"
+                />
+              </div>
+              {unlockError && (
+                <div className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700 text-left">
+                  {unlockError}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={unlockBusy}
+                className="flex w-full h-11 items-center justify-center gap-2 rounded-xl bg-mp-coral px-4 text-[15px] font-semibold text-white shadow-sm hover:bg-mp-coral-dark transition-all"
+              >
+                {unlockBusy && <Loader2 className="h-4 w-4 animate-spin" />}
+                ยืนยันเพื่อเข้าใช้งาน
+              </button>
+            </form>
+
+            <div className="space-y-4 pt-4 border-t border-mp-border">
+              <p className="text-sm text-mp-ink-muted text-left">หากคุณต้องการเปิดร้านและยังไม่มีตัวแทนผู้แนะนำ หรือสนใจร่วมทีมกับเรา:</p>
+              <Link
+                href="/agent/register"
+                className="flex w-full h-11 items-center justify-center rounded-xl border border-mp-border bg-white text-[15px] font-semibold text-mp-ink hover:bg-mp-cream-alt/40 transition-all"
+              >
+                สมัครเป็นตัวแทน (Agent)
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] grid lg:grid-cols-[60%_40%]">
+    <div className="mx-auto max-w-[1440px] min-h-[calc(100vh-4rem)] grid lg:grid-cols-[60%_40%] bg-mp-cream">
       {/* LEFT — editorial brand panel (desktop only) */}
       <aside
         className="hidden lg:flex flex-col justify-between bg-mp-forest text-mp-cream p-12 relative overflow-hidden"
         aria-hidden="true"
       >
-        <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0">
           <Image
-            src="https://lh3.googleusercontent.com/aida/ADBb0uj0zmNhSKLUFr6Uh4Mn7FA4zICX4lG-W3XOJYgAOytDBlgdZMKmlWn9RB0sPK8BkIAL72JAS3DrU25b90tUeJWV62pP79jZ_wbz_Y2EUZ2zbB2Ctie-LupndgCrLndIdUEv2Il1Rt8EpCjc49_fHL-doyqv6pYiGFs-Yf6HuiZMWbD5tS65OalWNWMyyVgmaNAFNxsfiOXwQR95JpV6y-eKwrzFULILSQShC_iSXanOyB02n8HOZimpMA"
+            src="/editorial_bg.png"
             alt=""
             fill
             className="object-cover"
             sizes="60vw"
             priority
           />
-          <div className="absolute inset-0 bg-mp-forest/50" />
+          <div className="absolute inset-0 bg-black/40" />
         </div>
         <div className="relative z-10">
           <span className="text-[13px] font-medium uppercase tracking-[0.16em] text-mp-cream/70">
@@ -189,7 +463,7 @@ export default function SignInPage() {
           </Suspense>
 
           <Suspense fallback={null}>
-            <CredentialsForm />
+            <CredentialsForm refCode={refCode} />
           </Suspense>
 
           <div className="relative my-6">
@@ -201,17 +475,24 @@ export default function SignInPage() {
 
           <button
             type="button"
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            onClick={() => signIn("google", { callbackUrl: defaultNext })}
             className="w-full h-11 flex items-center justify-center gap-2.5 rounded-xl bg-white border border-mp-border text-[15px] font-medium text-mp-ink hover:bg-mp-cream-alt/40 transition-colors"
           >
             <GoogleIcon />
             ดำเนินการต่อด้วย Google
           </button>
 
+          {agentName && (
+            <div className="mt-4 rounded-xl border border-mp-forest/20 bg-mp-forest/5 p-3 text-xs text-mp-forest flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>รหัสตัวแทนที่ผูกไว้: <strong>{agentName}</strong> ({refCode})</span>
+            </div>
+          )}
+
           <p className="mt-8 text-center text-[14px] text-mp-ink-muted">
             ยังไม่มีบัญชี?{" "}
             <Link
-              href="/signup"
+              href={refCode ? `/signup?ref=${encodeURIComponent(refCode)}` : "/signup"}
               className="font-semibold text-mp-coral hover:underline"
             >
               สมัครสมาชิก
@@ -231,5 +512,17 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-mp-cream">
+        <Loader2 className="w-8 h-8 text-mp-coral animate-spin" />
+      </div>
+    }>
+      <SignInPageContent />
+    </Suspense>
   );
 }

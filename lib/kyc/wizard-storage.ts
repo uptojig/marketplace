@@ -62,14 +62,66 @@ export async function uploadWizardEvidence(args: {
   source?: "vendor_upload" | "system_generated";
   width?: number;
   height?: number;
+  userName?: string;
 }) {
   const detectedSize = imageSize(args.buffer, args.mime);
-  const filename = args.filename ?? `${args.step}.${extensionFromMime(args.mime)}`;
+  const ext = extensionFromMime(args.mime);
+
+  // Standardize step naming for fixed files
+  let fixedFilename = `${args.step.toLowerCase()}.${ext}`;
+  if (args.step === "S1_ID_CARD_REF") {
+    fixedFilename = `id_card_ref.${ext}`;
+  } else if (args.step === "S2_SELFIE") {
+    fixedFilename = `selfie.${ext}`;
+  } else if (args.step === "S2_SELFIE_HELD_ID_CROP") {
+    fixedFilename = `selfie_held_id_crop.${ext}`;
+  } else if (args.step === "S3_PHONE_RESPONSE") {
+    fixedFilename = `phone_response.${ext}`;
+  } else if (args.step === "S4_BANKBOOK") {
+    fixedFilename = `bankbook.${ext}`;
+  } else if (args.step === "S1_DGA_CAPTURE") {
+    const imageCount = await prisma.wizardEvidence.count({
+      where: { sessionId: args.sessionId, step: "S1_DGA_CAPTURE" },
+    });
+    fixedFilename = `dga_image_${imageCount + 1}.${ext}`;
+  }
+
+  // Resolve name if not provided
+  let userName = args.userName;
+  if (!userName) {
+    const ocrResult = await prisma.wizardOcrResult.findFirst({
+      where: { sessionId: args.sessionId, provider: "iapp_id_ref" },
+      select: { extracted: true },
+    });
+    if (ocrResult && ocrResult.extracted && typeof ocrResult.extracted === "object") {
+      const extData = ocrResult.extracted as any;
+      if (extData.thName?.first && extData.thName?.last) {
+        userName = `${extData.thName.first}_${extData.thName.last}`;
+      } else if (extData.thName?.full) {
+        userName = extData.thName.full;
+      } else if (extData.enName?.first && extData.enName?.last) {
+        userName = `${extData.enName.first}_${extData.enName.last}`;
+      } else if (extData.enName?.full) {
+        userName = extData.enName.full;
+      }
+    }
+  }
+
+  const cleanName = userName ? userName.trim().replace(/\s+/g, "_") : args.sessionId;
+  const prefix = `kyc/${cleanName}`;
+  const fixedKey = `${prefix}/${fixedFilename}`;
+
+  // Cascade/delete existing DB evidence record pointing to this key to prevent duplicates
+  await prisma.wizardEvidence.deleteMany({
+    where: { storageKey: fixedKey },
+  });
+
   const uploaded = await uploadBuffer({
-    prefix: `kyc/${args.sessionId}/${args.step}`,
-    filename,
+    prefix,
+    filename: fixedFilename,
     contentType: args.mime,
     body: args.buffer,
+    fixedKey,
   });
 
   return prisma.wizardEvidence.create({

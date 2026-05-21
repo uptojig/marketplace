@@ -30,13 +30,8 @@ import {
   isReactTemplateSchema,
   type ReactTemplateSchema,
 } from "@/components/storefront/templates/registry";
-import { isPetHouseStore } from "@/lib/landing/pet-house";
-import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
-import { isTrustStore } from "@/lib/landing/trust";
-import { isBusinessModelStore } from "@/lib/landing/business-model";
-import { isLifestyleStore } from "@/lib/landing/lifestyle";
-import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
-import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { resolveStoreTheme } from "@/lib/storefront/resolve-store-theme";
+import { getStoreBySlug } from "@/lib/storefront/get-store";
 import { FashionBeautyHomepage } from "@/components/storefront/themes/fashion-beauty/FashionBeautyHomepage";
 import { TrustHomepage } from "@/components/storefront/themes/trust/TrustHomepage";
 import { BusinessModelHomepage } from "@/components/storefront/themes/business-model/BusinessModelHomepage";
@@ -44,21 +39,11 @@ import { LifestyleHomepage } from "@/components/storefront/themes/lifestyle/Life
 import { ElectronicsTechHomepage } from "@/components/storefront/themes/electronics-tech/ElectronicsTechHomepage";
 import { SpecialtyHomepage } from "@/components/storefront/themes/specialty/SpecialtyHomepage";
 import { PetHouseHomepage } from "@/components/storefront/themes/pet-house/PetHouseHomepage";
-import { isCaseStudioStore } from "@/lib/landing/case-studio";
 import { CaseStudioHomepage } from "@/components/storefront/themes/case-studio/CaseStudioHomepage";
-import { isEverydayStore } from "@/lib/landing/everyday";
 import { EverydayHomepage } from "@/components/storefront/themes/everyday/EverydayHomepage";
-import { isTaobaoStore } from "@/lib/landing/taobao";
 import { TaobaoHomepage } from "@/components/storefront/themes/taobao/TaobaoHomepage";
-import { isPackagingStore } from "@/lib/landing/packaging";
 import { PackagingHomepage } from "@/components/storefront/themes/packaging/PackagingHomepage";
-import { isCommunityStore } from "@/lib/landing/community";
 import { CommunityHomepage } from "@/components/storefront/themes/community/CommunityHomepage";
-import { parseUIConfig } from "@/lib/store/ui-config";
-import {
-  BlockRenderer,
-  storeToSummary,
-} from "@/components/storefront/block-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -71,18 +56,16 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }) {
-  const store = await prisma.store.findUnique({
-    where: { slug: params.slug },
-    select: { name: true, tagline: true, description: true },
-  });
+  // Reuse the request-deduped lookup so generateMetadata + layout + page share
+  // a single store query per render (the full row carries name/tagline/description).
+  const store = await getStoreBySlug(params.slug);
   if (!store) {
     return { title: "ไม่พบร้านค้า" };
   }
-  const description = store.description
-    ? `${store.description} - ${store.name}`
-    : store.tagline
-      ? `${store.tagline} - ${store.name}`
-      : `ช้อปสินค้าออนไลน์ ส่งฟรีทั่วประเทศ จาก ${store.name}`;
+  const description =
+    store.tagline?.trim() ||
+    store.description?.trim() ||
+    `ช้อปสินค้าออนไลน์ ส่งฟรีทั่วประเทศ จาก ${store.name}`;
   return {
     title: store.name,
     description,
@@ -229,99 +212,48 @@ export default async function StorePage({
   const tab = searchParams.tab ?? "all";
   const sort = searchParams.sort ?? (tab === "hot" ? "best-selling" : tab === "new" ? "newest" : "");
 
-  const baseStore = await prisma.store.findUnique({ where: { slug: params.slug } });
+  const baseStore = await getStoreBySlug(params.slug);
   if (!baseStore) notFound();
 
-  // ── Server-driven UI (uiConfig) ────────────────────────────────────
-  // When the operator (or seed) has saved a `uiConfig` JSON on the store's
-  // landing-content row, the storefront renders via the data-driven
-  // BlockRenderer pipeline instead of any family-detector path below.
-  // This is the path the 27-store recipe doc targets — every block is a
-  // shadcn-studio variant looked up in lib/registry/block-registry.tsx.
-  // Falling through (null parse) keeps every legacy store working
-  // unchanged so the migration to data-driven is opt-in per store.
-  const landingContentRow = await prisma.storeLandingContent.findUnique({
-    where: { storeId: baseStore.id },
-  });
-  const uiConfig = parseUIConfig(landingContentRow?.uiConfig);
-  if (uiConfig) {
-    return (
-      <BlockRenderer
-        blocks={uiConfig.pages.home}
-        store={storeToSummary(baseStore)}
-        content={landingContentRow}
-      />
-    );
+  // ── Theme dispatch (content) — single source of truth ───────
+  // resolveStoreTheme() reproduces the previous cascade EXACTLY:
+  //   1. pet-house / case-studio singletons first (by slug/templateId/variant)
+  //   2. then the family ladder via effectiveTemplateId() — the legacy
+  //      slug→templateId fallback for pre-wizard-v2 stores — including everyday.
+  // This runs BEFORE the wizard StoreRenderer below so a store whose templateId
+  // is in a known family gets the bespoke homepage instead of the generic
+  // block-renderer output. See lib/storefront/resolve-store-theme.ts.
+  const { themeKey } = resolveStoreTheme(baseStore);
+  switch (themeKey) {
+    case "pet-house":
+      return <PetHouseHomepage store={baseStore} />;
+    case "case-studio":
+      return <CaseStudioHomepage store={baseStore} />;
+    case "fashion-beauty":
+      return <FashionBeautyHomepage store={baseStore} />;
+    case "trust":
+      return <TrustHomepage store={baseStore} />;
+    case "business-model":
+      return <BusinessModelHomepage store={baseStore} />;
+    case "lifestyle":
+      return <LifestyleHomepage store={baseStore} />;
+    case "electronics-tech":
+      return <ElectronicsTechHomepage store={baseStore} />;
+    case "specialty":
+      return <SpecialtyHomepage store={baseStore} />;
+    case "everyday":
+      return <EverydayHomepage store={baseStore} />;
+    case "taobao":
+      return <TaobaoHomepage store={baseStore} />;
+    case "packaging":
+      return <PackagingHomepage store={baseStore} />;
+    case "community":
+      return <CommunityHomepage store={baseStore} />;
   }
 
-  // ── pet-house custom homepage (fluffyhouse) ─────────────────
-  // Bespoke landing for the pet-supplies store. Detection looks at the
-  // store slug AND optional templateId/landingThemeVariant opt-ins so
-  // an operator can later attach this homepage to a sibling pet store.
-  // Renders inside the shared ShopHeader / ShopFooter chrome that
-  // `app/stores/[slug]/layout.tsx` already wraps around every store
-  // sub-page.
-  if (isPetHouseStore(baseStore)) {
-    return <PetHouseHomepage store={baseStore} />;
-  }
-
-  // ── case-studio custom homepage (casethep) ──────────────────
-  // Bespoke landing for the phone-case store. Same gate pattern as
-  // pet-house above: matches by slug, templateId, OR
-  // landingThemeVariant so an operator can later opt sibling phone-
-  // case stores into the same homepage without code changes.
-  // Renders inside the shared ShopHeader / ShopFooter chrome.
-  if (isCaseStudioStore(baseStore)) {
-    return <CaseStudioHomepage store={baseStore} />;
-  }
-
-  // ── 6 design-family bespoke homepages ────────────────────────
-  // Each family now ships a {Family}Homepage composer that mirrors
-  // the family's category-page visual language — per the user's
-  // 'หน้าแรกต้องดีไซน์ธีมเดียวกันกับหน้าหมวดหมู่' requirement.
-  // Family detection runs BEFORE the wizard StoreRenderer so a store
-  // whose templateId is in a known family (lookbook → FB, classic →
-  // Trust, wholesale-b2b → BM, etc.) gets the bespoke homepage
-  // instead of the generic block-renderer output.
-  // effectiveTemplateId() applies a slug→templateId fallback for
-  // legacy stores whose `templateId` column is null. Without it,
-  // pre-wizard-v2 stores all fall through to the generic grid and
-  // look identical regardless of niche. See lib/landing/legacy-slug-template.ts.
+  // effectiveTemplateId() applies the legacy slug→templateId fallback; still
+  // needed by the scaffold StoreRenderer branch below.
   const effectiveTpl = effectiveTemplateId(baseStore);
-  const familyKey = {
-    templateId: effectiveTpl,
-    landingThemeVariant: baseStore.landingThemeVariant,
-  };
-  if (isFashionBeautyStore(familyKey)) {
-    return <FashionBeautyHomepage store={baseStore} />;
-  }
-  if (isTrustStore(familyKey)) {
-    return <TrustHomepage store={baseStore} />;
-  }
-  if (isBusinessModelStore(familyKey)) {
-    return <BusinessModelHomepage store={baseStore} />;
-  }
-  if (isLifestyleStore(familyKey)) {
-    return <LifestyleHomepage store={baseStore} />;
-  }
-  if (isElectronicsTechStore(familyKey)) {
-    return <ElectronicsTechHomepage store={baseStore} />;
-  }
-  if (isSpecialtyStore(familyKey)) {
-    return <SpecialtyHomepage store={baseStore} />;
-  }
-  if (isEverydayStore(familyKey)) {
-    return <EverydayHomepage store={baseStore} />;
-  }
-  if (isTaobaoStore(familyKey)) {
-    return <TaobaoHomepage store={baseStore} />;
-  }
-  if (isPackagingStore(familyKey)) {
-    return <PackagingHomepage store={baseStore} />;
-  }
-  if (isCommunityStore(familyKey)) {
-    return <CommunityHomepage store={baseStore} />;
-  }
 
   // ── New scaffold-based template (vendor wizard v2) ──────────
   // Stores created via the new /create-store wizard set `templateId` to
@@ -331,35 +263,6 @@ export default async function StorePage({
   if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
     const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
     const store = await mapStoreFromPrisma(baseStore);
-
-    const TemplateHomepage = template?.pages?.home;
-    if (TemplateHomepage) {
-      const dbProducts = await prisma.product.findMany({
-        where: { storeId: baseStore.id, active: true },
-        orderBy: { createdAt: "desc" },
-        take: 60,
-      });
-      const products = dbProducts.map((p) => ({
-        id: p.id,
-        title: p.titleTh ?? p.title,
-        priceTHB: Number(p.priceTHB),
-        compareAtPriceTHB: p.compareAtPriceTHB ? Number(p.compareAtPriceTHB) : null,
-        imageUrl: p.imageUrl,
-        categoryName: p.categoryName,
-      }));
-      const categories = Array.from(
-        new Set(products.map((p) => p.categoryName).filter((c): c is string => !!c))
-      ).slice(0, 8);
-
-      return (
-        <TemplateHomepage
-          store={storeToSummary(baseStore)}
-          products={products}
-          categories={categories}
-        />
-      );
-    }
-
     return <StoreRenderer store={store} template={template} />;
   }
 

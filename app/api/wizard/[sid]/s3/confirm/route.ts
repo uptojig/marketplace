@@ -4,7 +4,7 @@ import {
   jsonError,
   requireWizardSession,
 } from "@/lib/kyc/wizard-api";
-import { transitionWizardSession } from "@/lib/kyc/wizard-state";
+import { transitionWizardSession, invalidateWizardSteps } from "@/lib/kyc/wizard-state";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -12,9 +12,30 @@ export const runtime = "nodejs";
 export async function POST(_req: Request, { params }: { params: { sid: string } }) {
   const sw = createStopwatch();
   try {
-    const session = await requireWizardSession(params.sid);
+    let session = await requireWizardSession(params.sid);
+    const ACTIVE_FLOW_STATES = [
+      "S2_EMAIL_PENDING",
+      "S3_OTP_VERIFIED",
+      "S1_DGA_CAPTURE",
+      "S1_DGA_REVIEW",
+      "S2_ID_SELFIE",
+      "S3_PHONE_RESPONSE",
+      "S4_BANKBOOK_UPLOAD",
+      "S5_SUMMARY",
+    ];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active wizard session, got ${session.state}`, 409);
+    }
+
     if (session.state !== "S3_OTP_VERIFIED") {
-      return jsonError(`Expected S3_OTP_VERIFIED, got ${session.state}`, 409);
+      session = await transitionWizardSession({
+        sessionId: params.sid,
+        toState: "S3_OTP_VERIFIED",
+        actor: "vendor",
+        event: "s3.otp.reopened_confirm",
+        payload: { priorState: session.state },
+      });
+      await invalidateWizardSteps(params.sid, "S1_ID_CARD_REF");
     }
 
     const updated = await transitionWizardSession({

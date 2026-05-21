@@ -21,7 +21,7 @@ import {
   type SSEStream,
   type Stopwatch,
 } from "@/lib/kyc/wizard-api";
-import { auditWizardEvent, transitionWizardSession } from "@/lib/kyc/wizard-state";
+import { auditWizardEvent, invalidateWizardSteps, transitionWizardSession } from "@/lib/kyc/wizard-state";
 import { uploadWizardEvidence } from "@/lib/kyc/wizard-storage";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +44,8 @@ async function processUssd(args: {
   const { sw, sse, sessionId, sessionState, dga, image, buffer } = args;
   lapAndEmit(sw, sse, "session_check");
   lapAndEmit(sw, sse, "form_parse");
+
+  await invalidateWizardSteps(sessionId, "S3_PHONE_RESPONSE");
 
   const evidencePromise = uploadWizardEvidence({
     sessionId,
@@ -151,7 +153,21 @@ export async function POST(req: Request, { params }: { params: { sid: string } }
   const useSSE = clientWantsSSE(req);
   try {
     const session = await requireWizardSession(params.sid);
-    if (session.state !== "S3_PHONE_RESPONSE") return jsonError(`Expected S3_PHONE_RESPONSE, got ${session.state}`, 409);
+    const ACTIVE_FLOW_STATES = ["S3_PHONE_RESPONSE", "S4_BANKBOOK_UPLOAD", "S5_SUMMARY"];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active phone response state, got ${session.state}`, 409);
+    }
+
+    if (session.state !== "S3_PHONE_RESPONSE") {
+      await transitionWizardSession({
+        sessionId: params.sid,
+        toState: "S3_PHONE_RESPONSE",
+        actor: "vendor",
+        event: "s3.phone_response.reopened_upload",
+        payload: { priorState: session.state },
+      });
+      await invalidateWizardSteps(params.sid, "S3_PHONE_RESPONSE");
+    }
     const dga = await latestExtractedIdentity(params.sid, DGA_PROVIDER);
     if (!dga) return jsonError("Missing DGA capture OCR for phone response match", 409);
 

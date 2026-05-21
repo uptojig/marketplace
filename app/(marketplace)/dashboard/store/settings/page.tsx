@@ -79,6 +79,8 @@ export default async function StoreSettingsPage({
             (store.brandVoice as "casual" | "formal" | "playful" | null) ??
             "casual",
           landingThemeVariant: store.landingThemeVariant ?? "",
+          themeAccentOverride: store.themeAccentOverride ?? "",
+          themeConfig: store.themeConfig ?? null,
         }}
         platformEmail={{
           address: store.platformEmail,

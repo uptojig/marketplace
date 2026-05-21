@@ -544,3 +544,75 @@ export function rankTemplates(nicheId: NicheId | null): {
   const others = TEMPLATES.filter((t) => !recIds.includes(t.id));
   return { recommended, others };
 }
+
+// ─── Themes (10) — the curated picker the wizard actually shows ───────────────
+//
+// The wizard presents 10 CURATED THEMES (one per design family / TemplateGroup),
+// NOT the 26 raw templates. The 26 templates collapse to ~10 looks at render
+// time anyway (see resolveStoreTheme) — showing all 26 created the illusion of
+// choice without delivering distinct results. Each theme writes ONE
+// representative templateId so every downstream consumer (resolveStoreTheme,
+// storefront, admin tools, Zod) keeps working unchanged. The remaining
+// templates stay valid for stores created before this change and for the
+// per-template admin tools — they're just no longer offered as separate cards.
+//
+// Representatives are chosen to be NON-gated so all 10 themes are pickable
+// (e.g. business-model uses flash-deal, not the KYC-gated wholesale-b2b).
+
+export type ThemeOptionKey = TemplateGroup; // the 10 design families
+
+export type ThemeOption = {
+  key: ThemeOptionKey;
+  name: string;
+  description: string;
+  /**
+   * templateId written to Store when this theme is chosen. MUST resolve (via
+   * the lib/landing isXStore predicates) to the matching storefront family.
+   */
+  templateId: TemplateId;
+};
+
+export const THEME_OPTIONS: ThemeOption[] = [
+  { key: "trust", name: "คลาสสิก", description: "สะอาด น่าเชื่อถือ เหมาะร้านทั่วไป", templateId: "classic" },
+  { key: "fashion-beauty", name: "แฟชั่น & บิวตี้", description: "ลุคบุ๊กภาพใหญ่ โทนอ่อน เหมาะเสื้อผ้า/เครื่องสำอาง", templateId: "lookbook" },
+  { key: "electronics-tech", name: "อิเล็กทรอนิกส์ & ไอที", description: "แคตตาล็อกแน่น ค้นหาง่าย เหมาะสินค้าเยอะ/สเปกละเอียด", templateId: "catalog-dense" },
+  { key: "lifestyle", name: "ไลฟ์สไตล์ & แต่งบ้าน", description: "ภาพบรรยากาศ การ์ดซีน เหมาะของแต่งบ้าน/กีฬา/เด็ก", templateId: "home-living" },
+  { key: "business-model", name: "โปรโมชัน & ดีล", description: "เน้นดีล countdown สต็อก เหมาะ flash sale/ขายส่ง", templateId: "flash-deal" },
+  { key: "specialty", name: "คราฟต์ & วินเทจ", description: "เล่าเรื่องแบรนด์ โชว์ผู้ผลิต เหมาะงานฝีมือ/มือสอง", templateId: "handmade" },
+  { key: "community", name: "วิดีโอ & ไลฟ์", description: "ฟีดวิดีโอ ไลฟ์สด สไตล์ TikTok/โซเชียล", templateId: "video-feed" },
+  { key: "everyday", name: "ขายปลีกทั่วไป", description: "สไตล์ Shopee ภาพใหญ่ ราคาเด่น แท็บหมวด", templateId: "everyday-retail" },
+  { key: "taobao", name: "มาร์เก็ตเพลส", description: "โทนส้ม-แดง-ชมพู ลดทุกวัน อารมณ์ Taobao", templateId: "taobao-style" },
+  { key: "packaging", name: "บรรจุภัณฑ์ & ซัพพลาย", description: "พาสเทลสดใส เหมาะสินค้าบรรจุภัณฑ์/ซัพพลาย", templateId: "packaging-supply" },
+];
+
+/**
+ * Which curated theme a (legacy or current) templateId belongs to — keyed off
+ * the template's design group. Lets the picker highlight the right theme card
+ * for stores/drafts saved with any of the 26 templateIds. Falls back to the
+ * first theme only if the id is unknown.
+ */
+export function themeForTemplate(id: TemplateId | null): ThemeOption {
+  const group = getTemplate(id).group;
+  return THEME_OPTIONS.find((t) => t.key === group) ?? THEME_OPTIONS[0];
+}
+
+/**
+ * Rank the 10 themes for a niche: themes whose family is hit by the niche's
+ * recommended templates come first. Mirrors rankTemplates' intent at theme
+ * granularity (no niche → first 3 as recommended).
+ */
+export function rankThemes(nicheId: NicheId | null): {
+  recommended: ThemeOption[];
+  others: ThemeOption[];
+} {
+  if (!nicheId) {
+    return { recommended: THEME_OPTIONS.slice(0, 3), others: THEME_OPTIONS.slice(3) };
+  }
+  const niche = getNiche(nicheId);
+  const recGroups = new Set(
+    (niche?.recommendedTemplates ?? []).map((id) => getTemplate(id).group),
+  );
+  const recommended = THEME_OPTIONS.filter((t) => recGroups.has(t.key));
+  const others = THEME_OPTIONS.filter((t) => !recGroups.has(t.key));
+  return { recommended, others };
+}

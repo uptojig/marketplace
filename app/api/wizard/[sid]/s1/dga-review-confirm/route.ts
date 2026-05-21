@@ -9,6 +9,8 @@ import {
   type SSEStream,
 } from "@/lib/kyc/wizard-api";
 
+import { transitionWizardSession, invalidateWizardSteps } from "@/lib/kyc/wizard-state";
+
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -24,8 +26,26 @@ export async function POST(req: Request, { params }: { params: { sid: string } }
 
   try {
     const session = await requireWizardSession(params.sid);
+    const ACTIVE_FLOW_STATES = [
+      "S1_DGA_REVIEW",
+      "S2_ID_SELFIE",
+      "S3_PHONE_RESPONSE",
+      "S4_BANKBOOK_UPLOAD",
+      "S5_SUMMARY",
+    ];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active wizard session, got ${session.state}`, 409);
+    }
+
     if (session.state !== "S1_DGA_REVIEW") {
-      return jsonError(`Expected S1_DGA_REVIEW, got ${session.state}`, 409);
+      await transitionWizardSession({
+        sessionId: params.sid,
+        toState: "S1_DGA_REVIEW",
+        actor: "vendor",
+        event: "s1.dga_review.reopened_confirm",
+        payload: { priorState: session.state },
+      });
+      await invalidateWizardSteps(params.sid, "S1_DGA_REVIEW");
     }
 
     if (useSSE) {

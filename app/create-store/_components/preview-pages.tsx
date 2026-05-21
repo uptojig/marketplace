@@ -13,7 +13,7 @@
  *   หน้าแรก · หมวดหมู่ · สินค้า · ตะกร้า · ชำระเงิน · สั่งซื้อสำเร็จ ·
  *   ติดต่อ · นโยบาย
  *
- * Each mockup picks the family from templateId (via FAMILY_BY_TEMPLATE)
+ * Each mockup picks the family from the template's design group
  * and renders a low-fidelity SVG-ish sketch using that family's palette
  * + typography + copy voice. The schematics intentionally use
  * abstract blocks instead of actual storefront components — the
@@ -23,18 +23,13 @@
  * Why per-family (not per-template) mockups: the runtime ship matrix
  * is 6 families × 8 pages = 48 designs. Templates within a family
  * share the page chrome — they only diverge in the homepage block
- * makeup (e.g. SwatchRow vs Editorial cards vs LiveCommerce overlay).
+ * composition. So 6 family mockups per page communicates the actual
+ * delivered design.
  */
 
-import {
-  TemplateId,
-  Template,
-  Family,
-  TemplateGroup,
-  Behavior,
-} from "@/lib/store/wizard-data";
-import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
 import { useState } from "react";
+import { getTemplate, type Template } from "@/lib/store/wizard-data";
+import { themeColorsFor } from "@/lib/storefront/theme-vars";
 
 export type PageKey =
   | "home"
@@ -70,61 +65,10 @@ type Family =
   | "community"
   | "default";
 
-const FAMILY_BY_TEMPLATE: Record<TemplateId, Family> = {
-  lookbook: "fashion-beauty",
-  "beauty-swatch": "fashion-beauty",
-  boutique: "fashion-beauty",
-  classic: "trust",
-  "official-brand": "trust",
-  "premium-luxury": "trust",
-  "wholesale-b2b": "business-model",
-  "flash-deal": "business-model",
-  subscription: "business-model",
-  "home-living": "lifestyle",
-  "sport-active": "lifestyle",
-  "kids-toys": "lifestyle",
-  "catalog-dense": "electronics-tech",
-  "tech-compare": "electronics-tech",
-  "single-product": "electronics-tech",
-  handmade: "specialty",
-  vintage: "specialty",
-  "live-commerce": "default",
-  "video-feed": "default",
-  storyteller: "default",
-  "eco-pack": "business-model",
-  "mega-store": "lifestyle",
-  "bikini-beach": "fashion-beauty",
-  "everyday-retail": "everyday",
-  "taobao-style": "taobao",
-  "packaging-supply": "packaging",
-  "sai-sing": "community",
-  "talad-see-sod": "taobao",
-  "brutalist-thai": "everyday",
-  "mono-eight": "trust",
-  "lila-modest": "fashion-beauty",
-  "atelier-27": "specialty",
-  "bulkbox-industrial": "business-model",
-  "caldera-skin": "electronics-tech",
-  "carbon-era-cameras": "electronics-tech",
-  "glow-lamp-co": "lifestyle",
-  "hinoki-apothecary": "specialty",
-  "inkstone-paper": "specialty",
-  "keystroke-lab": "electronics-tech",
-  "korakot-house": "lifestyle",
-  "linen-and-loom": "lifestyle",
-  "mai-hatthakam": "specialty",
-  "pastel-pack": "packaging",
-  "petit-cote": "lifestyle",
-  "pigment-studio": "specialty",
-  "reclaim-leather": "specialty",
-  "saluki-yoga": "lifestyle",
-  "sirin-womenswear": "fashion-beauty",
-  "smartloop-home": "electronics-tech",
-  "tinyhand-wooden-toys": "lifestyle",
-  "trailcraft-outdoors": "lifestyle",
-  "wavelength-audio": "electronics-tech",
-  "yumeiro-lip": "fashion-beauty",
-};
+// Family is derived from the template's design `group` in PageMockup (the same
+// collapse the real resolveContentThemeKey does) — no separate templateId→family
+// table to drift. This also fixes the old community→default mis-map for
+// live-commerce / video-feed / storyteller.
 
 interface FamilyTheme {
   bg: string;
@@ -153,161 +97,27 @@ const SANS_OUTFIT = '"Outfit", "Plus Jakarta Sans", "DM Sans", "Prompt", sans-se
 const SANS_INTER = '"Inter Tight", "Inter", "IBM Plex Sans Thai", sans-serif';
 const SANS_SYS = "ui-sans-serif, system-ui, sans-serif";
 
-const FAMILY_THEMES: Record<Family, FamilyTheme> = {
-  "fashion-beauty": {
-    bg: "#fbf8f4",
-    surface: "#ffffff",
-    primary: "#f43f5e",
-    accent: "#fda4af",
-    ink: "#3f1d2c",
-    inkMuted: "#a18792",
-    border: "#f5e1e8",
-    serif: SERIF_CORMORANT,
-    mono: MONO_JET,
-    sans: SANS_SYS,
-    heading: "serif",
-    radius: "round",
-  },
-  trust: {
-    bg: "#fbf9f5",
-    surface: "#ffffff",
-    primary: "#1f1f1f",
-    accent: "#b8862a",
-    ink: "#1f1f1f",
-    inkMuted: "#6b6358",
-    border: "#e8dec6",
-    serif: SERIF_PLAYFAIR,
-    mono: MONO_JET,
-    sans: SANS_SYS,
-    heading: "serif",
-    radius: "sharp",
-  },
-  "business-model": {
-    bg: "#ffffff",
-    surface: "#fafafa",
-    primary: "#dc2626",
-    accent: "#10b981",
-    ink: "#0a0a0a",
-    inkMuted: "#52525b",
-    border: "#e4e4e7",
-    serif: SERIF_PLAYFAIR,
-    mono: MONO_JET,
-    sans: SANS_SYS,
-    heading: "sans",
-    radius: "default",
-  },
-  lifestyle: {
-    bg: "#faf5ee",
-    surface: "#ffffff",
-    primary: "#cc6f4d",
-    accent: "#7a9d6a",
-    ink: "#3a322c",
-    inkMuted: "#9b8e80",
-    border: "#ead9c4",
-    serif: SERIF_PLAYFAIR,
-    mono: MONO_JET,
-    sans: SANS_OUTFIT,
-    heading: "sans",
-    radius: "round",
-  },
-  "electronics-tech": {
-    bg: "#ffffff",
-    surface: "#ffffff",
-    primary: "#0f4c81",
-    accent: "#34d399",
-    ink: "#0a0a0a",
-    inkMuted: "#52525b",
-    border: "#e4e4e7",
-    serif: SERIF_PLAYFAIR,
-    mono: MONO_JET,
-    sans: SANS_INTER,
-    heading: "sans",
-    radius: "default",
-  },
-  specialty: {
-    bg: "#f3eadc",
-    surface: "#fbf6ec",
-    primary: "#a8651a",
-    accent: "#7d4f1f",
-    ink: "#3b2a16",
-    inkMuted: "#8a7456",
-    border: "#d9c4a3",
-    serif: SERIF_FRAUNCES,
-    mono: MONO_JET,
-    sans: SANS_SYS,
-    heading: "serif",
-    radius: "default",
-  },
-  everyday: {
-    bg: "#FAFAFA",
-    surface: "#ffffff",
-    primary: "#DC2626", // red — Shopee-style CTA
-    accent: "#0A0A0A", // dark accent
-    ink: "#0A0A0A",
-    inkMuted: "#737373",
-    border: "#E5E5E5",
-    serif: SERIF_PLAYFAIR,
-    mono: MONO_JET,
-    sans: SANS_SYS,
-    heading: "sans",
-    radius: "default",
-  },
-  taobao: {
-    bg: "#FAFAFA",
-    surface: "#ffffff",
-    primary: "#FF1A1A", // hot red
-    accent: "#FFD600", // golden yellow chip
-    ink: "#0F0F0F",
-    inkMuted: "#525252",
-    border: "#E5E5E5",
-    serif: SERIF_PLAYFAIR,
-    mono: MONO_JET,
-    sans: SANS_SYS,
-    heading: "sans",
-    radius: "default",
-  },
-  packaging: {
-    bg: "#FFFFFF",
-    surface: "#FFF0F6",
-    primary: "#FF4E8B", // vivid hot pink
-    accent: "#FFD93D", // sunshine yellow
-    ink: "#1A1A2E",
-    inkMuted: "#6B7280",
-    border: "#FFE0EC",
-    serif: SERIF_PLAYFAIR,
-    mono: MONO_JET,
-    sans: SANS_SYS,
-    heading: "sans",
-    radius: "round",
-  },
-  community: {
-    bg: "#FAFAFA",
-    surface: "#FAF5FF",
-    primary: "#9333EA", // vivid purple
-    accent: "#EC4899", // pink chip
-    ink: "#0A0A0A",
-    inkMuted: "#525252",
-    border: "#E5E5E5",
-    serif: SERIF_PLAYFAIR,
-    mono: MONO_JET,
-    sans: SANS_SYS,
-    heading: "sans",
-    radius: "default",
-  },
-  default: {
-    bg: "#ffffff",
-    surface: "#fafafa",
-    primary: "#0a0a0a",
-    accent: "#71717a",
-    ink: "#0a0a0a",
-    inkMuted: "#71717a",
-    border: "#e4e4e7",
-    serif: SERIF_PLAYFAIR,
-    mono: MONO_JET,
-    sans: SANS_SYS,
-    heading: "sans",
-    radius: "default",
-  },
+/**
+ * Per-family STYLE cues (fonts + corner radius) for the preview mocks. COLORS
+ * are intentionally NOT here — they come from themeColorsFor() (the canonical
+ * lib/landing tokens, the same the storefront chrome applies) at lookup time, so
+ * the preview can never drift from the published store again.
+ */
+const FAMILY_STYLE: Record<
+  Family,
+  Pick<FamilyTheme, "serif" | "mono" | "sans" | "heading" | "radius">
+> = {
+  "fashion-beauty": { serif: SERIF_CORMORANT, mono: MONO_JET, sans: SANS_SYS, heading: "serif", radius: "round" },
+  trust: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "serif", radius: "sharp" },
+  "business-model": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
+  lifestyle: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_OUTFIT, heading: "sans", radius: "round" },
+  "electronics-tech": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_INTER, heading: "sans", radius: "default" },
+  specialty: { serif: SERIF_FRAUNCES, mono: MONO_JET, sans: SANS_SYS, heading: "serif", radius: "default" },
+  everyday: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
+  taobao: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
+  packaging: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "round" },
+  community: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
+  default: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
 };
 
 function radiusPx(r: FamilyTheme["radius"], scale: "sm" | "md" | "lg" = "md"): string {
@@ -320,7 +130,7 @@ function radiusPx(r: FamilyTheme["radius"], scale: "sm" | "md" | "lg" = "md"): s
 }
 
 function familyEyebrow(family: Family, page: PageKey): string {
-  const map: Record<Family, Partial<Record<PageKey, string>>> = {
+  const map: Partial<Record<Family, Partial<Record<PageKey, string>>>> = {
     "fashion-beauty": {
       home: "The Edit · Curated for you",
       category: "The Edit · Season Collection",
@@ -392,11 +202,11 @@ function familyEyebrow(family: Family, page: PageKey): string {
       policy: "Policy",
     },
   };
-  return map[family][page] ?? map.default[page] ?? "";
+  return map[family]?.[page] ?? map.default?.[page] ?? "";
 }
 
 function familyTitle(family: Family, page: PageKey, name: string): string {
-  const map: Record<Family, Partial<Record<PageKey, string>>> = {
+  const map: Partial<Record<Family, Partial<Record<PageKey, string>>>> = {
     "fashion-beauty": {
       home: name,
       category: "All pieces",
@@ -468,7 +278,7 @@ function familyTitle(family: Family, page: PageKey, name: string): string {
       policy: "นโยบาย",
     },
   };
-  return map[family][page] ?? name;
+  return map[family]?.[page] ?? name;
 }
 
 /* ──────────────────────────────────────────────────────────────
@@ -517,10 +327,14 @@ export function PageMockup({
   slug: string;
   page: PageKey;
 }) {
+  // Family = the template's design group — the same collapse the real
+  // storefront's resolveContentThemeKey does — so the preview can't drift.
   const family: Family = template?.id
-    ? FAMILY_BY_TEMPLATE[template.id]
+    ? getTemplate(template.id).group
     : "default";
-  const t = FAMILY_THEMES[family];
+  // Colors come from the canonical lib/landing tokens (themeColorsFor) so the
+  // preview matches the published store; only fonts/radius are preview-local.
+  const t: FamilyTheme = { ...themeColorsFor(family), ...FAMILY_STYLE[family] };
   const eyebrow = familyEyebrow(family, page);
   const title = familyTitle(family, page, displayName);
   const headingFont =
@@ -541,37 +355,9 @@ export function PageMockup({
   );
 
   switch (page) {
-    case "home": {
-      const realTemplate = template?.id ? STORE_TEMPLATES[template.id] : null;
-      const TemplateHome = realTemplate?.pages?.home;
-      if (TemplateHome) {
-        return (
-          <div className="relative w-full h-[600px] overflow-hidden rounded-md border border-mp-border/50 bg-white shadow-sm">
-            <div
-              className="absolute left-0 top-0 w-[1024px] origin-top-left"
-              style={{ transform: "scale(0.4)", width: "250%" }}
-            >
-              <div className="pointer-events-none select-none">
-                <TemplateHome
-                  store={{ id: "preview", name: displayName, slug: slug || "preview", logoUrl: null }}
-                  categories={[{ id: "1", name: "Featured" }]}
-                  products={[
-                    { id: "1", title: "Preview Product 1", priceTHB: 1290, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
-                    { id: "2", title: "Preview Product 2", priceTHB: 890, compareAtPriceTHB: 1290, imageUrl: null, categoryName: "Featured" },
-                    { id: "3", title: "Preview Product 3", priceTHB: 2490, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
-                    { id: "4", title: "Preview Product 4", priceTHB: 1590, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
-                    { id: "5", title: "Preview Product 5", priceTHB: 990, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
-                    { id: "6", title: "Preview Product 6", priceTHB: 3190, compareAtPriceTHB: null, imageUrl: null, categoryName: "Featured" },
-                  ]}
-                />
-              </div>
-            </div>
-          </div>
-        );
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    case "home":
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wizard-data `Behavior` and HomeMock's inline behavior shape diverged across the PR #105 / per-template merge; the actual fields consumed are a subset and runtime-safe.
       return shell(<HomeMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} behavior={b as any} />);
-    }
     case "category":
       return shell(<CategoryMock t={t} family={family} eyebrow={eyebrow} title={title} headingFont={headingFont} />);
     case "pdp":
@@ -744,11 +530,8 @@ function HomeMock({
     productCardStyle: 'default' | 'minimal' | 'editorial' | 'spec-rows';
     hideRatingsCount: boolean;
     heroSize: 'cover' | 'large' | 'portrait' | 'video' | 'live-tile' | 'none';
-    storyBlock: 'inline-visible' | 'hidden' | true;
+    storyBlock: 'inline-visible' | 'hidden';
     liveBlock: 'visible' | 'hidden';
-    swatchRow: boolean;
-    singleProductMode: boolean;
-    makerPortrait: boolean;
   }>;
 }) {
   const showCountdown = behavior.countdownBanner === 'visible' || family === 'business-model';
@@ -756,13 +539,8 @@ function HomeMock({
   const isMinimalCards = behavior.productCardStyle === 'minimal';
   const isEditorialCards = behavior.productCardStyle === 'editorial';
   const isLargeHero = behavior.heroSize === 'large' || behavior.heroSize === 'cover';
-  const isPortraitHero = behavior.heroSize === 'portrait';
-  const hasStoryBlock = behavior.storyBlock === 'inline-visible' || behavior.storyBlock === true;
+  const hasStoryBlock = behavior.storyBlock === 'inline-visible';
   const hasLiveBlock = behavior.liveBlock === 'visible';
-  const isSpecRows = behavior.productCardStyle === 'spec-rows';
-  const hasSwatchRow = behavior.swatchRow === true;
-  const isSingleProduct = behavior.singleProductMode === true;
-  const hasMakerPortrait = behavior.makerPortrait === true;
   return (
     <div className="px-4 py-4 space-y-3">
       {/* Optional countdown stripe — fires when template.behavior says so
@@ -782,9 +560,8 @@ function HomeMock({
         </div>
       )}
       {/* Hero band */}
-      {behavior.heroSize !== 'none' && (
       <div
-        className={isLargeHero ? "px-3 py-5" : isPortraitHero ? "px-3 py-8" : "px-3 py-3"}
+        className={isLargeHero ? "px-3 py-5" : "px-3 py-3"}
         style={{
           background:
             family === "fashion-beauty"
@@ -842,27 +619,6 @@ function HomeMock({
           </p>
         )}
       </div>
-      )}
-
-      {/* Optional Swatch Row */}
-      {hasSwatchRow && (
-        <div className="flex gap-1 overflow-hidden px-1">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-4 w-4 rounded-full" style={{ background: i % 2 === 0 ? t.primary : t.accent, opacity: 0.6 + (i * 0.05) }} />
-          ))}
-        </div>
-      )}
-
-      {/* Optional Maker Portrait */}
-      {hasMakerPortrait && (
-        <div className="flex items-center gap-2 rounded-md border p-2" style={{ borderColor: t.border, background: t.surface }}>
-          <div className="h-8 w-8 rounded-full bg-black/10" />
-          <div className="space-y-0.5">
-            <div className="h-1.5 w-16 bg-black/20" />
-            <div className="h-1 w-24 bg-black/10" />
-          </div>
-        </div>
-      )}
 
       {/* Optional story-block strip (storyteller/handmade templates) */}
       {hasStoryBlock && (
@@ -904,31 +660,6 @@ function HomeMock({
            family === "specialty" ? "from the atelier" :
            "Featured"}
         </Eyebrow>
-        {isSingleProduct ? (
-          <div className="space-y-1">
-            <Tile t={t} ratio="16/9" />
-            <p className="font-bold text-[12px]" style={{ color: t.ink, fontFamily: t.heading === 'serif' ? t.serif : undefined }}>Signature Edition</p>
-            <PriceLine t={t} family={family} />
-          </div>
-        ) : isSpecRows ? (
-          <div className="space-y-1.5">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex gap-2 rounded border p-1.5" style={{ borderColor: t.border }}>
-                <div className="h-8 w-8 shrink-0 bg-black/5" />
-                <div className="flex-1 space-y-1">
-                  <div className="flex justify-between items-start">
-                    <p className="text-[10px] font-medium" style={{ color: t.ink }}>Formulation #{i+1}</p>
-                    <p className="text-[9px] font-bold" style={{ color: t.primary }}>฿890</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <span className="bg-black/5 px-1 py-0.5 text-[7px]" style={{ fontFamily: t.mono }}>pH 5.5</span>
-                    <span className="bg-black/5 px-1 py-0.5 text-[7px]" style={{ fontFamily: t.mono }}>CT-0{i+1}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
         <div className="grid grid-cols-3 gap-1.5">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-0.5">
@@ -968,7 +699,6 @@ function HomeMock({
             </div>
           ))}
         </div>
-        )}
       </div>
     </div>
   );

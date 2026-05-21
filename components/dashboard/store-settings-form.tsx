@@ -14,6 +14,9 @@ import {
   templateIdChanged,
   type TemplateStyleValues,
 } from "@/components/store/template-style-picker";
+import { ThemeLayoutEditor } from "@/components/store/theme-layout-editor";
+import { resolveStoreTheme } from "@/lib/storefront/resolve-store-theme";
+import type { ThemeConfig } from "@/lib/storefront/theme-config";
 
 const schema = z.object({
   name: z.string().min(2).max(80),
@@ -72,6 +75,9 @@ const schema = z.object({
     .optional()
     .default("casual"),
   landingThemeVariant: z.string().max(40).optional().default(""),
+  // Curated theme editor (Phase 3e) — intentional accent + section layout.
+  themeAccentOverride: z.string().optional().default(""),
+  themeConfig: z.any().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -161,6 +167,17 @@ export function StoreSettingsForm({
   const landingThemeVariant = watch("landingThemeVariant") ?? "";
   const initialTemplateId = defaultValues.templateId ?? "";
 
+  // Curated theme editor state. resolvedThemeKey picks which theme's sections
+  // to expose (recomputed as the operator changes template/variant).
+  const themeAccentOverride = watch("themeAccentOverride") ?? "";
+  const themeConfig = (watch("themeConfig") ?? null) as ThemeConfig | null;
+  const slug = watch("slug") ?? "";
+  const resolvedThemeKey = resolveStoreTheme({
+    slug,
+    templateId: templateId || null,
+    landingThemeVariant: landingThemeVariant || null,
+  }).themeKey;
+
   function updateStyle(next: Partial<TemplateStyleValues>) {
     if (next.templateId !== undefined)
       setValue("templateId", next.templateId, { shouldValidate: true });
@@ -210,9 +227,17 @@ export function StoreSettingsForm({
         niche: _n,
         brandVoice: _b,
         landingThemeVariant: _l,
+        themeAccentOverride: _ta,
+        themeConfig: _tc,
         ...restValues
       } = values;
-      const body = { ...restValues, ...styleBody };
+      const body = {
+        ...restValues,
+        ...styleBody,
+        // "" → null clears the override back to the theme's curated color.
+        themeAccentOverride: values.themeAccentOverride?.trim() || null,
+        themeConfig: (values.themeConfig as ThemeConfig | null) ?? null,
+      };
 
       const res = await fetch("/api/store/settings", {
         method: "PATCH",
@@ -399,6 +424,30 @@ export function StoreSettingsForm({
               landingThemeVariant,
             }}
             onChange={updateStyle}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Theme layout — reorder/hide sections + intentional accent color */}
+      <Card>
+        <CardHeader>
+          <CardTitle>เลย์เอาต์ธีม</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            จัดลำดับ / ซ่อน section ของหน้าแรก และตั้งสี accent ทับสีของธีม (ถ้าต้องการ) —
+            มีผลกับธีมที่รองรับเท่านั้น
+          </p>
+          <ThemeLayoutEditor
+            themeKey={resolvedThemeKey}
+            config={themeConfig}
+            accentOverride={themeAccentOverride}
+            onConfigChange={(c) =>
+              setValue("themeConfig", c, { shouldValidate: true })
+            }
+            onAccentChange={(h) =>
+              setValue("themeAccentOverride", h, { shouldValidate: true })
+            }
           />
         </CardContent>
       </Card>

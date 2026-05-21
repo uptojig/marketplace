@@ -10,6 +10,8 @@ import {
 } from "@/lib/email/provision";
 import {
   templateFieldsSchema,
+  themeAccentOverrideField,
+  themeConfigField,
   deriveLandingThemeVariant,
   LANDING_CLEAR_PATCH,
 } from "@/lib/store/template-fields";
@@ -67,6 +69,9 @@ const schema = z.object({
       const t = v.trim();
       return t === "" ? null : t;
     }),
+  // Curated theme system (Phase 3) — section layout + intentional accent.
+  themeAccentOverride: themeAccentOverrideField,
+  themeConfig: themeConfigField,
 });
 
 async function getStore(email: string) {
@@ -127,6 +132,8 @@ export async function PATCH(req: Request) {
     niche,
     brandVoice,
     landingThemeVariant,
+    themeAccentOverride,
+    themeConfig,
   } = parsed.data;
 
   // Check slug uniqueness (allow own slug)
@@ -181,6 +188,10 @@ export async function PATCH(req: Request) {
       : derivedVariant !== undefined
         ? { landingThemeVariant: derivedVariant }
         : {}),
+    ...(themeAccentOverride !== undefined ? { themeAccentOverride } : {}),
+    ...(themeConfig !== undefined
+      ? { themeConfig: themeConfig === null ? Prisma.DbNull : themeConfig }
+      : {}),
   };
 
   // Mirror admin PATCH: clear AI-generated landingBlocks when vendor

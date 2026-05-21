@@ -12,7 +12,7 @@ import {
   requireWizardSession,
   saveOcrResult,
 } from "@/lib/kyc/wizard-api";
-import { transitionWizardSession } from "@/lib/kyc/wizard-state";
+import { invalidateWizardSteps, transitionWizardSession } from "@/lib/kyc/wizard-state";
 import { uploadWizardEvidence } from "@/lib/kyc/wizard-storage";
 import {
   formatThaiBuddhistDateFromIappEnglish,
@@ -37,8 +37,30 @@ export async function POST(req: Request, { params }: { params: { sid: string } }
   const sw = createStopwatch();
   try {
     const session = await requireWizardSession(params.sid);
+    const ACTIVE_FLOW_STATES = [
+      "S1_ID_CARD_REF",
+      "S1_ID_CARD_REVIEW",
+      "S2_EMAIL_PENDING",
+      "S3_OTP_VERIFIED",
+      "S1_DGA_CAPTURE",
+      "S1_DGA_REVIEW",
+      "S2_ID_SELFIE",
+      "S3_PHONE_RESPONSE",
+      "S4_BANKBOOK_UPLOAD",
+      "S5_SUMMARY",
+    ];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active wizard session, got ${session.state}`, 409);
+    }
+
     if (session.state !== "S1_ID_CARD_REF") {
-      return jsonError(`Expected S1_ID_CARD_REF, got ${session.state}`, 409);
+      await transitionWizardSession({
+        sessionId: params.sid,
+        toState: "S1_ID_CARD_REF",
+        actor: "system",
+        event: "s1.id_card_ref.reopened_upload",
+        payload: { priorState: session.state },
+      });
     }
 
     const form = await req.formData();
@@ -47,16 +69,9 @@ export async function POST(req: Request, { params }: { params: { sid: string } }
     assertFileSize(idFront, MAX_ID_BYTES, "ID card image");
 
     const buffer = await fileToBuffer(idFront);
-    const [evidence, ocr] = await Promise.all([
-      uploadWizardEvidence({
-        sessionId: params.sid,
-        step: "S1_ID_CARD_REF",
-        buffer,
-        mime: idFront.type || "image/jpeg",
-        filename: idFront.name || `id-card-${Date.now()}.jpg`,
-      }),
-      iapp.ocrThaiIdFront(buffer),
-    ]);
+
+    // 1. Run OCR first to obtain the name
+    const ocr = await iapp.ocrThaiIdFront(buffer);
 
     await recordIappCost({
       sessionId: params.sid,
@@ -66,6 +81,36 @@ export async function POST(req: Request, { params }: { params: { sid: string } }
     });
 
     const extracted = fromIappFront(ocr.data);
+
+    // Resolve name for folder path structure
+    let folderName = "";
+    if (extracted.thName?.first && extracted.thName?.last) {
+      folderName = `${extracted.thName.first}_${extracted.thName.last}`;
+    } else if (extracted.thName?.full) {
+      folderName = extracted.thName.full;
+    } else if (extracted.enName?.first && extracted.enName?.last) {
+      folderName = `${extracted.enName.first}_${extracted.enName.last}`;
+    } else if (extracted.enName?.full) {
+      folderName = extracted.enName.full;
+    }
+
+    folderName = folderName.trim().replace(/\s+/g, "_");
+    if (!folderName) {
+      return jsonError("ไม่สามารถอ่านข้อมูลชื่อบนบัตรประชาชนได้ กรุณาอัปโหลดรูปภาพที่ชัดเจนกว่านี้", 400);
+    }
+
+    // 2. Upload with the extracted name
+    const evidence = await uploadWizardEvidence({
+      sessionId: params.sid,
+      step: "S1_ID_CARD_REF",
+      buffer,
+      mime: idFront.type || "image/jpeg",
+      filename: idFront.name || `id-card-${Date.now()}.jpg`,
+      userName: folderName,
+    });
+
+    await invalidateWizardSteps(params.sid, "S1_ID_CARD_REF");
+
     await saveOcrResult({
       sessionId: params.sid,
       evidenceId: evidence.id,

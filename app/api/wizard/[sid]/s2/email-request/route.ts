@@ -9,7 +9,7 @@ import {
   jsonError,
   requireWizardSession,
 } from "@/lib/kyc/wizard-api";
-import { auditWizardEvent } from "@/lib/kyc/wizard-state";
+import { auditWizardEvent, transitionWizardSession, invalidateWizardSteps } from "@/lib/kyc/wizard-state";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -17,9 +17,30 @@ export const runtime = "nodejs";
 export async function POST(_req: Request, { params }: { params: { sid: string } }) {
   const sw = createStopwatch();
   try {
-    const session = await requireWizardSession(params.sid);
+    let session = await requireWizardSession(params.sid);
+    const ACTIVE_FLOW_STATES = [
+      "S2_EMAIL_PENDING",
+      "S3_OTP_VERIFIED",
+      "S1_DGA_CAPTURE",
+      "S1_DGA_REVIEW",
+      "S2_ID_SELFIE",
+      "S3_PHONE_RESPONSE",
+      "S4_BANKBOOK_UPLOAD",
+      "S5_SUMMARY",
+    ];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active wizard session, got ${session.state}`, 409);
+    }
+
     if (session.state !== "S2_EMAIL_PENDING") {
-      return jsonError(`Expected S2_EMAIL_PENDING, got ${session.state}`, 409);
+      session = await transitionWizardSession({
+        sessionId: params.sid,
+        toState: "S2_EMAIL_PENDING",
+        actor: "vendor",
+        event: "s2.email.reopened_email_lease",
+        payload: { priorState: session.state },
+      });
+      await invalidateWizardSteps(params.sid, "S1_ID_CARD_REF");
     }
 
     const lease = await leaseKycEmailForSession(params.sid);
@@ -30,6 +51,7 @@ export async function POST(_req: Request, { params }: { params: { sid: string } 
 
     metadata.kycEmail = lease.email;
     metadata.kycEmailExpiresAt = lease.expiresAt.toISOString();
+    metadata.emailTab = "system";
 
     await prisma.wizardSession.update({
       where: { id: params.sid },

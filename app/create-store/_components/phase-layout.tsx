@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import {
-  rankTemplates,
-  type Template,
+  rankThemes,
+  themeForTemplate,
+  type ThemeOption,
   type TemplateId,
   type WizardState,
   PALETTES,
@@ -17,24 +18,26 @@ type Props = {
 
 export function PhaseLayout({ state, onChange, onIdentityChange }: Props) {
   const [showAll, setShowAll] = useState(false);
-  const { recommended, others } = rankTemplates(state.identity.niche);
-  const selectedId = state.layout.templateId;
-  const selectedTemplate = [...recommended, ...others].find(t => t.id === selectedId);
-  const isSpecialty = selectedTemplate?.group === "specialty";
+  const { recommended, others } = rankThemes(state.identity.niche);
+  // Highlight the card matching the saved templateId's family. null until the
+  // user has actually picked, so nothing shows pre-selected.
+  const activeKey = state.layout.templateId
+    ? themeForTemplate(state.layout.templateId).key
+    : null;
 
   return (
     <div className="space-y-5">
       <header className="space-y-1">
         <p className="text-[11px] font-medium uppercase tracking-wide text-mp-ink-muted">
-          ขั้นที่ 2 · เลย์เอาต์
+          ขั้นที่ 2 · ธีม
         </p>
         <h2 className="text-xl font-semibold tracking-tight">
-          เลือกเลย์เอาต์ที่เหมาะกับร้าน
+          เลือกธีมที่เหมาะกับร้าน
         </h2>
         <p className="text-sm text-mp-ink-muted">
           {state.identity.niche
-            ? "แนะนำตามหมวดที่คุณเลือก · ดูพรีวิวจริงด้านขวา"
-            : "เลือกได้ทั้งหมด 20 แบบ"}
+            ? "แนะนำตามหมวดที่คุณเลือก · ปรับสี/โลโก้/แบนเนอร์ได้ภายหลัง"
+            : "เลือกได้ทั้งหมด 10 ธีม · ปรับสี/โลโก้ได้ภายหลัง"}
         </p>
       </header>
 
@@ -50,119 +53,71 @@ export function PhaseLayout({ state, onChange, onIdentityChange }: Props) {
           </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {recommended.map((t) => (
-              <TemplateCard
-                key={t.id}
-                template={t}
-                active={t.id === selectedId}
-                onSelect={() => onChange({ templateId: t.id })}
+              <ThemeCard
+                key={t.key}
+                theme={t}
+                active={t.key === activeKey}
+                onSelect={() => onChange({ templateId: t.templateId })}
               />
             ))}
           </div>
         </section>
       )}
 
-      <section className="space-y-2">
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          className="text-xs font-medium text-mp-ink underline-offset-4 hover:underline"
-        >
-          {showAll
-            ? `↑ ซ่อนแม่แบบทั้งหมด`
-            : `↓ ดูทั้งหมด 20 เลย์เอาต์ (อีก ${others.length})`}
-        </button>
+      {others.length > 0 && (
+        <section className="space-y-2">
+          <button
+            type="button"
+            onClick={() => setShowAll((v) => !v)}
+            className="text-xs font-medium text-mp-ink underline-offset-4 hover:underline"
+          >
+            {showAll ? `↑ ซ่อนธีมอื่น` : `↓ ดูธีมทั้งหมด (อีก ${others.length})`}
+          </button>
 
-        {showAll && (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {others.map((t) => (
-              <TemplateCard
-                key={t.id}
-                template={t}
-                active={t.id === selectedId}
-                onSelect={() => onChange({ templateId: t.id })}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {!isSpecialty && onIdentityChange && (
-        <section className="space-y-2 border-t pt-5">
-          <div className="space-y-1">
-            <h3 className="text-sm font-medium text-mp-ink">เลือกโทนสีหลัก (Palette)</h3>
-            <p className="text-[11px] text-mp-ink-muted">ธีมนี้รองรับการเปลี่ยนสีร้านค้า</p>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {PALETTES.map((p) => {
-              const active = state.identity.paletteId === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => onIdentityChange({ paletteId: p.id })}
-                  aria-label={p.name}
-                  className={`flex flex-col items-center gap-1.5 rounded-lg border p-2 transition ${
-                    active
-                      ? "border-mp-coral ring-2 ring-mp-coral/20"
-                      : "border-mp-border hover:border-mp-coral/60"
-                  }`}
-                >
-                  <div className="flex h-8 w-full overflow-hidden rounded-md">
-                    <span className="h-full flex-1" style={{ backgroundColor: p.primary }} />
-                    <span className="h-full flex-1" style={{ backgroundColor: p.accent }} />
-                  </div>
-                  <span className="text-[11px] text-mp-ink">{p.name}</span>
-                </button>
-              );
-            })}
-          </div>
+          {showAll && (
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {others.map((t) => (
+                <ThemeCard
+                  key={t.key}
+                  theme={t}
+                  active={t.key === activeKey}
+                  onSelect={() => onChange({ templateId: t.templateId })}
+                />
+              ))}
+            </div>
+          )}
         </section>
       )}
     </div>
   );
 }
 
-function TemplateCard({
-  template,
+function ThemeCard({
+  theme,
   active,
   onSelect,
 }: {
-  template: Template;
+  theme: ThemeOption;
   active: boolean;
   onSelect: () => void;
 }) {
-  const locked = Boolean(template.gating?.requiresKYC);
-
   return (
     <button
       type="button"
       onClick={onSelect}
-      disabled={locked}
       className={`group relative flex flex-col rounded-lg border p-3 text-left transition ${
         active
           ? "border-mp-coral bg-white ring-2 ring-mp-coral/20"
-          : locked
-          ? "border-mp-border bg-mp-cream-alt/40 opacity-60"
           : "border-mp-border bg-white hover:border-mp-coral/60"
       }`}
     >
       <div className="mb-2 h-14 overflow-hidden rounded-md bg-mp-cream-alt/60">
-        <TemplateThumb id={template.id} />
+        <TemplateThumb id={theme.templateId} />
       </div>
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-mp-ink">{template.name}</p>
-        <span className="rounded-sm bg-mp-cream-alt/60 px-1 py-0.5 text-[9px] font-medium text-mp-ink-muted">
-          {template.desktopPattern}
-        </span>
-      </div>
+      <p className="text-sm font-medium text-mp-ink">{theme.name}</p>
       <p className="text-[11px] leading-snug text-mp-ink-muted">
-        {template.description}
+        {theme.description}
       </p>
-      {locked && (
-        <span className="mt-1.5 inline-flex w-fit items-center gap-1 rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
-          🔒 ต้องยืนยันตัวตน
-        </span>
-      )}
     </button>
   );
 }

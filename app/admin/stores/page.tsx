@@ -19,25 +19,25 @@ const STATUS_BADGE: Record<
   StoreApprovalStatus,
   { label: string; cls: string; tone: "amber" | "green" | "red" | "gray" }
 > = {
-  PENDING: { label: "รอตรวจ", cls: "bg-amber-100 text-amber-800", tone: "amber" },
-  APPROVED: { label: "อนุมัติ", cls: "bg-green-100 text-green-800", tone: "green" },
-  REJECTED: { label: "ปฏิเสธ", cls: "bg-red-100 text-red-800", tone: "red" },
-  SUSPENDED: { label: "ระงับ", cls: "bg-gray-200 text-gray-700", tone: "gray" },
+  PENDING: { label: "รอตรวจ", cls: "bg-amber-50 text-amber-700 border border-amber-100", tone: "amber" },
+  APPROVED: { label: "อนุมัติ", cls: "bg-mp-forest/10 text-mp-forest border border-mp-forest/20", tone: "green" },
+  REJECTED: { label: "ปฏิเสธ", cls: "bg-red-50 text-red-700 border border-red-100", tone: "red" },
+  SUSPENDED: { label: "ระงับ", cls: "bg-mp-cream-alt text-mp-ink-muted border border-mp-border", tone: "gray" },
 };
 
 const TAB_TONE: Record<"all" | "amber" | "green" | "red" | "gray", string> = {
-  all: "border-stone-900 text-stone-900",
+  all: "border-mp-coral text-mp-coral",
   amber: "border-amber-500 text-amber-700",
-  green: "border-green-600 text-green-700",
+  green: "border-mp-forest text-mp-forest",
   red: "border-red-500 text-red-700",
-  gray: "border-stone-400 text-stone-700",
+  gray: "border-mp-ink-muted text-mp-ink-muted",
 };
 
 function ApprovalBadge({ status }: { status: StoreApprovalStatus }) {
   const { label, cls } = STATUS_BADGE[status];
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium ${cls}`}
+      className={`inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-medium ${cls}`}
     >
       {label}
     </span>
@@ -68,18 +68,18 @@ function Tab({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+      className={`inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-semibold transition-colors ${
         active
           ? TAB_TONE[tone]
-          : "border-transparent text-stone-500 hover:text-stone-800"
+          : "border-transparent text-mp-ink-muted hover:text-mp-ink"
       }`}
     >
       {label}
       <span
-        className={`inline-flex min-w-[1.5rem] justify-center rounded-full px-1.5 py-0.5 text-[10px] tabular-nums ${
+        className={`inline-flex min-w-[1.5rem] justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
           active
-            ? "bg-stone-900 text-white"
-            : "bg-stone-100 text-stone-600"
+            ? "bg-mp-coral text-white shadow-sm"
+            : "bg-mp-cream-alt text-mp-ink-muted border border-mp-border"
         }`}
       >
         {count}
@@ -104,13 +104,13 @@ function QualityPill({
 }) {
   const ok = invertColors ? done === 0 : done >= total && total > 0;
   const cls = ok
-    ? "bg-green-50 text-green-700 ring-green-200"
+    ? "bg-mp-forest/10 text-mp-forest ring-mp-forest/20"
     : "bg-amber-50 text-amber-700 ring-amber-200";
   const text = invertColors ? `${done}` : `${done}/${total}`;
   return (
     <span
       title={label}
-      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset tabular-nums ${cls}`}
+      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 ring-inset tabular-nums ${cls}`}
     >
       <Icon className="h-3 w-3" />
       {text}
@@ -207,17 +207,17 @@ export default async function AdminStoresPage({
   const truncated = stores.length === 200;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4">
+    <div className="mx-auto max-w-6xl space-y-4 text-mp-ink">
       {/* ── Header ───────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">ร้านค้าทั้งหมด</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-2xl font-bold text-mp-ink" style={{ fontFamily: "var(--mp-font-display)" }}>ร้านค้าทั้งหมด</h1>
+          <p className="text-sm text-mp-ink-muted">
             {stores.length === totalForText
               ? `${stores.length} ร้าน`
               : `แสดง ${stores.length} จาก ${totalForText} ร้าน`}
             {truncated && (
-              <span className="ml-1 text-amber-600">
+              <span className="ml-1 text-mp-coral">
                 (จำกัด 200 ล่าสุด — ใช้ค้นหาเพื่อกรอง)
               </span>
             )}
@@ -225,7 +225,7 @@ export default async function AdminStoresPage({
         </div>
         <Link
           href="/create-store"
-          className="inline-flex items-center gap-1.5 rounded-md bg-black px-3 py-2 text-sm font-medium text-white hover:bg-gray-800"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-mp-coral px-3 py-2 text-sm font-semibold text-white hover:bg-mp-coral-dark shadow-sm transition"
         >
           <Plus className="h-4 w-4" />
           สร้างร้านใหม่
@@ -243,7 +243,7 @@ export default async function AdminStoresPage({
       />
 
       {/* ── Status filter tabs ───────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-0 overflow-x-auto border-b">
+      <div className="flex flex-wrap items-center gap-0 overflow-x-auto border-b border-mp-border">
         <Tab
           href={tabHref({ q })}
           active={!statusFilter}
@@ -284,18 +284,18 @@ export default async function AdminStoresPage({
       {/* ── Search ───────────────────────────────────────────────── */}
       <form className="relative flex gap-2" role="search">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mp-ink-muted" />
           <input
             name="q"
             defaultValue={q ?? ""}
             placeholder="ค้นหาชื่อร้าน, slug, หรืออีเมลเจ้าของ..."
-            className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-9 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="w-full rounded-xl border border-mp-border bg-mp-surface text-mp-ink py-2 pl-9 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-mp-coral/20 placeholder-mp-ink-muted"
             aria-label="ค้นหาร้าน"
           />
           {q && (
             <Link
               href={tabHref({ status: statusFilter ?? undefined })}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-mp-ink-muted hover:bg-mp-cream-alt hover:text-mp-ink transition"
               aria-label="ล้างคำค้น"
               prefetch={false}
             >
@@ -309,17 +309,17 @@ export default async function AdminStoresPage({
         )}
         <button
           type="submit"
-          className="rounded-md border bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50"
+          className="rounded-xl border border-mp-border bg-mp-surface px-4 py-2 text-sm font-semibold text-mp-ink hover:bg-mp-cream-alt transition"
         >
           ค้นหา
         </button>
       </form>
 
       {/* ── Desktop table ────────────────────────────────────────── */}
-      <div className="hidden overflow-hidden rounded-lg border bg-white md:block">
+      <div className="hidden overflow-hidden rounded-xl border border-mp-border bg-mp-surface md:block shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-mp-border bg-mp-cream-alt text-left text-xs font-medium uppercase tracking-wide text-mp-ink-muted">
               <tr>
                 <th className="px-4 py-3">ร้าน</th>
                 <th className="px-4 py-3">สถานะ</th>
@@ -331,12 +331,12 @@ export default async function AdminStoresPage({
                 <th className="px-4 py-3 text-right">จัดการ</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-mp-border">
               {stores.length === 0 ? (
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-4 py-12 text-center text-muted-foreground"
+                    className="px-4 py-12 text-center text-mp-ink-muted"
                   >
                     {q || statusFilter
                       ? "ไม่พบร้านค้าตามเงื่อนไข — ลองล้างตัวกรอง"
@@ -345,7 +345,7 @@ export default async function AdminStoresPage({
                 </tr>
               ) : (
                 stores.map((s) => (
-                  <tr key={s.id} className="hover:bg-gray-50">
+                  <tr key={s.id} className="hover:bg-mp-cream-alt/30 transition-colors text-mp-ink">
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/stores/${s.id}`}
@@ -359,13 +359,13 @@ export default async function AdminStoresPage({
                             className="h-8 w-8 rounded object-cover"
                           />
                         ) : (
-                          <div className="flex h-8 w-8 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-500">
+                          <div className="flex h-8 w-8 items-center justify-center rounded bg-mp-cream-alt border border-mp-border text-xs font-bold text-mp-ink-muted">
                             {s.name[0]?.toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <p className="font-medium">{s.name}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="font-semibold text-mp-ink">{s.name}</p>
+                          <p className="text-xs text-mp-ink-muted">
                             /{s.slug}
                           </p>
                         </div>
@@ -374,14 +374,14 @@ export default async function AdminStoresPage({
                     <td className="px-4 py-3">
                       <ApprovalBadge status={s.approvalStatus} />
                       {s.approvalNote && (
-                        <p className="mt-1 line-clamp-2 max-w-[180px] text-[11px] text-muted-foreground">
+                        <p className="mt-1 line-clamp-2 max-w-[180px] text-[11px] text-mp-ink-muted">
                           {s.approvalNote}
                         </p>
                       )}
                     </td>
                     <td className="hidden px-4 py-3 lg:table-cell">
-                      <p className="truncate">{s.owner.name ?? "—"}</p>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="truncate font-medium">{s.owner.name ?? "—"}</p>
+                      <p className="truncate text-xs text-mp-ink-muted">
                         {s.owner.email}
                       </p>
                     </td>
@@ -425,14 +425,14 @@ export default async function AdminStoresPage({
                     </td>
                     <td className="hidden px-4 py-3 text-xs lg:table-cell">
                       {s.customDomain ? (
-                        <code className="rounded bg-gray-100 px-1.5 py-0.5">
+                        <code className="rounded bg-mp-cream-alt border border-mp-border px-1.5 py-0.5 font-semibold text-mp-ink">
                           {s.customDomain}
                         </code>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-mp-ink-muted">—</span>
                       )}
                     </td>
-                    <td className="hidden px-4 py-3 text-xs text-muted-foreground xl:table-cell">
+                    <td className="hidden px-4 py-3 text-xs text-mp-ink-muted xl:table-cell">
                       {s.createdAt.toLocaleDateString("th-TH")}
                     </td>
                     <td className="relative px-4 py-3 text-right">
@@ -454,7 +454,7 @@ export default async function AdminStoresPage({
       {/* ── Mobile card stack ────────────────────────────────────── */}
       <div className="space-y-2 md:hidden">
         {stores.length === 0 ? (
-          <div className="rounded-lg border bg-white px-4 py-12 text-center text-sm text-muted-foreground">
+          <div className="rounded-xl border border-mp-border bg-mp-surface px-4 py-12 text-center text-sm text-mp-ink-muted">
             {q || statusFilter
               ? "ไม่พบร้านค้าตามเงื่อนไข — ลองล้างตัวกรอง"
               : "ยังไม่มีร้านค้า — กด “สร้างร้านใหม่” เพื่อเริ่มต้น"}
@@ -465,7 +465,7 @@ export default async function AdminStoresPage({
             return (
               <div
                 key={s.id}
-                className="relative rounded-lg border bg-white p-3 shadow-sm"
+                className="relative rounded-xl border border-mp-border bg-mp-surface p-3 shadow-sm text-mp-ink"
               >
                 <div className="flex items-start gap-3">
                   <Link
@@ -480,19 +480,19 @@ export default async function AdminStoresPage({
                         className="h-10 w-10 shrink-0 rounded object-cover"
                       />
                     ) : (
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-gray-200 text-sm font-bold text-gray-500">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-mp-cream-alt border border-mp-border text-sm font-bold text-mp-ink-muted">
                         {s.name[0]?.toUpperCase()}
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="truncate font-medium">{s.name}</p>
+                        <p className="truncate font-semibold text-mp-ink">{s.name}</p>
                         <ApprovalBadge status={s.approvalStatus} />
                       </div>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="truncate text-xs text-mp-ink-muted">
                         /{s.slug} • {s._count.products} สินค้า
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="truncate text-xs text-mp-ink-muted">
                         {s.owner.email}
                       </p>
                     </div>
@@ -528,14 +528,14 @@ export default async function AdminStoresPage({
                   </div>
                 )}
                 {s.customDomain && (
-                  <p className="mt-2 pl-[52px] text-[11px] text-muted-foreground">
-                    <code className="rounded bg-gray-100 px-1.5 py-0.5">
+                  <p className="mt-2 pl-[52px] text-[11px] text-mp-ink-muted">
+                    <code className="rounded bg-mp-cream-alt border border-mp-border px-1.5 py-0.5">
                       {s.customDomain}
                     </code>
                   </p>
                 )}
                 {s.approvalNote && (
-                  <p className="mt-2 pl-[52px] text-[11px] text-muted-foreground">
+                  <p className="mt-2 pl-[52px] text-[11px] text-mp-ink-muted">
                     {s.approvalNote}
                   </p>
                 )}

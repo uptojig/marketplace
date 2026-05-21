@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildChecklist } from "@/lib/kyc/dga-image-processor";
-import { transitionWizardSession } from "@/lib/kyc/wizard-state";
+import { transitionWizardSession, invalidateWizardSteps } from "@/lib/kyc/wizard-state";
 import {
   createStopwatch,
   jsonError,
@@ -22,8 +22,20 @@ export async function POST(_req: Request, { params }: { params: { sid: string } 
 
   try {
     const session = await requireWizardSession(params.sid);
-    if (session.state !== "S1_DGA_REVIEW") {
-      return jsonError(`Expected S1_DGA_REVIEW, got ${session.state}`, 409);
+    const ACTIVE_FLOW_STATES = [
+      "S1_DGA_CAPTURE",
+      "S1_DGA_REVIEW",
+      "S2_ID_SELFIE",
+      "S3_PHONE_RESPONSE",
+      "S4_BANKBOOK_UPLOAD",
+      "S5_SUMMARY",
+    ];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active wizard session, got ${session.state}`, 409);
+    }
+
+    if (session.state !== "S1_DGA_REVIEW" && session.state !== "S1_DGA_CAPTURE") {
+      await invalidateWizardSteps(params.sid, "S1_DGA_REVIEW");
     }
 
     const updated = await transitionWizardSession({

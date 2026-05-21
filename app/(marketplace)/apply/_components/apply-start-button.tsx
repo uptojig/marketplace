@@ -11,7 +11,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2 } from "lucide-react";
 
-export function ApplyStartButton() {
+interface ApplyStartButtonProps {
+  agentLinkCode?: string;
+}
+
+export function ApplyStartButton({ agentLinkCode }: ApplyStartButtonProps) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -23,7 +27,7 @@ export function ApplyStartButton() {
       const res = await fetch("/api/wizard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ agentLinkCode }),
       });
       if (!res.ok) {
         const text = await res.text().catch(() => "");
@@ -32,8 +36,13 @@ export function ApplyStartButton() {
       const data = await res.json().catch(() => ({}));
       const sid = data.session_id ?? data.id;
       if (sid) {
-        // Pass sid in query so anonymous sessions can resume without auth.
-        router.push(`/apply?sid=${encodeURIComponent(sid)}`);
+        // Keep the ref parameter in the URL when transitioning to the wizard
+        const queryParams = new URLSearchParams();
+        queryParams.set("sid", sid);
+        if (agentLinkCode) {
+          queryParams.set("ref", agentLinkCode);
+        }
+        router.push(`/apply?${queryParams.toString()}`);
         router.refresh();
       } else {
         router.refresh();

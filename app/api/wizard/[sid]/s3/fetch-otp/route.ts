@@ -10,7 +10,7 @@ import {
   latestExtractedIdentity,
   requireWizardSession,
 } from "@/lib/kyc/wizard-api";
-import { auditWizardEvent, transitionWizardSession } from "@/lib/kyc/wizard-state";
+import { auditWizardEvent, transitionWizardSession, invalidateWizardSteps } from "@/lib/kyc/wizard-state";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,9 +20,30 @@ const ID_REF_PROVIDER = "iapp_id_ref";
 export async function POST(_req: Request, { params }: { params: { sid: string } }) {
   const sw = createStopwatch();
   try {
-    const session = await requireWizardSession(params.sid);
+    let session = await requireWizardSession(params.sid);
+    const ACTIVE_FLOW_STATES = [
+      "S2_EMAIL_PENDING",
+      "S3_OTP_VERIFIED",
+      "S1_DGA_CAPTURE",
+      "S1_DGA_REVIEW",
+      "S2_ID_SELFIE",
+      "S3_PHONE_RESPONSE",
+      "S4_BANKBOOK_UPLOAD",
+      "S5_SUMMARY",
+    ];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active wizard session, got ${session.state}`, 409);
+    }
+
     if (session.state !== "S2_EMAIL_PENDING" && session.state !== "S3_OTP_VERIFIED") {
-      return jsonError(`Expected S2_EMAIL_PENDING or S3_OTP_VERIFIED, got ${session.state}`, 409);
+      session = await transitionWizardSession({
+        sessionId: params.sid,
+        toState: "S2_EMAIL_PENDING",
+        actor: "system",
+        event: "s3.otp.reopened_fetch",
+        payload: { priorState: session.state },
+      });
+      await invalidateWizardSteps(params.sid, "S1_ID_CARD_REF");
     }
 
     const lease = await requirePendingKycEmailLease(params.sid);

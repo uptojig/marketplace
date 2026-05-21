@@ -2,17 +2,15 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createWizardSession } from "@/lib/kyc/wizard-state";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-// Auth requirement relaxed for now — sessions can be anonymous (userId is
-// nullable). When the vendor is signed in we bind the session to their
-// user.id so /apply can show their status; otherwise it's a one-off test
-// session that the admin queue surfaces as "anonymous".
 export async function POST(req: Request) {
   try {
     const auth = await getServerSession(authOptions);
+    const userId = auth?.user?.id ?? null;
 
     const body = req.headers.get("content-type")?.includes("application/json")
       ? ((await req.json()) as Record<string, unknown>)
@@ -25,8 +23,72 @@ export async function POST(req: Request) {
         : {}),
     };
 
+    let agentId: string | null = null;
+
+    if (userId) {
+      // Logged-in user: check role / agent association
+      const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { agentId: true, role: true },
+      });
+
+      const isBypassedRole = dbUser?.role === "ADMIN" || dbUser?.role === "AGENT";
+      const hasAgentBound = !!dbUser?.agentId;
+      agentId = dbUser?.agentId ?? null;
+
+      if (!isBypassedRole && !hasAgentBound) {
+        const agentLinkCode = body.agentLinkCode;
+        if (!agentLinkCode) {
+          return NextResponse.json(
+            { ok: false, error: "agent_code_required", detail: "กรุณาระบุ Link Code ของตัวแทนผู้แนะนำ" },
+            { status: 400 }
+          );
+        }
+
+        const agent = await prisma.agent.findUnique({
+          where: { linkCode: String(agentLinkCode).trim().toUpperCase() },
+          select: { id: true, status: true, linkCode: true },
+        });
+
+        if (!agent || agent.status !== "ACTIVE") {
+          return NextResponse.json(
+            { ok: false, error: "invalid_agent_code", detail: "Link Code ไม่ถูกต้อง หรือตัวแทนยังไม่ได้รับการอนุมัติ" },
+            { status: 400 }
+          );
+        }
+
+        agentId = agent.id;
+        metadata.agentLinkCode = agent.linkCode;
+      }
+    } else {
+      // Anonymous user: must provide valid agentLinkCode
+      const agentLinkCode = body.agentLinkCode;
+      if (!agentLinkCode) {
+        return NextResponse.json(
+          { ok: false, error: "agent_code_required", detail: "กรุณาระบุ Link Code ของตัวแทนผู้แนะนำ" },
+          { status: 400 }
+        );
+      }
+
+      const agent = await prisma.agent.findUnique({
+        where: { linkCode: String(agentLinkCode).trim().toUpperCase() },
+        select: { id: true, status: true, linkCode: true },
+      });
+
+      if (!agent || agent.status !== "ACTIVE") {
+        return NextResponse.json(
+          { ok: false, error: "invalid_agent_code", detail: "Link Code ไม่ถูกต้อง หรือตัวแทนยังไม่ได้รับการอนุมัติ" },
+          { status: 400 }
+        );
+      }
+
+      agentId = agent.id;
+      metadata.agentLinkCode = agent.linkCode;
+    }
+
     const session = await createWizardSession({
-      userId: auth?.user?.id ?? null,
+      userId,
+      agentId,
       metadata,
     });
 

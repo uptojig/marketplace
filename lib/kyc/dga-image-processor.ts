@@ -26,7 +26,7 @@ import {
   type SSEStream,
   type Stopwatch,
 } from "@/lib/kyc/wizard-api";
-import { auditWizardEvent, transitionWizardSession } from "@/lib/kyc/wizard-state";
+import { auditWizardEvent, invalidateWizardSteps, transitionWizardSession } from "@/lib/kyc/wizard-state";
 import { uploadWizardEvidence } from "@/lib/kyc/wizard-storage";
 import { presignDownload } from "@/lib/storage/spaces";
 import type { Identity } from "@/types/identity";
@@ -583,6 +583,8 @@ export async function finalizeDgaReview(args: {
       },
     });
   }
+
+  await invalidateWizardSteps(sessionId, "S1_DGA_REVIEW");
 
   const updated = await transitionWizardSession({
     sessionId,

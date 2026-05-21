@@ -23,7 +23,7 @@ import {
   type SSEStream,
   type Stopwatch,
 } from "@/lib/kyc/wizard-api";
-import { auditWizardEvent, transitionWizardSession } from "@/lib/kyc/wizard-state";
+import { auditWizardEvent, invalidateWizardSteps, transitionWizardSession } from "@/lib/kyc/wizard-state";
 import { getLatestEvidenceWithBuffer, uploadWizardEvidence } from "@/lib/kyc/wizard-storage";
 import { prisma } from "@/lib/prisma";
 
@@ -96,25 +96,15 @@ async function processIdSelfie(args: {
   // Selfie + held-ID crop are NEW uploads; the front-of-card image is
   // reused from Step 1 (refEvidenceId) so we no longer create an
   // S2_ID_FRONT row.
-  const heldCropUploadPromise = heldIdOcrBuffer && heldIdSource !== "full_selfie"
-    ? uploadWizardEvidence({
-        sessionId,
-        step: "S2_SELFIE_HELD_ID_CROP",
-        buffer: heldIdOcrBuffer,
-        mime: selfieHeldIdCropFile?.type || "image/jpeg",
-        filename: selfieHeldIdCropFile?.name ?? `auto_cropped_${Date.now()}.jpg`,
-      })
-    : Promise.resolve(undefined);
-  await Promise.all([
-    uploadWizardEvidence({
-      sessionId,
-      step: "S2_SELFIE",
-      buffer: selfieBuffer,
-      mime: selfieFile.type || "image/jpeg",
-      filename: selfieFile.name,
-    }),
-    heldCropUploadPromise,
-  ]);
+  await invalidateWizardSteps(sessionId, "S2_SELFIE");
+
+  await uploadWizardEvidence({
+    sessionId,
+    step: "S2_SELFIE",
+    buffer: selfieBuffer,
+    mime: selfieFile.type || "image/jpeg",
+    filename: selfieFile.name,
+  });
   lapAndEmit(sw, sse, "evidence_upload_parallel");
 
   const result = await runVerification("wizard-s1", idBuffer, selfieBuffer, {
@@ -187,14 +177,24 @@ async function processIdSelfie(args: {
 
   let advisory: string | null = null;
   let nextState: "REJECTED" | "S2_ID_SELFIE" | "S3_PHONE_RESPONSE" | "MANUAL_REVIEW";
-  if (result.decision === "REJECTED") {
-    nextState = documentIdentityProven ? "MANUAL_REVIEW" : "REJECTED";
-    if (documentIdentityProven) advisory = "face_rejected_with_id_match";
-  } else if (result.decision === "RETRY_SELFIE") {
-    nextState = documentIdentityProven ? "S3_PHONE_RESPONSE" : "S2_ID_SELFIE";
-    if (documentIdentityProven) advisory = "face_advisory";
+
+  if (documentIdentityProven) {
+    nextState = "S3_PHONE_RESPONSE";
+    if (result.decision === "REJECTED") {
+      advisory = "face_rejected_with_id_match";
+    } else if (result.decision === "RETRY_SELFIE") {
+      advisory = "face_advisory";
+    } else if (!allMatched) {
+      advisory = "face_mismatch_with_id_match";
+    }
   } else {
-    nextState = allMatched ? "S3_PHONE_RESPONSE" : "MANUAL_REVIEW";
+    if (result.decision === "REJECTED") {
+      nextState = "REJECTED";
+    } else if (result.decision === "RETRY_SELFIE") {
+      nextState = "S2_ID_SELFIE";
+    } else {
+      nextState = allMatched ? "S3_PHONE_RESPONSE" : "MANUAL_REVIEW";
+    }
   }
 
   if (advisory) {
@@ -263,7 +263,21 @@ export async function POST(req: Request, { params }: { params: { sid: string } }
   const useSSE = clientWantsSSE(req);
   try {
     const session = await requireWizardSession(params.sid);
-    if (session.state !== "S2_ID_SELFIE") return jsonError(`Expected S2_ID_SELFIE, got ${session.state}`, 409);
+    const ACTIVE_FLOW_STATES = ["S2_ID_SELFIE", "S3_PHONE_RESPONSE", "S4_BANKBOOK_UPLOAD", "S5_SUMMARY"];
+    if (!ACTIVE_FLOW_STATES.includes(session.state)) {
+      return jsonError(`Expected active selfie verification state, got ${session.state}`, 409);
+    }
+
+    if (session.state !== "S2_ID_SELFIE") {
+      await transitionWizardSession({
+        sessionId: params.sid,
+        toState: "S2_ID_SELFIE",
+        actor: "vendor",
+        event: "s2.selfie.reopened_upload",
+        payload: { priorState: session.state },
+      });
+      await invalidateWizardSteps(params.sid, "S2_SELFIE");
+    }
     const dga = await latestExtractedIdentity(params.sid, DGA_PROVIDER);
     if (!dga) return jsonError("Missing DGA capture OCR for ID/selfie match", 409);
 

@@ -47,6 +47,7 @@ if (resendApiKey && process.env.EMAIL_FROM) {
       server: process.env.EMAIL_SERVER ?? "",
       from: process.env.EMAIL_FROM,
       async sendVerificationRequest({ identifier: to, url, provider }) {
+        console.log(`[DEV-AUTH] Magic link URL for ${to}: ${url}`);
         const from = provider.from;
         const subject = `เข้าสู่ระบบ ${new URL(url).host}`;
         const html = `
@@ -86,38 +87,49 @@ if (resendApiKey && process.env.EMAIL_FROM) {
 providers.push(
   CredentialsProvider({
     id: "credentials",
-    name: "Email + Password",
+    name: "Email / Phone + Password",
     credentials: {
       email: { label: "Email", type: "email" },
+      phone: { label: "Phone", type: "tel" },
       password: { label: "Password", type: "password" },
     },
     async authorize(creds) {
       const email = creds?.email?.trim().toLowerCase();
+      const phone = creds?.phone?.trim().replace(/\D+/g, "");
       const password = creds?.password ?? "";
-      if (!email || !password) return null;
+      if ((!email && !phone) || !password) return null;
 
-      const user = await prisma.user.findUnique({
-        where: { email },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          image: true,
-          role: true,
-          passwordHash: true,
-        },
-      });
+      const selectFields = {
+        id: true,
+        email: true,
+        name: true,
+        image: true,
+        role: true,
+        passwordHash: true,
+        phone: true,
+      };
+
+      let user;
+      if (phone && phone.length >= 9) {
+        // Phone-based login
+        user = await prisma.user.findFirst({
+          where: { phone },
+          select: selectFields,
+        });
+      } else if (email) {
+        // Email-based login
+        user = await prisma.user.findUnique({
+          where: { email },
+          select: selectFields,
+        });
+      }
+
       if (!user || !user.passwordHash) {
-        // Either the email isn't registered, or the user only has
-        // OAuth/magic-link configured. Same null response either
-        // way so we don't reveal which case it is.
         return null;
       }
       const ok = await bcrypt.compare(password, user.passwordHash);
       if (!ok) return null;
 
-      // Return the shape NextAuth expects. The session callback
-      // below normalises role onto session.user.
       return {
         id: user.id,
         email: user.email,
@@ -149,17 +161,22 @@ export const authOptions: NextAuthOptions = {
     // the token so we can hand them to the session callback.
     async jwt({ token, user }) {
       if (user) {
-        // Initial sign-in: `user` is whatever the provider returned
-        // (CredentialsProvider.authorize result OR adapter user row).
+        // Initial sign-in
         const u = user as { id?: string; role?: Role };
         if (u.id) token.userId = u.id;
-        if (u.role) token.role = u.role;
       }
-      // Subsequent calls only have `token` — the data was baked in
-      // above on the initial sign-in. Re-fetch role from DB on every
-      // request would be more robust, but we'd pay a query per
-      // request; rely on /admin/users role-change forcing a re-login
-      // to pick up updates.
+      
+      // Re-fetch role dynamically from the database to support seamless transitions
+      // (e.g. from CUSTOMER to VENDOR after KYC approval, or to AGENT upon admin action)
+      if (token.userId) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.userId as string },
+          select: { role: true },
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+        }
+      }
       return token;
     },
     async session({ session, token }) {

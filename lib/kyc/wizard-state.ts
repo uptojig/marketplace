@@ -20,6 +20,7 @@ export const WIZARD_STATES = [
   "S5_CROSS_MATCH",
   "S6_BANKBOOK_UPLOAD",
   "S7_DECIDE",
+  "S5_SUMMARY",
   "AUTO_APPROVED",
   "REJECTED",
   "MANUAL_REVIEW",
@@ -39,7 +40,7 @@ const ALLOWED_TRANSITIONS: Record<WizardState, WizardState[]> = {
   // Read-only review of the OCR anchor. "ถ่ายใหม่" loops back to
   // S1_ID_CARD_REF so the vendor can re-upload; "ยืนยัน" proceeds.
   S1_ID_CARD_REVIEW: ["S1_ID_CARD_REF", "S2_EMAIL_PENDING", "MANUAL_REVIEW", "REJECTED"],
-  S2_EMAIL_PENDING: ["S2_EMAIL_PENDING", "S3_OTP_VERIFIED", "MANUAL_REVIEW", "REJECTED"],
+  S2_EMAIL_PENDING: ["S2_EMAIL_PENDING", "S3_OTP_VERIFIED", "S1_DGA_CAPTURE", "MANUAL_REVIEW", "REJECTED"],
   S3_OTP_VERIFIED: ["S1_DGA_CAPTURE", "MANUAL_REVIEW", "REJECTED"],
   S4_EVIDENCE_UPLOAD: ["MANUAL_REVIEW", "REJECTED"],
   // S1_DGA_CAPTURE → S1_DGA_REVIEW once all 9 required fields captured;
@@ -51,7 +52,8 @@ const ALLOWED_TRANSITIONS: Record<WizardState, WizardState[]> = {
   S1_DGA_REVIEW: ["S2_ID_SELFIE", "S1_DGA_CAPTURE", "MANUAL_REVIEW"],
   S2_ID_SELFIE: ["S2_ID_SELFIE", "S3_PHONE_RESPONSE", "REJECTED", "MANUAL_REVIEW"],
   S3_PHONE_RESPONSE: ["S3_PHONE_RESPONSE", "S4_BANKBOOK_UPLOAD", "REJECTED", "MANUAL_REVIEW"],
-  S4_BANKBOOK_UPLOAD: ["AUTO_APPROVED", "REJECTED", "MANUAL_REVIEW"],
+  S4_BANKBOOK_UPLOAD: ["S5_SUMMARY", "AUTO_APPROVED", "REJECTED", "MANUAL_REVIEW"],
+  S5_SUMMARY: ["AUTO_APPROVED", "REJECTED", "MANUAL_REVIEW"],
   S1_ID_CARD: ["S1_ID_CARD", "S2_DGA_INSTRUCTIONS", "REJECTED", "MANUAL_REVIEW"],
   S2_DGA_INSTRUCTIONS: ["S3_DGA_UPLOAD", "MANUAL_REVIEW"],
   S3_DGA_UPLOAD: ["S4_USSD_UPLOAD", "MANUAL_REVIEW"],
@@ -72,22 +74,30 @@ function isWizardState(value: string): value is WizardState {
 
 function assertCanTransition(fromState: string, toState: WizardState) {
   if (!isWizardState(fromState)) throw new Error(`Unknown wizard state: ${fromState}`);
-  if (!ALLOWED_TRANSITIONS[fromState].includes(toState)) {
-    throw new Error(`Invalid wizard transition: ${fromState} -> ${toState}`);
+  if (!isWizardState(toState)) throw new Error(`Unknown wizard state: ${toState}`);
+
+  const isFromTerminal = TERMINAL_STATES.has(fromState as WizardState);
+  if (isFromTerminal) {
+    if (fromState === "MANUAL_REVIEW" && (toState === "AUTO_APPROVED" || toState === "REJECTED")) {
+      return;
+    }
+    throw new Error(`Cannot transition from terminal state: ${fromState}`);
   }
+  return;
 }
 
 export async function createWizardSession(
-  args: { userId?: string | null; metadata?: Record<string, unknown> } = {},
+  args: { userId?: string | null; agentId?: string | null; metadata?: Record<string, unknown> } = {},
 ) {
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(now.getTime() + 1 * 60 * 60 * 1000);
   const metadata = args.metadata ?? {};
 
   return prisma.wizardSession.create({
     data: {
       state: "S1_ID_CARD_REF",
       userId: args.userId ?? null,
+      agentId: args.agentId ?? null,
       expiresAt,
       metadata: metadata as Prisma.InputJsonValue,
       auditLogs: {
@@ -96,7 +106,7 @@ export async function createWizardSession(
           event: "session.create",
           fromState: "INIT",
           toState: "S1_ID_CARD_REF",
-          payload: { ...metadata, userId: args.userId ?? null } as Prisma.InputJsonValue,
+          payload: { ...metadata, userId: args.userId ?? null, agentId: args.agentId ?? null } as Prisma.InputJsonValue,
         },
       },
     },
@@ -119,7 +129,13 @@ export async function hasApprovedKyc(userId: string) {
     where: { userId, state: "AUTO_APPROVED" },
     select: { id: true },
   });
-  return Boolean(session);
+  if (session) return true;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  return user?.role === "VENDOR" || user?.role === "ADMIN";
 }
 
 export async function transitionWizardSession(args: {
@@ -214,3 +230,71 @@ export async function getWizardSnapshot(sessionId: string) {
     outlook: session.outlookCredentials[0] ?? null,
   };
 }
+
+export async function invalidateWizardSteps(
+  sessionId: string,
+  modifiedStep: "S1_ID_CARD_REF" | "S1_DGA_REVIEW" | "S2_SELFIE" | "S3_PHONE_RESPONSE" | "S4_BANKBOOK",
+) {
+  return prisma.$transaction(async (tx) => {
+    const stepsToClear: string[] = [];
+    let clearMatches = false;
+    let clearSoftFails = false;
+
+    if (modifiedStep === "S1_ID_CARD_REF") {
+      stepsToClear.push("S1_DGA_CAPTURE", "S2_SELFIE", "S3_PHONE_RESPONSE", "S4_BANKBOOK");
+      clearMatches = true;
+      clearSoftFails = true;
+    } else if (modifiedStep === "S1_DGA_REVIEW") {
+      stepsToClear.push("S2_SELFIE", "S3_PHONE_RESPONSE", "S4_BANKBOOK");
+      clearMatches = true;
+      clearSoftFails = true;
+    } else if (modifiedStep === "S2_SELFIE") {
+      stepsToClear.push("S3_PHONE_RESPONSE", "S4_BANKBOOK");
+      clearMatches = true;
+      clearSoftFails = true;
+    } else if (modifiedStep === "S3_PHONE_RESPONSE") {
+      stepsToClear.push("S4_BANKBOOK");
+      clearMatches = true;
+      clearSoftFails = true;
+    }
+
+    if (stepsToClear.length > 0) {
+      await tx.wizardEvidence.deleteMany({
+        where: {
+          sessionId,
+          step: { in: stepsToClear },
+        },
+      });
+    }
+
+    if (clearMatches) {
+      await tx.wizardMatchResult.deleteMany({
+        where: { sessionId },
+      });
+    }
+
+    const session = await tx.wizardSession.findUnique({
+      where: { id: sessionId },
+      select: { metadata: true },
+    });
+    
+    if (session) {
+      const meta =
+        session.metadata && typeof session.metadata === "object" && !Array.isArray(session.metadata)
+          ? (session.metadata as Record<string, unknown>)
+          : {};
+
+      const updatedMeta = { ...meta };
+      if (clearSoftFails) {
+        delete updatedMeta.softFails;
+      }
+      delete updatedMeta.pendingDecision;
+
+      await tx.wizardSession.update({
+        where: { id: sessionId },
+        data: { metadata: updatedMeta as any },
+      });
+    }
+  });
+}
+

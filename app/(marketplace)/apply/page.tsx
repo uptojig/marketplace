@@ -8,6 +8,7 @@ import {
   Hourglass,
   ArrowRight,
   MessageCircle,
+  AlertCircle,
 } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -17,9 +18,9 @@ import {
 } from "@/lib/kyc/wizard-state";
 import { prisma } from "@/lib/prisma";
 import KycWizard from "./_components/kyc-wizard";
-import KycWizardV3 from "./_components/kyc-wizard-v3";
 import { KycResumeRedirect } from "./_components/kyc-resume-redirect";
 import { ApplyStartButton } from "./_components/apply-start-button";
+import { KycLocalRefGate } from "./_components/kyc-local-ref-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -40,32 +41,103 @@ const IN_PROGRESS = new Set([
   "S2_ID_SELFIE",
   "S3_PHONE_RESPONSE",
   "S4_BANKBOOK_UPLOAD",
+  "S5_SUMMARY",
 ]);
 
-const LEGACY_IN_PROGRESS = new Set([
-  "S1_DGA_CAPTURE",
-  "S1_DGA_REVIEW",
-  "S2_ID_SELFIE",
-  "S3_PHONE_RESPONSE",
-  "S4_BANKBOOK_UPLOAD",
-]);
-
-// Auth gate intentionally relaxed — anonymous visitors can preview the
-// landing. Once signed in, their prior session (if any) is loaded by
-// findUserLatestKycSession. Production should re-add an auth check once
-// /signin → /apply round-trip is verified end-to-end.
 export default async function ApplyPage({
   searchParams,
 }: {
-  searchParams: { retry?: string; sid?: string };
+  searchParams: { retry?: string; sid?: string; ref?: string };
 }) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
   const wantsRetry = searchParams.retry === "1";
 
-  // ?sid= lets anonymous test sessions resume the wizard (their wizard
-  // session isn't bound to a User row, so the userId-based lookup below
-  // wouldn't surface it). Falls back to user-based lookup when sid omitted.
+  let validatedAgentLinkCode: string | undefined = undefined;
+  let hasAgentBound = false;
+  let isBypassedRole = false;
+
+  if (userId) {
+    // Logged-in user: check role / agent association
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { agentId: true, role: true },
+    });
+
+    if (dbUser?.role === "VENDOR") {
+      return <ApprovedScreen />;
+    }
+
+    isBypassedRole = dbUser?.role === "ADMIN" || dbUser?.role === "AGENT";
+    hasAgentBound = !!dbUser?.agentId;
+
+    if (!isBypassedRole && !hasAgentBound) {
+      const refParam = searchParams.ref?.trim().toUpperCase();
+      if (!refParam) {
+        return <KycLocalRefGate />;
+      }
+      const agent = await prisma.agent.findUnique({
+        where: { linkCode: refParam },
+        select: { id: true, displayName: true, status: true },
+      });
+      if (!agent || agent.status !== "ACTIVE") {
+        return (
+          <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-mp-cream px-6">
+            <div className="w-full max-w-[400px] text-center">
+              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 text-left text-red-700">
+                <AlertCircle className="w-6 h-6 shrink-0 mb-2" />
+                <h3 className="text-[16px] font-semibold mb-1">Link Code ไม่ถูกต้อง หรือไม่พร้อมใช้งาน 🔒</h3>
+                <p className="text-[14px] leading-relaxed text-red-700/80">
+                  รหัสแนะนำตัวแทน "{refParam}" ที่คุณใช้งาน ไม่พบบัญชีตัวแทนในระบบ หรือยังไม่ได้รับการอนุมัติ กรุณาติดต่อตัวแทนของคุณอีกครั้ง
+                </p>
+              </div>
+              <Link
+                href="/agent/register"
+                className="flex w-full h-11 items-center justify-center rounded-xl bg-mp-coral text-[15px] font-semibold text-white hover:bg-mp-coral-dark transition-all"
+              >
+                สมัครเป็นตัวแทน (Agent)
+              </Link>
+            </div>
+          </div>
+        );
+      }
+      validatedAgentLinkCode = refParam;
+    }
+  } else {
+    // Anonymous user: must have a valid ref param
+    const refParam = searchParams.ref?.trim().toUpperCase();
+    if (!refParam) {
+      return <KycLocalRefGate />;
+    }
+    const agent = await prisma.agent.findUnique({
+      where: { linkCode: refParam },
+      select: { id: true, displayName: true, status: true },
+    });
+    if (!agent || agent.status !== "ACTIVE") {
+      return (
+        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-mp-cream px-6">
+          <div className="w-full max-w-[400px] text-center">
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 text-left text-red-700">
+              <AlertCircle className="w-6 h-6 shrink-0 mb-2" />
+              <h3 className="text-[16px] font-semibold mb-1">Link Code ไม่ถูกต้อง หรือไม่พร้อมใช้งาน 🔒</h3>
+              <p className="text-[14px] leading-relaxed text-red-700/80">
+                รหัสแนะนำตัวแทน "{refParam}" ที่คุณใช้งาน ไม่พบบัญชีตัวแทนในระบบ หรือยังไม่ได้รับการอนุมัติ กรุณาติดต่อตัวแทนของคุณอีกครั้ง
+              </p>
+            </div>
+            <Link
+              href="/agent/register"
+              className="flex w-full h-11 items-center justify-center rounded-xl bg-mp-coral text-[15px] font-semibold text-white hover:bg-mp-coral-dark transition-all"
+            >
+              สมัครเป็นตัวแทน (Agent)
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    validatedAgentLinkCode = refParam;
+  }
+
+  // 3. Normal KYC wizard state machine loading
   const latest = searchParams.sid
     ? await getWizardSnapshot(searchParams.sid).then((s) =>
         s
@@ -104,22 +176,20 @@ export default async function ApplyPage({
   if (latest && IN_PROGRESS.has(latest.state)) {
     return (
       <WizardShell>
-        {LEGACY_IN_PROGRESS.has(latest.state)
-          ? <KycWizard initialSessionId={latest.id} />
-          : <KycWizardV3 initialSessionId={latest.id} />}
+        <KycWizard initialSessionId={latest.id} />
       </WizardShell>
     );
   }
 
   // No session yet (or INIT) → marketing landing
-  return <LandingScreen />;
+  return <LandingScreen agentLinkCode={validatedAgentLinkCode} />;
 }
 
 // ─────────────────────────────────────────────────────────────────
 // LANDING (Stitch Design 01)
 // ─────────────────────────────────────────────────────────────────
 
-function LandingScreen() {
+function LandingScreen({ agentLinkCode }: { agentLinkCode?: string }) {
   return (
     <div className="mx-auto max-w-[720px] px-5 py-12 md:py-16">
       <KycResumeRedirect />
@@ -138,7 +208,7 @@ function LandingScreen() {
         </p>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-px overflow-hidden rounded-xl border border-mp-border bg-mp-border">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-px overflow-hidden rounded-xl border border-mp-border bg-mp-border">
         {[
           { icon: Clock, label: "ใช้เวลา 5-10 นาที" },
           { icon: ShieldCheck, label: "ปลอดภัยตาม PDPA" },
@@ -185,7 +255,7 @@ function LandingScreen() {
       </div>
 
       <div className="mt-10 text-center">
-        <ApplyStartButton />
+        <ApplyStartButton agentLinkCode={agentLinkCode} />
       </div>
 
       <div className="mt-8 text-center space-y-1.5">
