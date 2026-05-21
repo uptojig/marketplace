@@ -1,15 +1,14 @@
 // /stores/{slug}/checkout/confirm — Step 2 of the checkout flow.
 //
-// Server wrapper: looks up the store to detect the design family,
-// renders the matching family's bespoke step header, then hands off
-// to the client component that owns the address summary, shipping
-// option, payment selection, and order-create call.
-//
-// Stores not matching any family fall through to just rendering the
-// client without any extra chrome (keeps existing behaviour unchanged).
+// Registry dispatch first: if the template ships a bespoke checkout
+// page, render it. Otherwise fall through to the family detection
+// chain.
 
 import { prisma } from "@/lib/prisma";
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
+import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
+import type { TemplateId } from "@/lib/templates/types";
+import { storeToSummary } from "@/components/storefront/block-renderer";
 import { isFashionBeautyStore } from "@/lib/landing/fashion-beauty";
 import { isTrustStore } from "@/lib/landing/trust";
 import { isBusinessModelStore } from "@/lib/landing/business-model";
@@ -81,10 +80,28 @@ export default async function CheckoutConfirmPage({
 }) {
   const store = await prisma.store.findUnique({
     where: { slug: params.slug },
-    select: { slug: true, templateId: true, landingThemeVariant: true },
+    select: { id: true, slug: true, name: true, logoUrl: true, bannerUrl: true, primaryColor: true, tagline: true, description: true, templateId: true, landingThemeVariant: true },
   });
+  if (!store) return <CheckoutConfirmClient params={params} />;
+
+  // ── Registry dispatch (highest priority) ──
+  const effectiveTpl = effectiveTemplateId(store);
+  if (effectiveTpl && effectiveTpl in STORE_TEMPLATES) {
+    const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
+    const TemplateCheckoutPage = template?.pages?.checkout;
+    if (TemplateCheckoutPage) {
+      return (
+        <TemplateCheckoutPage
+          store={storeToSummary(store)}
+          items={[]}
+        />
+      );
+    }
+  }
+
+  // ── Family detection fallback ──
   const familyKey = {
-    templateId: store ? effectiveTemplateId(store) : null,
+    templateId: effectiveTpl,
     landingThemeVariant: store?.landingThemeVariant,
   };
   const isFB = isFashionBeautyStore(familyKey);
