@@ -244,7 +244,10 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Maker portrait + small batch craft',
     group: 'specialty',
         pages: {
-      home: enhanceHomepage(HandmadeHomepageAdapter, '06'),
+      // No bespoke homepage component exists for this theme (handmade
+      // ships only catalog/pdp/cart/checkout pages). Omitting `home`
+      // makes it fall through to the specialty family homepage
+      // (SpecialtyHomepage) — see app/stores/[slug]/page.tsx:256-298.
       catalog: makeCatalogAdapter('04'),
       pdp: makePdpAdapter('04', '05'),
       cart: makeCartAdapter('01'),
