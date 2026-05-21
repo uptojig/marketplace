@@ -15,18 +15,31 @@ import { z } from "zod";
 const optionalString = (max: number) =>
   z.string().max(max).nullable().optional();
 
+/**
+ * Predicate shared between the Zod validator and the client-side form so
+ * the editor can show an inline error before submit instead of letting the
+ * user hit "บันทึก" and getting a wall of red. Empty string is treated as
+ * "no value" — the field is optional.
+ */
+export function isValidLandingUrl(v: string): boolean {
+  if (!v) return true;
+  return (
+    v.startsWith("/") ||
+    v.startsWith("http://") ||
+    v.startsWith("https://") ||
+    v.startsWith("data:image") ||
+    v.startsWith("mailto:") ||
+    v.startsWith("tel:")
+  );
+}
+
+export const LANDING_URL_HINT =
+  "ต้องเป็น URL เต็ม (https://...) หรือ path ภายในร้าน (/...) — ใส่ข้อความล้วนไม่ได้";
+
 const optionalUrl = z
   .string()
   .max(2048)
-  .refine(
-    (v) =>
-      !v ||
-      v.startsWith("/") ||
-      v.startsWith("http://") ||
-      v.startsWith("https://") ||
-      v.startsWith("data:image"),
-    { message: "Must be an absolute URL, relative path, or data: image" },
-  )
+  .refine(isValidLandingUrl, { message: LANDING_URL_HINT })
   .nullable()
   .optional();
 
