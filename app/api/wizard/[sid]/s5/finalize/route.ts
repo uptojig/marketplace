@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { jsonError, requireWizardSession } from "@/lib/kyc/wizard-api";
 import { transitionWizardSession } from "@/lib/kyc/wizard-state";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -44,89 +45,94 @@ export async function POST(_req: Request, { params }: { params: { sid: string } 
     const email = emailRaw ? emailRaw.trim().toLowerCase() : null;
     const name = [firstName, lastName].filter(Boolean).join(" ");
 
-    // Check if phone unique constraint violation
-    if (phone) {
-      const existingPhoneUser = await prisma.user.findFirst({
-        where: { phone, id: session.userId ? { not: session.userId } : undefined },
-      });
-      if (existingPhoneUser) {
-        return jsonError("เบอร์โทรศัพท์มือถือนี้ลงทะเบียนในระบบแล้วโดยผู้ใช้อื่น กรุณาใช้เบอร์โทรอื่น", 400);
-      }
-    }
-
-    // Check email uniqueness if email exists
-    if (email) {
-      const existingEmailUser = await prisma.user.findFirst({
-        where: { email, id: session.userId ? { not: session.userId } : undefined },
-      });
-      if (existingEmailUser) {
-        return jsonError("อีเมลนี้ถูกใช้งานแล้วในระบบโดยผู้ใช้อื่น กรุณาใช้อีเมลอื่น", 400);
-      }
-    }
-
-    // Build dgaData object from all DGA fields for permanent storage on User
-    const dgaData: Record<string, string> = {};
-    for (const f of dgaFields) {
-      dgaData[f.fieldKey] = f.value;
-    }
-
-    let activeUserId = session.userId;
-
-    if (!activeUserId && ["AUTO_APPROVED", "MANUAL_REVIEW"].includes(pendingDecision)) {
-      if (!phone || !citizenId) {
-        return jsonError("ไม่พบข้อมูลเบอร์โทรศัพท์หรือเลขบัตรประชาชนจากข้อมูล DGA เพื่อใช้สร้างบัญชีร้านค้า", 400);
+    // Check unique constraints and perform updates within a transaction
+    const { finalState, tempPassword } = await prisma.$transaction(async (tx) => {
+      // Check if phone unique constraint violation
+      if (phone) {
+        const existingPhoneUser = await tx.user.findFirst({
+          where: { phone, id: session.userId ? { not: session.userId } : undefined },
+        });
+        if (existingPhoneUser) {
+          throw new Error("PHONE_EXISTS");
+        }
       }
 
-      // Option A: Last 4 digits of citizen ID as password
-      const plainPassword = citizenId.slice(-4);
-      const passwordHash = await bcrypt.hash(plainPassword, 12);
+      // Check email uniqueness if email exists
+      if (email) {
+        const existingEmailUser = await tx.user.findFirst({
+          where: { email, id: session.userId ? { not: session.userId } : undefined },
+        });
+        if (existingEmailUser) {
+          throw new Error("EMAIL_EXISTS");
+        }
+      }
 
-      // Create new user for anonymous session
-      const newUser = await prisma.user.create({
-        data: {
-          name: name || "ผู้สมัครเปิดร้านค้า",
-          email,
-          phone,
-          role: "VENDOR",
-          agentId: session.agentId,
-          passwordHash,
-          isVerified: true,
-          dgaData,
+      let activeUserId = session.userId;
+      let tempPasswordVal: string | undefined = undefined;
+
+      if (!activeUserId && ["AUTO_APPROVED", "MANUAL_REVIEW"].includes(pendingDecision)) {
+        if (!phone || !citizenId) {
+          throw new Error("MISSING_PHONE_OR_CITIZEN_ID");
+        }
+
+        // Generate secure 12-character random uppercase hex password
+        tempPasswordVal = crypto.randomBytes(6).toString("hex").toUpperCase();
+        const passwordHash = await bcrypt.hash(tempPasswordVal, 12);
+
+        // H3: isVerified should only be true if AUTO_APPROVED, not MANUAL_REVIEW!
+        const isVerified = pendingDecision === "AUTO_APPROVED";
+
+        // Create new user for anonymous session
+        const newUser = await tx.user.create({
+          data: {
+            name: name || "ผู้สมัครเปิดร้านค้า",
+            email,
+            phone,
+            role: "VENDOR",
+            agentId: session.agentId,
+            passwordHash,
+            isVerified,
+            dgaData,
+          },
+        });
+
+        activeUserId = newUser.id;
+
+        // Update session's userId to point to the newly created user
+        await tx.wizardSession.update({
+          where: { id: params.sid },
+          data: { userId: newUser.id },
+        });
+      }
+
+      // Perform final transition
+      const updated = await transitionWizardSession({
+        sessionId: params.sid,
+        toState: pendingDecision as "AUTO_APPROVED" | "MANUAL_REVIEW" | "REJECTED",
+        actor: "system",
+        event: "s5.summary.finalized",
+        payload: {
+          finalDecision: pendingDecision,
         },
-      });
+      }, tx);
+      const finalStateVal = updated.state;
 
-      activeUserId = newUser.id;
+      // Update user profile role, agentId, and dgaData if user was already bound or logged in
+      if (activeUserId && ["AUTO_APPROVED", "MANUAL_REVIEW"].includes(pendingDecision)) {
+        const isVerified = pendingDecision === "AUTO_APPROVED";
+        await tx.user.update({
+          where: { id: activeUserId },
+          data: {
+            role: "VENDOR",
+            dgaData,
+            ...(session.agentId ? { agentId: session.agentId } : {}),
+            ...(isVerified ? { isVerified: true } : {}),
+          },
+        });
+      }
 
-      // Update session's userId to point to the newly created user
-      await prisma.wizardSession.update({
-        where: { id: params.sid },
-        data: { userId: newUser.id },
-      });
-    }
-
-    // Perform final transition
-    const updated = await transitionWizardSession({
-      sessionId: params.sid,
-      toState: pendingDecision as "AUTO_APPROVED" | "MANUAL_REVIEW" | "REJECTED",
-      actor: "system",
-      event: "s5.summary.finalized",
-      payload: {
-        finalDecision: pendingDecision,
-      },
+      return { finalState: finalStateVal, tempPassword: tempPasswordVal };
     });
-    let finalState = updated.state;
-
-    // Update user profile role, agentId, and dgaData if user was already bound or logged in
-    if (activeUserId && ["AUTO_APPROVED", "MANUAL_REVIEW"].includes(pendingDecision)) {
-      await prisma.user.update({
-        where: { id: activeUserId },
-        data: {
-          role: "VENDOR",
-          dgaData,
-          ...(session.agentId ? { agentId: session.agentId } : {}),
-        },
-      });
-    }
 
     // Get Agent referral code to return
     let refCode = "";
@@ -145,9 +151,23 @@ export async function POST(_req: Request, { params }: { params: { sid: string } 
       state: finalState,
       phone: phone || undefined,
       refCode: refCode || undefined,
+      tempPassword,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (message === "PHONE_EXISTS") {
+      return jsonError("เบอร์โทรศัพท์มือถือนี้ลงทะเบียนในระบบแล้วโดยผู้ใช้อื่น กรุณาใช้เบอร์โทรอื่น", 400);
+    }
+    if (message === "EMAIL_EXISTS") {
+      return jsonError("อีเมลนี้ถูกใช้งานแล้วในระบบโดยผู้ใช้อื่น กรุณาใช้อีเมลอื่น", 400);
+    }
+    if (message === "MISSING_PHONE_OR_CITIZEN_ID") {
+      return jsonError("ไม่พบข้อมูลเบอร์โทรศัพท์หรือเลขบัตรประชาชนจากข้อมูล DGA เพื่อใช้สร้างบัญชีร้านค้า", 400);
+    }
+
+    if (process.env.NODE_ENV === "production") {
+      return jsonError("เกิดข้อผิดพลาดในการประมวลผลข้อมูลของท่าน กรุณาลองใหม่อีกครั้ง", 500);
+    }
     return jsonError(message, 500);
   }
 }

@@ -138,14 +138,17 @@ export async function hasApprovedKyc(userId: string) {
   return user?.role === "VENDOR" || user?.role === "ADMIN";
 }
 
-export async function transitionWizardSession(args: {
-  sessionId: string;
-  toState: WizardState;
-  actor: WizardActor;
-  event: string;
-  payload?: Record<string, unknown>;
-}) {
-  return prisma.$transaction(async (tx) => {
+export async function transitionWizardSession(
+  args: {
+    sessionId: string;
+    toState: WizardState;
+    actor: WizardActor;
+    event: string;
+    payload?: Record<string, unknown>;
+  },
+  externalTx?: any
+) {
+  const run = async (tx: any) => {
     const current = await tx.wizardSession.findUnique({ where: { id: args.sessionId } });
     if (!current) throw new Error("Wizard session not found");
     assertCanTransition(current.state, args.toState);
@@ -171,7 +174,12 @@ export async function transitionWizardSession(args: {
     });
 
     return updated;
-  });
+  };
+
+  if (externalTx) {
+    return run(externalTx);
+  }
+  return prisma.$transaction(run);
 }
 
 export async function auditWizardEvent(args: {

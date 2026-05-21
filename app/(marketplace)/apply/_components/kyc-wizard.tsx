@@ -342,6 +342,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
 
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxTitle, setLightboxTitle] = useState<string>("");
+  const [createdVendorCreds, setCreatedVendorCreds] = useState<{ phone: string; tempPass: string; refCode?: string } | null>(null);
 
   useEffect(() => {
     const handleOpenLightbox = (e: Event) => {
@@ -1159,6 +1160,62 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
   }, [viewingIdx, steps, state]);
 
   // ── Render branches ─────────────────────────────────────────────
+
+  if (createdVendorCreds) {
+    return (
+      <div className="mx-auto max-w-[480px] px-5 py-12 md:py-16 text-center bg-white rounded-2xl border border-mp-border shadow-sm">
+        <div className="mx-auto w-16 h-16 rounded-full bg-mp-forest/10 flex items-center justify-center mb-6">
+          <CheckCircle2 className="w-8 h-8 text-mp-forest" strokeWidth={2} />
+        </div>
+        <span className="inline-block text-[13px] font-medium uppercase tracking-[0.16em] text-mp-forest">
+          การสมัครสมาชิกสำเร็จ
+        </span>
+        <h2 className="mt-4 text-2xl font-bold text-mp-ink" style={{ fontFamily: "var(--mp-font-display)" }}>
+          บัญชีของคุณถูกสร้างเรียบร้อยแล้ว! 🎉
+        </h2>
+        <p className="mt-3 text-[14px] leading-relaxed text-mp-ink-muted">
+          กรุณาจดจำรหัสผ่านชั่วคราวนี้เพื่อใช้ในการเข้าสู่ระบบครั้งแรก (ระบบจะให้ท่านเปลี่ยนรหัสผ่านหลังเข้าสู่ระบบ)
+        </p>
+
+        <div className="mt-6 rounded-xl border border-mp-border bg-mp-cream-alt/40 p-5 text-left space-y-3">
+          <div>
+            <label className="text-[12px] font-semibold text-mp-ink-muted uppercase">เบอร์โทรศัพท์ (ชื่อผู้ใช้)</label>
+            <p className="text-[16px] font-mono font-bold text-mp-ink select-all mt-0.5">{createdVendorCreds.phone}</p>
+          </div>
+          <div className="border-t border-mp-border pt-3">
+            <label className="text-[12px] font-semibold text-mp-ink-muted uppercase">รหัสผ่านชั่วคราว</label>
+            <div className="flex items-center justify-between mt-0.5">
+              <p className="text-[18px] font-mono font-bold text-mp-coral select-all tracking-wider">{createdVendorCreds.tempPass}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(createdVendorCreds.tempPass);
+                  alert("คัดลอกรหัสผ่านชั่วคราวแล้ว!");
+                }}
+                className="text-[12px] font-semibold text-mp-forest hover:text-mp-coral transition-colors"
+              >
+                คัดลอก
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            let redirectUrl = `/signin?phone=${encodeURIComponent(createdVendorCreds.phone)}`;
+            if (createdVendorCreds.refCode) {
+              redirectUrl += `&ref=${encodeURIComponent(createdVendorCreds.refCode)}`;
+            }
+            router.push(redirectUrl);
+          }}
+          className="mt-8 flex w-full h-12 items-center justify-center rounded-xl bg-mp-coral text-[15px] font-semibold text-white hover:bg-mp-coral-dark shadow-sm transition-all"
+        >
+          คัดลอกรหัสผ่านแล้ว ไปหน้าเข้าสู่ระบบ
+        </button>
+      </div>
+    );
+  }
 
   if (state === "INIT" && !sessionId) {
     return <IntroScreen onStart={startSession} busy={busy} error={error} />;
@@ -2836,7 +2893,14 @@ function StepSummaryReview({
       setState(data.state);
       setInfo("ส่งข้อมูลยืนยันตัวตนเสร็จสมบูรณ์");
 
-      if (data.phone) {
+      if (data.phone && data.tempPassword) {
+        clearCache();
+        setCreatedVendorCreds({
+          phone: data.phone,
+          tempPass: data.tempPassword,
+          refCode: data.refCode,
+        });
+      } else if (data.phone) {
         clearCache();
         let redirectUrl = `/signin?phone=${encodeURIComponent(data.phone)}`;
         if (data.refCode) {

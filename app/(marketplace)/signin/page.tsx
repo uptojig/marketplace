@@ -12,13 +12,17 @@
  * Magic-link email provider is reserved for /signup (signup-only).
  */
 
-"use client";
-
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+function sanitizeNext(raw: string | null, fallback: string): string {
+  if (!raw) return fallback;
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return fallback;
+}
 import { Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -58,7 +62,10 @@ function CredentialsForm({ refCode }: { refCode?: string }) {
   const params = useSearchParams();
   const ref = params.get("ref") || refCode;
   const defaultNext = ref ? `/apply?ref=${encodeURIComponent(ref)}` : "/dashboard";
-  const next = params.get("next") || params.get("callbackUrl") || defaultNext;
+  const next = useMemo(() => {
+    const rawNext = params.get("next") || params.get("callbackUrl");
+    return sanitizeNext(rawNext, defaultNext);
+  }, [params, defaultNext]);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -235,14 +242,12 @@ function SignInPageContent() {
 
   const urlRef = searchParams.get("ref");
   const defaultNext = refCode ? `/apply?ref=${encodeURIComponent(refCode)}` : "/dashboard";
-  const next = searchParams.get("next") || searchParams.get("callbackUrl") || defaultNext;
+  const next = useMemo(() => {
+    const rawNext = searchParams.get("next") || searchParams.get("callbackUrl");
+    return sanitizeNext(rawNext, defaultNext);
+  }, [searchParams, defaultNext]);
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push(next);
-      return;
-    }
-
     const storedRef = typeof window !== "undefined" ? window.localStorage.getItem("agent.ref.code") : null;
     const finalCode = urlRef || storedRef;
 
@@ -252,6 +257,7 @@ function SignInPageContent() {
       return;
     }
 
+    setIsValidating(true);
     fetch(`/api/agents/validate?code=${encodeURIComponent(finalCode)}`)
       .then((res) => res.json())
       .then((data) => {
@@ -277,7 +283,13 @@ function SignInPageContent() {
       .finally(() => {
         setIsValidating(false);
       });
-  }, [status, urlRef, router, next]);
+  }, [urlRef]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push(next);
+    }
+  }, [status, next, router]);
 
   async function handleUnlockSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -317,7 +329,7 @@ function SignInPageContent() {
     );
   }
 
-  const bypassGate = searchParams.get("bypass") === "1" || next.startsWith("/agent") || next.startsWith("/admin");
+  const bypassGate = next.startsWith("/agent") || next.startsWith("/admin");
 
   if (!isValidRef && status !== "authenticated" && !bypassGate) {
     return (
@@ -409,7 +421,7 @@ function SignInPageContent() {
                   สมัครเป็นตัวแทน (Agent)
                 </Link>
                 <Link
-                  href="/signin?bypass=1&next=/agent/dashboard"
+                  href="/signin?next=/agent/dashboard"
                   className="flex w-full h-11 items-center justify-center rounded-xl bg-mp-forest/10 text-[15px] font-semibold text-mp-forest hover:bg-mp-forest/20 transition-all"
                 >
                   เข้าสู่ระบบสำหรับตัวแทน (Agent Login)

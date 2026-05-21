@@ -102,15 +102,52 @@ export async function PATCH(req: Request) {
     }
 
     if (Object.keys(dataToUpdate).length === 0) {
-      return NextResponse.json({ ok: true, agent });
+      const agentWithUser = await prisma.agent.findUnique({
+        where: { userId: session.user.id },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+      if (!agentWithUser) {
+        return NextResponse.json({ ok: false, error: "agent_not_found" }, { status: 404 });
+      }
+      const mappedAgent = {
+        ...agentWithUser,
+        owner: {
+          name: agentWithUser.user.name,
+          email: agentWithUser.user.email,
+        },
+      };
+      return NextResponse.json({ ok: true, agent: mappedAgent });
     }
 
     const updatedAgent = await prisma.agent.update({
       where: { userId: session.user.id },
       data: dataToUpdate,
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
 
-    return NextResponse.json({ ok: true, agent: updatedAgent });
+    const mappedUpdatedAgent = {
+      ...updatedAgent,
+      owner: {
+        name: updatedAgent.user.name,
+        email: updatedAgent.user.email,
+      },
+    };
+
+    return NextResponse.json({ ok: true, agent: mappedUpdatedAgent });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });

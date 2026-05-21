@@ -27,13 +27,13 @@ export async function GET(
       return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
     }
 
-    // Verify the caller is an Agent
+    // Verify the caller is an Agent and is ACTIVE
     const agent = await prisma.agent.findUnique({
       where: { userId: session.user.id },
-      select: { id: true },
+      select: { id: true, status: true },
     });
-    if (!agent) {
-      return NextResponse.json({ ok: false, error: "agent_not_found" }, { status: 403 });
+    if (!agent || agent.status !== "ACTIVE") {
+      return NextResponse.json({ ok: false, error: "agent_not_found_or_inactive" }, { status: 403 });
     }
 
     // Verify the vendor belongs to this agent
@@ -54,6 +54,17 @@ export async function GET(
         { ok: false, error: "vendor_not_found_or_not_yours" },
         { status: 404 },
       );
+    }
+
+    // Mask citizenId in dgaData (PII masking)
+    let maskedDgaData: Record<string, string> | null = null;
+    if (vendor.dgaData && typeof vendor.dgaData === "object") {
+      const rawDga = vendor.dgaData as Record<string, string>;
+      maskedDgaData = { ...rawDga };
+      if (typeof rawDga.citizenId === "string" && rawDga.citizenId.length === 13) {
+        const id = rawDga.citizenId;
+        maskedDgaData.citizenId = `${id.slice(0, 1)}-${id.slice(1, 5)}-***${id.slice(8, 10)}-${id.slice(10, 12)}-${id.slice(12)}`;
+      }
     }
 
     // Get the latest KYC session for this vendor
@@ -109,7 +120,7 @@ export async function GET(
         email: vendor.email,
         phone: vendor.phone,
         role: vendor.role,
-        dgaData: vendor.dgaData,
+        dgaData: maskedDgaData,
         createdAt: vendor.createdAt,
       },
       kycStatus: kycSession?.state ?? "NOT_STARTED",

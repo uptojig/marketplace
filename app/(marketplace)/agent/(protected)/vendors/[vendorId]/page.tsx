@@ -304,7 +304,7 @@ export default function VendorDocumentsPage() {
           <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
             <a
               href={evidence[lightboxIdx].url}
-              download={`${evidence[lightboxIdx].step}.jpg`}
+              download={`${evidence[lightboxIdx].step}.${evidence[lightboxIdx].mime.split("/")[1] === "jpeg" ? "jpg" : evidence[lightboxIdx].mime.split("/")[1] || "jpg"}`}
               onClick={(e) => e.stopPropagation()}
               className="p-2.5 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all"
               title="ดาวน์โหลด"
@@ -337,14 +337,30 @@ export default function VendorDocumentsPage() {
             </button>
           )}
 
-          {/* Image */}
-          <div className="max-w-4xl max-h-[85vh] p-4" onClick={(e) => e.stopPropagation()}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={evidence[lightboxIdx].url}
-              alt={evidence[lightboxIdx].label}
-              className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
-            />
+          {/* Image / File Viewer */}
+          <div className="max-w-4xl max-h-[85vh] p-4 flex flex-col items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            {evidence[lightboxIdx].mime.startsWith("image/") ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={evidence[lightboxIdx].url}
+                alt={evidence[lightboxIdx].label}
+                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in duration-200"
+              />
+            ) : (
+              <div className="w-[320px] sm:w-[480px] h-[300px] flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-2xl text-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+                <FileText className="w-16 h-16 text-mp-cream/60 mb-4 animate-bounce" />
+                <p className="text-base font-bold text-white text-center">{evidence[lightboxIdx].label}</p>
+                <p className="text-xs text-white/50 mt-1 text-center font-mono">ประเภท: {evidence[lightboxIdx].mime}</p>
+                <a
+                  href={evidence[lightboxIdx].url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-6 inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-mp-coral hover:bg-mp-coral-dark text-xs font-semibold text-white transition-all"
+                >
+                  เปิดไฟล์ในแท็บใหม่
+                </a>
+              </div>
+            )}
             <div className="text-center mt-3">
               <p className="text-white text-sm font-semibold">{evidence[lightboxIdx].label}</p>
               <p className="text-white/60 text-xs mt-0.5">

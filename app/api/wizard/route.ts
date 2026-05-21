@@ -101,6 +101,12 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { ok: false, error: "internal_error", detail: "เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่อีกครั้ง" },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

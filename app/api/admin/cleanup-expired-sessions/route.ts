@@ -17,9 +17,12 @@ const TERMINAL_STATES = ["AUTO_APPROVED", "MANUAL_REVIEW", "REJECTED"];
  */
 export async function POST(req: Request) {
   try {
-    // Simple auth: require secret header or admin session
+    const expectedSecret = process.env.CLEANUP_SECRET;
+    if (!expectedSecret) {
+      return NextResponse.json({ ok: false, error: "CLEANUP_SECRET is not configured on the server" }, { status: 500 });
+    }
+
     const authHeader = req.headers.get("x-cleanup-secret");
-    const expectedSecret = process.env.CLEANUP_SECRET || "cleanup-default-key";
     if (authHeader !== expectedSecret) {
       return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
     }
@@ -60,8 +63,9 @@ export async function POST(req: Request) {
     });
 
     // Clear dgaData for associated users
+    let actualUsersCleaned = 0;
     if (userIdsToClean.length > 0) {
-      await prisma.user.updateMany({
+      const updateResult = await prisma.user.updateMany({
         where: {
           id: { in: userIdsToClean },
           // Only clear dgaData for users who don't have another successful session
@@ -77,13 +81,14 @@ export async function POST(req: Request) {
           dgaData: null as any,
         },
       });
+      actualUsersCleaned = updateResult.count;
     }
 
     return NextResponse.json({
       ok: true,
       message: `Cleaned up ${deleteResult.count} expired session(s)`,
       deleted: deleteResult.count,
-      usersCleaned: userIdsToClean.length,
+      usersCleaned: actualUsersCleaned,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
