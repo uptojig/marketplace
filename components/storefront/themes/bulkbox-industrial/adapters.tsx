@@ -13,7 +13,7 @@ import { BulkboxStrip } from './chrome/AnnouncementStrip';
 import { BulkboxHomepage } from './pages/Homepage';
 
 export function BulkboxHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <BulkboxHeader {...props} />;
+  return <BulkboxHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }} categories={props.categories ?? []} />;
 }
 export function BulkboxFooterAdapter(props: ScaffoldFooterProps) {
   return <BulkboxFooter {...props} />;

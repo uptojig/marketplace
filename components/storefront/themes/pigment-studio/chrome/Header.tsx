@@ -69,7 +69,7 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
               <Search className="w-6 h-6" />
             </button>
             <Link
-              href={`/stores/${storeSlug}/cart`}
+              href={`/stores/${store.slug}/cart`}
               className="p-2 text-[#7c2d12] hover:bg-[#fed7aa] hover:text-[#f97316] rounded-xl transition-colors relative group"
             >
               <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />

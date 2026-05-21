@@ -14,7 +14,7 @@ import { CarbonEraCamerasAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { CarbonEraCamerasHomepage } from './pages/Homepage';
 
 export function CarbonEraCamerasHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <CarbonEraCamerasHeader {...props} />;
+  return <CarbonEraCamerasHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }} categories={props.categories ?? []} />;
 }
 
 export function CarbonEraCamerasFooterAdapter(props: ScaffoldFooterProps) {

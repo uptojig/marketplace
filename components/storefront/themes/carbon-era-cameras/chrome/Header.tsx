@@ -42,7 +42,7 @@ export function CarbonEraCamerasHeader({ store, categories }: HeaderProps) {
             <button className="text-[#0a0a0a]/70 hover:text-[#0a0a0a]">
               <Search className="w-5 h-5" />
             </button>
-            <Link href={`/stores/${storeSlug}/cart`} className="relative text-[#0a0a0a]">
+            <Link href={`/stores/${store.slug}/cart`} className="relative text-[#0a0a0a]">
               <ShoppingBag className="w-6 h-6" />
               {cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#0a0a0a] text-[#fafafa] text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full font-[family:var(--font-prompt)]">

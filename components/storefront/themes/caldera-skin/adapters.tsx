@@ -13,7 +13,7 @@ import { CalderaSkinAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { CalderaSkinHomepage } from './pages/Homepage';
 
 export function CalderaSkinHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <CalderaSkinHeader {...props} />;
+  return <CalderaSkinHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }} categories={props.categories ?? []} />;
 }
 
 export function CalderaSkinFooterAdapter(props: ScaffoldFooterProps) {

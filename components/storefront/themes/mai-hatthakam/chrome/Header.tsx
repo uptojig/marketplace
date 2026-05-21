@@ -83,7 +83,7 @@ export function MaiHatthakamHeader({ store, categories }: MaiHatthakamHeaderProp
             <button className="p-2 text-[#3a1a07] hover:text-[#7c2d12] transition-colors hidden sm:block">
               <Search className="h-5 w-5" />
             </button>
-            <Link href={`/stores/${storeSlug}/cart`} className="p-2 text-[#3a1a07] hover:text-[#7c2d12] transition-colors relative flex items-center">
+            <Link href={`/stores/${store.slug}/cart`} className="p-2 text-[#3a1a07] hover:text-[#7c2d12] transition-colors relative flex items-center">
               <ShoppingBag className="h-5 w-5" />
               {cartItemCount > 0 && (
                 <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-[#fef9f1] transform translate-x-1/4 -translate-y-1/4 bg-[#7c2d12] rounded-full font-[family:var(--font-kanit)]">

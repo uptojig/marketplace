@@ -13,7 +13,7 @@ import { InkstonePaperStrip } from './chrome/AnnouncementStrip';
 import { InkstonePaperHomepage } from './pages/Homepage';
 
 export function InkstonePaperHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <InkstonePaperHeader {...props} />;
+  return <InkstonePaperHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }} categories={props.categories ?? []} />;
 }
 
 export function InkstonePaperFooterAdapter(props: ScaffoldFooterProps) {

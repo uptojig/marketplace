@@ -63,7 +63,7 @@ export function BulkboxHeader({ store, categories }: HeaderProps) {
               <User className="w-5 h-5" />
               <span className="text-sm font-[family:var(--font-prompt)] font-medium hidden sm:block">ล็อกอินธุรกิจ</span>
             </button>
-            <Link href={`/stores/${storeSlug}/cart`} className="text-[#0f172a] hover:text-[#0284c7] transition-colors relative flex items-center gap-2">
+            <Link href={`/stores/${store.slug}/cart`} className="text-[#0f172a] hover:text-[#0284c7] transition-colors relative flex items-center gap-2">
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#0284c7] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">

@@ -17,13 +17,13 @@ export function PetitCoteHeaderAdapter(props: ScaffoldHeaderProps) {
   return (
     <PetitCoteHeader
       store={{
-        id: props.store.id,
+        id: '',
         name: props.storeName,
         slug: props.storeSlug,
         logoUrl: props.storeLogoUrl,
       }}
-      categories={props.categories}
-      cartItemCount={props.cartItemCount}
+      categories={props.categories ?? []}
+      cartItemCount={0}
     />
   );
 }

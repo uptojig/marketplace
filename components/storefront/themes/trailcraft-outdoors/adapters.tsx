@@ -13,7 +13,7 @@ import { TrailcraftStrip } from './chrome/AnnouncementStrip';
 import { TrailcraftHomepage } from './pages/Homepage';
 
 export function TrailcraftHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <TrailcraftHeader {...props} />;
+  return <TrailcraftHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }} categories={props.categories ?? []} />;
 }
 export function TrailcraftFooterAdapter(props: ScaffoldFooterProps) {
   return <TrailcraftFooter {...props} />;
