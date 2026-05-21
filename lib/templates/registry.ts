@@ -259,6 +259,7 @@ import {
 } from '@/components/storefront/themes/everyday-retail/adapters';
 
 import { makeCatalogAdapter } from '@/components/storefront/themes/_shared/catalog-adapter';
+import { makePdpAdapter } from '@/components/storefront/themes/_shared/pdp-adapter';
 
 
 export const templates: Record<TemplateId, Template> = {
@@ -275,6 +276,7 @@ export const templates: Record<TemplateId, Template> = {
     },
       pages: {
       catalog: makeCatalogAdapter('01'),
+      pdp: makePdpAdapter('01', '02'),
     },
   },
 
@@ -293,6 +295,7 @@ export const templates: Record<TemplateId, Template> = {
     },
       pages: {
       catalog: makeCatalogAdapter('03'),
+      pdp: makePdpAdapter('07', '03'),
     },
   },
 
@@ -312,6 +315,7 @@ export const templates: Record<TemplateId, Template> = {
     },
       pages: {
       catalog: makeCatalogAdapter('06'),
+      pdp: makePdpAdapter('06', '05'),
     },
   },
 
@@ -330,6 +334,7 @@ export const templates: Record<TemplateId, Template> = {
     },
       pages: {
       catalog: makeCatalogAdapter('02'),
+      pdp: makePdpAdapter('01', '02'),
     },
   },
 
@@ -347,6 +352,7 @@ export const templates: Record<TemplateId, Template> = {
     },
       pages: {
       catalog: makeCatalogAdapter('02'),
+      pdp: makePdpAdapter('02', '03'),
     },
   },
 
@@ -397,6 +403,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'full-bleed',
     },
     pages: {
+      pdp: makePdpAdapter('06', '02'),
       catalog: makeCatalogAdapter('12'),
       catalog: makeCatalogAdapter('12'),
       home: BikiniHomepageAdapter,
@@ -511,6 +518,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       catalog: makeCatalogAdapter('01'),
+      pdp: makePdpAdapter('08', '03'),
       home: SaiSingHomepageAdapter,
       catalog: makeCatalogAdapter('01'),
     },
@@ -546,6 +554,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: BrutalistThaiHomepageAdapter,
       catalog: makeCatalogAdapter('07'),
+      pdp: makePdpAdapter('05', '04'),
     },
   },
 
@@ -563,6 +572,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: MonoEightHomepageAdapter,
       catalog: makeCatalogAdapter('05'),
+      pdp: makePdpAdapter('09', '05'),
     },
   },
 
@@ -602,6 +612,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: Atelier27HomepageAdapter,
       catalog: makeCatalogAdapter('12'),
+      pdp: makePdpAdapter('02', '03'),
     },
   },
 
@@ -643,6 +654,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: CalderaSkinHomepageAdapter,
       catalog: makeCatalogAdapter('05'),
+      pdp: makePdpAdapter('04', '03'),
     },
   },
 
@@ -695,6 +707,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: HinokiHomepageAdapter,
       catalog: makeCatalogAdapter('09'),
+      pdp: makePdpAdapter('08', '04'),
     },
   },
 
@@ -731,6 +744,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: KeystrokeLabHomepageAdapter,
       catalog: makeCatalogAdapter('06'),
+      pdp: makePdpAdapter('06', '03'),
     },
   },
 
@@ -767,6 +781,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: LinenAndLoomHomepageAdapter,
       catalog: makeCatalogAdapter('04'),
+      pdp: makePdpAdapter('01', '05'),
     },
   },
 
@@ -820,6 +835,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: PetitCoteHomepageAdapter,
       catalog: makeCatalogAdapter('02'),
+      pdp: makePdpAdapter('05', '02'),
     },
   },
 
@@ -856,6 +872,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: ReclaimLeatherHomepageAdapter,
       catalog: makeCatalogAdapter('07'),
+      pdp: makePdpAdapter('06', '02'),
     },
   },
 
@@ -892,6 +909,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: SirinHomepageAdapter,
       catalog: makeCatalogAdapter('03'),
+      pdp: makePdpAdapter('07', '03'),
     },
   },
 
@@ -912,6 +930,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: SmartloopHomeHomepageAdapter,
       catalog: makeCatalogAdapter('09'),
+      pdp: makePdpAdapter('08', '04'),
     },
   },
 
@@ -929,6 +948,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: TinyhandWoodenToysHomepageAdapter,
       catalog: makeCatalogAdapter('02'),
+      pdp: makePdpAdapter('04', '04'),
     },
   },
 
@@ -946,6 +966,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: TrailcraftHomepageAdapter,
       catalog: makeCatalogAdapter('07'),
+      pdp: makePdpAdapter('09', '05'),
     },
   },
 
@@ -985,6 +1006,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: YumeiroLipHomepageAdapter,
       catalog: makeCatalogAdapter('05'),
+      pdp: makePdpAdapter('04', '04'),
     },
   },
 };
