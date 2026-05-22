@@ -220,6 +220,21 @@ export default async function ShopLayout({
   );
   const lcAnnouncement = landingContentAnnouncement(landingContent);
 
+  // Which customer-service pages have real content for this store?
+  // Footers use this to hide links whose target would render the
+  // empty "ยังไม่มีเนื้อหา — Regenerate landing page" stub.
+  // /help/* pages always have content (HELP_PAGES is static).
+  const availableSupportPages: string[] = (() => {
+    const slugs: string[] = [];
+    const blocks = store.landingBlocks;
+    if (blocks && typeof blocks === "object" && isV12Schema(blocks)) {
+      for (const p of (blocks as { pages: { slug: string }[] }).pages) {
+        slugs.push(p.slug);
+      }
+    }
+    return slugs;
+  })();
+
   // ── Auto-translate trigger ──────────────────────────────────
   // Stores imported BEFORE the auto-translate waitUntil hook
   // (commit 8eee8ad) have products with titleTh=null which then
@@ -565,6 +580,7 @@ export default async function ShopLayout({
             store={store}
             categories={categories}
             accent={accent}
+            availableSupportPages={availableSupportPages}
           />
         ) : (
           <ShopFooter

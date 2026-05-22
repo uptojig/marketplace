@@ -227,6 +227,11 @@ export interface FooterProps {
   };
   categories?: string[];
   accent?: string;
+  /** Page slugs that actually have content in this store's
+   *  landingBlocks (`privacy`, `terms`, `shipping`, `returns`,
+   *  `faq`, `about`). Footers should hide customer-service links
+   *  whose target page would render the empty fallback stub. */
+  availableSupportPages?: string[];
 }
 
 /** Sky-thin marketing/announcement strip rendered above the Header. */

@@ -42,6 +42,7 @@ export function TaladSeeSodFooterAdapter(props: ScaffoldFooterProps) {
         country: props.store.country,
       }}
       categories={props.categories ?? []}
+      availableSupportPages={props.availableSupportPages ?? []}
     />
   );
 }
