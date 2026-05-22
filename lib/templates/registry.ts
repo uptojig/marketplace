@@ -61,6 +61,7 @@ import {
 import BrutalistCatalog from '@/components/storefront/themes/brutalist-thai/pages/Catalog';
 import BrutalistProductDetail from '@/components/storefront/themes/brutalist-thai/pages/ProductDetail';
 import BrutalistCart from '@/components/storefront/themes/brutalist-thai/pages/Cart';
+import { BRUTALIST_PALETTE } from '@/components/storefront/themes/brutalist-thai/palette';
 import {
   MonoEightHeaderAdapter,
   MonoEightFooterAdapter,
@@ -438,7 +439,7 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: BrutalistThaiStripAdapter,
     },
     pages: {
-      home: enhanceHomepage(BrutalistThaiHomepageAdapter, '01'),
+      home: enhanceHomepage(BrutalistThaiHomepageAdapter, '01', BRUTALIST_PALETTE),
       catalog: BrutalistCatalog,
       pdp: BrutalistProductDetail,
       cart: BrutalistCart,
