@@ -42,6 +42,7 @@ import {
   BLOCK_CATEGORIES,
 } from "@/lib/registry/block-registry";
 import { seedUiConfigForTemplate } from "@/lib/store/seed-ui-config";
+import { getTemplateLandingDefaults } from "@/lib/templates/landing-defaults";
 
 // Shared editor form for `StoreLandingContent`. Mounted by both the
 // admin route (/admin/stores/[id]/landing-content) and the vendor route
@@ -160,6 +161,14 @@ export function LandingContentForm({
    *  unchanged. */
   const [uiConfigDirty, setUiConfigDirty] = useState(false);
 
+  /** Theme-specific live defaults — shown as placeholders so the
+   *  operator sees the exact text currently rendered on the storefront
+   *  for each field, even before they save an override. */
+  const themeDefaults = useMemo(
+    () => getTemplateLandingDefaults(templateId),
+    [templateId],
+  );
+
   function update<K extends keyof LandingContentFormValues>(
     key: K,
     next: LandingContentFormValues[K],
@@ -243,13 +252,16 @@ export function LandingContentForm({
             label="หัวเรื่อง (Headline)"
             value={v.heroHeadline}
             onChange={(s) => update("heroHeadline", s)}
-            placeholder="เช่น ครัวคุณภาพ ส่งฟรีทั่วประเทศ"
+            placeholder={
+              themeDefaults.heroHeadline?.replace(/\n/g, " · ") ??
+              "เช่น ครัวคุณภาพ ส่งฟรีทั่วประเทศ"
+            }
           />
           <FieldText
             label="คำอธิบาย (Subheadline)"
             value={v.heroSubheadline}
             onChange={(s) => update("heroSubheadline", s)}
-            placeholder="บรรทัดรองที่อธิบายร้านสั้น ๆ"
+            placeholder={themeDefaults.heroSubheadline ?? "บรรทัดรองที่อธิบายร้านสั้น ๆ"}
             multiline
           />
           <div className="grid grid-cols-2 gap-4">
@@ -257,13 +269,13 @@ export function LandingContentForm({
               label="ปุ่ม CTA — ข้อความ"
               value={v.heroCtaLabel}
               onChange={(s) => update("heroCtaLabel", s)}
-              placeholder="เช่น เลือกซื้อเลย"
+              placeholder={themeDefaults.heroCtaLabel ?? "เช่น เลือกซื้อเลย"}
             />
             <FieldText
               label="ปุ่ม CTA — ลิงก์"
               value={v.heroCtaUrl}
               onChange={(s) => update("heroCtaUrl", s)}
-              placeholder="/category/featured หรือ https://..."
+              placeholder={themeDefaults.heroCtaUrl ?? "/category/featured หรือ https://..."}
             />
           </div>
           <FieldImage
@@ -313,13 +325,17 @@ export function LandingContentForm({
             label="ข้อความ (Desktop)"
             value={v.announcementMessage}
             onChange={(s) => update("announcementMessage", s)}
-            placeholder="ส่งฟรีเมื่อสั่งครบ 990 บาท"
+            placeholder={themeDefaults.announcementMessage ?? "ส่งฟรีเมื่อสั่งครบ 990 บาท"}
           />
           <FieldText
             label="ข้อความสั้น (Mobile)"
             value={v.announcementMessageMobile}
             onChange={(s) => update("announcementMessageMobile", s)}
-            placeholder="ส่งฟรี 990+"
+            placeholder={
+              themeDefaults.announcementMessageMobile ??
+              themeDefaults.announcementMessage ??
+              "ส่งฟรี 990+"
+            }
           />
           <FieldText
             label="ลิงก์"
