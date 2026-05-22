@@ -36,6 +36,13 @@ interface CartState {
    *  browser. Per-store views filter on `storeSlug`. */
   lines: CartLineDisplay[];
 
+  /** Coupon codes the buyer has typed into the cart for each store
+   *  (per-store scoping mirrors `lines`). Persisted so the apply
+   *  survives navigation cart → checkout. Server is authoritative —
+   *  these are just stored intent until /api/checkout actually
+   *  applies + records the discount. */
+  couponCodesByStore: Record<string, string[]>;
+
   add: (line: Omit<CartLineDisplay, "qty">, qty?: number) => void;
   setQty: (productId: string, qty: number, storeSlug?: string) => void;
   remove: (productId: string, storeSlug?: string) => void;
@@ -51,6 +58,12 @@ interface CartState {
   subtotalForStore: (storeSlug: string) => number;
   countForStore: (storeSlug: string) => number;
 
+  // ── Coupon helpers ────────────────────────────────────────────────
+  couponCodesForStore: (storeSlug: string) => string[];
+  addCouponCode: (storeSlug: string, code: string) => void;
+  removeCouponCode: (storeSlug: string, code: string) => void;
+  clearCouponCodes: (storeSlug: string) => void;
+
   // ── Cross-store views (DEPRECATED — admin/debug only) ─────────────
   /** @deprecated cross-store sum — use subtotalForStore(slug) in buyer UI */
   subtotalTHB: () => number;
@@ -62,6 +75,7 @@ export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       lines: [],
+      couponCodesByStore: {},
       add: (line, qty = 1) => {
         // Dedupe by (productId, storeSlug) — same product carried by two
         // different stores must show up as separate lines.
@@ -102,9 +116,15 @@ export const useCart = create<CartState>()(
           (storeSlug === undefined || l.storeSlug === storeSlug);
         set({ lines: get().lines.filter((l) => !matches(l)) });
       },
-      clearStore: (storeSlug) =>
-        set({ lines: get().lines.filter((l) => l.storeSlug !== storeSlug) }),
-      clear: () => set({ lines: [] }),
+      clearStore: (storeSlug) => {
+        const nextCodes = { ...get().couponCodesByStore };
+        delete nextCodes[storeSlug];
+        set({
+          lines: get().lines.filter((l) => l.storeSlug !== storeSlug),
+          couponCodesByStore: nextCodes,
+        });
+      },
+      clear: () => set({ lines: [], couponCodesByStore: {} }),
 
       linesForStore: (storeSlug) =>
         get().lines.filter((l) => l.storeSlug === storeSlug),
@@ -116,6 +136,36 @@ export const useCart = create<CartState>()(
         get()
           .lines.filter((l) => l.storeSlug === storeSlug)
           .reduce((acc, l) => acc + l.qty, 0),
+
+      couponCodesForStore: (storeSlug) =>
+        get().couponCodesByStore[storeSlug] ?? [],
+      addCouponCode: (storeSlug, code) => {
+        const trimmed = code.trim().toUpperCase();
+        if (!trimmed) return;
+        const current = get().couponCodesByStore[storeSlug] ?? [];
+        if (current.includes(trimmed)) return;
+        set({
+          couponCodesByStore: {
+            ...get().couponCodesByStore,
+            [storeSlug]: [...current, trimmed],
+          },
+        });
+      },
+      removeCouponCode: (storeSlug, code) => {
+        const trimmed = code.trim().toUpperCase();
+        const current = get().couponCodesByStore[storeSlug] ?? [];
+        set({
+          couponCodesByStore: {
+            ...get().couponCodesByStore,
+            [storeSlug]: current.filter((c) => c !== trimmed),
+          },
+        });
+      },
+      clearCouponCodes: (storeSlug) => {
+        const next = { ...get().couponCodesByStore };
+        delete next[storeSlug];
+        set({ couponCodesByStore: next });
+      },
 
       subtotalTHB: () => get().lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0),
       count: () => get().lines.reduce((acc, l) => acc + l.qty, 0),

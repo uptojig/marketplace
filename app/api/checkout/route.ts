@@ -27,6 +27,7 @@ const checkoutSchema = z.object({
     postalCode: z.string().min(1),
     country: z.string().default("TH"),
   }),
+  couponCodes: z.array(z.string()).optional(),
 });
 
 export async function POST(req: Request) {
@@ -68,6 +69,7 @@ export async function POST(req: Request) {
       userId,
       items: parsed.data.items,
       address: parsed.data.address,
+      couponCodes: parsed.data.couponCodes,
     });
 
     const payment = await createPayment({

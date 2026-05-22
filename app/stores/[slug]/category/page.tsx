@@ -255,11 +255,19 @@ export default async function CategoryIndexPage({
   const buildUrl = (toggleCat?: string, page?: number) => {
     const params = new URLSearchParams();
     if (sortKey !== "newest") params.set("sort", sortKey);
+    // Three modes: toggle a single cat (most chip clicks),
+    // change pages while preserving the current cat filters, or
+    // clear all cats (the "ทั้งหมด" / "show everything" button).
+    // The clear-all path used to return `selectedCats` unchanged
+    // which left the URL identical and the chip clicked silently
+    // did nothing.
     const next = toggleCat
       ? selectedCats.includes(toggleCat)
         ? selectedCats.filter((c) => c !== toggleCat)
         : [...selectedCats, toggleCat]
-      : selectedCats;
+      : page !== undefined
+        ? selectedCats
+        : [];
     for (const c of next) params.append("cat", c);
     if (page && page > 1) params.set("page", String(page));
     const qs = params.toString();

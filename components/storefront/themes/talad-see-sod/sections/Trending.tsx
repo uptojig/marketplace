@@ -17,7 +17,6 @@
 import Link from 'next/link';
 import { Flame } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 interface TrendingProduct {
@@ -35,7 +34,6 @@ interface TaladSeeSodTrendingProps {
 
 export function TaladSeeSodTrending({ store, products }: TaladSeeSodTrendingProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   if (products.length === 0) return null;
   const picks = products.slice(0, 5);
@@ -51,7 +49,6 @@ export function TaladSeeSodTrending({ store, products }: TaladSeeSodTrendingProp
       storeSlug: store.slug,
       storeName: store.name,
     });
-    showConfirm(p.title, store.slug);
   };
 
   return (

@@ -30,13 +30,11 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
 export function TaladSeeSodProductDetail({ store, product, related }: ProductDetailProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // Gallery: dedupe imageUrl into images array
   const gallery = useMemo(() => {
@@ -93,7 +91,6 @@ export function TaladSeeSodProductDetail({ store, product, related }: ProductDet
 
   const handleAdd = () => {
     addToCart();
-    showConfirm(product.title, store.slug);
   };
 
   return (
@@ -108,7 +105,7 @@ export function TaladSeeSodProductDetail({ store, product, related }: ProductDet
           {product.categoryName && (
             <>
               <Link
-                href={`/stores/${store.slug}/category/${encodeURIComponent(product.categoryName)}`}
+                href={`/stores/${store.slug}/category?cat=${encodeURIComponent(product.categoryName)}`}
                 className="hover:text-[#dc2626]"
               >
                 {product.categoryName}
@@ -292,7 +289,7 @@ export function TaladSeeSodProductDetail({ store, product, related }: ProductDet
                 title="รับประกัน 1 ปี"
                 body="ครอบคลุมความเสียหายจากการใช้งาน"
               />
-              <Badge icon={<Wallet className="h-4 w-4" />} title="ชำระปลอดภัย" body="SSL · COD ได้ · ผ่อน 0%" />
+              <Badge icon={<Wallet className="h-4 w-4" />} title="ชำระปลอดภัย" body="SSL · บัตรเครดิต · ผ่อน 0%" />
             </div>
           </div>
         </div>
