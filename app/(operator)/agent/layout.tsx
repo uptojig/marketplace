@@ -8,7 +8,19 @@ import { Badge } from "@/components/ui/badge";
 export const dynamic = "force-dynamic";
 
 const NAV = [
-  { href: "/agent/dashboard", label: "ภาพรวม", icon: "LayoutDashboard", group: "แนะนำร้านค้า (Agent)", exact: true },
+  {
+    href: "/agent/dashboard",
+    label: "Overview",
+    icon: "LayoutDashboard",
+    group: "Agent Workspace",
+    exact: true,
+  },
+  {
+    href: "/agent/dashboard#agent-assisted-kyc",
+    label: "Agent-assisted KYC",
+    icon: "ShieldCheck",
+    group: "Agent Workspace",
+  },
 ];
 
 export default async function AgentLayout({
@@ -31,8 +43,7 @@ export default async function AgentLayout({
     },
   });
 
-  // Agent accounts are provisioned by admins only — there is no self-service
-  // registration. A logged-in non-agent landing here is bounced to home.
+  // Agent accounts are provisioned by admins only; non-agents are bounced.
   if (!user || (!user.agentProfile && user.role !== "ADMIN")) {
     redirect("/");
   }

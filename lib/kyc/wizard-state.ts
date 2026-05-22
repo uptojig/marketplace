@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
+import { resolveKycActor } from "@/lib/kyc/actor-context";
 
 export const WIZARD_STATES = [
   "INIT",
@@ -27,7 +28,7 @@ export const WIZARD_STATES = [
 ] as const;
 
 export type WizardState = (typeof WIZARD_STATES)[number];
-export type WizardActor = "vendor" | "system";
+export type WizardActor = "vendor" | "system" | `agent:${string}`;
 
 const TERMINAL_STATES = new Set<WizardState>(["AUTO_APPROVED", "REJECTED", "MANUAL_REVIEW"]);
 
@@ -86,6 +87,20 @@ function assertCanTransition(fromState: string, toState: WizardState) {
   return;
 }
 
+// How far forward to slide a session's expiry on activity / explicit extend.
+// Matches the base 1-hour TTL so an actively-worked session (agent OR vendor)
+// effectively never lapses mid-flow.
+export const SESSION_EXTEND_MS = 60 * 60 * 1000;
+
+// Slide the session expiry forward to `now + ms`. Callers must guard against
+// terminal / already-expired sessions — this only resets the clock.
+export async function extendWizardSession(sessionId: string, ms: number = SESSION_EXTEND_MS) {
+  return prisma.wizardSession.update({
+    where: { id: sessionId },
+    data: { expiresAt: new Date(Date.now() + ms) },
+  });
+}
+
 export async function createWizardSession(
   args: { userId?: string | null; agentId?: string | null; metadata?: Record<string, unknown> } = {},
 ) {
@@ -102,7 +117,7 @@ export async function createWizardSession(
       metadata: metadata as Prisma.InputJsonValue,
       auditLogs: {
         create: {
-          actor: "system",
+          actor: resolveKycActor("system"),
           event: "session.create",
           fromState: "INIT",
           toState: "S1_ID_CARD_REF",
@@ -165,7 +180,7 @@ export async function transitionWizardSession(
     await tx.wizardAuditLog.create({
       data: {
         sessionId: args.sessionId,
-        actor: args.actor,
+        actor: resolveKycActor(args.actor),
         event: args.event,
         fromState: current.state,
         toState: args.toState,
@@ -193,7 +208,7 @@ export async function auditWizardEvent(args: {
   return prisma.wizardAuditLog.create({
     data: {
       sessionId: args.sessionId,
-      actor: args.actor,
+      actor: resolveKycActor(args.actor),
       event: args.event,
       fromState: session.state,
       toState: session.state,

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Users,
   Store,
@@ -15,8 +16,11 @@ import {
   UserCheck,
   Calendar,
   Eye,
+  FileUp,
+  RotateCcw,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Button,
   OperatorCard,
@@ -34,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/operator/operator-primitives";
+import { ProspectKycSessions } from "./_components/prospect-kyc-sessions";
 
 interface AgentProfile {
   id: string;
@@ -57,11 +62,15 @@ interface RecruitedVendor {
     name: string;
     slug: string;
   }[];
+  kycSessionId: string | null;
   kycStatus: string;
   kycUpdatedAt: string | null;
+  kycExpiresAt: string | null;
+  kycTerminalAt: string | null;
 }
 
 export default function AgentDashboard() {
+  const router = useRouter();
   const [agent, setAgent] = useState<AgentProfile | null>(null);
   const [vendors, setVendors] = useState<RecruitedVendor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +82,14 @@ export default function AgentDashboard() {
   const [editLinkCode, setEditLinkCode] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [creatingSessionFor, setCreatingSessionFor] = useState<string | null>(null);
+  const [createSessionError, setCreateSessionError] = useState<string | null>(null);
+  const [prospectName, setProspectName] = useState("");
+  const [prospectPhone, setProspectPhone] = useState("");
+  const [prospectEmail, setProspectEmail] = useState("");
+  const [prospectNote, setProspectNote] = useState("");
+  const [creatingProspect, setCreatingProspect] = useState(false);
+  const [prospectError, setProspectError] = useState<string | null>(null);
 
   async function fetchDashboardData() {
     try {
@@ -150,6 +167,64 @@ export default function AgentDashboard() {
       setEditError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const createVendorKycSession = async (vendorId: string) => {
+    setCreateSessionError(null);
+    setCreatingSessionFor(vendorId);
+
+    try {
+      const res = await fetch(`/api/agents/me/vendors/${vendorId}/kyc/sessions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note: "Created from agent dashboard" }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.detail || data.error || "ไม่สามารถสร้าง KYC session ได้");
+      }
+      router.push(`/agent/kyc/${data.session_id}`);
+    } catch (err) {
+      setCreateSessionError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setCreatingSessionFor(null);
+    }
+  };
+
+  const createProspectKycSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProspectError(null);
+
+    const name = prospectName.trim();
+    const phone = prospectPhone.trim();
+    const email = prospectEmail.trim();
+
+    if (!name) {
+      setProspectError("กรุณาระบุชื่อ Vendor");
+      return;
+    }
+    if (!phone && !email) {
+      setProspectError("กรุณาระบุเบอร์โทรหรืออีเมลอย่างน้อยหนึ่งช่อง");
+      return;
+    }
+
+    setCreatingProspect(true);
+    try {
+      const res = await fetch("/api/agents/me/kyc/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, email, note: prospectNote.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.detail || data.error || "ไม่สามารถสร้าง KYC session ได้");
+      }
+      router.push(`/agent/kyc/${data.session_id}`);
+    } catch (err) {
+      setProspectError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setCreatingProspect(false);
     }
   };
 
@@ -314,10 +389,69 @@ export default function AgentDashboard() {
         </div>
       </OperatorCard>
 
+      <div id="agent-assisted-kyc" className="scroll-mt-20">
+      <OperatorCard
+        title="Agent-assisted KYC"
+        description="สร้าง session ใหม่และอัปโหลดเอกสารแทน Vendor ได้จากตรงนี้"
+      >
+        <form onSubmit={createProspectKycSession} className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-start" noValidate>
+          <Input
+            value={prospectName}
+            onChange={(e) => setProspectName(e.target.value)}
+            placeholder="ชื่อ Vendor"
+            aria-label="ชื่อ Vendor"
+            required
+            disabled={creatingProspect}
+          />
+          <Input
+            value={prospectPhone}
+            onChange={(e) => setProspectPhone(e.target.value)}
+            placeholder="เบอร์โทร"
+            aria-label="เบอร์โทร"
+            type="tel"
+            inputMode="tel"
+            disabled={creatingProspect}
+          />
+          <Input
+            value={prospectEmail}
+            onChange={(e) => setProspectEmail(e.target.value)}
+            placeholder="อีเมล"
+            aria-label="อีเมล"
+            type="email"
+            disabled={creatingProspect}
+          />
+          <Button type="submit" disabled={creatingProspect}>
+            <FileUp />
+            {creatingProspect ? "กำลังสร้าง..." : "สร้าง Session"}
+          </Button>
+          <Textarea
+            value={prospectNote}
+            onChange={(e) => setProspectNote(e.target.value)}
+            placeholder="หมายเหตุสำหรับ Agent"
+            aria-label="หมายเหตุสำหรับ Agent"
+            className="md:col-span-4 min-h-20"
+            disabled={creatingProspect}
+          />
+          {prospectError && (
+            <p className="md:col-span-4 text-sm font-medium text-destructive" role="alert">
+              {prospectError}
+            </p>
+          )}
+        </form>
+      </OperatorCard>
+      </div>
+
+      <ProspectKycSessions />
+
       <OperatorTable
         title={`รายชื่อผู้สมัครที่ชักชวนได้ (${vendors.length} คน)`}
         description="ติดตามขั้นตอนการยืนยันตัวตนและการเปิดร้านค้าของสมาชิกที่คุณเชิญชวน"
       >
+        {createSessionError && (
+          <p className="mb-3 text-sm font-medium text-destructive" role="alert">
+            {createSessionError}
+          </p>
+        )}
         {vendors.length === 0 ? (
           <OperatorEmptyState
             icon={Users}
@@ -333,11 +467,15 @@ export default function AgentDashboard() {
                 <TableHead>ขั้นตอน KYC</TableHead>
                 <TableHead>ร้านค้าที่เปิด</TableHead>
                 <TableHead className="text-center">เอกสาร</TableHead>
+                <TableHead className="text-right">KYC Upload</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
                 {vendors.map((vendor) => {
-                  const isCompleted = ["AUTO_APPROVED", "MANUAL_REVIEW"].includes(vendor.kycStatus);
+                  const hasActiveKycSession =
+                    Boolean(vendor.kycSessionId) &&
+                    !vendor.kycTerminalAt &&
+                    (!vendor.kycExpiresAt || new Date(vendor.kycExpiresAt).getTime() > Date.now());
                   const statusTone =
                     vendor.kycStatus === "AUTO_APPROVED"
                       ? "success"
@@ -410,6 +548,28 @@ export default function AgentDashboard() {
                           <span className="text-[10px] text-muted-foreground">-</span>
                         )}
                       </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex flex-wrap justify-end gap-2">
+                          {hasActiveKycSession && (
+                            <Button asChild variant="outline" size="sm">
+                              <Link href={`/agent/kyc/${vendor.kycSessionId}`}>
+                                <FileUp />
+                                แก้ไขของเดิม
+                              </Link>
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            variant={hasActiveKycSession ? "ghost" : "outline"}
+                            size="sm"
+                            disabled={creatingSessionFor === vendor.id}
+                            onClick={() => createVendorKycSession(vendor.id)}
+                          >
+                            <RotateCcw />
+                            {creatingSessionFor === vendor.id ? "กำลังสร้าง..." : "สร้างใหม่"}
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -420,3 +580,6 @@ export default function AgentDashboard() {
     </div>
   );
 }
+
+
+

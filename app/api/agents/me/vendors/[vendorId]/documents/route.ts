@@ -77,6 +77,11 @@ export async function GET(
         createdAt: true,
         terminalAt: true,
         finalDecision: true,
+        auditLogs: {
+          orderBy: { ts: "desc" },
+          take: 1,
+          select: { actor: true, event: true, ts: true },
+        },
       },
     });
 
@@ -91,6 +96,7 @@ export async function GET(
       width: number | null;
       height: number | null;
       url: string;
+      source: string;
       capturedAt: Date;
     }[] = [];
 
@@ -107,6 +113,7 @@ export async function GET(
           width: e.width,
           height: e.height,
           url: e.url,
+          source: e.source,
           capturedAt: e.capturedAt,
         }))
         .sort((a, b) => a.order - b.order || a.capturedAt.getTime() - b.capturedAt.getTime());
@@ -126,6 +133,7 @@ export async function GET(
       kycStatus: kycSession?.state ?? "NOT_STARTED",
       kycSessionId: kycSession?.id ?? null,
       kycFinalizedAt: kycSession?.terminalAt ?? null,
+      latestActor: kycSession?.auditLogs[0] ?? null,
       evidence,
     });
   } catch (error) {

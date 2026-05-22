@@ -17,6 +17,8 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { AddToCartModal } from "@/components/shop/AddToCartModal";
+import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -197,6 +199,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans">
         <Providers>
           {children}
+          <AddToCartModal />
+          <Toaster />
         </Providers>
       </body>
     </html>

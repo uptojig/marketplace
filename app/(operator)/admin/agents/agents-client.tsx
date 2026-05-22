@@ -17,6 +17,8 @@ import {
   Mail,
   KeyRound,
   RefreshCw,
+  Copy,
+  PartyPopper,
 } from "lucide-react";
 import {
   OperatorPageHeader,
@@ -45,6 +47,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 
 type NominateMode = "new" | "existing";
@@ -124,6 +127,21 @@ export function AdminAgentsClient({ initialAgents, candidateUsers }: AdminAgents
   // General loading states
   const [loadingIds, setLoadingIds] = useState<Record<string, boolean>>({});
 
+  // New-agent credentials are shown in a persistent dialog (not a toast) — they
+  // are unrecoverable, so the admin must explicitly copy/close.
+  const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null);
+  // Agent pending deletion confirmation (replaces window.confirm).
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  async function copyText(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ variant: "success", description: `คัดลอก${label}แล้ว` });
+    } catch {
+      toast({ variant: "destructive", description: `คัดลอก${label}ไม่สำเร็จ` });
+    }
+  }
+
   // Filter and search logic
   const filteredAgents = agents.filter((agent) => {
     const matchesSearch =
@@ -160,7 +178,11 @@ export function AdminAgentsClient({ initialAgents, candidateUsers }: AdminAgents
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        alert(errData.detail || `ไม่สามารถเปลี่ยนสถานะเป็น ${newStatus} ได้`);
+        toast({
+          variant: "destructive",
+          title: "เปลี่ยนสถานะไม่สำเร็จ",
+          description: errData.detail || `ไม่สามารถเปลี่ยนสถานะเป็น ${newStatus} ได้`,
+        });
         return;
       }
 
@@ -171,17 +193,14 @@ export function AdminAgentsClient({ initialAgents, candidateUsers }: AdminAgents
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert("เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์");
+      toast({ variant: "destructive", description: "เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์" });
     } finally {
       setLoadingIds((prev) => ({ ...prev, [agentId]: false }));
     }
   }
 
-  async function handleDeleteAgent(agentId: string) {
-    if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการเป็นตัวแทน? การดำเนินการนี้จะลบโปรไฟล์ตัวแทนและคืนค่าบทบาทผู้ใช้เป็นสมาชิกปกติ")) {
-      return;
-    }
-
+  async function performDeleteAgent(agentId: string) {
+    setConfirmDeleteId(null);
     setLoadingIds((prev) => ({ ...prev, [agentId]: true }));
     try {
       const res = await fetch(`/api/admin/agents/${agentId}`, {
@@ -190,15 +209,20 @@ export function AdminAgentsClient({ initialAgents, candidateUsers }: AdminAgents
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        alert(errData.detail || "ไม่สามารถลบตัวแทนได้");
+        toast({
+          variant: "destructive",
+          title: "ลบตัวแทนไม่สำเร็จ",
+          description: errData.detail || "ไม่สามารถลบตัวแทนได้",
+        });
         return;
       }
 
       setAgents((prev) => prev.filter((a) => a.id !== agentId));
+      toast({ variant: "success", description: "ยกเลิกการเป็นตัวแทนเรียบร้อยแล้ว" });
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert("เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์");
+      toast({ variant: "destructive", description: "เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์" });
     } finally {
       setLoadingIds((prev) => ({ ...prev, [agentId]: false }));
     }
@@ -250,14 +274,20 @@ export function AdminAgentsClient({ initialAgents, candidateUsers }: AdminAgents
         throw new Error(data.detail || "แต่งตั้งตัวแทนไม่สำเร็จ");
       }
 
-      // Surface the new credentials so the admin can relay them — they
-      // are not recoverable after this point.
-      alert(
-        nominateMode === "new"
-          ? `สร้างและแต่งตั้งตัวแทนใหม่สำเร็จ 🎉\n\nอีเมล: ${newEmail.trim().toLowerCase()}\nรหัสผ่าน: ${newPassword}\n\nโปรดบันทึก/ส่งให้ตัวแทนก่อนปิดหน้านี้`
-          : "แต่งตั้งตัวแทนใหม่สำเร็จแล้ว 🎉",
-      );
-      window.location.reload();
+      if (nominateMode === "new") {
+        // Credentials are unrecoverable — surface them in a persistent dialog
+        // with copy buttons (NOT a toast), and defer the reload until the admin
+        // closes it so they can't lose the password.
+        setShowNominateForm(false);
+        setCredentials({ email: newEmail.trim().toLowerCase(), password: newPassword });
+      } else {
+        toast({
+          variant: "success",
+          title: "แต่งตั้งตัวแทนสำเร็จ 🎉",
+          description: "แต่งตั้งตัวแทนใหม่จากสมาชิกที่มีอยู่เรียบร้อยแล้ว",
+        });
+        window.location.reload();
+      }
     } catch (err) {
       setNominateError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     } finally {
@@ -436,6 +466,115 @@ export function AdminAgentsClient({ initialAgents, candidateUsers }: AdminAgents
         </DialogContent>
       </Dialog>
 
+      {/* New-agent credentials — persistent + copy-able (unrecoverable). */}
+      <Dialog
+        open={!!credentials}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCredentials(null);
+            window.location.reload();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PartyPopper className="size-5 text-primary" />
+              สร้างและแต่งตั้งตัวแทนใหม่สำเร็จ
+            </DialogTitle>
+            <DialogDescription>
+              โปรดคัดลอก/ส่งข้อมูลเข้าสู่ระบบนี้ให้ตัวแทนก่อนปิดหน้าต่าง — รหัสผ่านจะไม่สามารถเรียกดูได้อีก
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="rounded-lg border bg-muted/40 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">อีเมล</p>
+              <div className="mt-1 flex items-center gap-2">
+                <code className="flex-1 truncate font-mono text-sm text-foreground">{credentials?.email}</code>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => credentials && copyText(credentials.email, "อีเมล")}
+                  title="คัดลอกอีเมล"
+                >
+                  <Copy className="size-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="rounded-lg border bg-muted/40 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">รหัสผ่าน</p>
+              <div className="mt-1 flex items-center gap-2">
+                <code className="flex-1 truncate font-mono text-sm text-foreground">{credentials?.password}</code>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => credentials && copyText(credentials.password, "รหัสผ่าน")}
+                  title="คัดลอกรหัสผ่าน"
+                >
+                  <Copy className="size-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                credentials &&
+                copyText(`อีเมล: ${credentials.email}\nรหัสผ่าน: ${credentials.password}`, "ข้อมูลเข้าสู่ระบบ")
+              }
+            >
+              <Copy className="size-4" />
+              คัดลอกทั้งหมด
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setCredentials(null);
+                window.location.reload();
+              }}
+            >
+              บันทึกแล้ว ปิดหน้าต่าง
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm cancel-agent (replaces window.confirm). */}
+      <Dialog
+        open={!!confirmDeleteId}
+        onOpenChange={(open) => {
+          if (!open) setConfirmDeleteId(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>ยกเลิกการเป็นตัวแทน?</DialogTitle>
+            <DialogDescription>
+              การดำเนินการนี้จะลบโปรไฟล์ตัวแทนและคืนค่าบทบาทผู้ใช้เป็นสมาชิกปกติ ไม่สามารถย้อนกลับได้
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => setConfirmDeleteId(null)}>
+              ยกเลิก
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => confirmDeleteId && performDeleteAgent(confirmDeleteId)}
+            >
+              <Trash2 className="size-4" />
+              ยืนยันลบ
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Filter and Search */}
       <OperatorCard contentClassName="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-xs">
@@ -558,7 +697,7 @@ export function AdminAgentsClient({ initialAgents, candidateUsers }: AdminAgents
                           size="icon-sm"
                           variant="ghost"
                           disabled={busy}
-                          onClick={() => handleDeleteAgent(agent.id)}
+                          onClick={() => setConfirmDeleteId(agent.id)}
                           title="ลบตัวแทน"
                           className="text-muted-foreground hover:text-destructive"
                         >

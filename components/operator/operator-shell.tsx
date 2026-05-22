@@ -180,7 +180,7 @@ export function OperatorShell({
             </span>
             <ul className="space-y-0.5">
               {items.map((item) => {
-                const cleanHref = item.href.split("?")[0];
+                const cleanHref = item.href.split("?")[0].split("#")[0];
                 const cleanPathname = pathname.split("?")[0];
                 const active = item.exact
                   ? cleanPathname === cleanHref

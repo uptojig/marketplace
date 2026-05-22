@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { downloadBuffer, presignDownload, uploadBuffer } from "@/lib/storage/spaces";
+import { resolveKycEvidenceSource, type KycEvidenceSource } from "@/lib/kyc/actor-context";
 
 interface ImageSize {
   width?: number;
@@ -59,7 +60,7 @@ export async function uploadWizardEvidence(args: {
   buffer: Buffer;
   mime: string;
   filename?: string;
-  source?: "vendor_upload" | "system_generated";
+  source?: KycEvidenceSource;
   width?: number;
   height?: number;
   userName?: string;
@@ -91,6 +92,7 @@ export async function uploadWizardEvidence(args: {
   if (!userName) {
     const ocrResult = await prisma.wizardOcrResult.findFirst({
       where: { sessionId: args.sessionId, provider: "iapp_id_ref" },
+      orderBy: { createdAt: "desc" },
       select: { extracted: true },
     });
     if (ocrResult && ocrResult.extracted && typeof ocrResult.extracted === "object") {
@@ -134,7 +136,7 @@ export async function uploadWizardEvidence(args: {
       mime: args.mime,
       width: args.width ?? detectedSize.width,
       height: args.height ?? detectedSize.height,
-      source: args.source ?? "vendor_upload",
+      source: args.source ?? resolveKycEvidenceSource(),
     },
   });
 }
@@ -170,6 +172,7 @@ export async function evidenceWithPresignedUrls(sessionId: string) {
       mime: item.mime,
       width: item.width,
       height: item.height,
+      source: item.source,
       capturedAt: item.capturedAt,
       url: await presignDownload({ key: item.storageKey }),
     })),

@@ -35,7 +35,7 @@
  *   redirected here).
  */
 
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -99,6 +99,7 @@ interface SnapshotPayload {
   state: WizardState;
   finalDecision?: WizardState | null;
   identity?: IdentityPayload | null;
+  expiresAt?: string | null;
 }
 
 interface LeasePayload {
@@ -328,10 +329,30 @@ function clearCache() {
 
 interface KycWizardProps {
   initialSessionId?: string;
+  apiBasePath?: string;
+  terminalRedirectPath?: string | null;
+  credentialSuccessCtaHref?: string;
+  credentialSuccessCtaLabel?: string;
+  credentialSuccessDescription?: string;
+  autoRedirectOnApproved?: boolean;
 }
 
-export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
+export default function KycWizard({
+  initialSessionId,
+  apiBasePath = "/api/wizard",
+  terminalRedirectPath = "/apply",
+  credentialSuccessCtaHref,
+  credentialSuccessCtaLabel,
+  credentialSuccessDescription,
+  autoRedirectOnApproved = true,
+}: KycWizardProps = {}) {
   const router = useRouter();
+  const apiBase = apiBasePath.replace(/\/$/, "");
+  const apiUrl = (path = "") => `${apiBase}${path ? `/${path.replace(/^\//, "")}` : ""}`;
+  const sessionApiUrl = (sid: string, path = "") => apiUrl(`${sid}${path ? `/${path.replace(/^\//, "")}` : ""}`);
+  // Agent-assisted flow goes through /api/agents/... — only that flow gets the
+  // sliding-expiry "ต่อเวลา" affordance.
+  const isAgentFlow = apiBase.includes("/agents/");
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
   const [state, setState] = useState<WizardState>("INIT");
   const [viewingIdx, setViewingIdx] = useState<number>(0);
@@ -393,11 +414,30 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
   const [idFront, setIdFront] = useState<File | null>(null);
   const [idFrontPreview, setIdFrontPreview] = useState<string | null>(null);
   const [identity, setIdentity] = useState<IdentityPayload | null>(null);
+  // True once the first snapshot fetch has resolved. Lets the ID-review screen
+  // tell "still loading the OCR" (show a spinner) apart from "OCR genuinely
+  // unreadable" (show อ่านไม่ออก) instead of flashing the alarming state on
+  // mount/reload before identity arrives.
+  const [hydratedOnce, setHydratedOnce] = useState(false);
   const [leasedEmail, setLeasedEmail] = useState<string | null>(null);
   const [leaseExpiresAt, setLeaseExpiresAt] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [otp, setOtp] = useState<string | null>(null);
   const [emailTab, setEmailTab] = useState<"system" | "own">("system");
+
+  // Whole-session expiry (separate from the 25-min email lease above). Drives
+  // the countdown warning popup + the "ต่อเวลา" extend affordance.
+  const [sessionExpiresAt, setSessionExpiresAt] = useState<string | null>(null);
+  const [sessionSecondsLeft, setSessionSecondsLeft] = useState<number | null>(null);
+  const [extending, setExtending] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; tone: "error" | "success" | "info" } | null>(null);
+  const toastTimer = useRef<number | null>(null);
+
+  const showToast = useCallback((msg: string, tone: "error" | "success" | "info" = "info") => {
+    setToast({ msg, tone });
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 5000);
+  }, []);
 
   // Sync idFrontPreview
   useEffect(() => {
@@ -476,21 +516,84 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     return () => window.clearInterval(timer);
   }, [leaseExpiresAt]);
 
+  // Whole-session countdown (drives the warning popup). Independent of the
+  // email lease above.
+  useEffect(() => {
+    if (!sessionExpiresAt || TERMINAL_STATES.has(state)) {
+      setSessionSecondsLeft(null);
+      return;
+    }
+    const tick = () => {
+      const diff = Math.floor((new Date(sessionExpiresAt).getTime() - Date.now()) / 1000);
+      setSessionSecondsLeft(diff > 0 ? diff : 0);
+    };
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, [sessionExpiresAt, state]);
+
+  // Before alarming the user, re-sync the true expiry once when crossing into
+  // the warning zone — the agent proxy slides expiry server-side on activity,
+  // so the locally-tracked value can be stale. If the server already extended
+  // it, the warning simply disappears.
+  const warnSyncedRef = useRef(false);
+  useEffect(() => {
+    if (sessionSecondsLeft === null || sessionSecondsLeft > 300) {
+      warnSyncedRef.current = false;
+      return;
+    }
+    if (sessionSecondsLeft > 0 && sessionId && !warnSyncedRef.current) {
+      warnSyncedRef.current = true;
+      void refresh(sessionId);
+    }
+  }, [sessionSecondsLeft, sessionId]);
+
+  // Surface a session-expired step failure as a friendly Thai toast (the raw
+  // server message is the English "Wizard session expired"), and normalise the
+  // inline error to Thai too.
+  useEffect(() => {
+    if (error && /wizard session expired|session expired|expired/i.test(error)) {
+      const thai = "เซสชันหมดอายุแล้ว กรุณาเริ่มทำ KYC ใหม่อีกครั้ง";
+      showToast(thai, "error");
+      if (error !== thai) setError(thai);
+    }
+  }, [error, showToast]);
+
+  async function extendSession() {
+    if (!sessionId) return;
+    setExtending(true);
+    try {
+      const res = await postJson<{ ok?: boolean; expires_at?: string; detail?: string; error?: string }>(
+        sessionApiUrl(sessionId, "extend"),
+        { method: "POST" },
+      );
+      if (!res.ok || !res.payload.ok) {
+        throw new Error(res.payload.detail || res.payload.error || "ต่อเวลาไม่สำเร็จ");
+      }
+      if (res.payload.expires_at) setSessionExpiresAt(res.payload.expires_at);
+      showToast("ต่อเวลาเซสชันแล้ว (อีก 60 นาที)", "success");
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "ต่อเวลาไม่สำเร็จ", "error");
+    } finally {
+      setExtending(false);
+    }
+  }
+
   useEffect(() => {
     if (!TERMINAL_STATES.has(state)) {
       terminalRefreshRequested.current = false;
       return;
     }
-    if (!sessionId || terminalRefreshRequested.current) return;
+    if (!sessionId || terminalRefreshRequested.current || !terminalRedirectPath) return;
     terminalRefreshRequested.current = true;
     // Preserve existing query params (notably the invite code `c`) so an
     // anonymous session isn't bounced by the /apply gate once it reaches a
     // terminal state.
     const params = new URLSearchParams(window.location.search);
     params.set("sid", sessionId);
-    router.replace(`/apply?${params.toString()}`);
+    router.replace(`${terminalRedirectPath}?${params.toString()}`);
     router.refresh();
-  }, [router, sessionId, state]);
+  }, [router, sessionId, state, terminalRedirectPath]);
 
   // Countdown format
   const countdownLabel = useMemo(() => {
@@ -501,9 +604,10 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
 
   async function refresh(sid: string) {
     try {
-      const res = await postJson<SnapshotPayload>(`/api/wizard/${sid}`);
+      const res = await postJson<SnapshotPayload>(sessionApiUrl(sid));
       if (res.ok && res.payload?.state) {
         setState(res.payload.state);
+        if (res.payload.expiresAt) setSessionExpiresAt(res.payload.expiresAt);
         if (res.payload.identity) {
           setIdentity(res.payload.identity);
         }
@@ -538,6 +642,8 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
       }
     } catch {
       /* ignore — snapshot refresh is best-effort */
+    } finally {
+      setHydratedOnce(true);
     }
   }
 
@@ -545,8 +651,8 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     setBusy(true);
     setError(null);
     try {
-      const res = await postJson<{ session_id: string; state: WizardState }>(
-        "/api/wizard",
+      const res = await postJson<{ session_id: string; state: WizardState; expires_at?: string | null }>(
+        apiUrl(),
         {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -556,6 +662,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
       if (!res.ok) throw new Error(res.payload.error ?? `เริ่ม session ไม่ได้ (${res.status})`);
       setSessionId(res.payload.session_id);
       setState(res.payload.state);
+      if (res.payload.expires_at) setSessionExpiresAt(res.payload.expires_at);
       setInfo("เริ่มคำขอ KYC แล้ว");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -573,7 +680,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
       const form = new FormData();
       form.append("id_front", idFront);
       const res = await postJson<{ state: WizardState; identity?: IdentityPayload }>(
-        `/api/wizard/${sessionId}/s1/id-card-ref`,
+        sessionApiUrl(sessionId, "s1/id-card-ref"),
         { method: "POST", body: form },
       );
       if (!res.ok) throw new Error(res.payload.error ?? "อัปโหลดบัตรไม่สำเร็จ");
@@ -593,7 +700,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     setError(null);
     try {
       const res = await postJson<{ state: WizardState }>(
-        `/api/wizard/${sessionId}/s1/id-card-ref/confirm`,
+        sessionApiUrl(sessionId, "s1/id-card-ref/confirm"),
         { method: "POST" },
       );
       if (!res.ok) throw new Error(res.payload.error ?? "ยืนยันบัตรไม่สำเร็จ");
@@ -612,7 +719,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     setError(null);
     try {
       const res = await postJson<{ state: WizardState }>(
-        `/api/wizard/${sessionId}/s1/id-card-ref/retake`,
+        sessionApiUrl(sessionId, "s1/id-card-ref/retake"),
         { method: "POST" },
       );
       if (!res.ok) throw new Error(res.payload.error ?? "ไม่สามารถถ่ายใหม่ได้");
@@ -633,7 +740,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     setBusy(true);
     setError(null);
     try {
-      const res = await postJson<LeasePayload>(`/api/wizard/${sessionId}/s2/email-request`, {
+      const res = await postJson<LeasePayload>(sessionApiUrl(sessionId, "s2/email-request"), {
         method: "POST",
       });
       if (!res.ok) throw new Error(res.payload.error ?? "ขออีเมลไม่สำเร็จ");
@@ -654,7 +761,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     setBusy(true);
     setError(null);
     try {
-      const res = await postJson<{ otp: string; state: WizardState }>(`/api/wizard/${sessionId}/s3/fetch-otp`, {
+      const res = await postJson<{ otp: string; state: WizardState }>(sessionApiUrl(sessionId, "s3/fetch-otp"), {
         method: "POST",
       });
       if (!res.ok) throw new Error(res.payload.error ?? "ดึง OTP ไม่สำเร็จ");
@@ -673,7 +780,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     setBusy(true);
     setError(null);
     try {
-      const res = await postJson<{ state: WizardState }>(`/api/wizard/${sessionId}/s3/confirm`, {
+      const res = await postJson<{ state: WizardState }>(sessionApiUrl(sessionId, "s3/confirm"), {
         method: "POST",
       });
       if (!res.ok) throw new Error(res.payload.error ?? "ยืนยัน OTP ไม่สำเร็จ");
@@ -692,7 +799,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     setError(null);
     try {
       const res = await postJson<{ state: WizardState }>(
-        `/api/wizard/${sessionId}/s2/skip-email`,
+        sessionApiUrl(sessionId, "s2/skip-email"),
         { method: "POST" }
       );
       if (!res.ok) throw new Error(res.payload.error ?? "ข้ามอีเมลไม่สำเร็จ");
@@ -710,7 +817,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
   // session first lands on S1. Server is source of truth.
   async function hydrateDgaChecklist(sid: string) {
     try {
-      const res = await fetch(`/api/wizard/${sid}/s1/dga-checklist`);
+      const res = await fetch(sessionApiUrl(sid, "s1/dga-checklist"));
       if (!res.ok) return;
       const data = (await res.json()) as {
         ok?: boolean;
@@ -782,7 +889,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
         imageCount?: number;
         readyToFinalize?: boolean;
       }>(
-        `/api/wizard/${sessionId}/s1/dga-add-image`,
+        sessionApiUrl(sessionId, "s1/dga-add-image"),
         { method: "POST", body: form },
         { onStage: handleStage },
       );
@@ -822,7 +929,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(`/api/wizard/${sessionId}/s1/dga-image/${evidenceId}`, {
+      const res = await fetch(sessionApiUrl(sessionId, `s1/dga-image/${evidenceId}`), {
         method: "DELETE",
       });
       const payload = (await res.json()) as {
@@ -853,6 +960,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     if (!sessionId) return;
     setBusy(true);
     setError(null);
+    setDgaAddressMismatch(null);
     beginProgress();
     try {
       const res = await postSSE<{
@@ -861,12 +969,26 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
         error?: string;
         missing?: string[];
         checklist?: DgaChecklistEntry[];
+        addressMismatch?: {
+          registered: string | null;
+          contact: string | null;
+          registeredHouseNumber: string | null;
+          contactHouseNumber: string | null;
+        };
       }>(
-        `/api/wizard/${sessionId}/s1/dga-finalize`,
+        sessionApiUrl(sessionId, "s1/dga-finalize"),
         { method: "POST" },
         { onStage: handleStage },
       );
       if (!res.ok) {
+        // Address mismatch caught at the capture gate (before the editable
+        // review screen). Show the hard-block modal; state stays at CAPTURE so
+        // the only way forward is to re-upload corrected DGA screenshots.
+        if (res.payload.addressMismatch) {
+          if (res.payload.checklist) setDgaChecklist(res.payload.checklist);
+          setDgaAddressMismatch(res.payload.addressMismatch);
+          return;
+        }
         if (res.payload.missing && res.payload.checklist) {
           setDgaChecklist(res.payload.checklist);
           throw new Error(
@@ -895,7 +1017,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     if (!sessionId) return;
     setError(null);
     try {
-      const res = await fetch(`/api/wizard/${sessionId}/s1/dga-review/${fieldKey}`, {
+      const res = await fetch(sessionApiUrl(sessionId, `s1/dga-review/${fieldKey}`), {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ value }),
@@ -936,7 +1058,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
           contactHouseNumber: string | null;
         };
       }>(
-        `/api/wizard/${sessionId}/s1/dga-review-confirm`,
+        sessionApiUrl(sessionId, "s1/dga-review-confirm"),
         { method: "POST" },
         { onStage: handleStage },
       );
@@ -972,7 +1094,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/wizard/${sessionId}/s1/dga-review-back`, {
+      const res = await fetch(sessionApiUrl(sessionId, "s1/dga-review-back"), {
         method: "POST",
       });
       const payload = (await res.json()) as {
@@ -1027,7 +1149,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
           failed_checks?: string[];
         }
       >(
-        `/api/wizard/${sessionId}/s1/id-card`,
+        sessionApiUrl(sessionId, "s1/id-card"),
         { method: "POST", body: form },
         { onStage: handleStage },
       );
@@ -1100,7 +1222,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
       const form = new FormData();
       form.append(field, file);
       const res = await postSSE<SnapshotPayload>(
-        `/api/wizard/${sessionId}/${endpoint}`,
+        sessionApiUrl(sessionId, endpoint),
         { method: "POST", body: form },
         { onStage: handleStage },
       );
@@ -1182,6 +1304,12 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
           รหัสผ่านชั่วคราวของคุณคือเลขท้าย 6 ตัวของบัตรประชาชน เพื่อความสะดวกในการเข้าสู่ระบบครั้งแรก (ระบบจะให้ท่านเปลี่ยนรหัสผ่านหลังเข้าสู่ระบบ)
         </p>
 
+        {credentialSuccessDescription && (
+          <p className="mt-2 text-[13px] leading-relaxed text-mp-ink-muted">
+            {credentialSuccessDescription}
+          </p>
+        )}
+
         <div className="mt-6 rounded-xl border border-mp-border bg-mp-cream-alt/40 p-5 text-left space-y-3">
           <div>
             <label className="text-[12px] font-semibold text-mp-ink-muted uppercase">เบอร์โทรศัพท์ (ชื่อผู้ใช้)</label>
@@ -1208,15 +1336,15 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
         <button
           type="button"
           onClick={() => {
-            let redirectUrl = `/signin?phone=${encodeURIComponent(createdVendorCreds.phone)}`;
-            if (createdVendorCreds.refCode) {
+            let redirectUrl = credentialSuccessCtaHref ?? `/signin?phone=${encodeURIComponent(createdVendorCreds.phone)}`;
+            if (!credentialSuccessCtaHref && createdVendorCreds.refCode) {
               redirectUrl += `&c=${encodeURIComponent(createdVendorCreds.refCode)}`;
             }
             router.push(redirectUrl);
           }}
           className="mt-8 flex w-full h-12 items-center justify-center rounded-xl bg-mp-coral text-[15px] font-semibold text-white hover:bg-mp-coral-dark shadow-sm transition-all"
         >
-          คัดลอกรหัสผ่านแล้ว ไปหน้าเข้าสู่ระบบ
+          {credentialSuccessCtaLabel ?? "คัดลอกรหัสผ่านแล้ว ไปหน้าเข้าสู่ระบบ"}
         </button>
       </div>
     );
@@ -1282,6 +1410,7 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
           <StepIdCardReview
             previewUrl={idFrontPreview}
             identity={identity}
+            loading={!identity && !hydratedOnce}
             busy={busy}
             onConfirm={
               currentIdx > steps.findIndex((s) => s.states.includes("S1_ID_CARD_REVIEW"))
@@ -1415,6 +1544,9 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
             setError={setError}
             setInfo={setInfo}
             setState={setState}
+            apiBasePath={apiBase}
+            onCredentialsCreated={setCreatedVendorCreds}
+            autoRedirectOnApproved={autoRedirectOnApproved}
             onBack={() => setViewingIdx((i) => Math.max(0, i - 1))}
           />
         )}
@@ -1428,7 +1560,12 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
           onClose={() => setDgaAddressMismatch(null)}
           onReupload={async () => {
             setDgaAddressMismatch(null);
-            await backToCapture();
+            // Review-confirm gate: state is REVIEW, navigate back to CAPTURE.
+            // Capture gate: already at CAPTURE, just close — the upload UI is
+            // right behind the modal.
+            if (state === "S1_DGA_REVIEW") {
+              await backToCapture();
+            }
           }}
         />
       )}
@@ -1478,11 +1615,103 @@ export default function KycWizard({ initialSessionId }: KycWizardProps = {}) {
               </p>
             )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={lightboxUrl} 
-              alt={lightboxTitle} 
-              className="max-w-full max-h-[80vh] rounded-lg object-contain shadow-2xl border border-white/10" 
+            <img
+              src={lightboxUrl}
+              alt={lightboxTitle}
+              className="max-w-full max-h-[80vh] rounded-lg object-contain shadow-2xl border border-white/10"
             />
+          </div>
+        </div>
+      )}
+
+      {/* Whole-session countdown — warns in the last 5 minutes before expiry. */}
+      {!busy &&
+        sessionSecondsLeft !== null &&
+        sessionSecondsLeft <= 300 &&
+        !TERMINAL_STATES.has(state) && (
+          <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 animate-in slide-in-from-bottom-2">
+            <div
+              className={`rounded-2xl border bg-white p-4 shadow-xl ${
+                sessionSecondsLeft === 0 ? "border-red-300" : "border-amber-300"
+              }`}
+            >
+              {sessionSecondsLeft > 0 ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-amber-600" />
+                    <p className="flex-1 text-[14px] font-semibold text-mp-ink">เซสชันใกล้หมดอายุ</p>
+                    <span className="font-mono text-[15px] font-bold text-amber-700">
+                      {String(Math.floor(sessionSecondsLeft / 60)).padStart(2, "0")}:
+                      {String(sessionSecondsLeft % 60).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[12px] text-mp-ink-muted">
+                    กดต่อเวลาเพื่อทำงานต่อ
+                    {isAgentFlow ? " หรือดำเนินขั้นตอนถัดไปเพื่อต่อเวลาให้อัตโนมัติ" : ""}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={extendSession}
+                    disabled={extending}
+                    className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-mp-coral px-4 text-[13px] font-semibold text-white transition-colors hover:bg-mp-coral-dark disabled:opacity-50"
+                  >
+                    {extending ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
+                    ต่อเวลาอีก 60 นาที
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <X className="w-5 h-5 text-red-600" />
+                    <p className="flex-1 text-[14px] font-semibold text-mp-ink">เซสชันหมดอายุแล้ว</p>
+                  </div>
+                  <p className="mt-1.5 text-[12px] text-mp-ink-muted">
+                    เซสชันนี้ดำเนินการต่อไม่ได้แล้ว กรุณาเริ่มทำ KYC ใหม่อีกครั้ง
+                  </p>
+                  {isAgentFlow ? (
+                    <a
+                      href={credentialSuccessCtaHref ?? "/agent/dashboard"}
+                      className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-xl bg-mp-coral px-4 text-[13px] font-semibold text-white transition-colors hover:bg-mp-coral-dark"
+                    >
+                      กลับหน้า Dashboard
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-xl bg-mp-coral px-4 text-[13px] font-semibold text-white transition-colors hover:bg-mp-coral-dark"
+                    >
+                      เริ่มใหม่
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+      {/* Toast notifications (currently used for session-expiry / extend feedback). */}
+      {toast && (
+        <div className="fixed top-4 left-1/2 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 animate-in slide-in-from-top-2">
+          <div
+            role="status"
+            className={`flex items-start gap-2 rounded-xl px-4 py-3 text-[13px] font-medium shadow-xl ${
+              toast.tone === "error"
+                ? "bg-red-600 text-white"
+                : toast.tone === "success"
+                  ? "bg-mp-forest text-white"
+                  : "bg-mp-ink text-white"
+            }`}
+          >
+            <span className="flex-1">{toast.msg}</span>
+            <button
+              type="button"
+              onClick={() => setToast(null)}
+              aria-label="ปิด"
+              className="shrink-0 opacity-80 transition-opacity hover:opacity-100"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
@@ -2852,6 +3081,9 @@ function StepSummaryReview({
   setError,
   setInfo,
   setState,
+  apiBasePath,
+  onCredentialsCreated,
+  autoRedirectOnApproved,
   onBack,
 }: {
   sessionId: string;
@@ -2860,16 +3092,24 @@ function StepSummaryReview({
   setError: (err: string | null) => void;
   setInfo: (inf: string | null) => void;
   setState: (st: WizardState) => void;
+  apiBasePath: string;
+  onCredentialsCreated?: (credentials: { phone: string; tempPass: string; refCode?: string }) => void;
+  autoRedirectOnApproved: boolean;
   onBack?: () => void;
 }) {
   const router = useRouter();
+  const apiBase = useMemo(() => apiBasePath.replace(/\/$/, ""), [apiBasePath]);
+  const sessionApiUrl = useCallback(
+    (path = "") => `${apiBase}/${sessionId}${path ? `/${path.replace(/^\//, "")}` : ""}`,
+    [apiBase, sessionId],
+  );
   const [evidence, setEvidence] = useState<EvidenceItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadEvidence() {
       try {
-        const res = await fetch(`/api/wizard/${sessionId}/result`);
+        const res = await fetch(sessionApiUrl("result"));
         if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลเอกสารได้");
         const data = await res.json();
         if (data.ok && data.evidence) {
@@ -2882,13 +3122,13 @@ function StepSummaryReview({
       }
     }
     loadEvidence();
-  }, [sessionId, setError]);
+  }, [sessionApiUrl, setError]);
 
   async function handleFinalize() {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/wizard/${sessionId}/s5/finalize`, {
+      const res = await fetch(sessionApiUrl("s5/finalize"), {
         method: "POST",
       });
       const data = await res.json();
@@ -2903,7 +3143,15 @@ function StepSummaryReview({
       // MANUAL_REVIEW / REJECTED, reflect the terminal state so the
       // terminal-state effect re-renders /apply into the waiting / rejected
       // screen (it preserves the invite code, so it never 404s).
-      if (data.state === "AUTO_APPROVED" && data.phone) {
+      if (data.state === "AUTO_APPROVED" && data.phone && data.tempPassword) {
+        onCredentialsCreated?.({
+          phone: data.phone,
+          tempPass: data.tempPassword,
+          refCode: data.refCode,
+        });
+        return;
+      }
+      if (autoRedirectOnApproved && data.state === "AUTO_APPROVED" && data.phone) {
         router.push(`/signin?phone=${encodeURIComponent(data.phone)}`);
         return;
       }
@@ -3231,16 +3479,38 @@ function StepIdCardRef({
 function StepIdCardReview({
   previewUrl,
   identity,
+  loading = false,
   busy,
   onConfirm,
   onRetake,
 }: {
   previewUrl: string | null;
   identity: IdentityPayload | null;
+  loading?: boolean;
   busy: boolean;
   onConfirm: () => void;
   onRetake: () => void;
 }) {
+  // Snapshot still in flight on mount/reload — show a spinner instead of the
+  // alarming "อ่านไม่ออก / checksum ไม่ผ่าน" placeholders (which flicker in
+  // before the OCR identity arrives).
+  if (loading) {
+    return (
+      <div>
+        <StepHeader
+          step={1}
+          total={7}
+          title="ตรวจสอบข้อมูลบัตร"
+          body="กำลังโหลดข้อมูลที่อ่านได้จากบัตร..."
+        />
+        <div className="max-w-[680px] mx-auto flex items-center justify-center gap-2 rounded-2xl border border-mp-border bg-white p-10 text-mp-ink-muted shadow-sm">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span className="text-sm">กำลังโหลด...</span>
+        </div>
+      </div>
+    );
+  }
+
   const hasIdentity = identity !== null;
   const checksumOk = identity?.checksumValid ?? false;
   const expired = identity?.expired ?? false;
