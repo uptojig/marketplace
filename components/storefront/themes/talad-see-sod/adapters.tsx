@@ -29,6 +29,17 @@ export function TaladSeeSodFooterAdapter(props: ScaffoldFooterProps) {
       store={{
         name: props.store.name,
         slug: props.store.slug,
+        description: props.store.description,
+        tagline: props.store.tagline,
+        contactEmail: props.store.contactEmail,
+        contactPhone: props.store.contactPhone,
+        addressLine1: props.store.addressLine1,
+        addressLine2: props.store.addressLine2,
+        subdistrict: props.store.subdistrict,
+        district: props.store.district,
+        province: props.store.province,
+        postalCode: props.store.postalCode,
+        country: props.store.country,
       }}
       categories={props.categories ?? []}
     />
@@ -36,7 +47,7 @@ export function TaladSeeSodFooterAdapter(props: ScaffoldFooterProps) {
 }
 
 const DEFAULT_TALAD_ANNOUNCEMENT =
-  'ส่งฟรีเมื่อช้อปครบ ฿199.- · มีบริการเก็บเงินปลายทาง (COD) · ร้านแนะนำของแท้ 100%';
+  'ส่งฟรีเมื่อช้อปครบ ฿199.- · ร้านแนะนำของแท้ 100%';
 
 export function TaladSeeSodStripAdapter(props: ScaffoldStripProps) {
   const message = props.message?.trim() || DEFAULT_TALAD_ANNOUNCEMENT;

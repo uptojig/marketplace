@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 
 export default function StoreError({
@@ -12,9 +13,16 @@ export default function StoreError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Optionally log the error to an error reporting service
     console.error(error);
   }, [error]);
+
+  // We're inside /stores/[slug]/* — derive the slug from the URL so
+  // "back to home" lands on THIS store, not the platform root
+  // (basketplace.co). Error boundaries don't receive route params.
+  const pathname = usePathname() ?? "/";
+  const match = pathname.match(/^\/stores\/([^/]+)/);
+  const storeSlug = match?.[1];
+  const homeHref = storeSlug ? `/stores/${storeSlug}` : "/";
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 text-center">
@@ -33,10 +41,10 @@ export default function StoreError({
           ลองใหม่อีกครั้ง
         </button>
         <Link
-          href="/"
+          href={homeHref}
           className="rounded-md bg-gray-100 px-5 py-3 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-200"
         >
-          กลับสู่หน้าหลัก
+          กลับสู่หน้าร้าน
         </Link>
       </div>
     </div>

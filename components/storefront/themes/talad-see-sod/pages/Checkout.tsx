@@ -43,11 +43,29 @@ const PAYMENT_OPTIONS = [{ id: 'ANYPAY', name: 'ชำระผ่าน AnyPay'
 const FREE_SHIPPING_THRESHOLD = 590;
 
 export function TaladSeeSodCheckout({ store }: CheckoutProps) {
-  const lines = useCart((s) => s.linesForStore(store.slug));
-  const subtotal = useCart((s) => s.subtotalForStore(store.slug));
+  // `linesForStore` returns a fresh `.filter()` array on every call,
+  // which fails zustand's `===` selector identity check and triggers
+  // an infinite re-render loop (the checkout route then explodes
+  // with "เกิดข้อผิดพลาดบางอย่าง"). Read the raw `lines` array — that
+  // reference is stable until the store actually mutates — and
+  // derive the per-store slice via useMemo.
+  const allLines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
   const clearStore = useCart((s) => s.clearStore);
+  const allCodes = useCart((s) => s.couponCodesByStore);
+  const lines = useMemo(
+    () => allLines.filter((l) => l.storeSlug === store.slug),
+    [allLines, store.slug],
+  );
+  const subtotal = useMemo(
+    () => lines.reduce((n, l) => n + l.priceTHB * l.qty, 0),
+    [lines],
+  );
+  const couponCodes = useMemo(
+    () => allCodes[store.slug] ?? [],
+    [allCodes, store.slug],
+  );
 
   const [stepIndex, setStepIndex] = useState(0);
   const currentStep = STEPS[stepIndex].id;
@@ -113,6 +131,7 @@ export function TaladSeeSodCheckout({ store }: CheckoutProps) {
           },
           shipping: { method: shipping.id, priceTHB: shippingCost },
           payment: { method: paymentId },
+          couponCodes,
         }),
       });
       if (!res.ok) {

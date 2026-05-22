@@ -42,22 +42,31 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
           </div>
 
           {/* Search bar - Taobao Style */}
-          <div className="w-full md:max-w-xl flex items-center border-2 border-[#dc2626] rounded-none overflow-hidden">
+          <form
+            action={`/stores/${storeSlug}/search`}
+            method="get"
+            className="w-full md:max-w-xl flex items-center border-2 border-[#dc2626] rounded-none overflow-hidden"
+          >
             <input
               type="text"
-              placeholder="ค้นหาไอทีแกดเจ็ต ของแต่งโต๊ะ สายชาร์จ เคส..."
+              name="q"
+              placeholder={`ค้นหาสินค้าใน ${storeName}...`}
               className="flex-1 px-4 py-2 text-sm bg-orange-50/20 text-red-900 focus:outline-none placeholder-red-300"
             />
-            <button className="bg-[#dc2626] hover:bg-[#b91c1c] text-white px-6 py-2 flex items-center justify-center transition-colors">
+            <button
+              type="submit"
+              aria-label="ค้นหา"
+              className="bg-[#dc2626] hover:bg-[#b91c1c] text-white px-6 py-2 flex items-center justify-center transition-colors"
+            >
               <Search size={18} />
             </button>
-          </div>
+          </form>
 
           {/* Cart Icon & Single Vendor Label */}
           <div className="flex items-center gap-6">
             <div className="hidden xl:flex items-center gap-1.5 text-xs text-orange-600 font-[family:var(--font-prompt)] font-semibold bg-orange-50 border border-orange-200 px-3 py-1.5">
               <ShieldAlert size={14} className="text-[#dc2626]" />
-              <span>ดีลตรงโรงงาน · ส่งตรงจากเจ้าของร้านเดียว</span>
+              <span>สินค้าพร้อมส่ง จัดส่งเร็วถึงหน้าบ้าน</span>
             </div>
 
             <a

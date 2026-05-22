@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 const PAGE_SIZE = 12;
 
@@ -51,7 +50,6 @@ export function Homepage({ store, products, categories, landingContent }: Homepa
   const [page, setPage] = useState(1);
 
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   useEffect(() => {
     setPage(1);
@@ -68,7 +66,6 @@ export function Homepage({ store, products, categories, landingContent }: Homepa
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const filteredProducts = selectedCategory === 'ทั้งหมด'

@@ -14,7 +14,6 @@ import React from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Sparkles, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type { CatalogProps, TemplateProductCard } from '@/lib/templates/types';
 
@@ -54,7 +53,6 @@ export default function TaladSeeSodCatalog(props: CatalogProps) {
   } = props;
 
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (
     product: TemplateProductCard,
@@ -70,7 +68,6 @@ export default function TaladSeeSodCatalog(props: CatalogProps) {
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl ?? undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const activeCat = selectedCats[0];
