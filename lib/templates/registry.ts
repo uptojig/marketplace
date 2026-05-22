@@ -416,7 +416,17 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: TaladSeeSodStripAdapter,
     },
     pages: {
-      home: enhanceHomepage(TaladSeeSodHomepageAdapter, '09'),
+      home: enhanceHomepage(TaladSeeSodHomepageAdapter, '09', {
+        background: '#fff7ed',
+        muted: '#fff7ed',
+        card: '#ffffff',
+        cardForeground: '#7f1d1d',
+        border: '#fdba74',
+        foreground: '#7f1d1d',
+        mutedForeground: '#9a3412',
+        primary: '#dc2626',
+        primaryForeground: '#ffffff',
+      }),
           checkout: makeCheckoutAdapter('04'),
     },
   },

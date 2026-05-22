@@ -1,8 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 import { useCartConfirmation } from '@/lib/store/cartConfirm';
+
+const PAGE_SIZE = 12;
 
 interface Product {
   id: string;
@@ -26,9 +28,14 @@ export interface HomepageProps {
 
 export function Homepage({ store, products, categories }: HomepageProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('ทั้งหมด');
-  
+  const [page, setPage] = useState(1);
+
   const add = useCart((s) => s.add);
   const showConfirm = useCartConfirmation((s) => s.show);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedCategory]);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -47,6 +54,15 @@ export function Homepage({ store, products, categories }: HomepageProps) {
   const filteredProducts = selectedCategory === 'ทั้งหมด'
     ? products
     : products.filter((p) => p.categoryName === selectedCategory);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedProducts = filteredProducts.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  const rangeStart = filteredProducts.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(currentPage * PAGE_SIZE, filteredProducts.length);
 
   // Mock icons for categories
   const categoryIcons: Record<string, string> = {
@@ -243,7 +259,9 @@ export function Homepage({ store, products, categories }: HomepageProps) {
                 รายการสินค้าในแคมเปญ
               </span>
               <span className="text-xs font-[family:var(--font-prompt)] font-bold text-orange-600 bg-orange-50 px-3 py-1">
-                มี {filteredProducts.length} รายการ
+                {filteredProducts.length === 0
+                  ? 'ไม่มีรายการ'
+                  : `แสดง ${rangeStart}-${rangeEnd} จาก ${filteredProducts.length} รายการ`}
               </span>
             </div>
 
@@ -254,7 +272,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredProducts.map((p) => {
+                {pagedProducts.map((p) => {
                   const hasDiscount = p.compareAtPriceTHB && p.compareAtPriceTHB > p.priceTHB;
                   const discountPercent = hasDiscount
                     ? Math.round(((p.compareAtPriceTHB! - p.priceTHB) / p.compareAtPriceTHB!) * 100)
@@ -324,6 +342,45 @@ export function Homepage({ store, products, categories }: HomepageProps) {
                   );
                 })}
               </div>
+            )}
+
+            {totalPages > 1 && (
+              <nav
+                aria-label="แบ่งหน้ารายการสินค้า"
+                className="flex flex-wrap items-center justify-center gap-2 pt-6"
+              >
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-white border-2 border-[#dc2626] text-[#dc2626] font-[family:var(--font-kanit)] font-black text-xs uppercase shadow-sm hover:bg-[#fff7ed] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  ← ก่อนหน้า
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setPage(n)}
+                    aria-current={n === currentPage ? 'page' : undefined}
+                    className={`min-w-[40px] px-3 py-2 font-[family:var(--font-kanit)] font-black text-xs border-2 shadow-sm transition-colors ${
+                      n === currentPage
+                        ? 'bg-[#dc2626] text-white border-[#dc2626]'
+                        : 'bg-white text-[#7f1d1d] border-[#fdba74] hover:bg-[#fff7ed]'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-white border-2 border-[#dc2626] text-[#dc2626] font-[family:var(--font-kanit)] font-black text-xs uppercase shadow-sm hover:bg-[#fff7ed] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  ถัดไป →
+                </button>
+              </nav>
             )}
           </div>
 
