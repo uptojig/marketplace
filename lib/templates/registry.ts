@@ -250,6 +250,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Handmade artisan',
     description: 'Maker portrait + small batch craft',
     group: 'specialty',
+    behavior: { bottomNav: 'visible' },
         pages: {
       // STOPGAP: `HandmadeHomepageAdapter` was referenced here by the
       // template-pages commit but never created/exported (no

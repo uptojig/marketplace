@@ -6,6 +6,7 @@ export interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
     description?: string | null;
     tagline?: string | null;
     contactEmail?: string | null;
@@ -76,9 +77,18 @@ export function Footer({ store, categories, availableSupportPages = [] }: Footer
 
           {/* Brand & Factory Stamp */}
           <div className="space-y-4 lg:col-span-2">
-            <span className="font-[family:var(--font-kanit)] font-black text-xl text-[#dc2626] uppercase">
-              {store.name}
-            </span>
+            {store.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={store.logoUrl}
+                alt={store.name}
+                className="h-12 w-auto object-contain"
+              />
+            ) : (
+              <span className="font-[family:var(--font-kanit)] font-black text-xl text-[#dc2626] uppercase">
+                {store.name}
+              </span>
+            )}
             <p className="text-xs leading-relaxed text-[#9a3412]">
               {blurb}
             </p>

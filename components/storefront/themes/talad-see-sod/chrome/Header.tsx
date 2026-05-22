@@ -27,13 +27,15 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
               {storeLogoUrl ? (
                 <img src={storeLogoUrl} alt={storeName} className="h-10 w-auto object-contain" />
               ) : (
-                <div className="bg-[#dc2626] text-white font-[family:var(--font-kanit)] font-black text-xl px-3 py-1 rounded shadow-md border-2 border-yellow-300 transform -rotate-2">
-                  ดี!
-                </div>
+                <>
+                  <div className="bg-[#dc2626] text-white font-[family:var(--font-kanit)] font-black text-xl px-3 py-1 rounded shadow-md border-2 border-yellow-300 transform -rotate-2">
+                    ดี!
+                  </div>
+                  <span className="font-[family:var(--font-kanit)] font-black text-2xl tracking-tight text-[#dc2626] uppercase">
+                    {storeName}
+                  </span>
+                </>
               )}
-              <span className="font-[family:var(--font-kanit)] font-black text-2xl tracking-tight text-[#dc2626] uppercase">
-                {storeName}
-              </span>
             </a>
             
             <div className="hidden lg:block bg-yellow-300 text-red-700 text-[10px] font-[family:var(--font-kanit)] font-extrabold uppercase border border-red-700 px-1.5 py-0.5 rounded shadow-sm rotate-3">
