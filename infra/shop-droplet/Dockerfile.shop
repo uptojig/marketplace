@@ -42,10 +42,13 @@ COPY --from=deps-full /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-# Shared .next/cache mount (same target as the control-plane Dockerfile) lets
-# this build reuse the compiler cache the control-plane build just primed.
+# Per-app .next/cache mount. The id MUST differ from the control-plane
+# Dockerfile: sharing one cache (BuildKit defaults the id to the target path)
+# cross-poisoned webpack module ids between the two different Next builds and
+# broke the build with "TypeError: tB is not a function". A distinct id keeps
+# this app's compiler cache isolated.
 RUN npx prisma generate
-RUN --mount=type=cache,target=/app/.next/cache \
+RUN --mount=type=cache,id=next-cache-shop-app,target=/app/.next/cache \
     NEXT_PRIVATE_MAX_WORKERS=2 npm run build
 
 # ── Stage 3: Runner ──────────────────────────────────────

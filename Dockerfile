@@ -23,9 +23,13 @@ COPY . .
 
 # Generate Prisma client & build Next.js (standalone).
 # The .next/cache mount persists the Next.js compiler cache across deploys so
-# only changed modules recompile (cache is shared with the shop-app build).
+# only changed modules recompile. The cache id MUST be unique per app: the
+# control-plane and shop-app are different Next builds, and sharing one
+# .next/cache (BuildKit defaults the id to the target path) cross-poisoned
+# webpack module/chunk ids between them, surfacing as "TypeError: tB is not a
+# function" at build time. Distinct ids keep each app's cache isolated.
 RUN npx prisma generate
-RUN --mount=type=cache,target=/app/.next/cache \
+RUN --mount=type=cache,id=next-cache-control-plane,target=/app/.next/cache \
     NEXT_PRIVATE_MAX_WORKERS=2 npm run build
 
 # ── Stage 3: Runner ──────────────────────────────────────
