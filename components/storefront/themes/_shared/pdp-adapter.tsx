@@ -1,190 +1,491 @@
+'use client';
+
 /**
- * Shared PDP adapter — bridges ProductDetailProps from the storefront
- * to shadcn-studio product-overview + product-reviews blocks.
+ * Shared PDP adapter — Thai/THB bespoke product detail page.
  *
- * Each template picks an overview variant (01,02,04-09) and a reviews
- * variant (02-05). This adapter maps the storefront product data to
- * the shapes each block expects.
+ * History: this used to wrap shadcn-studio's `product-overview-0X` +
+ * `product-reviews-0X` blocks. Those blocks expect a different
+ * data shape (image1/image2/image3, inStock, stock, offers,
+ * defaultColorOption, ...) than `ProductDetailProps` exposes, so
+ * the block hit `.toFixed` / `.map` on `undefined` and the entire
+ * `/products/<id>` route crashed with "เกิดข้อผิดพลาดบางอย่าง" on
+ * every theme using the adapter (~30 themes). PR #124 patched
+ * talad-see-sod with a bespoke component, but the other themes
+ * stayed broken.
+ *
+ * Rewrite the adapter to render a self-contained Thai/THB PDP
+ * straight from `ProductDetailProps`. Themes that want a fully
+ * bespoke layout (talad-see-sod, brutalist-thai) still register
+ * their own component under `pages.pdp` and are untouched. Other
+ * themes get a working PDP with their palette tinting the layout
+ * via CSS variables.
+ *
+ * `overview` / `review` params are kept for back-compat with the
+ * existing imports (`makePdpAdapter('05', '04', PALETTE)`) but are
+ * informational only — same component renders for every variant.
  */
 
-import React, { lazy, Suspense } from 'react';
+import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
+import {
+  Truck,
+  RotateCcw,
+  ShieldCheck,
+  Wallet,
+  ChevronRight,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Zap,
+} from 'lucide-react';
+import { useCart } from '@/lib/store/cart';
+import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { paletteToCssVars, type BlockPalette } from './palette';
 
 export type PdpPalette = BlockPalette;
-
-// Lazy-load overview variants
-const overviewVariants = {
-  '01': lazy(() => import('@/components/shadcn-studio/blocks/product-overview-01/product-overview-01')),
-  '02': lazy(() => import('@/components/shadcn-studio/blocks/product-overview-02/product-overview-02')),
-  '04': lazy(() => import('@/components/shadcn-studio/blocks/product-overview-04/product-overview-04')),
-  '05': lazy(() => import('@/components/shadcn-studio/blocks/product-overview-05/product-overview-05')),
-  '06': lazy(() => import('@/components/shadcn-studio/blocks/product-overview-06/product-overview-06')),
-  '07': lazy(() => import('@/components/shadcn-studio/blocks/product-overview-07/product-overview-07')),
-  '08': lazy(() => import('@/components/shadcn-studio/blocks/product-overview-08/product-overview-08')),
-  '09': lazy(() => import('@/components/shadcn-studio/blocks/product-overview-09/product-overview-09')),
-} as const;
-
-// Lazy-load reviews variants
-const reviewVariants = {
-  '02': lazy(() => import('@/components/shadcn-studio/blocks/product-reviews-02/product-reviews-02')),
-  '03': lazy(() => import('@/components/shadcn-studio/blocks/product-reviews-03/product-reviews-03')),
-  '04': lazy(() => import('@/components/shadcn-studio/blocks/product-reviews-04/product-reviews-04')),
-  '05': lazy(() => import('@/components/shadcn-studio/blocks/product-reviews-05/product-reviews-05')),
-} as const;
-
-export type OverviewVariant = keyof typeof overviewVariants;
-export type ReviewVariant = keyof typeof reviewVariants;
-
-/** Convert ProductDetailProps → product-overview productItems */
-function toProductItems(props: ProductDetailProps) {
-  const p = props.product;
-  const images = (p.images.length > 0 ? p.images : [p.imageUrl]).filter(Boolean).map((src, i) => ({
-    src: src ?? 'https://placehold.co/600x600/f4f4f5/a1a1aa?text=No+Image',
-    alt: `${p.title} ${i + 1}`,
-  }));
-
-  const discount = p.originalPriceTHB && p.originalPriceTHB > p.priceTHB
-    ? Math.round((1 - p.priceTHB / p.originalPriceTHB) * 100)
-    : 0;
-
-  return [{
-    name: p.title,
-    description: p.description ?? '',
-    totalReview: 24,
-    rating: 4.5,
-    price: p.priceTHB,
-    hasDiscount: discount > 0,
-    discountPercentage: discount,
-    images,
-    breadcrumbData: [
-      { label: 'หน้าแรก', href: `/stores/${props.store.slug}` },
-      { label: 'สินค้า', href: `/stores/${props.store.slug}/category` },
-      { label: p.title },
-    ],
-    defaultSize: p.variants[0]?.sizeLabel ?? undefined,
-    defaultColorOption: p.variants[0]?.colorLabel ?? undefined,
-  }];
-}
-
-/** Build sizesChart from product variants */
-function toSizesChart(props: ProductDetailProps) {
-  const sizes = new Set<string>();
-  props.product.variants.forEach(v => {
-    if (v.sizeLabel) sizes.add(v.sizeLabel);
-  });
-  if (sizes.size === 0) return [{ value: 'one-size', label: 'Free Size' }];
-  return Array.from(sizes).map(s => ({ value: s, label: s }));
-}
-
-/** Build colorsChart from product variants */
-function toColorsChart(props: ProductDetailProps) {
-  const colors = new Map<string, string>();
-  props.product.variants.forEach(v => {
-    if (v.colorLabel && !colors.has(v.colorLabel)) {
-      // Map common Thai/English color names to hex
-      const hex = colorToHex(v.colorLabel);
-      colors.set(v.colorLabel, hex);
-    }
-  });
-  if (colors.size === 0) return [{ value: 'default', colorOption: '#000000' }];
-  return Array.from(colors.entries()).map(([label, hex]) => ({
-    value: label,
-    colorOption: hex,
-  }));
-}
-
-function colorToHex(name: string): string {
-  const map: Record<string, string> = {
-    'ดำ': '#000000', 'black': '#000000',
-    'ขาว': '#FFFFFF', 'white': '#FFFFFF',
-    'แดง': '#EF4444', 'red': '#EF4444',
-    'น้ำเงิน': '#3B82F6', 'blue': '#3B82F6',
-    'เขียว': '#22C55E', 'green': '#22C55E',
-    'เหลือง': '#EAB308', 'yellow': '#EAB308',
-    'ชมพู': '#EC4899', 'pink': '#EC4899',
-    'ม่วง': '#8B5CF6', 'purple': '#8B5CF6',
-    'ส้ม': '#F97316', 'orange': '#F97316',
-    'เทา': '#6B7280', 'gray': '#6B7280', 'grey': '#6B7280',
-    'น้ำตาล': '#92400E', 'brown': '#92400E',
-    'ครีม': '#FFFDD0', 'cream': '#FFFDD0',
-    'กรม': '#1E3A5F', 'navy': '#1E3A5F',
-  };
-  return map[name.toLowerCase()] ?? '#374151';
-}
-
-/** Mock reviews for the reviews block */
-const MOCK_REVIEWS = [
-  { id: 1, name: 'คุณสมชาย', description: 'สินค้าดีมาก คุณภาพเยี่ยม จัดส่งเร็ว', rating: 5, image: 'https://placehold.co/40x40/6366f1/ffffff?text=ส', date: '2 วันที่แล้ว' },
-  { id: 2, name: 'คุณมะลิ', description: 'ใช้ได้ดี คุ้มราคา แนะนำเลย', rating: 4, image: 'https://placehold.co/40x40/ec4899/ffffff?text=ม', date: '5 วันที่แล้ว' },
-  { id: 3, name: 'คุณวิทย์', description: 'แพ็คเกจสวย ของแท้ ส่งไว', rating: 5, image: 'https://placehold.co/40x40/f97316/ffffff?text=ว', date: '1 สัปดาห์ที่แล้ว' },
-  { id: 4, name: 'คุณนิด', description: 'สินค้าตรงปก ราคาถูกกว่าห้าง', rating: 4, image: 'https://placehold.co/40x40/22c55e/ffffff?text=น', date: '2 สัปดาห์ที่แล้ว' },
-];
-
-/** Features for variant 06 */
-const MOCK_FEATURES = [
-  { icon: '📦', title: 'จัดส่งฟรี', description: 'สั่งซื้อครบ ฿500 จัดส่งฟรีทั่วไทย' },
-  { icon: '🔄', title: 'เปลี่ยนคืนได้', description: 'ภายใน 30 วัน ไม่มีเงื่อนไข' },
-  { icon: '✅', title: 'รับประกัน', description: 'รับประกันคุณภาพ 1 ปีเต็ม' },
-];
-
-/** Benefits for variant 04 */
-const MOCK_BENEFITS = [
-  { title: 'วัสดุพรีเมียม', description: 'คัดสรรวัสดุคุณภาพสูง' },
-  { title: 'ออกแบบเฉพาะ', description: 'ดีไซน์โดยนักออกแบบมืออาชีพ' },
-  { title: 'จัดส่งด่วน', description: 'ส่งถึงมือภายใน 1-3 วัน' },
-];
-
-/** Payment methods for variant 08 */
-const MOCK_PAYMENTS = [
-  { name: 'โอนธนาคาร', icon: '🏦' },
-  { name: 'พร้อมเพย์', icon: '📱' },
-  { name: 'บัตรเครดิต', icon: '💳' },
-];
+export type OverviewVariant =
+  | '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09';
+export type ReviewVariant = '02' | '03' | '04' | '05';
 
 export function makePdpAdapter(
-  overview: OverviewVariant,
-  review: ReviewVariant,
+  _overview: OverviewVariant,
+  _review: ReviewVariant,
   palette?: PdpPalette,
 ) {
-  const style = palette ? paletteToCssVars(palette) : undefined;
+  const style: React.CSSProperties = {
+    ...(palette ? paletteToCssVars(palette) : {}),
+  };
 
-  return function PdpAdapter(props: ProductDetailProps) {
-    const OverviewBlock = overviewVariants[overview];
-    const ReviewBlock = reviewVariants[review];
+  return function PdpAdapter({ store, product, related }: ProductDetailProps) {
+    const add = useCart((s) => s.add);
 
-    const productItems = toProductItems(props);
-    const sizesChart = toSizesChart(props);
-    const colorsChart = toColorsChart(props);
+    const gallery = useMemo(() => {
+      const all = [product.imageUrl, ...(product.images ?? [])].filter(
+        (s): s is string => typeof s === 'string' && s.length > 0,
+      );
+      return Array.from(new Set(all));
+    }, [product.imageUrl, product.images]);
 
-    // Build variant-specific extra props
-    const extraProps: Record<string, unknown> = {};
-    if (overview === '04') extraProps.benefits = MOCK_BENEFITS;
-    if (overview === '06') extraProps.features = MOCK_FEATURES;
-    if (overview === '08') extraProps.paymentMethods = MOCK_PAYMENTS;
-    if (['01', '02', '05', '07', '09'].includes(overview)) {
-      extraProps.sizesChart = sizesChart;
-      extraProps.colorsChart = colorsChart;
-    }
-    if (overview === '08') {
-      extraProps.colorsChart = colorsChart;
-    }
-
-    const content = (
-      <Suspense
-        fallback={
-          <div className="flex h-96 items-center justify-center text-zinc-400">
-            กำลังโหลด...
-          </div>
-        }
-      >
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        <OverviewBlock productItems={productItems as any} {...extraProps as any} />
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        <ReviewBlock reviewItems={MOCK_REVIEWS as any} />
-      </Suspense>
+    const [activeImage, setActiveImage] = useState<string | null>(
+      gallery[0] ?? null,
     );
 
-    return style ? <div style={style}>{content}</div> : content;
+    const variantLabels = useMemo(() => {
+      return product.variants
+        .map((v) => {
+          const parts = [v.colorLabel, v.sizeLabel, v.materialLabel].filter(
+            (p): p is string => typeof p === 'string' && p.length > 0,
+          );
+          return {
+            id: v.id,
+            label: parts.join(' / ') || 'มาตรฐาน',
+            priceTHB: v.priceTHB,
+          };
+        })
+        .filter(
+          (v) => v.label !== 'มาตรฐาน' || product.variants.length > 1,
+        );
+    }, [product.variants]);
+
+    const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
+      variantLabels[0]?.id ?? null,
+    );
+    const [qty, setQty] = useState(1);
+
+    const selectedVariant =
+      product.variants.find((v) => v.id === selectedVariantId) ?? null;
+    const effectivePrice = selectedVariant?.priceTHB ?? product.priceTHB;
+    const originalPrice = product.originalPriceTHB ?? null;
+    const hasDiscount = originalPrice !== null && originalPrice > effectivePrice;
+    const discountPct =
+      hasDiscount && originalPrice
+        ? Math.round(((originalPrice - effectivePrice) / originalPrice) * 100)
+        : 0;
+
+    const stockLeft = product.stockLeft ?? null;
+    const inStock = stockLeft === null || stockLeft > 0;
+
+    const addToCart = () => {
+      if (!inStock) return;
+      add(
+        {
+          productId: product.id,
+          title: product.title,
+          priceTHB: effectivePrice,
+          imageUrl: gallery[0] ?? undefined,
+          storeSlug: store.slug,
+          storeName: store.name,
+        },
+        qty,
+      );
+    };
+
+    return (
+      <main
+        style={style}
+        className="bg-[var(--background,#fafafa)] text-[var(--foreground,#0a0a0a)] min-h-screen py-6 sm:py-10"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-xs font-bold opacity-80">
+            <Link
+              href={`/stores/${store.slug}`}
+              className="hover:opacity-100 transition"
+            >
+              หน้าร้าน
+            </Link>
+            <ChevronRight size={12} className="opacity-50" />
+            {product.categoryName && (
+              <>
+                <Link
+                  href={`/stores/${store.slug}/category?cat=${encodeURIComponent(product.categoryName)}`}
+                  className="hover:opacity-100 transition"
+                >
+                  {product.categoryName}
+                </Link>
+                <ChevronRight size={12} className="opacity-50" />
+              </>
+            )}
+            <span
+              className="line-clamp-1"
+              style={{ color: 'var(--primary, currentColor)' }}
+            >
+              {product.title}
+            </span>
+          </nav>
+
+          {/* Main: gallery + buy panel */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Gallery */}
+            <div className="lg:col-span-7 space-y-3">
+              <div
+                className="bg-[var(--card,#fff)] border aspect-square overflow-hidden"
+                style={{ borderColor: 'var(--border, #e5e5e5)' }}
+              >
+                {activeImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={activeImage}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center opacity-30 text-sm">
+                    NO IMAGE
+                  </div>
+                )}
+              </div>
+              {gallery.length > 1 && (
+                <ul className="grid grid-cols-5 gap-2">
+                  {gallery.slice(0, 5).map((src) => (
+                    <li key={src}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveImage(src)}
+                        className="block w-full aspect-square border overflow-hidden hover:opacity-80 transition"
+                        style={{
+                          borderColor:
+                            src === activeImage
+                              ? 'var(--primary, currentColor)'
+                              : 'var(--border, #e5e5e5)',
+                          borderWidth: src === activeImage ? 2 : 1,
+                        }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={src}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Buy panel */}
+            <div className="lg:col-span-5 space-y-5">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest opacity-70">
+                  {product.categoryName ?? store.name}
+                </p>
+                <h1 className="mt-1 text-2xl sm:text-3xl font-bold leading-tight">
+                  {product.title}
+                </h1>
+              </div>
+
+              {/* Price */}
+              <div
+                className="bg-[var(--card,#fff)] border p-4 space-y-2"
+                style={{ borderColor: 'var(--border, #e5e5e5)' }}
+              >
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <span
+                    className="text-3xl font-bold"
+                    style={{ color: 'var(--primary, currentColor)' }}
+                  >
+                    {formatTHB(effectivePrice)}
+                  </span>
+                  {hasDiscount && originalPrice && (
+                    <>
+                      <span className="text-base line-through opacity-50">
+                        {formatTHB(originalPrice)}
+                      </span>
+                      <span
+                        className="text-xs font-bold px-2 py-0.5"
+                        style={{
+                          background: 'var(--primary, #b91c1c)',
+                          color: 'var(--primary-foreground, #fff)',
+                        }}
+                      >
+                        -{discountPct}%
+                      </span>
+                    </>
+                  )}
+                </div>
+                {stockLeft !== null && (
+                  <p
+                    className="text-xs font-bold"
+                    style={{
+                      color: inStock
+                        ? 'var(--primary, currentColor)'
+                        : '#9a3412',
+                    }}
+                  >
+                    {inStock
+                      ? stockLeft <= 5
+                        ? `เหลือเพียง ${stockLeft} ชิ้น`
+                        : 'พร้อมจัดส่ง'
+                      : 'สินค้าหมด'}
+                  </p>
+                )}
+              </div>
+
+              {/* Variants */}
+              {variantLabels.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-bold uppercase tracking-widest opacity-70">
+                    ตัวเลือก
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {variantLabels.map((v) => {
+                      const isActive = v.id === selectedVariantId;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setSelectedVariantId(v.id)}
+                          className="px-3 py-1.5 text-xs font-bold border transition"
+                          style={{
+                            borderColor: isActive
+                              ? 'var(--primary, currentColor)'
+                              : 'var(--border, #e5e5e5)',
+                            background: isActive
+                              ? 'var(--primary, #111)'
+                              : 'var(--card, #fff)',
+                            color: isActive
+                              ? 'var(--primary-foreground, #fff)'
+                              : 'var(--foreground, currentColor)',
+                          }}
+                        >
+                          {v.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Qty */}
+              <div className="flex items-center gap-3">
+                <p className="text-xs font-bold uppercase tracking-widest opacity-70">
+                  จำนวน
+                </p>
+                <div
+                  className="inline-flex items-stretch border"
+                  style={{ borderColor: 'var(--border, #e5e5e5)' }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setQty((n) => Math.max(1, n - 1))}
+                    disabled={qty <= 1}
+                    aria-label="ลด"
+                    className="px-3 disabled:opacity-30 hover:opacity-70"
+                  >
+                    <Minus size={14} strokeWidth={2.5} />
+                  </button>
+                  <div
+                    className="px-4 py-1.5 font-bold min-w-[3rem] text-center border-x"
+                    style={{ borderColor: 'var(--border, #e5e5e5)' }}
+                  >
+                    {qty}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setQty((n) => n + 1)}
+                    aria-label="เพิ่ม"
+                    className="px-3 hover:opacity-70"
+                  >
+                    <Plus size={14} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={addToCart}
+                  disabled={!inStock}
+                  className="inline-flex items-center justify-center gap-2 border-2 font-bold py-3 uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition"
+                  style={{
+                    borderColor: 'var(--primary, currentColor)',
+                    background: 'var(--card, #fff)',
+                    color: 'var(--primary, currentColor)',
+                  }}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  ใส่ตะกร้า
+                </button>
+                <Link
+                  href={inStock ? `/stores/${store.slug}/cart` : '#'}
+                  onClick={(e) => {
+                    if (!inStock) {
+                      e.preventDefault();
+                      return;
+                    }
+                    addToCart();
+                  }}
+                  className={`inline-flex items-center justify-center gap-2 font-bold py-3 uppercase tracking-wider hover:opacity-90 transition ${
+                    !inStock ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                  }`}
+                  style={{
+                    background: 'var(--primary, #111)',
+                    color: 'var(--primary-foreground, #fff)',
+                  }}
+                >
+                  <Zap className="h-4 w-4" />
+                  ซื้อเลย
+                </Link>
+              </div>
+
+              {/* Trust */}
+              <div
+                className="bg-[var(--card,#fff)] border p-4 grid grid-cols-2 gap-3 text-xs"
+                style={{ borderColor: 'var(--border, #e5e5e5)' }}
+              >
+                <Badge
+                  icon={<Truck className="h-4 w-4" />}
+                  title="ส่งฟรี ฿990+"
+                  body="ทั่วประเทศ 1-3 วันทำการ"
+                />
+                <Badge
+                  icon={<RotateCcw className="h-4 w-4" />}
+                  title="คืนภายใน 7 วัน"
+                  body="ไม่มีเงื่อนไข"
+                />
+                <Badge
+                  icon={<ShieldCheck className="h-4 w-4" />}
+                  title="ของแท้ 100%"
+                  body="คัดสรรโดยร้านค้า"
+                />
+                <Badge
+                  icon={<Wallet className="h-4 w-4" />}
+                  title="ชำระปลอดภัย"
+                  body="SSL · บัตร · ผ่อน 0%"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Description */}
+          {product.description && (
+            <section
+              className="bg-[var(--card,#fff)] border p-5 sm:p-6 space-y-3"
+              style={{ borderColor: 'var(--border, #e5e5e5)' }}
+            >
+              <h2
+                className="text-lg font-bold border-b pb-2"
+                style={{ borderColor: 'var(--border, #e5e5e5)' }}
+              >
+                รายละเอียดสินค้า
+              </h2>
+              <p className="text-sm leading-relaxed whitespace-pre-line opacity-90">
+                {product.description}
+              </p>
+            </section>
+          )}
+
+          {/* Related */}
+          {related.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-lg font-bold">สินค้าใกล้เคียง</h2>
+              <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                {related.slice(0, 5).map((r) => (
+                  <li
+                    key={r.id}
+                    className="bg-[var(--card,#fff)] border overflow-hidden"
+                    style={{ borderColor: 'var(--border, #e5e5e5)' }}
+                  >
+                    <Link
+                      href={`/stores/${store.slug}/products/${r.id}`}
+                      className="block"
+                    >
+                      <div className="aspect-square overflow-hidden">
+                        {r.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={r.imageUrl}
+                            alt={r.title}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center opacity-30 text-xs">
+                            NO IMAGE
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2.5 space-y-1">
+                        <p className="text-xs font-bold line-clamp-2">
+                          {r.title}
+                        </p>
+                        <p
+                          className="text-sm font-bold"
+                          style={{ color: 'var(--primary, currentColor)' }}
+                        >
+                          {formatTHB(r.priceTHB)}
+                        </p>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
+      </main>
+    );
   };
+}
+
+function Badge({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <span style={{ color: 'var(--primary, currentColor)' }}>{icon}</span>
+      <div className="leading-tight">
+        <p className="font-bold">{title}</p>
+        <p className="text-[10px] opacity-70">{body}</p>
+      </div>
+    </div>
+  );
 }

@@ -19,13 +19,38 @@ export interface FooterProps {
     country?: string | null;
   };
   categories: string[];
+  /** Page slugs with real content in this store's landingBlocks —
+   *  links to slugs not in this list are hidden so buyers don't
+   *  land on the empty "ยังไม่มีเนื้อหา" fallback page. */
+  availableSupportPages?: string[];
 }
+
+/** Links rendered in the บริการลูกค้า column. Each entry is shown
+ *  only when its `pageSlug` is in `availableSupportPages`, OR when
+ *  `pageSlug` is null (always-on links like /help/* which use static
+ *  HELP_PAGES content). */
+const SUPPORT_LINKS: Array<{
+  href: (slug: string) => string;
+  label: string;
+  pageSlug: string | null;
+}> = [
+  { href: (s) => `/stores/${s}/help/order-guide`, label: 'วิธีสั่งซื้อ', pageSlug: null },
+  { href: (s) => `/stores/${s}/shipping`, label: 'การจัดส่ง', pageSlug: 'shipping' },
+  { href: (s) => `/stores/${s}/returns`, label: 'เปลี่ยน / คืน', pageSlug: 'returns' },
+  { href: (s) => `/stores/${s}/faq`, label: 'FAQ', pageSlug: 'faq' },
+  { href: (s) => `/stores/${s}/terms`, label: 'ข้อกำหนด', pageSlug: 'terms' },
+  { href: (s) => `/stores/${s}/privacy`, label: 'ความเป็นส่วนตัว', pageSlug: 'privacy' },
+  { href: (s) => `/stores/${s}/about`, label: 'เกี่ยวกับเรา', pageSlug: 'about' },
+];
 
 function joinAddress(parts: Array<string | null | undefined>): string {
   return parts.map((p) => p?.trim()).filter(Boolean).join(' ');
 }
 
-export function Footer({ store, categories }: FooterProps) {
+export function Footer({ store, categories, availableSupportPages = [] }: FooterProps) {
+  const supportLinks = SUPPORT_LINKS.filter(
+    (l) => l.pageSlug === null || availableSupportPages.includes(l.pageSlug),
+  );
   const currentYear = new Date().getFullYear();
   const line1 = joinAddress([store.addressLine1, store.addressLine2]);
   const line2 = joinAddress([store.subdistrict, store.district]);
@@ -39,7 +64,15 @@ export function Footer({ store, categories }: FooterProps) {
   return (
     <footer className="bg-[#fff7ed] text-[#7f1d1d] border-t border-[#fdba74] py-12 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`grid grid-cols-1 md:grid-cols-2 ${hasContact ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-8 mb-12`}>
+        <div
+          className={`grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 ${
+            supportLinks.length > 0 && hasContact
+              ? 'lg:grid-cols-6'
+              : supportLinks.length > 0 || hasContact
+                ? 'lg:grid-cols-5'
+                : 'lg:grid-cols-4'
+          }`}
+        >
 
           {/* Brand & Factory Stamp */}
           <div className="space-y-4 lg:col-span-2">
@@ -81,21 +114,28 @@ export function Footer({ store, categories }: FooterProps) {
             </ul>
           </div>
 
-          {/* Customer service */}
-          <div>
-            <h4 className="text-xs uppercase tracking-widest text-[#dc2626] font-extrabold mb-4 font-[family:var(--font-kanit)]">
-              บริการลูกค้า
-            </h4>
-            <ul className="space-y-2 text-xs font-[family:var(--font-prompt)] font-semibold">
-              <li><a href={`/stores/${store.slug}/help/order-guide`} className="hover:text-[#dc2626] transition-colors">วิธีสั่งซื้อ</a></li>
-              <li><a href={`/stores/${store.slug}/shipping`} className="hover:text-[#dc2626] transition-colors">การจัดส่ง</a></li>
-              <li><a href={`/stores/${store.slug}/returns`} className="hover:text-[#dc2626] transition-colors">เปลี่ยน / คืน</a></li>
-              <li><a href={`/stores/${store.slug}/faq`} className="hover:text-[#dc2626] transition-colors">FAQ</a></li>
-              <li><a href={`/stores/${store.slug}/terms`} className="hover:text-[#dc2626] transition-colors">ข้อกำหนด</a></li>
-              <li><a href={`/stores/${store.slug}/privacy`} className="hover:text-[#dc2626] transition-colors">ความเป็นส่วนตัว</a></li>
-              <li><a href={`/stores/${store.slug}/about`} className="hover:text-[#dc2626] transition-colors">เกี่ยวกับเรา</a></li>
-            </ul>
-          </div>
+          {/* Customer service — only links to pages with real content
+              for this store. Hidden entirely if every link target is
+              an empty-stub page. */}
+          {supportLinks.length > 0 && (
+            <div>
+              <h4 className="text-xs uppercase tracking-widest text-[#dc2626] font-extrabold mb-4 font-[family:var(--font-kanit)]">
+                บริการลูกค้า
+              </h4>
+              <ul className="space-y-2 text-xs font-[family:var(--font-prompt)] font-semibold">
+                {supportLinks.map((l) => (
+                  <li key={l.label}>
+                    <a
+                      href={l.href(store.slug)}
+                      className="hover:text-[#dc2626] transition-colors"
+                    >
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Contact + Address (operator-edited; hidden when empty) */}
           {hasContact && (
