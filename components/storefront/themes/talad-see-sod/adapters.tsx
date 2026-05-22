@@ -29,6 +29,7 @@ export function TaladSeeSodFooterAdapter(props: ScaffoldFooterProps) {
       store={{
         name: props.store.name,
         slug: props.store.slug,
+        logoUrl: props.store.logoUrl,
         description: props.store.description,
         tagline: props.store.tagline,
         contactEmail: props.store.contactEmail,
