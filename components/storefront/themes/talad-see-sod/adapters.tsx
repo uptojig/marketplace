@@ -60,6 +60,7 @@ export function TaladSeeSodHomepageAdapter(props: ScaffoldHomepageProps) {
         }}
         products={products}
         categories={props.categories}
+        landingContent={props.landingContent ?? null}
       />
       <TaladSeeSodTrending
         store={{ slug: props.store.slug, name: props.store.name }}

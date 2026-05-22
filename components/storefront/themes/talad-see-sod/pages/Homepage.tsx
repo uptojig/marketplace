@@ -15,6 +15,15 @@ interface Product {
   categoryName: string | null;
 }
 
+interface LandingContent {
+  heroHeadline?: string | null;
+  heroSubheadline?: string | null;
+  heroCtaLabel?: string | null;
+  heroCtaUrl?: string | null;
+  heroImageUrl?: string | null;
+  heroAlignment?: string | null;
+}
+
 export interface HomepageProps {
   store: {
     id: string;
@@ -24,9 +33,20 @@ export interface HomepageProps {
   };
   products: Product[];
   categories: string[];
+  landingContent?: LandingContent | null;
 }
 
-export function Homepage({ store, products, categories }: HomepageProps) {
+const DEFAULT_HERO_HEADLINE = 'ไอเท็มแกดเจ็ตตัวท็อป\nลดราคาจัดเต็ม!';
+const DEFAULT_HERO_SUBHEAD =
+  'รวมสายชาร์จคุณภาพสูง หัวชาร์จเร็ว เคสโทรศัพท์ และของแต่งโต๊ะทำงาน ดีลส่งตรงจากโรงงาน ราคาประหยัดสุดๆ';
+const DEFAULT_HERO_CTA = 'ช้อปเลยตอนนี้';
+
+export function Homepage({ store, products, categories, landingContent }: HomepageProps) {
+  const heroHeadline = landingContent?.heroHeadline?.trim() || DEFAULT_HERO_HEADLINE;
+  const heroSubhead = landingContent?.heroSubheadline?.trim() || DEFAULT_HERO_SUBHEAD;
+  const heroCtaLabel = landingContent?.heroCtaLabel?.trim() || DEFAULT_HERO_CTA;
+  const heroCtaUrl = landingContent?.heroCtaUrl?.trim() || '#shop-section';
+  const heroImageUrl = landingContent?.heroImageUrl?.trim() || null;
   const [selectedCategory, setSelectedCategory] = useState<string>('ทั้งหมด');
   const [page, setPage] = useState(1);
 
@@ -100,20 +120,20 @@ export function Homepage({ store, products, categories }: HomepageProps) {
               </span>
             </div>
             
-            <h1 className="font-[family:var(--font-kanit)] font-black text-4xl sm:text-5xl lg:text-6xl leading-tight text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] uppercase">
-              ไอเท็มแกดเจ็ตตัวท็อป <br /> ลดราคาจัดเต็ม!
+            <h1 className="font-[family:var(--font-kanit)] font-black text-4xl sm:text-5xl lg:text-6xl leading-tight text-yellow-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] uppercase whitespace-pre-line">
+              {heroHeadline}
             </h1>
-            
-            <p className="text-white font-medium text-sm sm:text-base max-w-lg mx-auto lg:mx-0">
-              รวมสายชาร์จคุณภาพสูง หัวชาร์จเร็ว เคสโทรศัพท์ และของแต่งโต๊ะทำงาน ดีลส่งตรงจากโรงงาน ราคาประหยัดสุดๆ
+
+            <p className="text-white font-medium text-sm sm:text-base max-w-lg mx-auto lg:mx-0 whitespace-pre-line">
+              {heroSubhead}
             </p>
 
             <div className="pt-2">
               <a
-                href="#shop-section"
+                href={heroCtaUrl}
                 className="inline-flex items-center gap-2 bg-yellow-300 text-red-700 hover:bg-yellow-400 font-[family:var(--font-kanit)] font-black px-8 py-3.5 shadow-lg text-lg transform hover:scale-105 transition-all"
               >
-                ช้อปเลยตอนนี้ <ArrowRight size={20} />
+                {heroCtaLabel} <ArrowRight size={20} />
               </a>
             </div>
           </div>
@@ -128,10 +148,10 @@ export function Homepage({ store, products, categories }: HomepageProps) {
                 </div>
 
                 <div className="aspect-square bg-orange-50 overflow-hidden relative border border-orange-100">
-                  {heroProduct.imageUrl ? (
+                  {heroImageUrl || heroProduct.imageUrl ? (
                     <img
-                      src={heroProduct.imageUrl}
-                      alt={heroProduct.title}
+                      src={heroImageUrl || heroProduct.imageUrl || ''}
+                      alt={heroHeadline.split('\n')[0]}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (

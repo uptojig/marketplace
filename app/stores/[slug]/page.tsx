@@ -255,11 +255,25 @@ export default async function StorePage({
     const template = STORE_TEMPLATES[effectiveTpl as TemplateId];
     const TemplateHomepage = template?.pages?.home;
     if (TemplateHomepage) {
-      const dbProducts = await prisma.product.findMany({
-        where: { storeId: baseStore.id, active: true },
-        orderBy: { createdAt: "desc" },
-        take: 60,
-      });
+      const [dbProducts, landingContent] = await Promise.all([
+        prisma.product.findMany({
+          where: { storeId: baseStore.id, active: true },
+          orderBy: { createdAt: "desc" },
+          take: 60,
+        }),
+        prisma.storeLandingContent.findUnique({
+          where: { storeId: baseStore.id },
+          select: {
+            heroHeadline: true,
+            heroSubheadline: true,
+            heroCtaLabel: true,
+            heroCtaUrl: true,
+            heroImageUrl: true,
+            heroAlignment: true,
+            announcementMessage: true,
+          },
+        }),
+      ]);
       const products = dbProducts.map((p) => ({
         id: p.id,
         title: p.titleTh ?? p.title,
@@ -277,6 +291,7 @@ export default async function StorePage({
           store={storeToSummary(baseStore)}
           products={products}
           categories={categories}
+          landingContent={landingContent}
         />
       );
     }
