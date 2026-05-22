@@ -68,15 +68,15 @@ export function Footer({ store, categories, availableSupportPages = [] }: Footer
         <div
           className={`grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 ${
             supportLinks.length > 0 && hasContact
-              ? 'lg:grid-cols-6'
+              ? 'lg:grid-cols-5'
               : supportLinks.length > 0 || hasContact
-                ? 'lg:grid-cols-5'
-                : 'lg:grid-cols-4'
+                ? 'lg:grid-cols-4'
+                : 'lg:grid-cols-3'
           }`}
         >
 
           {/* Brand & Factory Stamp */}
-          <div className="space-y-4 lg:col-span-2">
+          <div className="space-y-4">
             {store.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
