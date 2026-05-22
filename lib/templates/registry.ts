@@ -51,6 +51,7 @@ import {
 } from '@/components/storefront/themes/talad-see-sod/adapters';
 import TaladSeeSodProductDetail from '@/components/storefront/themes/talad-see-sod/pages/ProductDetail';
 import TaladSeeSodCart from '@/components/storefront/themes/talad-see-sod/pages/Cart';
+import TaladSeeSodCheckout from '@/components/storefront/themes/talad-see-sod/pages/Checkout';
 import { TALAD_PALETTE } from '@/components/storefront/themes/talad-see-sod/palette';
 import {
   BrutalistThaiHeaderAdapter,
@@ -423,7 +424,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(TaladSeeSodHomepageAdapter, '09', TALAD_PALETTE),
       pdp: TaladSeeSodProductDetail,
       cart: TaladSeeSodCart,
-      checkout: makeCheckoutAdapter('04'),
+      checkout: TaladSeeSodCheckout,
     },
   },
 
