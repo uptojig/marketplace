@@ -9,6 +9,9 @@
 
 import React, { lazy, Suspense } from 'react';
 import type { ProductDetailProps } from '@/lib/templates/types';
+import { paletteToCssVars, type BlockPalette } from './palette';
+
+export type PdpPalette = BlockPalette;
 
 // Lazy-load overview variants
 const overviewVariants = {
@@ -139,7 +142,13 @@ const MOCK_PAYMENTS = [
   { name: 'บัตรเครดิต', icon: '💳' },
 ];
 
-export function makePdpAdapter(overview: OverviewVariant, review: ReviewVariant) {
+export function makePdpAdapter(
+  overview: OverviewVariant,
+  review: ReviewVariant,
+  palette?: PdpPalette,
+) {
+  const style = palette ? paletteToCssVars(palette) : undefined;
+
   return function PdpAdapter(props: ProductDetailProps) {
     const OverviewBlock = overviewVariants[overview];
     const ReviewBlock = reviewVariants[review];
@@ -161,7 +170,7 @@ export function makePdpAdapter(overview: OverviewVariant, review: ReviewVariant)
       extraProps.colorsChart = colorsChart;
     }
 
-    return (
+    const content = (
       <Suspense
         fallback={
           <div className="flex h-96 items-center justify-center text-zinc-400">
@@ -175,5 +184,7 @@ export function makePdpAdapter(overview: OverviewVariant, review: ReviewVariant)
         <ReviewBlock reviewItems={MOCK_REVIEWS as any} />
       </Suspense>
     );
+
+    return style ? <div style={style}>{content}</div> : content;
   };
 }

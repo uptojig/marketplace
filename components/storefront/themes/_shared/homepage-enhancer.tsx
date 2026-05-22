@@ -19,33 +19,10 @@ import {
   makeProductListSection,
   type ProductListVariant,
 } from './product-list-adapter';
-import type { ComponentType, CSSProperties } from 'react';
+import { paletteToCssVars, type BlockPalette } from './palette';
+import type { ComponentType } from 'react';
 
-export interface ProductListPalette {
-  background?: string;
-  muted?: string;
-  card?: string;
-  cardForeground?: string;
-  border?: string;
-  foreground?: string;
-  mutedForeground?: string;
-  primary?: string;
-  primaryForeground?: string;
-}
-
-function paletteToCssVars(p: ProductListPalette): CSSProperties {
-  const vars: Record<string, string> = {};
-  if (p.background) vars['--background'] = p.background;
-  if (p.muted) vars['--muted'] = p.muted;
-  if (p.card) vars['--card'] = p.card;
-  if (p.cardForeground) vars['--card-foreground'] = p.cardForeground;
-  if (p.border) vars['--border'] = p.border;
-  if (p.foreground) vars['--foreground'] = p.foreground;
-  if (p.mutedForeground) vars['--muted-foreground'] = p.mutedForeground;
-  if (p.primary) vars['--primary'] = p.primary;
-  if (p.primaryForeground) vars['--primary-foreground'] = p.primaryForeground;
-  return vars as CSSProperties;
-}
+export type ProductListPalette = BlockPalette;
 
 export function enhanceHomepage(
   OriginalHomepage: ComponentType<HomepageProps>,

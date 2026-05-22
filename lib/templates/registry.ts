@@ -49,6 +49,9 @@ import {
   TaladSeeSodStripAdapter,
   TaladSeeSodHomepageAdapter,
 } from '@/components/storefront/themes/talad-see-sod/adapters';
+import TaladSeeSodProductDetail from '@/components/storefront/themes/talad-see-sod/pages/ProductDetail';
+import TaladSeeSodCart from '@/components/storefront/themes/talad-see-sod/pages/Cart';
+import { TALAD_PALETTE } from '@/components/storefront/themes/talad-see-sod/palette';
 import {
   BrutalistThaiHeaderAdapter,
   BrutalistThaiFooterAdapter,
@@ -416,18 +419,10 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: TaladSeeSodStripAdapter,
     },
     pages: {
-      home: enhanceHomepage(TaladSeeSodHomepageAdapter, '09', {
-        background: '#fff7ed',
-        muted: '#fff7ed',
-        card: '#ffffff',
-        cardForeground: '#7f1d1d',
-        border: '#fdba74',
-        foreground: '#7f1d1d',
-        mutedForeground: '#9a3412',
-        primary: '#dc2626',
-        primaryForeground: '#ffffff',
-      }),
-          checkout: makeCheckoutAdapter('04'),
+      home: enhanceHomepage(TaladSeeSodHomepageAdapter, '09', TALAD_PALETTE),
+      pdp: TaladSeeSodProductDetail,
+      cart: TaladSeeSodCart,
+      checkout: makeCheckoutAdapter('04'),
     },
   },
 
