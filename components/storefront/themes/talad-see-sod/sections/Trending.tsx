@@ -38,7 +38,7 @@ export function TaladSeeSodTrending({ store, products }: TaladSeeSodTrendingProp
   const showConfirm = useCartConfirmation((s) => s.show);
 
   if (products.length === 0) return null;
-  const picks = products.slice(0, 4);
+  const picks = products.slice(0, 5);
 
   const handleAdd = (p: TrendingProduct, e: React.MouseEvent) => {
     e.preventDefault();
@@ -74,7 +74,7 @@ export function TaladSeeSodTrending({ store, products }: TaladSeeSodTrendingProp
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {picks.map((p) => {
             const compare = p.compareAtPriceTHB ?? null;
             const onSale = compare !== null && compare > p.priceTHB;
