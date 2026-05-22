@@ -57,6 +57,7 @@ import {
 } from '@/components/storefront/themes/brutalist-thai/adapters';
 import BrutalistCatalog from '@/components/storefront/themes/brutalist-thai/pages/Catalog';
 import BrutalistProductDetail from '@/components/storefront/themes/brutalist-thai/pages/ProductDetail';
+import BrutalistCart from '@/components/storefront/themes/brutalist-thai/pages/Cart';
 import {
   MonoEightHeaderAdapter,
   MonoEightFooterAdapter,
@@ -233,7 +234,6 @@ import {
 import { makeCatalogAdapter } from '@/components/storefront/themes/_shared/catalog-adapter';
 import { makePdpAdapter } from '@/components/storefront/themes/_shared/pdp-adapter';
 import { enhanceHomepage } from '@/components/storefront/themes/_shared/homepage-enhancer';
-import { makeCartAdapter } from '@/components/storefront/themes/_shared/cart-adapter';
 import { makeCheckoutAdapter } from '@/components/storefront/themes/_shared/checkout-adapter';
 
 
@@ -256,7 +256,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(MaiHatthakamHomepageAdapter, '06'),
       catalog: makeCatalogAdapter('04'),
       pdp: makePdpAdapter('04', '05'),
-      cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('01'),
     },
   },
@@ -284,7 +283,6 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       pdp: makePdpAdapter('06', '02'),
-      cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('02'),
       catalog: makeCatalogAdapter('12'),
       home: enhanceHomepage(BikiniHomepageAdapter, '01'),
@@ -367,7 +365,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       catalog: makeCatalogAdapter('01'),
       pdp: makePdpAdapter('03', '02'),
-      cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('02'),
     },
   },
@@ -402,7 +399,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       catalog: makeCatalogAdapter('01'),
       pdp: makePdpAdapter('08', '03'),
-      cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('02'),
       home: enhanceHomepage(SaiSingHomepageAdapter, '05'),
     },
@@ -440,7 +436,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(BrutalistThaiHomepageAdapter, '01'),
       catalog: BrutalistCatalog,
       pdp: BrutalistProductDetail,
-      cart: makeCartAdapter('04'),
+      cart: BrutalistCart,
       checkout: makeCheckoutAdapter('01'),
     },
   },
@@ -460,7 +456,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(MonoEightHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('05'),
       pdp: makePdpAdapter('09', '05'),
-      cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('02'),
     },
   },
@@ -482,7 +477,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(LilaModestHomepageAdapter, '05'),
           pdp: makePdpAdapter('06', '03'),
-      cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('04'),
     },
   },
@@ -505,7 +499,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(Atelier27HomepageAdapter, '02'),
       catalog: makeCatalogAdapter('12'),
       pdp: makePdpAdapter('02', '03'),
-      cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('01'),
     },
   },
@@ -529,7 +522,6 @@ export const templates: Record<TemplateId, Template> = {
       catalog: makeCatalogAdapter('12'),
       home: enhanceHomepage(BulkboxHomepageAdapter, '08'),
           pdp: makePdpAdapter('08', '04'),
-      cart: makeCartAdapter('04'),
       checkout: makeCheckoutAdapter('02'),
     },
   },
@@ -552,7 +544,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(CalderaSkinHomepageAdapter, '04'),
       catalog: makeCatalogAdapter('05'),
       pdp: makePdpAdapter('04', '03'),
-      cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('04'),
     },
   },
@@ -573,7 +564,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       catalog: makeCatalogAdapter('09'),
       pdp: makePdpAdapter('07', '03'),
-      cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('01'),
       home: enhanceHomepage(CarbonEraCamerasHomepageAdapter, '07'),
     },
@@ -611,7 +601,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(HinokiHomepageAdapter, '09'),
       catalog: makeCatalogAdapter('09'),
       pdp: makePdpAdapter('08', '04'),
-      cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('04'),
     },
   },
@@ -630,7 +619,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(InkstonePaperHomepageAdapter, '01'),
           pdp: makePdpAdapter('04', '05'),
-      cart: makeCartAdapter('04'),
       checkout: makeCheckoutAdapter('01'),
     },
   },
@@ -653,7 +641,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(KeystrokeLabHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('06'),
       pdp: makePdpAdapter('06', '03'),
-      cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('02'),
     },
   },
@@ -672,7 +659,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(KorakotHouseHomepageAdapter, '05'),
           pdp: makePdpAdapter('07', '02'),
-      cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('04'),
     },
   },
@@ -695,7 +681,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(LinenAndLoomHomepageAdapter, '02'),
       catalog: makeCatalogAdapter('04'),
       pdp: makePdpAdapter('01', '05'),
-      cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('01'),
     },
   },
@@ -714,7 +699,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       catalog: makeCatalogAdapter('04'),
       pdp: makePdpAdapter('04', '05'),
-      cart: makeCartAdapter('04'),
       checkout: makeCheckoutAdapter('02'),
       home: enhanceHomepage(MaiHatthakamHomepageAdapter, '04'),
     },
@@ -734,7 +718,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(PastelPackHomepageAdapter, '06'),
           pdp: makePdpAdapter('02', '03'),
-      cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('04'),
     },
   },
@@ -757,7 +740,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(PetitCoteHomepageAdapter, '07'),
       catalog: makeCatalogAdapter('02'),
       pdp: makePdpAdapter('05', '02'),
-      cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('01'),
     },
   },
@@ -779,7 +761,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(PigmentStudioHomepageAdapter, '08'),
           pdp: makePdpAdapter('05', '04'),
-      cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('02'),
     },
   },
@@ -799,7 +780,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(ReclaimLeatherHomepageAdapter, '09'),
       catalog: makeCatalogAdapter('07'),
       pdp: makePdpAdapter('06', '02'),
-      cart: makeCartAdapter('04'),
       checkout: makeCheckoutAdapter('04'),
     },
   },
@@ -818,7 +798,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(SalukiYogaHomepageAdapter, '01'),
           pdp: makePdpAdapter('03', '05'),
-      cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('01'),
     },
   },
@@ -841,7 +820,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(SirinHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('03'),
       pdp: makePdpAdapter('07', '03'),
-      cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('02'),
     },
   },
@@ -864,7 +842,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(SmartloopHomeHomepageAdapter, '02'),
       catalog: makeCatalogAdapter('09'),
       pdp: makePdpAdapter('08', '04'),
-      cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('04'),
     },
   },
@@ -884,7 +861,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(TinyhandWoodenToysHomepageAdapter, '04'),
       catalog: makeCatalogAdapter('02'),
       pdp: makePdpAdapter('04', '04'),
-      cart: makeCartAdapter('04'),
       checkout: makeCheckoutAdapter('01'),
     },
   },
@@ -904,7 +880,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(TrailcraftHomepageAdapter, '05'),
       catalog: makeCatalogAdapter('07'),
       pdp: makePdpAdapter('09', '05'),
-      cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('02'),
     },
   },
@@ -926,7 +901,6 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(WavelengthAudioHomepageAdapter, '06'),
           pdp: makePdpAdapter('09', '02'),
-      cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('04'),
     },
   },
@@ -949,7 +923,6 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(YumeiroLipHomepageAdapter, '07'),
       catalog: makeCatalogAdapter('05'),
       pdp: makePdpAdapter('04', '04'),
-      cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('01'),
     },
   },
