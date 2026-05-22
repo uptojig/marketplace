@@ -524,7 +524,17 @@ export default async function ShopLayout({
       shape={shellShape}
       className={`shop-page min-h-screen flex flex-col${themeClass ? ` ${themeClass}` : ""}${familyClass ? ` ${familyClass}` : ""}`}
       style={{ ...tokensToCssVars(tokens), ...familyVars, ...lcColorVars }}
-      strip={CustomStrip ? <CustomStrip storeName={store.name} /> : null}
+      strip={
+        CustomStrip ? (
+          <CustomStrip
+            storeName={store.name}
+            message={lcAnnouncement?.message ?? tokens.announcement?.message}
+            mobileMessage={
+              lcAnnouncement?.mobileMessage ?? tokens.announcement?.mobileMessage
+            }
+          />
+        ) : null
+      }
       header={
         CustomHeader ? (
           <CustomHeader

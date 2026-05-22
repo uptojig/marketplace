@@ -256,6 +256,18 @@ export interface TemplateProductCard {
   categoryName?: string | null;
 }
 
+/** Operator-editable hero/landing copy from `StoreLandingContent`.
+ *  Optional everywhere — adapters apply theme-default fallbacks. */
+export interface TemplateLandingContent {
+  heroHeadline?: string | null;
+  heroSubheadline?: string | null;
+  heroCtaLabel?: string | null;
+  heroCtaUrl?: string | null;
+  heroImageUrl?: string | null;
+  heroAlignment?: string | null;
+  announcementMessage?: string | null;
+}
+
 /** Homepage — store + active products + nav categories already on the wire. */
 export interface HomepageProps {
   store: TemplateStoreSummary;
@@ -263,6 +275,8 @@ export interface HomepageProps {
   products: TemplateProductCard[];
   /** Distinct category labels derived from products (mirrors what ShopHeader gets). */
   categories: string[];
+  /** Operator-edited hero/landing copy. Adapters apply theme-default fallbacks. */
+  landingContent?: TemplateLandingContent | null;
 }
 
 /** Catalog (category list) — paginated filtered grid the existing `/category` page builds. */

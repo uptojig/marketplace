@@ -35,9 +35,18 @@ export function TaladSeeSodFooterAdapter(props: ScaffoldFooterProps) {
   );
 }
 
-// Since the header already has a custom built-in announcement bar, we can return null here
+const DEFAULT_TALAD_ANNOUNCEMENT =
+  'ส่งฟรีเมื่อช้อปครบ ฿199.- · มีบริการเก็บเงินปลายทาง (COD) · ร้านแนะนำของแท้ 100%';
+
 export function TaladSeeSodStripAdapter(props: ScaffoldStripProps) {
-  return null;
+  const message = props.message?.trim() || DEFAULT_TALAD_ANNOUNCEMENT;
+  const mobileMessage = props.mobileMessage?.trim() || message;
+  return (
+    <div className="bg-gradient-to-r from-[#dc2626] to-[#f97316] text-white text-xs font-bold py-2 px-4 text-center tracking-wider uppercase font-[family:var(--font-kanit)]">
+      <span className="hidden sm:inline">{message}</span>
+      <span className="sm:hidden">{mobileMessage}</span>
+    </div>
+  );
 }
 
 export function TaladSeeSodHomepageAdapter(props: ScaffoldHomepageProps) {
@@ -60,6 +69,7 @@ export function TaladSeeSodHomepageAdapter(props: ScaffoldHomepageProps) {
         }}
         products={products}
         categories={props.categories}
+        landingContent={props.landingContent ?? null}
       />
       <TaladSeeSodTrending
         store={{ slug: props.store.slug, name: props.store.name }}

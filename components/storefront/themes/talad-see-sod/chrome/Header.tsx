@@ -18,12 +18,6 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
 
   return (
     <header className="bg-white border-b border-[#fdba74] font-sans">
-      
-      {/* Top Announcement Bar - Red/Orange Gradient */}
-      <div className="bg-gradient-to-r from-[#dc2626] to-[#f97316] text-white text-xs font-bold py-2 px-4 text-center tracking-wider uppercase font-[family:var(--font-kanit)]">
-        ส่งฟรีเมื่อช้อปครบ ฿199.- · มีบริการเก็บเงินปลายทาง (COD) · ร้านแนะนำของแท้ 100%
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           
