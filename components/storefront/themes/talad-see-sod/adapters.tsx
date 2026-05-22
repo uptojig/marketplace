@@ -10,6 +10,7 @@ import type {
 import { Header as TaladSeeSodHeader } from './chrome/Header';
 import { Footer as TaladSeeSodFooter } from './chrome/Footer';
 import { Homepage as TaladSeeSodHomepage } from './pages/Homepage';
+import { TaladSeeSodTrending } from './sections/Trending';
 
 export function TaladSeeSodHeaderAdapter(props: ScaffoldHeaderProps) {
   return (
@@ -40,24 +41,31 @@ export function TaladSeeSodStripAdapter(props: ScaffoldStripProps) {
 }
 
 export function TaladSeeSodHomepageAdapter(props: ScaffoldHomepageProps) {
+  const products = props.products.map((p) => ({
+    id: p.id,
+    title: p.title,
+    priceTHB: p.priceTHB,
+    compareAtPriceTHB: p.compareAtPriceTHB ?? null,
+    imageUrl: p.imageUrl ?? null,
+    categoryName: p.categoryName ?? null,
+  }));
   return (
-    <TaladSeeSodHomepage
-      store={{
-        id: props.store.id,
-        name: props.store.name,
-        slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
-      }}
-      products={props.products.map((p) => ({
-        id: p.id,
-        title: p.title,
-        priceTHB: p.priceTHB,
-        compareAtPriceTHB: p.compareAtPriceTHB ?? null,
-        imageUrl: p.imageUrl ?? null,
-        categoryName: p.categoryName ?? null,
-      }))}
-      categories={props.categories}
-    />
+    <>
+      <TaladSeeSodHomepage
+        store={{
+          id: props.store.id,
+          name: props.store.name,
+          slug: props.store.slug,
+          logoUrl: props.store.logoUrl,
+        }}
+        products={products}
+        categories={props.categories}
+      />
+      <TaladSeeSodTrending
+        store={{ slug: props.store.slug, name: props.store.name }}
+        products={products}
+      />
+    </>
   );
 }
 
