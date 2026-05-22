@@ -224,12 +224,20 @@ export default async function ShopLayout({
   // Footers use this to hide links whose target would render the
   // empty "ยังไม่มีเนื้อหา — Regenerate landing page" stub.
   // /help/* pages always have content (HELP_PAGES is static).
+  //
+  // Gate on `blocks.length > 0`, not just "slug appears in pages"
+  // — agents sometimes emit a placeholder page with the slug
+  // declared but no blocks, and MultiPageRenderer would render
+  // nothing visible (or a near-empty page) which is the same UX as
+  // the stub. Operators want those hidden too.
   const availableSupportPages: string[] = (() => {
     const slugs: string[] = [];
     const blocks = store.landingBlocks;
     if (blocks && typeof blocks === "object" && isV12Schema(blocks)) {
-      for (const p of (blocks as { pages: { slug: string }[] }).pages) {
-        slugs.push(p.slug);
+      for (const p of (blocks as { pages: { slug: string; blocks?: unknown[] }[] }).pages) {
+        if (Array.isArray(p.blocks) && p.blocks.length > 0) {
+          slugs.push(p.slug);
+        }
       }
     }
     return slugs;
