@@ -2,11 +2,21 @@
 
 import React from 'react';
 import Link from 'next/link';
-import type { HeaderProps } from '@/lib/templates/types';
 import { Building2, Search, User, Menu, ShoppingCart, FileText } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 
-export function BulkboxHeader({ store, categories }: HeaderProps) {
+/**
+ * Local prop shape — the bulkbox header destructures a nested `store`
+ * + a category list of `{ id, slug, name }` objects, not the flat
+ * `HeaderProps` shape the rest of the template system uses. The adapter
+ * in `adapters.tsx` re-packs the scaffold props into this shape.
+ */
+interface BulkboxHeaderProps {
+  store: { name: string; slug: string; logoUrl?: string | null };
+  categories: { id: string; name: string; slug: string }[];
+}
+
+export function BulkboxHeader({ store, categories }: BulkboxHeaderProps) {
   const items = useCart((s) => s.lines);
   const cartCount = items.filter((i) => i.storeSlug === store.slug).reduce((acc, item) => acc + item.qty, 0);
 

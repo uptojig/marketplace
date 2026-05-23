@@ -13,7 +13,16 @@ import { SmartloopHomeStrip } from './chrome/AnnouncementStrip';
 import { SmartloopHomeHomepage } from './pages/Homepage';
 
 export function SmartloopHomeHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <SmartloopHomeHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} />;
+  return (
+    <SmartloopHomeHeader
+      store={{
+        id: props.storeSlug,
+        name: props.storeName,
+        slug: props.storeSlug,
+        logoUrl: props.storeLogoUrl || undefined,
+      }}
+    />
+  );
 }
 
 export function SmartloopHomeFooterAdapter(props: ScaffoldFooterProps) {
@@ -21,7 +30,7 @@ export function SmartloopHomeFooterAdapter(props: ScaffoldFooterProps) {
 }
 
 export function SmartloopHomeStripAdapter(props: ScaffoldStripProps) {
-  return <SmartloopHomeStrip desktopText={props.desktopText} mobileText={props.mobileText} />;
+  return <SmartloopHomeStrip desktopText={props.message} mobileText={props.mobileMessage} />;
 }
 
 export function SmartloopHomeHomepageAdapter(props: ScaffoldHomepageProps) {
@@ -41,7 +50,7 @@ export function SmartloopHomeHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, name }))}
     />
   );
 }

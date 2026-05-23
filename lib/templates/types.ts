@@ -39,6 +39,16 @@ export type TemplateGroup =
   | 'neon';
 
 export type TemplateId =
+  // Legacy aliases — referenced by `LEGACY_SLUG_TEMPLATE`
+  // (lib/landing/legacy-slug-template.ts) and the template-group map
+  // (lib/templates/template-groups.ts). Kept in the union so the family
+  // dispatcher and legacy-slug fallback both type-check.
+  | 'classic'
+  | 'lookbook'
+  | 'tech-compare'
+  | 'sport-active'
+  | 'live-commerce'
+  | 'wholesale-b2b'
   | 'handmade'
   | 'bikini-beach'
   | 'eco-pack'
@@ -253,6 +263,23 @@ export interface AnnouncementStripProps {
 // ----------------------------------------------------------------------------
 
 /** Bare store identity surfaced on every page (logo + slug + primary color). */
+export interface TemplateStoreSummary {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string | null;
+  tagline?: string | null;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
+  primaryColor?: string | null;
+}
+
+/** Trust / verification flags rendered on store cards and badges. */
+export interface StoreBadges {
+  official?: boolean;
+  b2b?: boolean;
+  verified?: boolean;
+}
 
 /** A storefront product card in its lightest form (catalog tiles, related rails, etc). */
 export interface TemplateProductCard {

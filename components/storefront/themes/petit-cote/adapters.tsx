@@ -20,9 +20,9 @@ export function PetitCoteHeaderAdapter(props: ScaffoldHeaderProps) {
         id: '',
         name: props.storeName,
         slug: props.storeSlug,
-        logoUrl: props.storeLogoUrl,
+        logoUrl: props.storeLogoUrl ?? null,
       }}
-      categories={props.categories ?? []}
+      categories={(props.categories ?? []).map((name) => ({ id: name, name }))}
       cartItemCount={0}
     />
   );
@@ -35,7 +35,7 @@ export function PetitCoteFooterAdapter(props: ScaffoldFooterProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? null,
       }}
     />
   );
@@ -52,7 +52,7 @@ export function PetitCoteHomepageAdapter(props: ScaffoldHomepageProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? null,
       }}
       products={props.products.map((p) => ({
         id: p.id,
@@ -62,7 +62,7 @@ export function PetitCoteHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, name }))}
     />
   );
 }

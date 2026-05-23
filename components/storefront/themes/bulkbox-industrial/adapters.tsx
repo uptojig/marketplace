@@ -13,7 +13,12 @@ import { BulkboxStrip } from './chrome/AnnouncementStrip';
 import { BulkboxHomepage } from './pages/Homepage';
 
 export function BulkboxHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <BulkboxHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }} categories={props.categories ?? []} />;
+  return (
+    <BulkboxHeader
+      store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
+    />
+  );
 }
 export function BulkboxFooterAdapter(props: ScaffoldFooterProps) {
   return <BulkboxFooter {...props} />;
@@ -28,7 +33,7 @@ export function BulkboxHomepageAdapter(props: ScaffoldHomepageProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? null,
       }}
       products={props.products.map((p) => ({
         id: p.id,
@@ -38,7 +43,7 @@ export function BulkboxHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
     />
   );
 }

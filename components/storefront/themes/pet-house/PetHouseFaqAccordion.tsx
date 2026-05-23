@@ -59,6 +59,7 @@ const FAQS: FaqEntry[] = [
 export function PetHouseFaqAccordion() {
   return (
     <Accordion
+      type="multiple"
       defaultValue={['faq-0']}
       className="flex flex-col gap-2.5"
     >

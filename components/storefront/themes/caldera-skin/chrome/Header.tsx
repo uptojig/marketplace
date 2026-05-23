@@ -3,9 +3,17 @@ import React from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
 import { ShoppingCart, FlaskConical, Search, Menu } from 'lucide-react';
-import type { HeaderProps } from '@/lib/templates/types';
 
-export function CalderaSkinHeader({ store }: HeaderProps) {
+/**
+ * Local prop shape — the caldera-skin header destructures a nested
+ * `store` object, not the flat scaffold `HeaderProps`. The adapter in
+ * `adapters.tsx` re-packs the scaffold props into this shape.
+ */
+interface CalderaSkinHeaderProps {
+  store: { name: string; slug: string; logoUrl?: string | null };
+}
+
+export function CalderaSkinHeader({ store }: CalderaSkinHeaderProps) {
   const cartItems = useCart((s) => s.lines);
   const storeItems = cartItems.filter((i) => i.storeSlug === store.slug);
   const itemCount = storeItems.length;
