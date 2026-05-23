@@ -315,7 +315,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
             {/* Price block on hot bg */}
             <div
               className="mt-4 rounded-lg p-4 text-white"
-              style={{ background: 'var(--shop-primary-gradient)' }}
+              style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
             >
               <div className="flex items-baseline gap-3 flex-wrap">
                 <span
@@ -489,7 +489,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
               <button
                 onClick={handleAdd}
                 className="flex-1 min-w-[180px] py-3 rounded-md text-sm font-[family:var(--font-kanit)] font-black uppercase transition-opacity hover:opacity-90"
-                style={{ background: 'var(--shop-primary-gradient)', color: '#ffffff' }}
+                style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))', color: '#ffffff' }}
               >
                 ซื้อเลย
               </button>

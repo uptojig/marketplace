@@ -35,7 +35,7 @@ export function AnnouncementStrip({ storeName, message }: AnnouncementStripProps
   return (
     <div
       className="text-white text-[11px] sm:text-xs font-semibold py-1.5 px-4 text-center tracking-wide"
-      style={{ background: 'var(--shop-primary-gradient)' }}
+      style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 font-[family:var(--font-prompt)]">
         <Icon size={14} className="shrink-0 text-yellow-300" />
