@@ -1,0 +1,94 @@
+'use client';
+
+import React from 'react';
+import type {
+  HomepageProps as ScaffoldHomepageProps,
+  HeaderProps as ScaffoldHeaderProps,
+  FooterProps as ScaffoldFooterProps,
+  AnnouncementStripProps as ScaffoldStripProps,
+  AboutProps as ScaffoldAboutProps,
+  HelpProps as ScaffoldHelpProps,
+} from '@/lib/templates/types';
+
+import { Header as {{THEME_PASCAL}}Header } from './chrome/Header';
+import { Footer as {{THEME_PASCAL}}Footer } from './chrome/Footer';
+import { AnnouncementStrip as {{THEME_PASCAL}}Strip } from './chrome/AnnouncementStrip';
+import { Homepage as {{THEME_PASCAL}}Homepage } from './pages/Homepage';
+import { About as {{THEME_PASCAL}}About } from './pages/About';
+import { Help as {{THEME_PASCAL}}Help } from './pages/Help';
+
+export function {{THEME_PASCAL}}HeaderAdapter(props: ScaffoldHeaderProps) {
+  return (
+    <{{THEME_PASCAL}}Header
+      storeSlug={props.storeSlug}
+      storeName={props.storeName}
+      storeLogoUrl={props.storeLogoUrl}
+      categories={props.categories ?? []}
+    />
+  );
+}
+
+export function {{THEME_PASCAL}}FooterAdapter(props: ScaffoldFooterProps) {
+  return (
+    <{{THEME_PASCAL}}Footer
+      store={props.store}
+      categories={props.categories ?? []}
+      availableSupportPages={props.availableSupportPages ?? []}
+    />
+  );
+}
+
+export function {{THEME_PASCAL}}StripAdapter(props: ScaffoldStripProps) {
+  return (
+    <{{THEME_PASCAL}}Strip
+      storeName={props.storeName}
+      message={props.message}
+      mobileMessage={props.mobileMessage}
+    />
+  );
+}
+
+export function {{THEME_PASCAL}}HomepageAdapter(props: ScaffoldHomepageProps) {
+  return (
+    <{{THEME_PASCAL}}Homepage
+      store={{
+        id: props.store.id,
+        name: props.store.name,
+        slug: props.store.slug,
+        logoUrl: props.store.logoUrl,
+      }}
+      products={props.products.map((p) => ({
+        id: p.id,
+        title: p.title,
+        priceTHB: p.priceTHB,
+        compareAtPriceTHB: p.compareAtPriceTHB ?? null,
+        imageUrl: p.imageUrl ?? null,
+        categoryName: p.categoryName ?? null,
+      }))}
+      categories={props.categories}
+      landingContent={props.landingContent ?? null}
+    />
+  );
+}
+
+export function {{THEME_PASCAL}}AboutAdapter(props: ScaffoldAboutProps) {
+  return <{{THEME_PASCAL}}About store={props.store} />;
+}
+
+export function {{THEME_PASCAL}}HelpAdapter(props: ScaffoldHelpProps) {
+  return (
+    <{{THEME_PASCAL}}Help
+      store={props.store}
+      schemaPage={props.schemaPage}
+      pageSlug={props.pageSlug}
+    />
+  );
+}
+
+// Page re-exports (default exports — used directly in registry)
+export { default as {{THEME_ID_SNAKE}}_Catalog } from './pages/Catalog';
+export { default as {{THEME_ID_SNAKE}}_ProductDetail } from './pages/ProductDetail';
+export { default as {{THEME_ID_SNAKE}}_Cart } from './pages/Cart';
+export { default as {{THEME_ID_SNAKE}}_Checkout } from './pages/Checkout';
+export { default as {{THEME_ID_SNAKE}}_Contact } from './pages/Contact';
+export { {{THEME_PASCAL}}PolicyShell } from './PolicyShell';
