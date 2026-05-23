@@ -58,7 +58,7 @@ export const storeBrandingSchema = z.object({
   bannerUrl: optionalNullable(url),
   primaryColor: hexColor.optional().nullable(),
   logoPosition: z.enum(["left", "center"]).optional().nullable(),
-  menuPosition: z.enum(["inline", "below", "sidebar"]).optional().nullable(),
+  menuPosition: z.enum(["left", "center", "right"]).optional().nullable(),
   templateId: z.string().optional().nullable(),
   landingThemeVariant: z.string().optional().nullable(),
   themeAccentOverride: hexColor.optional().nullable(),
