@@ -14,7 +14,12 @@ import { MaiHatthakamAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { MaiHatthakamHomepage } from './pages/Homepage';
 
 export function MaiHatthakamHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <MaiHatthakamHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} categories={props.categories} />;
+  return (
+    <MaiHatthakamHeader
+      store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
+    />
+  );
 }
 
 export function MaiHatthakamFooterAdapter(props: ScaffoldFooterProps) {
@@ -22,7 +27,7 @@ export function MaiHatthakamFooterAdapter(props: ScaffoldFooterProps) {
 }
 
 export function MaiHatthakamStripAdapter(props: ScaffoldStripProps) {
-  return <MaiHatthakamAnnouncementStrip text={props.text} mobileText={props.mobileText} />;
+  return <MaiHatthakamAnnouncementStrip text={props.message} mobileText={props.mobileMessage} />;
 }
 
 export function MaiHatthakamHomepageAdapter(props: ScaffoldHomepageProps) {
@@ -42,7 +47,7 @@ export function MaiHatthakamHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
     />
   );
 }

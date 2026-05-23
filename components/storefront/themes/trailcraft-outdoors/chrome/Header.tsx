@@ -4,9 +4,18 @@ import React from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Menu, Search, User } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import type { HeaderProps } from '@/lib/templates/types';
 
-export function TrailcraftHeader({ store, categories }: HeaderProps) {
+/**
+ * Local prop shape — uses a nested `store` object + category objects
+ * with `{ id, slug, name }`, not the flat scaffold `HeaderProps` shape.
+ * The adapter in `adapters.tsx` re-packs the scaffold props into this.
+ */
+interface TrailcraftHeaderProps {
+  store: { name: string; slug: string; logoUrl?: string | null };
+  categories: { id: string; name: string; slug: string }[];
+}
+
+export function TrailcraftHeader({ store, categories }: TrailcraftHeaderProps) {
   const cartItems = useCart((s) => s.lines);
   const storeCartItems = cartItems.filter((i) => i.storeSlug === store.slug);
   const cartCount = storeCartItems.reduce((acc, item) => acc + item.qty, 0);

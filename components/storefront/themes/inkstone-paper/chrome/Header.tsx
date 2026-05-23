@@ -3,10 +3,18 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Menu, Search } from 'lucide-react';
-import type { HeaderProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
 
-export function InkstonePaperHeader({ store }: HeaderProps) {
+/**
+ * Local prop shape — destructures a nested `store` object, not the
+ * flat scaffold `HeaderProps`. The adapter in `adapters.tsx` re-packs
+ * the scaffold props into this shape.
+ */
+interface InkstonePaperHeaderProps {
+  store: { name: string; slug: string; logoUrl?: string | null };
+}
+
+export function InkstonePaperHeader({ store }: InkstonePaperHeaderProps) {
   const cartItems = useCart((s) => s.lines);
   const itemCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
 

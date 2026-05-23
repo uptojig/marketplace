@@ -116,7 +116,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       );
     },
     
-    li: ({ children, type, index }: { children: React.ReactNode; type?: "ordered" | "unordered"; index?: number }) => {
+    li: ({ children, type, index }: { children?: React.ReactNode; type?: "ordered" | "unordered"; index?: number }) => {
       if (type === "ordered") {
         return (
           <li className="flex items-start gap-3 text-sm sm:text-base text-mp-ink/90 leading-relaxed my-1 font-sans">

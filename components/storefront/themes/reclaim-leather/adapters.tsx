@@ -21,7 +21,7 @@ export function ReclaimLeatherFooterAdapter(props: ScaffoldFooterProps) {
 }
 
 export function ReclaimLeatherStripAdapter(props: ScaffoldStripProps) {
-  return <ReclaimLeatherAnnouncementStrip desktopText={props.desktopText} mobileText={props.mobileText} />;
+  return <ReclaimLeatherAnnouncementStrip desktopText={props.message} mobileText={props.mobileMessage} />;
 }
 
 export function ReclaimLeatherHomepageAdapter(props: ScaffoldHomepageProps) {
@@ -31,7 +31,7 @@ export function ReclaimLeatherHomepageAdapter(props: ScaffoldHomepageProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? undefined,
       }}
       products={props.products.map((p) => ({
         id: p.id,
@@ -41,7 +41,7 @@ export function ReclaimLeatherHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
     />
   );
 }

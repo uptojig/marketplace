@@ -19,7 +19,7 @@ export function PastelPackHeaderAdapter(props: ScaffoldHeaderProps) {
       storeName={props.storeName}
       storeSlug={props.storeSlug}
       logoUrl={props.storeLogoUrl}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
     />
   );
 }
@@ -49,7 +49,7 @@ export function PastelPackHomepageAdapter(props: ScaffoldHomepageProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? null,
       }}
       products={props.products.map((p) => ({
         id: p.id,
@@ -59,7 +59,7 @@ export function PastelPackHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
     />
   );
 }

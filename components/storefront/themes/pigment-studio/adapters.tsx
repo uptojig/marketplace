@@ -13,7 +13,12 @@ import { PigmentStudioAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { PigmentStudioHomepage } from './pages/Homepage';
 
 export function PigmentStudioHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <PigmentStudioHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }} categories={props.categories} />;
+  return (
+    <PigmentStudioHeader
+      store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl || undefined }}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
+    />
+  );
 }
 
 export function PigmentStudioFooterAdapter(props: ScaffoldFooterProps) {
@@ -41,7 +46,7 @@ export function PigmentStudioHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
     />
   );
 }

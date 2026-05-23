@@ -314,8 +314,8 @@ import {
   PackagingSupplyFooterAdapter,
   PackagingSupplyStripAdapter,
   PackagingSupplyHomepageAdapter,
-  PackagingSupplyCatalog,
-  PackagingSupplyProductDetail,
+  PackagingSupplyCatalogAdapter,
+  PackagingSupplyProductDetailAdapter,
   PackagingSupplyCart,
   PackagingSupplyCheckout,
 } from '@/components/storefront/themes/packaging-supply/adapters';
@@ -495,8 +495,8 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: PackagingSupplyHomepageAdapter,
-      catalog: PackagingSupplyCatalog,
-      pdp: PackagingSupplyProductDetail,
+      catalog: PackagingSupplyCatalogAdapter,
+      pdp: PackagingSupplyProductDetailAdapter,
       cart: PackagingSupplyCart,
       checkout: PackagingSupplyCheckout,
       about: makeAboutAdapter(),

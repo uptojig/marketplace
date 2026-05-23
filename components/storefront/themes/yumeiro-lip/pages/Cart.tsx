@@ -66,10 +66,13 @@ interface CartItemDisplay {
   variantLabel?: string | null;
 }
 
-interface CartPageProps {
-  store: { slug: string; name: string };
-  items?: CartItemDisplay[];
-}
+import type { CartProps as ScaffoldCartProps } from '@/lib/templates/types';
+
+// Aligns with the canonical scaffold `CartProps` so the registry's
+// `ComponentType<CartProps>` slot accepts this component. The internal
+// flow only reads `store.slug` / `store.name`; cart lines come from
+// the zustand store on mount.
+type CartPageProps = ScaffoldCartProps;
 
 // Lipstick swatch row for the empty state and ambient header pop —
 // vivid corals, hot pinks, mauves. Matches the homepage colour story.

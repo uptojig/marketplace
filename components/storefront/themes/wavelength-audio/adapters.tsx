@@ -32,7 +32,7 @@ export function WavelengthAudioHomepageAdapter(props: ScaffoldHomepageProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? null,
       }}
       products={props.products.map((p) => ({
         id: p.id,

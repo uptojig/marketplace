@@ -15,6 +15,7 @@ import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,20 +63,25 @@ export async function POST(req: Request) {
   // Clearing the picker back to null leaves landingBlocks alone.
   const clearAiLanding = landingThemeVariant !== null;
 
+  // Build the update payload outside the call so the conditional spread
+  // doesn't widen the literal to a union the Prisma input checker
+  // refuses to resolve. All fields are valid on
+  // `StoreUncheckedUpdateManyInput`.
+  const data: Prisma.StoreUncheckedUpdateManyInput = {
+    landingThemeVariant,
+  };
+  if (clearAiLanding) {
+    // `landingBlocks` is a Prisma Json column — `null` is overloaded so
+    // Prisma requires `Prisma.JsonNull` to clear it explicitly.
+    data.landingBlocks = Prisma.JsonNull;
+    data.landingTitle = null;
+    data.landingGeneratedAt = null;
+    data.landingStatus = null;
+    data.landingError = null;
+  }
   const result = await prisma.store.updateMany({
     where: { id: { in: ids } },
-    data: {
-      landingThemeVariant,
-      ...(clearAiLanding
-        ? {
-            landingBlocks: null,
-            landingTitle: null,
-            landingGeneratedAt: null,
-            landingStatus: null,
-            landingError: null,
-          }
-        : {}),
-    },
+    data,
   });
 
   return NextResponse.json({ updated: result.count });
