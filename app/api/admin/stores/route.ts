@@ -45,6 +45,35 @@ async function requireAdmin() {
   return user?.role === "ADMIN" ? session.user.email : null;
 }
 
+/**
+ * GET /api/admin/stores
+ *
+ * Lightweight admin-only listing used by the new-store wizard's "Copy
+ * from existing" quick-pick. Returns only the columns the picker needs
+ * (name + template/style ids) so we don't ship descriptions / owner data
+ * to the client unnecessarily.
+ */
+export async function GET() {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const stores = await prisma.store.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 200,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      templateId: true,
+      paletteId: true,
+      niche: true,
+      brandVoice: true,
+      landingThemeVariant: true,
+    },
+  });
+  return NextResponse.json({ stores });
+}
+
 export async function POST(req: Request) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
