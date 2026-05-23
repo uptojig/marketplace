@@ -1,50 +1,51 @@
 /**
- * Homepage enhancer — wraps an existing homepage component and appends
- * a shadcn product-list block section beneath it.
+ * Homepage enhancer — historical wrapper around bespoke homepages.
  *
- * This lets every template's homepage gain a premium product grid
- * without modifying the original component.
+ * Background
+ * ----------
+ * This helper used to append a shadcn-studio `product-list-XX` block
+ * underneath every bespoke homepage so chromed themes would always
+ * surface a "premium" product rail. Two problems killed that idea:
  *
- * The appended block reads shadcn semantic tokens (--background,
- * --muted, --primary, ...). Templates whose chrome is hardcoded
- * outside the --shop-* cascade (e.g. talad-see-sod's red/orange
- * palette) can pass a `palette` override so the trailing section
- * blends with the rest of the page instead of falling back to the
- * default shop tokens.
+ *   1. The shadcn-studio block hard-codes USD ("$") strings and
+ *      English star-rating microcopy. On a Thai-first storefront
+ *      that ships ฿ prices, this produced a visual conflict
+ *      (e.g. `$3` next to `฿120`) — see basketplace.co/stores/
+ *      powerpuff678 for the regression report.
+ *
+ *   2. Every bespoke homepage already includes its own product
+ *      rail in the correct currency and language, so the appended
+ *      block was redundant noise.
+ *
+ * Current behaviour
+ * -----------------
+ * Until a Thai-native / THB-aware product-list block ships, this
+ * function is a passthrough: it returns the original homepage
+ * component unchanged. The signature (`variant`, `palette`) is
+ * preserved so callers in `lib/templates/registry.ts` and theme
+ * modules continue to compile without edits.
  */
 
-import React from 'react';
-import type { HomepageProps } from '@/lib/templates/types';
-import {
-  makeProductListSection,
-  type ProductListVariant,
-} from './product-list-adapter';
-import { paletteToCssVars, type BlockPalette } from './palette';
 import type { ComponentType } from 'react';
+import type { HomepageProps } from '@/lib/templates/types';
+import type { ProductListVariant } from './product-list-adapter';
+import type { BlockPalette } from './palette';
 
 export type ProductListPalette = BlockPalette;
 
+/**
+ * Historically appended a shadcn-studio product-list block beneath
+ * every bespoke homepage. The shadcn block hard-codes `$` currency
+ * and ratings, which created a visual conflict with the bespoke
+ * homepage's Thai/THB cards. Bespoke homepages already feature their
+ * own product rail, so the extra section is redundant and ships
+ * incorrect currency — passthrough until we have a Thai-native
+ * shadcn block to swap in.
+ */
 export function enhanceHomepage(
   OriginalHomepage: ComponentType<HomepageProps>,
-  variant: ProductListVariant,
-  palette?: ProductListPalette,
+  _variant: ProductListVariant,
+  _palette?: ProductListPalette,
 ) {
-  const ProductListSection = makeProductListSection(variant);
-  const style = palette ? paletteToCssVars(palette) : undefined;
-
-  return function EnhancedHomepage(props: HomepageProps) {
-    const section = (
-      <ProductListSection
-        products={props.products}
-        storeSlug={props.store.slug}
-      />
-    );
-
-    return (
-      <>
-        <OriginalHomepage {...props} />
-        {style ? <div style={style}>{section}</div> : section}
-      </>
-    );
-  };
+  return OriginalHomepage;
 }
