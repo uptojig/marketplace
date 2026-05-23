@@ -253,6 +253,70 @@ import { makeCatalogAdapter } from '@/components/storefront/themes/_shared/catal
 import { makePdpAdapter } from '@/components/storefront/themes/_shared/pdp-adapter';
 import { enhanceHomepage } from '@/components/storefront/themes/_shared/homepage-enhancer';
 import { makeCheckoutAdapter } from '@/components/storefront/themes/_shared/checkout-adapter';
+import { makeCartAdapter } from '@/components/storefront/themes/_shared/cart-adapter';
+import { makeAboutAdapter } from '@/components/storefront/themes/_shared/about-adapter';
+import { makeHelpAdapter } from '@/components/storefront/themes/_shared/help-adapter';
+
+// Bespoke PDP imports (Wave 3)
+import { mono_eight_ProductDetail } from '@/components/storefront/themes/mono-eight/adapters';
+import { atelier_27_ProductDetail, atelier_27_Cart } from '@/components/storefront/themes/atelier-27/adapters';
+import { caldera_skin_ProductDetail, caldera_skin_Cart } from '@/components/storefront/themes/caldera-skin/adapters';
+import { hinoki_apothecary_ProductDetail, hinoki_apothecary_Cart } from '@/components/storefront/themes/hinoki-apothecary/adapters';
+import { linen_and_loom_ProductDetail, linen_and_loom_Cart } from '@/components/storefront/themes/linen-and-loom/adapters';
+import { reclaim_leather_ProductDetail, reclaim_leather_Cart } from '@/components/storefront/themes/reclaim-leather/adapters';
+import { sirin_womenswear_ProductDetail, sirin_womenswear_Cart } from '@/components/storefront/themes/sirin-womenswear/adapters';
+import { yumeiro_lip_ProductDetail, yumeiro_lip_Cart } from '@/components/storefront/themes/yumeiro-lip/adapters';
+import { lila_modest_ProductDetail } from '@/components/storefront/themes/lila-modest/adapters';
+import { carbon_era_cameras_ProductDetail, carbon_era_cameras_Cart } from '@/components/storefront/themes/carbon-era-cameras/adapters';
+import { keystroke_lab_ProductDetail, keystroke_lab_Cart } from '@/components/storefront/themes/keystroke-lab/adapters';
+import { smartloop_home_ProductDetail } from '@/components/storefront/themes/smartloop-home/adapters';
+import { wavelength_audio_ProductDetail } from '@/components/storefront/themes/wavelength-audio/adapters';
+import { saluki_yoga_ProductDetail } from '@/components/storefront/themes/saluki-yoga/adapters';
+import { korakot_house_ProductDetail } from '@/components/storefront/themes/korakot-house/adapters';
+import { inkstone_paper_ProductDetail } from '@/components/storefront/themes/inkstone-paper/adapters';
+import { tinyhand_wooden_toys_ProductDetail } from '@/components/storefront/themes/tinyhand-wooden-toys/adapters';
+import { trailcraft_outdoors_ProductDetail } from '@/components/storefront/themes/trailcraft-outdoors/adapters';
+import { petit_cote_ProductDetail } from '@/components/storefront/themes/petit-cote/adapters';
+import { mai_hatthakam_ProductDetail } from '@/components/storefront/themes/mai-hatthakam/adapters';
+
+// Bikini-beach Cart (was missing)
+import BikiniCartBespoke from '@/components/storefront/themes/bikini-beach/pages/Cart';
+
+// Brutalist-thai bespoke Checkout
+import BrutalistCheckout from '@/components/storefront/themes/brutalist-thai/pages/Checkout';
+
+// Eco-pack + Mega-store Contact pages
+import EcoPackContact from '@/components/storefront/themes/eco-pack/pages/Contact';
+import MegaStoreContact from '@/components/storefront/themes/mega-store/pages/Contact';
+
+// Handmade chrome (Wave 2 F) — chrome only, page slots use shared adapters
+import {
+  HandmadeHeaderAdapter,
+  HandmadeFooterAdapter,
+  HandmadeStripAdapter,
+} from '@/components/storefront/themes/handmade/adapters';
+
+// Taobao-style + Packaging-supply full scaffolds (Wave 2 G/H)
+import {
+  TaobaoStyleHeaderAdapter,
+  TaobaoStyleFooterAdapter,
+  TaobaoStyleStripAdapter,
+  TaobaoStyleHomepageAdapter,
+  taobao_style_Catalog,
+  taobao_style_ProductDetail,
+  taobao_style_Cart,
+  taobao_style_Checkout,
+} from '@/components/storefront/themes/taobao-style/adapters';
+import {
+  PackagingSupplyHeaderAdapter,
+  PackagingSupplyFooterAdapter,
+  PackagingSupplyStripAdapter,
+  PackagingSupplyHomepageAdapter,
+  PackagingSupplyCatalog,
+  PackagingSupplyProductDetail,
+  PackagingSupplyCart,
+  PackagingSupplyCheckout,
+} from '@/components/storefront/themes/packaging-supply/adapters';
 
 
 
@@ -263,19 +327,22 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Handmade artisan',
     description: 'Maker portrait + small batch craft',
     group: 'specialty',
-    behavior: { bottomNav: 'visible' },
-        pages: {
-      // STOPGAP: `HandmadeHomepageAdapter` was referenced here by the
-      // template-pages commit but never created/exported (no
-      // themes/handmade/adapters.tsx), which crashed the whole registry
-      // module ("HandmadeHomepageAdapter is not defined") and 500'd every
-      // page that imports it (e.g. /create-store). Reuse the Mai Hatthakam
-      // (Thai handicraft) homepage — closest artisan match — until a real
-      // handmade adapter is built.
+    behavior: { bottomNav: 'visible', makerPortrait: 'visible', storyBlock: 'inline-visible' },
+    chrome: {
+      Header: HandmadeHeaderAdapter,
+      Footer: HandmadeFooterAdapter,
+      AnnouncementStrip: HandmadeStripAdapter,
+    },
+    pages: {
+      // Handmade theme has bespoke chrome but no bespoke homepage yet —
+      // reuse Mai Hatthakam (Thai handicraft) homepage as closest match.
       home: enhanceHomepage(MaiHatthakamHomepageAdapter, '06'),
       catalog: makeCatalogAdapter('04'),
       pdp: makePdpAdapter('04', '05'),
+      cart: makeCartAdapter('01'),
       checkout: makeCheckoutAdapter('01'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -305,6 +372,7 @@ export const templates: Record<TemplateId, Template> = {
       checkout: makeCheckoutAdapter('02'),
       catalog: makeCatalogAdapter('12'),
       home: enhanceHomepage(BikiniHomepageAdapter, '01'),
+      cart: BikiniCartBespoke,
       lookbook: BikiniLookbookAdapter,
       about: BikiniAboutAdapter,
       help: BikiniHelpAdapter,
@@ -335,6 +403,7 @@ export const templates: Record<TemplateId, Template> = {
       pdp: EcoPackProductDetailAdapter,
       cart: EcoPackCartAdapter,
       checkout: EcoPackCheckoutAdapter,
+      contact: EcoPackContact,
       about: EcoPackAboutAdapter,
       help: EcoPackHelpAdapter,
     },
@@ -363,6 +432,7 @@ export const templates: Record<TemplateId, Template> = {
       pdp: MegaStoreProductDetailAdapter,
       cart: MegaStoreCartAdapter,
       checkout: MegaStoreCheckoutAdapter,
+      contact: MegaStoreContact,
       about: MegaStoreAboutAdapter,
       help: MegaStoreHelpAdapter,
     },
@@ -394,6 +464,20 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Bold orange/red/pink gradient marketplace · flash deals · countdown',
     group: 'taobao',
     behavior: { bottomNav: 'visible', countdownBanner: 'visible', stockIndicators: 'visible' },
+    chrome: {
+      Header: TaobaoStyleHeaderAdapter,
+      Footer: TaobaoStyleFooterAdapter,
+      AnnouncementStrip: TaobaoStyleStripAdapter,
+    },
+    pages: {
+      home: TaobaoStyleHomepageAdapter,
+      catalog: taobao_style_Catalog,
+      pdp: taobao_style_ProductDetail,
+      cart: taobao_style_Cart,
+      checkout: taobao_style_Checkout,
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
+    },
   },
 
   'packaging-supply': {
@@ -402,6 +486,20 @@ export const templates: Record<TemplateId, Template> = {
     description: 'Pink / yellow / sky / white cheerful packaging-supply storefront',
     group: 'packaging',
     behavior: { bottomNav: 'visible' },
+    chrome: {
+      Header: PackagingSupplyHeaderAdapter,
+      Footer: PackagingSupplyFooterAdapter,
+      AnnouncementStrip: PackagingSupplyStripAdapter,
+    },
+    pages: {
+      home: PackagingSupplyHomepageAdapter,
+      catalog: PackagingSupplyCatalog,
+      pdp: PackagingSupplyProductDetail,
+      cart: PackagingSupplyCart,
+      checkout: PackagingSupplyCheckout,
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
+    },
   },
 
   'sai-sing': {
@@ -420,6 +518,8 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('08', '03'),
       checkout: makeCheckoutAdapter('02'),
       home: enhanceHomepage(SaiSingHomepageAdapter, '05'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -440,6 +540,31 @@ export const templates: Record<TemplateId, Template> = {
       catalog: TaladSeeSodCatalog,
       cart: TaladSeeSodCart,
       checkout: TaladSeeSodCheckout,
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
+    },
+  },
+
+  'neon-festival': {
+    id: 'neon-festival',
+    name: 'Neon Festival',
+    description: 'ร้านสายงานเทศกาล แสงนีออน ของแต่งคอนเสิร์ต สไตล์ Neo-Brutalism Pop-Art',
+    group: 'neon',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: NeonFestivalHeaderAdapter,
+      Footer: NeonFestivalFooterAdapter,
+      AnnouncementStrip: NeonFestivalStripAdapter,
+    },
+    pages: {
+      home: NeonFestivalHomepageAdapter,
+      catalog: neon_festival_Catalog,
+      pdp: neon_festival_ProductDetail,
+      cart: neon_festival_Cart,
+      checkout: neon_festival_Checkout,
+      about: NeonFestivalAboutAdapter,
+      help: NeonFestivalHelpAdapter,
+      contact: neon_festival_Contact,
     },
   },
 
@@ -482,7 +607,9 @@ export const templates: Record<TemplateId, Template> = {
       catalog: BrutalistCatalog,
       pdp: BrutalistProductDetail,
       cart: BrutalistCart,
-      checkout: makeCheckoutAdapter('01'),
+      checkout: BrutalistCheckout,
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -500,8 +627,10 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(MonoEightHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('05'),
-      pdp: makePdpAdapter('09', '05'),
+      pdp: mono_eight_ProductDetail,
       checkout: makeCheckoutAdapter('02'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -521,8 +650,12 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(LilaModestHomepageAdapter, '05'),
-          pdp: makePdpAdapter('06', '03'),
+      catalog: makeCatalogAdapter('04'),
+      pdp: lila_modest_ProductDetail,
+      cart: makeCartAdapter('03'),
       checkout: makeCheckoutAdapter('04'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -543,8 +676,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(Atelier27HomepageAdapter, '02'),
       catalog: makeCatalogAdapter('12'),
-      pdp: makePdpAdapter('02', '03'),
+      pdp: atelier_27_ProductDetail,
+      cart: atelier_27_Cart,
       checkout: makeCheckoutAdapter('01'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -568,6 +704,8 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(BulkboxHomepageAdapter, '08'),
           pdp: makePdpAdapter('08', '04'),
       checkout: makeCheckoutAdapter('02'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -588,8 +726,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(CalderaSkinHomepageAdapter, '04'),
       catalog: makeCatalogAdapter('05'),
-      pdp: makePdpAdapter('04', '03'),
+      pdp: caldera_skin_ProductDetail,
+      cart: caldera_skin_Cart,
       checkout: makeCheckoutAdapter('04'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -608,9 +749,12 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       catalog: makeCatalogAdapter('09'),
-      pdp: makePdpAdapter('07', '03'),
+      pdp: carbon_era_cameras_ProductDetail,
+      cart: carbon_era_cameras_Cart,
       checkout: makeCheckoutAdapter('01'),
       home: enhanceHomepage(CarbonEraCamerasHomepageAdapter, '07'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -627,7 +771,11 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(GlowLampCoHomepageAdapter, '06'),
+      catalog: makeCatalogAdapter('02'),
+      pdp: makePdpAdapter('02', '03'),
           checkout: makeCheckoutAdapter('02'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -645,8 +793,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(HinokiHomepageAdapter, '09'),
       catalog: makeCatalogAdapter('09'),
-      pdp: makePdpAdapter('08', '04'),
+      pdp: hinoki_apothecary_ProductDetail,
+      cart: hinoki_apothecary_Cart,
       checkout: makeCheckoutAdapter('04'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -663,8 +814,11 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(InkstonePaperHomepageAdapter, '01'),
-          pdp: makePdpAdapter('04', '05'),
+      catalog: makeCatalogAdapter('05'),
+      pdp: inkstone_paper_ProductDetail,
       checkout: makeCheckoutAdapter('01'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -685,8 +839,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(KeystrokeLabHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('06'),
-      pdp: makePdpAdapter('06', '03'),
+      pdp: keystroke_lab_ProductDetail,
+      cart: keystroke_lab_Cart,
       checkout: makeCheckoutAdapter('02'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -703,8 +860,11 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(KorakotHouseHomepageAdapter, '05'),
-          pdp: makePdpAdapter('07', '02'),
+      catalog: makeCatalogAdapter('02'),
+      pdp: korakot_house_ProductDetail,
       checkout: makeCheckoutAdapter('04'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -725,8 +885,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(LinenAndLoomHomepageAdapter, '02'),
       catalog: makeCatalogAdapter('04'),
-      pdp: makePdpAdapter('01', '05'),
+      pdp: linen_and_loom_ProductDetail,
+      cart: linen_and_loom_Cart,
       checkout: makeCheckoutAdapter('01'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -743,9 +906,11 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       catalog: makeCatalogAdapter('04'),
-      pdp: makePdpAdapter('04', '05'),
+      pdp: mai_hatthakam_ProductDetail,
       checkout: makeCheckoutAdapter('02'),
       home: enhanceHomepage(MaiHatthakamHomepageAdapter, '04'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -764,6 +929,8 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(PastelPackHomepageAdapter, '06'),
           pdp: makePdpAdapter('02', '03'),
       checkout: makeCheckoutAdapter('04'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -784,8 +951,10 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(PetitCoteHomepageAdapter, '07'),
       catalog: makeCatalogAdapter('02'),
-      pdp: makePdpAdapter('05', '02'),
+      pdp: petit_cote_ProductDetail,
       checkout: makeCheckoutAdapter('01'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -805,8 +974,11 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(PigmentStudioHomepageAdapter, '08'),
+      catalog: makeCatalogAdapter('08'),
           pdp: makePdpAdapter('05', '04'),
       checkout: makeCheckoutAdapter('02'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -824,8 +996,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(ReclaimLeatherHomepageAdapter, '09'),
       catalog: makeCatalogAdapter('07'),
-      pdp: makePdpAdapter('06', '02'),
+      pdp: reclaim_leather_ProductDetail,
+      cart: reclaim_leather_Cart,
       checkout: makeCheckoutAdapter('04'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -842,8 +1017,11 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(SalukiYogaHomepageAdapter, '01'),
-          pdp: makePdpAdapter('03', '05'),
+      catalog: makeCatalogAdapter('07'),
+      pdp: saluki_yoga_ProductDetail,
       checkout: makeCheckoutAdapter('01'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -864,8 +1042,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(SirinHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('03'),
-      pdp: makePdpAdapter('07', '03'),
+      pdp: sirin_womenswear_ProductDetail,
+      cart: sirin_womenswear_Cart,
       checkout: makeCheckoutAdapter('02'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -886,8 +1067,10 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(SmartloopHomeHomepageAdapter, '02'),
       catalog: makeCatalogAdapter('09'),
-      pdp: makePdpAdapter('08', '04'),
+      pdp: smartloop_home_ProductDetail,
       checkout: makeCheckoutAdapter('04'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -905,8 +1088,10 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(TinyhandWoodenToysHomepageAdapter, '04'),
       catalog: makeCatalogAdapter('02'),
-      pdp: makePdpAdapter('04', '04'),
+      pdp: tinyhand_wooden_toys_ProductDetail,
       checkout: makeCheckoutAdapter('01'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -924,8 +1109,10 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(TrailcraftHomepageAdapter, '05'),
       catalog: makeCatalogAdapter('07'),
-      pdp: makePdpAdapter('09', '05'),
+      pdp: trailcraft_outdoors_ProductDetail,
       checkout: makeCheckoutAdapter('02'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -945,8 +1132,11 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(WavelengthAudioHomepageAdapter, '06'),
-          pdp: makePdpAdapter('09', '02'),
+      catalog: makeCatalogAdapter('07'),
+      pdp: wavelength_audio_ProductDetail,
       checkout: makeCheckoutAdapter('04'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 
@@ -967,8 +1157,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(YumeiroLipHomepageAdapter, '07'),
       catalog: makeCatalogAdapter('05'),
-      pdp: makePdpAdapter('04', '04'),
+      pdp: yumeiro_lip_ProductDetail,
+      cart: yumeiro_lip_Cart,
       checkout: makeCheckoutAdapter('01'),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 };

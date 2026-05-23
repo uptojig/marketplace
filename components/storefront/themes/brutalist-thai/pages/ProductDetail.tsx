@@ -22,7 +22,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Plus, Minus, ChevronRight } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
 const FONT_DISPLAY = 'font-[family:var(--font-google-sans)]';
@@ -33,7 +32,6 @@ export default function BrutalistProductDetail(props: ProductDetailProps) {
   const [qty, setQty] = useState(1);
 
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const gallery = product.images.length > 0
     ? product.images
@@ -58,7 +56,6 @@ export default function BrutalistProductDetail(props: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   }
 
   return (

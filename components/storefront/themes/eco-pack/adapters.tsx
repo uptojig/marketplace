@@ -371,3 +371,10 @@ export function EcoPackHelpAdapter(_props: ScaffoldHelpProps) {
     />
   );
 }
+
+// ── Contact (bespoke standalone page) ──────────────────────────────
+// Re-exported under the registry-naming convention so the per-store
+// /contact route dispatcher (wired separately in lib/templates/registry.ts)
+// can mount it directly. The page receives `{ store }` with the
+// FooterProps-shaped store record.
+export { default as eco_pack_Contact } from './pages/Contact';

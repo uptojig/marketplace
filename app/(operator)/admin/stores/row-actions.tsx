@@ -231,7 +231,7 @@ export function StoreRowActions({
             </Link>
           </DropdownMenuItem>
 
-          {approvalStatus === "PENDING" && (
+          {approvalStatus !== "APPROVED" && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={quickApprove} disabled={approving}>

@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { ArrowRight, Lightbulb, Sun, Moon, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 
@@ -32,7 +31,6 @@ interface HomepageProps {
 
 function ProductCard({ product, store }: { product: Product; store: HomepageProps['store'] }) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -45,7 +43,6 @@ function ProductCard({ product, store }: { product: Product; store: HomepageProp
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   return (

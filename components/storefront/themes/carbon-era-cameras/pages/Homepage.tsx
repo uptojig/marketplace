@@ -3,7 +3,6 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, Camera, CheckCircle2, ShieldCheck, FileText, Download } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 interface Product {
   id: string;
@@ -35,7 +34,6 @@ function getCondition(productId: string) {
 
 export function CarbonEraCamerasHomepage({ store, products, categories }: HomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -48,7 +46,6 @@ export function CarbonEraCamerasHomepage({ store, products, categories }: Homepa
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const featuredProducts = products.slice(0, 8);

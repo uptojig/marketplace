@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 interface Product {
   id: string;
@@ -28,7 +27,6 @@ export function Homepage({ store, products, categories }: HomepageProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -41,7 +39,6 @@ export function Homepage({ store, products, categories }: HomepageProps) {
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const filteredProducts =

@@ -4,7 +4,6 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Sparkles, Plus, Minus, Zap, ShieldCheck, Truck } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 interface ProductCard {
@@ -65,7 +64,6 @@ export default function ProductDetail({ store, product, related }: ProductDetail
     : 0;
 
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAdd = () => {
     add(
@@ -79,7 +77,6 @@ export default function ProductDetail({ store, product, related }: ProductDetail
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   return (

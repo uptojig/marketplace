@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 interface Product {
   id: string;
@@ -26,7 +25,6 @@ interface HinokiHomepageProps {
 
 export function HinokiHomepage({ store, products, categories }: HinokiHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,7 +37,6 @@ export function HinokiHomepage({ store, products, categories }: HinokiHomepagePr
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const stories = [

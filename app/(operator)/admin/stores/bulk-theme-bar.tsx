@@ -120,7 +120,7 @@ export function BulkThemeBar({ stores }: { stores: StoreSlim[] }) {
   }
 
   return (
-    <details className="rounded-lg border border-border bg-card shadow-sm">
+    <details open className="rounded-lg border border-border bg-card shadow-sm">
       <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium hover:bg-muted">
         <span className="inline-flex items-center gap-2">
           🎨 Bulk theme picker
