@@ -1,665 +1,85 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Trash2 } from "lucide-react";
-import { ImageUploadField } from "@/components/admin/image-upload-field";
+/**
+ * StoreEditForm — admin edit-store orchestrator.
+ *
+ * Renders the 5 per-tab sections (basics / branding / address / contact
+ * / danger) inside a shadcn <Tabs> shell. Each section owns its own RHF
+ * form + PATCH submit, so dirty-tracking and validation are scoped to
+ * the tab the operator is on. Phase C of the admin/stores redesign.
+ *
+ * The Approval panel and page-header actions (View store, Landing
+ * content, etc.) are now hoisted into the page-level OperatorPageHeader
+ * — this component is only concerned with the editable form sections.
+ */
+
+import * as React from "react";
+
 import {
-  TemplateStylePicker,
-  serializeTemplateStyle,
-  templateIdChanged,
-  type TemplateStyleValues,
-} from "@/components/store/template-style-picker";
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+
 import {
-  Button,
-  OperatorStatusBadge,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/operator/operator-primitives";
+  BasicsSection,
+  type BasicsStore,
+} from "./_sections/basics-section";
+import {
+  BrandingSection,
+  type BrandingStore,
+} from "./_sections/branding-section";
+import {
+  AddressSection,
+  type AddressStore,
+} from "./_sections/address-section";
+import {
+  ContactSection,
+  type ContactStore,
+} from "./_sections/contact-section";
+import { DangerSection, type DangerStore } from "./_sections/danger-section";
 
-type StoreData = {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  logoUrl: string | null;
-  bannerUrl: string | null;
-  tagline: string | null;
-  primaryColor: string | null;
-  customDomain: string | null;
-  logoPosition: string | null;
-  menuPosition: string | null;
-  landingThemeVariant: string | null;
-  templateId: string | null;
-  paletteId: string | null;
-  niche: string | null;
-  brandVoice: string | null;
-  companyName: string | null;
-  taxId: string | null;
-  addressLine1: string | null;
-  addressLine2: string | null;
-  subdistrict: string | null;
-  district: string | null;
-  province: string | null;
-  postalCode: string | null;
-  country: string | null;
-  contactEmail: string | null;
-  contactPhone: string | null;
-  facebookUrl: string | null;
-  messengerUrl: string | null;
-  twitterUrl: string | null;
-  instagramUrl: string | null;
-  websiteUrl: string | null;
-  lineId: string | null;
-  platformEmail: string | null;
-  platformEmailForwardTo: string | null;
-  platformEmailVerified: boolean;
-};
+// Union of every column the per-tab sections read from. Kept inline
+// (not exported) so adding a new section just means widening the type
+// here + extending the corresponding *Store type in _sections/.
+export type StoreEditData = BasicsStore &
+  BrandingStore &
+  AddressStore &
+  ContactStore &
+  DangerStore;
 
-type FormValues = {
-  name: string;
-  slug: string;
-  description: string;
-  logoUrl: string;
-  bannerUrl: string;
-  tagline: string;
-  primaryColor: string;
-  customDomain: string;
-  logoPosition: string;
-  menuPosition: string;
-  landingThemeVariant: string;
-  templateId: string;
-  paletteId: string;
-  niche: string;
-  brandVoice: string;
-  companyName: string;
-  taxId: string;
-  addressLine1: string;
-  addressLine2: string;
-  subdistrict: string;
-  district: string;
-  province: string;
-  postalCode: string;
-  country: string;
-  contactEmail: string;
-  contactPhone: string;
-  facebookUrl: string;
-  messengerUrl: string;
-  twitterUrl: string;
-  instagramUrl: string;
-  websiteUrl: string;
-  lineId: string;
-  platformEmailForwardTo: string;
-};
-
-function toForm(s: StoreData): FormValues {
-  return {
-    name: s.name,
-    slug: s.slug,
-    description: s.description ?? "",
-    logoUrl: s.logoUrl ?? "",
-    bannerUrl: s.bannerUrl ?? "",
-    tagline: s.tagline ?? "",
-    primaryColor: s.primaryColor ?? "#2563eb",
-    customDomain: s.customDomain ?? "",
-    logoPosition: s.logoPosition ?? "left",
-    menuPosition: s.menuPosition ?? "right",
-    landingThemeVariant: s.landingThemeVariant ?? "",
-    templateId: s.templateId ?? "",
-    paletteId: s.paletteId ?? "",
-    niche: s.niche ?? "",
-    brandVoice: s.brandVoice ?? "casual",
-    companyName: s.companyName ?? "",
-    taxId: s.taxId ?? "",
-    addressLine1: s.addressLine1 ?? "",
-    addressLine2: s.addressLine2 ?? "",
-    subdistrict: s.subdistrict ?? "",
-    district: s.district ?? "",
-    province: s.province ?? "",
-    postalCode: s.postalCode ?? "",
-    country: s.country ?? "TH",
-    contactEmail: s.contactEmail ?? "",
-    contactPhone: s.contactPhone ?? "",
-    facebookUrl: s.facebookUrl ?? "",
-    messengerUrl: s.messengerUrl ?? "",
-    twitterUrl: s.twitterUrl ?? "",
-    instagramUrl: s.instagramUrl ?? "",
-    websiteUrl: s.websiteUrl ?? "",
-    lineId: s.lineId ?? "",
-    platformEmailForwardTo: s.platformEmailForwardTo ?? "",
-  };
-}
-
-type TabId = "info" | "design" | "contact";
-const TABS: { id: TabId; label: string }[] = [
-  { id: "info", label: "ข้อมูลร้าน" },
-  { id: "design", label: "ดีไซน์" },
-  { id: "contact", label: "ที่อยู่ & ติดต่อ" },
-];
-
-export function StoreEditForm({ store }: { store: StoreData }) {
-  const router = useRouter();
-  const [form, setForm] = useState<FormValues>(toForm(store));
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [tab, setTab] = useState<TabId>("info");
-  const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
-
-  // Snapshot of the original templateId so we can detect when the
-  // operator switches templates and warn them before submit — the API
-  // clears existing AI-generated landingBlocks on template change.
-  const initialTemplateId = store.templateId ?? "";
-
-  function update<K extends keyof FormValues>(key: K, value: FormValues[K]) {
-    setForm((f) => ({ ...f, [key]: value }));
-  }
-
-  function updateTemplateStyle(next: Partial<TemplateStyleValues>) {
-    setForm((f) => ({ ...f, ...next }));
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    // Warn before stomping AI-generated landing JSON. Only triggers when
-    // the templateId is actually changing — palette/niche/voice swaps
-    // don't invalidate landingBlocks.
-    if (templateIdChanged(initialTemplateId, form.templateId)) {
-      const ok = confirm(
-        "การเปลี่ยน Template จะลบ AI-generated landing blocks (ถ้ามี) เพื่อให้ template ใหม่ render แทน\n\nดำเนินการต่อ?",
-      );
-      if (!ok) return;
-    }
-
-    setSaving(true);
-    setToast(null);
-
-    // Merge the 5 template-style fields into the PATCH body. We use the
-    // shared serializer so empty `landingThemeVariant` becomes "omit"
-    // (no write) rather than "" (write null), matching the API contract.
-    const styleBody = serializeTemplateStyle({
-      templateId: form.templateId,
-      paletteId: form.paletteId,
-      niche: form.niche,
-      brandVoice: form.brandVoice,
-      landingThemeVariant: form.landingThemeVariant,
-    });
-    // Drop the landingThemeVariant field from `form` before merging —
-    // styleBody owns the serialised version (might be omitted entirely).
-    const { landingThemeVariant: _drop, ...formWithoutVariant } = form;
-    const body = { ...formWithoutVariant, ...styleBody };
-
-    const res = await fetch(`/api/admin/stores/${store.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      const msg =
-        typeof err.error === "object"
-          ? Object.values(err.error).flat().join(", ")
-          : (err.error ?? "บันทึกไม่สำเร็จ");
-      setToast({ type: "err", msg: String(msg) });
-    } else {
-      const updated = await res.json().catch(() => null);
-      const warnings: string[] = Array.isArray(updated?.warnings) ? updated.warnings : [];
-      setToast({
-        type: warnings.length ? "err" : "ok",
-        msg: warnings.length ? `บันทึกแล้ว (มีข้อควรระวัง: ${warnings.join("; ")})` : "บันทึกแล้ว",
-      });
-      router.refresh();
-      if (updated?.slug && updated.slug !== store.slug) {
-        setForm((f) => ({ ...f, slug: updated.slug }));
-      }
-    }
-    setSaving(false);
-  }
-
-  async function handleDelete() {
-    if (
-      !confirm(
-        `ลบร้าน "${store.name}" ถาวร?\nสินค้าและออเดอร์ทั้งหมดที่อยู่ใน ProductVariant/OrderItem ของร้านนี้จะถูกลบตาม\nการกระทำนี้ย้อนกลับไม่ได้`,
-      )
-    ) {
-      return;
-    }
-    setDeleting(true);
-    const res = await fetch(`/api/admin/stores/${store.id}`, { method: "DELETE" });
-    if (res.ok) {
-      router.push("/admin/stores");
-      router.refresh();
-    } else {
-      setToast({ type: "err", msg: "ลบไม่สำเร็จ" });
-      setDeleting(false);
-    }
-  }
-
-  const isImg = (s: string) => /^https?:\/\//.test(s);
-
+export function StoreEditForm({ store }: { store: StoreEditData }) {
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {toast && (
-        <div
-          className={`sticky top-2 z-10 rounded-md border px-4 py-3 text-sm ${
-            toast.type === "ok"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-destructive/30 bg-destructive/10 text-destructive"
-          }`}
+    <Tabs defaultValue="basics" className="w-full">
+      <TabsList className="sticky top-0 z-10 mb-4 w-full justify-start gap-1 bg-background/95 backdrop-blur">
+        <TabsTrigger value="basics">ข้อมูลพื้นฐาน</TabsTrigger>
+        <TabsTrigger value="branding">แบรนด์ดิ้ง</TabsTrigger>
+        <TabsTrigger value="address">ที่อยู่</TabsTrigger>
+        <TabsTrigger value="contact">ติดต่อ</TabsTrigger>
+        <TabsTrigger
+          value="danger"
+          className="data-active:bg-destructive/10 data-active:text-destructive"
         >
-          {toast.msg}
-        </div>
-      )}
+          โซนอันตราย
+        </TabsTrigger>
+      </TabsList>
 
-      {/* Tabs */}
-      <div className="sticky top-0 z-10 -mx-2 mb-1 flex gap-1 overflow-x-auto rounded-lg border bg-card p-1 shadow-sm sm:mx-0">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={`whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition ${
-              tab === t.id
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div hidden={tab !== "info"} className="space-y-5">
-        <Section title="ข้อมูลพื้นฐาน">
-          <Field label="ชื่อร้าน" required>
-            <input
-              value={form.name}
-              onChange={(e) => update("name", e.target.value)}
-              required
-              className="w-full rounded-md border px-3 py-2 text-sm"
-            />
-          </Field>
-
-          <Field label="Slug (URL ของร้าน)" required hint={`/stores/${form.slug || "..."}`}>
-            <input
-              value={form.slug}
-              onChange={(e) => update("slug", e.target.value.toLowerCase())}
-              required
-              pattern="^[a-z0-9฀-๿](?:[a-z0-9฀-๿-]*[a-z0-9฀-๿])?$"
-              className="w-full rounded-md border px-3 py-2 font-mono text-sm"
-            />
-          </Field>
-
-          <Field label="คำอธิบาย" hint="โชว์ในหน้าร้านและ meta description">
-            <textarea
-              value={form.description}
-              onChange={(e) => update("description", e.target.value)}
-              rows={3}
-              maxLength={500}
-              className="w-full rounded-md border px-3 py-2 text-sm"
-            />
-          </Field>
-
-          <Field label="Tagline" hint="ข้อความสั้นๆใต้ชื่อร้าน">
-            <input
-              value={form.tagline}
-              onChange={(e) => update("tagline", e.target.value)}
-              placeholder="เช่น แฟชั่นนำเทรนด์ ส่งตรงจากโรงงาน"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-            />
-          </Field>
-        </Section>
-
-        <Section title="โดเมน">
-          <Field
-            label="Custom Domain"
-            hint="ถ้าตั้งไว้ ลูกค้าเข้าผ่านโดเมนนี้แทน /stores/[slug] (ต้องชี้ DNS มาที่ Vercel แยก)"
-          >
-            <input
-              value={form.customDomain}
-              onChange={(e) => update("customDomain", e.target.value.toLowerCase())}
-              placeholder="shop.example.com"
-              className="w-full rounded-md border px-3 py-2 font-mono text-sm"
-            />
-          </Field>
-        </Section>
-
-        <Section title="ข้อมูลนิติบุคคล / ภาษี">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="ชื่อบริษัท / นิติบุคคล" hint='เช่น "บริษัท นิสิตสามย่าน จำกัด (สำนักงานใหญ่)"'>
-              <input
-                value={form.companyName}
-                onChange={(e) => update("companyName", e.target.value)}
-                placeholder="บริษัท ___ จำกัด"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </Field>
-            <Field label="เลขประจำตัวผู้เสียภาษี" hint="13 หลัก">
-              <input
-                value={form.taxId}
-                onChange={(e) => update("taxId", e.target.value)}
-                placeholder="0105564088661"
-                className="w-full rounded-md border px-3 py-2 font-mono text-sm"
-              />
-            </Field>
-          </div>
-        </Section>
-      </div>
-
-      <div hidden={tab !== "design"} className="space-y-5">
-        <Section title="Template & Style">
-          <p className="-mt-2 mb-2 text-xs text-muted-foreground">
-            เลือก template ของหน้าร้าน + palette + niche + brand voice — ค่าเหล่านี้กำหนดวิธี render หน้าร้านและ AI design hints
-          </p>
-          <TemplateStylePicker
-            embedded
-            values={{
-              templateId: form.templateId,
-              paletteId: form.paletteId,
-              niche: form.niche,
-              brandVoice: form.brandVoice,
-              landingThemeVariant: form.landingThemeVariant,
-            }}
-            onChange={updateTemplateStyle}
-          />
-        </Section>
-
-        <Section title="แบรนด์ดิ้ง">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Logo" hint="วาง URL หรือกด อัพโหลด เพื่อเลือกไฟล์">
-              <ImageUploadField
-                value={form.logoUrl}
-                onChange={(v) => update("logoUrl", v)}
-                kind="logo"
-                previewWidth={240}
-                previewHeight={80}
-              />
-            </Field>
-
-            <Field
-              label="Banner"
-              hint="รูปแบนเนอร์บนหน้าร้าน (อัตราส่วน ~3:1) — วาง URL หรืออัพโหลด"
-            >
-              <ImageUploadField
-                value={form.bannerUrl}
-                onChange={(v) => update("bannerUrl", v)}
-                kind="banner"
-                previewWidth={300}
-                previewHeight={100}
-                cover
-              />
-            </Field>
-          </div>
-
-          <Field label="Primary Color" hint="ใช้สำหรับปุ่ม / accent ในหน้าร้าน">
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={form.primaryColor}
-                onChange={(e) => update("primaryColor", e.target.value)}
-                className="h-9 w-14 cursor-pointer rounded border"
-              />
-              <input
-                value={form.primaryColor}
-                onChange={(e) => update("primaryColor", e.target.value)}
-                placeholder="#2563eb"
-                pattern="^#[0-9a-fA-F]{6}$"
-                className="w-32 rounded-md border px-3 py-2 font-mono text-sm"
-              />
-            </div>
-          </Field>
-        </Section>
-
-        <Section title="ส่วนหัวร้าน (Header)">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="ตำแหน่งโลโก้" hint="ซ้าย = ติดกับ search/menu, กลาง = อยู่ตรงกลางหัว">
-              <Select value={form.logoPosition} onValueChange={(v) => update("logoPosition", v)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="left">ซ้าย (default)</SelectItem>
-                  <SelectItem value="center">กลาง</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label="ตำแหน่งเมนู" hint="แนวการวาง nav links บน desktop">
-              <Select value={form.menuPosition} onValueChange={(v) => update("menuPosition", v)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="right">ขวา (default)</SelectItem>
-                  <SelectItem value="center">กลาง</SelectItem>
-                  <SelectItem value="left">ซ้าย</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
-        </Section>
-      </div>
-
-      <div hidden={tab !== "contact"} className="space-y-5">
-        <Section title="ที่อยู่ร้านค้า">
-          <Field label="บ้านเลขที่ / ถนน">
-            <input
-              value={form.addressLine1}
-              onChange={(e) => update("addressLine1", e.target.value)}
-              placeholder="364/99 ซอยศูนย์วิจัย 4"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-            />
-          </Field>
-          <Field label="เพิ่มเติม (อาคาร / ชั้น)">
-            <input
-              value={form.addressLine2}
-              onChange={(e) => update("addressLine2", e.target.value)}
-              placeholder="ชั้น 2 อาคาร A (ไม่ใส่ก็ได้)"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-            />
-          </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="แขวง / ตำบล">
-              <input
-                value={form.subdistrict}
-                onChange={(e) => update("subdistrict", e.target.value)}
-                placeholder="บางกะปิ"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </Field>
-            <Field label="เขต / อำเภอ">
-              <input
-                value={form.district}
-                onChange={(e) => update("district", e.target.value)}
-                placeholder="ห้วยขวาง"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </Field>
-            <Field label="จังหวัด">
-              <input
-                value={form.province}
-                onChange={(e) => update("province", e.target.value)}
-                placeholder="กรุงเทพมหานคร"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </Field>
-            <Field label="รหัสไปรษณีย์">
-              <input
-                value={form.postalCode}
-                onChange={(e) => update("postalCode", e.target.value)}
-                placeholder="10310"
-                className="w-full rounded-md border px-3 py-2 font-mono text-sm"
-              />
-            </Field>
-            <Field label="ประเทศ" hint="ISO code 2 ตัว เช่น TH, US">
-              <input
-                value={form.country}
-                onChange={(e) => update("country", e.target.value.toUpperCase())}
-                placeholder="TH"
-                maxLength={2}
-                className="w-24 rounded-md border px-3 py-2 font-mono text-sm uppercase"
-              />
-            </Field>
-          </div>
-        </Section>
-
-        <Section title="ช่องทางติดต่อ">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Email">
-              <input
-                type="email"
-                value={form.contactEmail}
-                onChange={(e) => update("contactEmail", e.target.value)}
-                placeholder="contact@example.com"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </Field>
-            <Field label="โทรศัพท์">
-              <input
-                value={form.contactPhone}
-                onChange={(e) => update("contactPhone", e.target.value)}
-                placeholder="0812345678"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </Field>
-            <Field label="Facebook Page URL">
-              <input
-                value={form.facebookUrl}
-                onChange={(e) => update("facebookUrl", e.target.value)}
-                placeholder="https://facebook.com/..."
-                className="w-full rounded-md border px-3 py-2 font-mono text-xs"
-              />
-            </Field>
-            <Field label="Messenger URL" hint="m.me/... หรือลิงก์ Messenger">
-              <input
-                value={form.messengerUrl}
-                onChange={(e) => update("messengerUrl", e.target.value)}
-                placeholder="https://m.me/..."
-                className="w-full rounded-md border px-3 py-2 font-mono text-xs"
-              />
-            </Field>
-            <Field label="X (Twitter) URL">
-              <input
-                value={form.twitterUrl}
-                onChange={(e) => update("twitterUrl", e.target.value)}
-                placeholder="https://x.com/..."
-                className="w-full rounded-md border px-3 py-2 font-mono text-xs"
-              />
-            </Field>
-            <Field label="Instagram URL">
-              <input
-                value={form.instagramUrl}
-                onChange={(e) => update("instagramUrl", e.target.value)}
-                placeholder="https://instagram.com/..."
-                className="w-full rounded-md border px-3 py-2 font-mono text-xs"
-              />
-            </Field>
-            <Field label="เว็บไซต์ (Website)">
-              <input
-                value={form.websiteUrl}
-                onChange={(e) => update("websiteUrl", e.target.value)}
-                placeholder="https://example.com"
-                className="w-full rounded-md border px-3 py-2 font-mono text-xs"
-              />
-            </Field>
-            <Field label="LINE ID">
-              <input
-                value={form.lineId}
-                onChange={(e) => update("lineId", e.target.value)}
-                placeholder="@example"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </Field>
-          </div>
-        </Section>
-
-        <Section title="อีเมลร้านค้า">
-          <p className="text-xs text-muted-foreground">
-            อีเมลกลางบนโดเมนของระบบ — สร้างให้อัตโนมัติเมื่อร้านตั้งค่าโดเมนของตัวเองครั้งแรก
-            เมลที่ส่งมาจะถูกส่งต่อไปยังกล่องจดหมายที่ระบุไว้ด้านล่าง
-          </p>
-          <Field label="อีเมลกลางของร้าน" hint="ระบบสร้างให้เมื่อตั้งค่าโดเมน">
-            <input
-              value={store.platformEmail ?? "— ยังไม่มี —"}
-              readOnly
-              className="w-full rounded-md border bg-muted px-3 py-2 font-mono text-sm text-muted-foreground"
-            />
-          </Field>
-          <Field
-            label="ส่งต่อไปที่อีเมล"
-            hint="กล่องจดหมายที่จะรับเมลจริง — กรอกอีเมลใดก็ได้ เช่น contact@yourdomain.com (ระบบเชื่อค่าที่แอดมินกรอก ไม่ต้องยืนยันเพิ่ม)"
-          >
-            <input
-              type="email"
-              value={form.platformEmailForwardTo}
-              onChange={(e) => update("platformEmailForwardTo", e.target.value)}
-              placeholder="contact@yourdomain.com"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-            />
-          </Field>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">สถานะ:</span>
-            {store.platformEmailVerified ? (
-              <OperatorStatusBadge tone="success">ยืนยันแล้ว ✓</OperatorStatusBadge>
-            ) : (
-              <OperatorStatusBadge tone="neutral">ยังไม่ยืนยัน</OperatorStatusBadge>
-            )}
-          </div>
-        </Section>
-      </div>
-
-      <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-stone-200 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-        <div className="flex items-center justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="text-destructive hover:bg-destructive/10"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            {deleting ? "กำลังลบ..." : "ลบร้านนี้"}
-          </Button>
-          <Button type="submit" disabled={saving}>
-            {saving ? "กำลังบันทึก..." : "บันทึก"}
-          </Button>
-        </div>
-      </div>
-    </form>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-lg border bg-card p-5">
-      <h2 className="mb-4 font-semibold">{title}</h2>
-      <div className="space-y-4">{children}</div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  required,
-  hint,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label className="mb-1 block text-sm font-medium">
-        {label}
-        {required && <span className="ml-1 text-destructive">*</span>}
-      </label>
-      {children}
-      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-    </div>
+      <TabsContent value="basics" className="mt-0">
+        <BasicsSection store={store} />
+      </TabsContent>
+      <TabsContent value="branding" className="mt-0">
+        <BrandingSection store={store} />
+      </TabsContent>
+      <TabsContent value="address" className="mt-0">
+        <AddressSection store={store} />
+      </TabsContent>
+      <TabsContent value="contact" className="mt-0">
+        <ContactSection store={store} />
+      </TabsContent>
+      <TabsContent value="danger" className="mt-0">
+        <DangerSection store={store} />
+      </TabsContent>
+    </Tabs>
   );
 }
