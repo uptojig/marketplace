@@ -143,7 +143,7 @@ export function PetitCoteProductDetail({ store, product, related }: ProductDetai
       },
       qty,
     );
-    router.push(`/stores/${store.slug}/checkout/address`);
+    router.push(`/stores/${store.slug}/checkout`);
   };
 
   // ── Layout ─────────────────────────────────────────────────

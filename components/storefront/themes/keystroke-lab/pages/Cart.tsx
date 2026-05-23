@@ -681,7 +681,7 @@ export function KeystrokeLabCart({ store }: CartProps) {
 
             {/* Checkout CTA */}
             <Link
-              href={`/stores/${store.slug}/checkout/address`}
+              href={`/stores/${store.slug}/checkout`}
               className="mt-6 inline-flex w-full items-center justify-center gap-2 h-12 bg-[#22d3ee] text-[#020617] font-[family:var(--font-prompt)] font-bold tracking-[0.16em] uppercase hover:bg-white transition-colors"
               style={{ background: 'var(--shop-primary, #22d3ee)' }}
             >

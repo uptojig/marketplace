@@ -50,7 +50,7 @@ function storeUrls(slug: string) {
     home: base,
     shop: `${base}/category`,
     cart: `${base}/cart`,
-    checkout: `${base}/checkout/address`,
+    checkout: `${base}/checkout`,
     products: `${base}/products`,
   };
 }

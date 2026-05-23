@@ -801,7 +801,7 @@ export function CartPage({ store }: CartPageProps) {
               </div>
 
               <Link
-                href={`/stores/${store.slug}/checkout/address`}
+                href={`/stores/${store.slug}/checkout`}
                 className="mt-8 inline-flex h-12 w-full items-center justify-center font-[family:var(--font-kanit)] text-[11px] font-black uppercase tracking-[0.28em] transition-opacity hover:opacity-90"
                 style={{
                   background: 'var(--shop-ink)',

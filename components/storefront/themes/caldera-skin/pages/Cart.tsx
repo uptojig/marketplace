@@ -684,7 +684,7 @@ export function CalderaSkinCart({
                 </dl>
 
                 <Link
-                  href={`/stores/${store.slug}/checkout/address`}
+                  href={`/stores/${store.slug}/checkout`}
                   className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-md font-[family:var(--font-prompt)] text-sm font-semibold uppercase tracking-[0.15em] text-white shadow-sm transition-opacity hover:opacity-90"
                   style={{ background: 'var(--shop-primary)' }}
                 >

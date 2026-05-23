@@ -497,7 +497,7 @@ export default function TaladSeeSodCart({ store }: { store: StoreLite }) {
                   </div>
 
                   <Link
-                    href={`/stores/${store.slug}/checkout/address`}
+                    href={`/stores/${store.slug}/checkout`}
                     className={`w-full inline-flex items-center justify-center gap-2 bg-[#dc2626] hover:bg-[#b91c1c] text-white ${FONT_HEADING} font-black uppercase tracking-wider px-6 py-3.5 shadow-md transition-colors`}
                   >
                     <ShoppingBag size={18} strokeWidth={2.5} />

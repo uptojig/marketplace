@@ -415,7 +415,7 @@ export default function bikini_beach_Cart(props: ScaffoldCartProps) {
         return;
       }
       const data = (await res.json()) as { url?: string; redirectUrl?: string };
-      const next = data.url ?? data.redirectUrl ?? `/stores/${store.slug}/checkout/address`;
+      const next = data.url ?? data.redirectUrl ?? `/stores/${store.slug}/checkout`;
       if (typeof window !== 'undefined') {
         window.location.href = next;
       }
@@ -423,7 +423,7 @@ export default function bikini_beach_Cart(props: ScaffoldCartProps) {
       // Fall back to the address page so the customer is never trapped
       // on the cart screen when the API is unreachable in dev.
       if (typeof window !== 'undefined') {
-        window.location.href = `/stores/${store.slug}/checkout/address`;
+        window.location.href = `/stores/${store.slug}/checkout`;
       }
     } finally {
       setCheckoutBusy(false);

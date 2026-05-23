@@ -531,7 +531,7 @@ export function ThaiCartAdapterView({ store, config }: ThaiCartAdapterViewProps)
                     color: palette.primaryFg,
                   }}
                 >
-                  <Link href={`/stores/${store.slug}/checkout/address`}>
+                  <Link href={`/stores/${store.slug}/checkout`}>
                     {checkoutLabel}
                   </Link>
                 </Button>

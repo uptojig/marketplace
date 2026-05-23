@@ -988,7 +988,7 @@ export default function CarbonEraCamerasCart({ store }: CartProps) {
 
               <div className="px-5 pb-5">
                 <Link
-                  href={`/stores/${store.slug}/checkout/address`}
+                  href={`/stores/${store.slug}/checkout`}
                   className="inline-flex w-full items-center justify-center gap-2 px-4 py-3.5 text-xs uppercase tracking-[0.22em] transition hover:opacity-90"
                   style={{
                     fontFamily: FONT_HEADING,

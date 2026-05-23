@@ -590,7 +590,7 @@ export function CartAdapterView({ store, style }: CartAdapterViewProps) {
                 </div>
 
                 <Link
-                  href={`/stores/${store.slug}/checkout/address`}
+                  href={`/stores/${store.slug}/checkout`}
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 font-bold uppercase tracking-wider shadow-md hover:opacity-90 transition"
                   style={{
                     background: 'var(--primary, #111)',
