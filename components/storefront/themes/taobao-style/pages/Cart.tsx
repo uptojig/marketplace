@@ -75,7 +75,7 @@ export function Cart({
 
   const urls = {
     shop: `/stores/${store.slug}/category`,
-    checkout: `/stores/${store.slug}/checkout/address`,
+    checkout: `/stores/${store.slug}/checkout`,
     home: `/stores/${store.slug}`,
   };
 

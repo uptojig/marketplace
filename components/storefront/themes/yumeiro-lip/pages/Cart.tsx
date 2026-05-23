@@ -781,7 +781,7 @@ export function YumeiroLipCartPage({ store }: CartPageProps) {
                 )}
 
                 <Link
-                  href={`/stores/${store.slug}/checkout/address`}
+                  href={`/stores/${store.slug}/checkout`}
                   className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-bold text-white shadow-lg transition hover:opacity-90 hover:shadow-xl"
                   style={{
                     background:

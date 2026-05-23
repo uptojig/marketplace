@@ -293,7 +293,7 @@ function InfoColumn({
 
   const handleBuyNow = () => {
     handleAdd();
-    router.push(`/stores/${store.slug}/checkout/address`);
+    router.push(`/stores/${store.slug}/checkout`);
   };
 
   return (

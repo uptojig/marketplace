@@ -790,7 +790,7 @@ export default function HinokiApothecaryCart({
                 </dl>
 
                 <Link
-                  href={`/stores/${store.slug}/checkout/address`}
+                  href={`/stores/${store.slug}/checkout`}
                   className={`mt-7 inline-flex h-12 w-full items-center justify-center gap-2 text-xs uppercase tracking-[0.28em] transition-colors ${FONT_BODY}`}
                   style={{
                     background: INK,

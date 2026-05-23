@@ -253,7 +253,7 @@ export default function BrutalistCart({ store }: { store: StoreLite }) {
                 </div>
 
                 <Link
-                  href={`/stores/${store.slug}/checkout/address`}
+                  href={`/stores/${store.slug}/checkout`}
                   className="w-full inline-flex items-center justify-center gap-2 bg-[#dc2626] text-white border-4 border-black px-8 py-4 font-black uppercase tracking-widest text-sm shadow-[6px_6px_0px_0px_#000000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000000] transition-all"
                 >
                   <ShoppingCart size={18} strokeWidth={3} />

@@ -64,7 +64,7 @@ export function Cart({
   }
 
   const shopUrl = `/stores/${store.slug}/category`;
-  const checkoutUrl = `/stores/${store.slug}/checkout/address`;
+  const checkoutUrl = `/stores/${store.slug}/checkout`;
 
   if (lines.length === 0) {
     return (
