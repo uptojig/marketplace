@@ -6,6 +6,7 @@ export interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
     contactEmail?: string | null;
     contactPhone?: string | null;
     lineId?: string | null;
@@ -33,7 +34,7 @@ export function Footer({ store, categories }: FooterProps) {
 
   return (
     <footer
-      className="font-sans"
+      className="font-[family:var(--font-prompt)]"
       style={{ background: 'var(--shop-bg)', color: 'var(--shop-ink)' }}
     >
       {/* Trust strip */}
@@ -68,12 +69,21 @@ export function Footer({ store, categories }: FooterProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1 space-y-3">
-            <span
-              className="font-[family:var(--font-kanit)] font-black text-xl uppercase tracking-tight"
-              style={{ color: 'var(--shop-primary)' }}
-            >
-              {store.name}
-            </span>
+            {store.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={store.logoUrl}
+                alt={store.name}
+                className="h-12 w-auto object-contain"
+              />
+            ) : (
+              <span
+                className="font-[family:var(--font-kanit)] font-black text-xl uppercase tracking-tight inline-block"
+                style={{ color: 'var(--shop-primary)' }}
+              >
+                {store.name}
+              </span>
+            )}
             <p
               className="text-xs leading-relaxed font-[family:var(--font-prompt)]"
               style={{ color: 'var(--shop-ink-muted)' }}

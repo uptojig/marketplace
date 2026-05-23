@@ -161,7 +161,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
 
   return (
     <main
-      className="min-h-screen font-sans pb-12"
+      className="min-h-screen font-[family:var(--font-prompt)] pb-12"
       style={{ background: 'var(--shop-bg)', color: 'var(--shop-ink)' }}
     >
       {/* Breadcrumb */}
@@ -319,8 +319,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
             >
               <div className="flex items-baseline gap-3 flex-wrap">
                 <span
-                  className="text-xs font-[family:var(--font-prompt)] font-bold uppercase opacity-80"
-                  style={{ color: 'var(--shop-accent)' }}
+                  className="text-xs font-[family:var(--font-prompt)] font-extrabold uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
                 >
                   ราคาแฟลชเซลล์
                 </span>
@@ -489,8 +488,8 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
               </button>
               <button
                 onClick={handleAdd}
-                className="flex-1 min-w-[180px] py-3 rounded-md text-sm font-[family:var(--font-kanit)] font-black uppercase text-white transition-opacity hover:opacity-90"
-                style={{ background: 'var(--shop-primary-gradient)' }}
+                className="flex-1 min-w-[180px] py-3 rounded-md text-sm font-[family:var(--font-kanit)] font-black uppercase transition-opacity hover:opacity-90"
+                style={{ background: 'var(--shop-primary-gradient)', color: '#ffffff' }}
               >
                 ซื้อเลย
               </button>

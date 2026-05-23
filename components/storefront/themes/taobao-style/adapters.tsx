@@ -55,6 +55,7 @@ export function TaobaoStyleFooterAdapter(props: ScaffoldFooterProps) {
       store={{
         name: props.store.name,
         slug: props.store.slug,
+        logoUrl: props.store.logoUrl ?? null,
         contactEmail: props.store.contactEmail ?? null,
         contactPhone: props.store.contactPhone ?? null,
         lineId: props.store.lineId ?? null,
