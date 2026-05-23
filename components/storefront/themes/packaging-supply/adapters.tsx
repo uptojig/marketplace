@@ -239,8 +239,8 @@ export function PackagingSupplyCheckoutAdapter(props: ScaffoldCheckoutProps) {
 }
 
 // ── Page re-exports for legacy named-import compatibility ──────────
-export { PackagingSupplyHomepage } from './pages/Homepage';
-export { PackagingSupplyCatalog } from './pages/Catalog';
-export { PackagingSupplyProductDetail } from './pages/ProductDetail';
-export { PackagingSupplyCart } from './pages/Cart';
-export { PackagingSupplyCheckout } from './pages/Checkout';
+export { Homepage as PackagingSupplyHomepage } from './pages/Homepage';
+export { Catalog as PackagingSupplyCatalog } from './pages/Catalog';
+export { ProductDetail as PackagingSupplyProductDetail } from './pages/ProductDetail';
+export { Cart as PackagingSupplyCart } from './pages/Cart';
+export { Checkout as PackagingSupplyCheckout } from './pages/Checkout';
