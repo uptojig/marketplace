@@ -1,8 +1,16 @@
-'use client';
-
 /**
  * Shared help adapter — generic FAQ + contact page used by templates
  * that don't ship a bespoke Help component.
+ *
+ * IMPORTANT: this module must NOT be `'use client'`. lib/templates/registry.ts
+ * CALLS `makeHelpAdapter()` at module top-level while building its `templates`
+ * map, and registry is reachable from server modules (e.g. /api/admin/stores
+ * → lib/store/template-fields → registry). If the factory lived in a client
+ * module the call resolved to a client-reference proxy and threw
+ * "TypeError: rS is not a function" while collecting page data — breaking
+ * every build (same pattern that broke pdp-adapter; see commit 6122a97).
+ * The component renders only static JSX (the `<Accordion>` it embeds is
+ * itself `'use client'` and owns its own boundary).
  *
  * Renders a hero, a 6-question Thai FAQ accordion, and a contact CTA
  * block linking back to /faq + /contact (and the store's email/phone
