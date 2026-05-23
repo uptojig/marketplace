@@ -33,7 +33,6 @@ import {
 } from 'lucide-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 // ───────────────────────────────────────────────────────────────────
@@ -155,7 +154,6 @@ export default function YumeiroLipProductDetail(props: ProductDetailProps) {
   const { store, product, related } = props;
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // Build the gallery — imageUrl first, then images[], dedup.
   const gallery = useMemo(() => {
@@ -231,7 +229,6 @@ export default function YumeiroLipProductDetail(props: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   const handleBuyNow = (e?: React.MouseEvent) => {

@@ -1,7 +1,6 @@
 'use client';
 import React, { useState } from 'react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { Filter, ChevronRight, ShoppingCart, Check, Zap, Wifi } from 'lucide-react';
 
 interface Product {
@@ -26,7 +25,6 @@ interface HomepageProps {
 
 export function SmartloopHomeHomepage({ store, products, categories }: HomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
@@ -40,7 +38,6 @@ export function SmartloopHomeHomepage({ store, products, categories }: HomepageP
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const filteredProducts = activeCategory 

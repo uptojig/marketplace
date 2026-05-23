@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Flame, Filter, Star, Timer, Zap, ArrowRight } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import { soldChip, flashDeadlineSeconds } from '../palette';
 
@@ -57,7 +56,6 @@ export function Catalog({
   buildSortUrl,
 }: CatalogProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (p: CatalogProduct, e: React.MouseEvent) => {
     e.preventDefault();
@@ -70,7 +68,6 @@ export function Catalog({
       priceTHB: p.priceTHB,
       imageUrl: p.imageUrl || undefined,
     });
-    showConfirm(p.title, store.slug);
   };
 
   const sortOptions = [

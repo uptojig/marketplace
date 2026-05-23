@@ -19,7 +19,6 @@ import Link from 'next/link';
 import { ArrowRight, Minus, Plus, ChevronRight } from 'lucide-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 // Trust-family color labels → swatch hex. Falls back to a neutral
@@ -49,7 +48,6 @@ function colorSwatch(label: string | null | undefined): string {
 
 export function ProductDetail({ store, product, related }: ProductDetailProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // Gallery: dedupe so the cover image doesn't repeat when importers
   // also stuff it into `images[]`. Fall back to a hairline placeholder
@@ -148,7 +146,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   }
 
   const urls = {

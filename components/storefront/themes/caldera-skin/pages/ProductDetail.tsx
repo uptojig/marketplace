@@ -48,7 +48,6 @@ import {
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { cn, formatTHB } from '@/lib/utils';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -361,7 +360,6 @@ function InfoColumn({
 }) {
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const [qty, setQty] = useState(1);
   const [variantId, setVariantId] = useState<string | null>(
@@ -398,7 +396,6 @@ function InfoColumn({
     const line = buildCartLine();
     add(line, qty);
     setAdded(true);
-    showConfirm(line.title, store.slug);
     setTimeout(() => setAdded(false), 1500);
   };
 

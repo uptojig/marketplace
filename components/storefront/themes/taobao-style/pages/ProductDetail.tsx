@@ -13,7 +13,6 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import { soldChip, flashDeadlineSeconds } from '../palette';
 
@@ -75,7 +74,6 @@ export interface ProductDetailProps {
  */
 export function ProductDetail({ store, product, related }: ProductDetailProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const gallery = useMemo(() => {
     const main = product.imageUrl ? [product.imageUrl] : [];
@@ -159,7 +157,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   return (

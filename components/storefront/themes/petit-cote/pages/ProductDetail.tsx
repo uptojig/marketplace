@@ -22,7 +22,6 @@ import { Minus, Plus, ShoppingBag, Heart, Truck, RotateCcw, ShieldCheck, Sparkle
 
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 // ── Helpers ────────────────────────────────────────────────────────
@@ -62,7 +61,6 @@ const FALLBACK_STORY = [
 export function PetitCoteProductDetail({ store, product, related }: ProductDetailProps) {
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const homeUrl = `/stores/${store.slug}`;
   const shopUrl = `/stores/${store.slug}/category`;
@@ -132,7 +130,6 @@ export function PetitCoteProductDetail({ store, product, related }: ProductDetai
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
   const handleBuyNow = () => {
     add(

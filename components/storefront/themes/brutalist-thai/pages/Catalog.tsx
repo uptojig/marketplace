@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Filter, Grid3X3, List } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import type { CatalogProps } from '@/lib/templates/types';
 
 export default function BrutalistCatalog(props: CatalogProps) {
@@ -13,7 +12,6 @@ export default function BrutalistCatalog(props: CatalogProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: typeof pageProducts[0], e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,7 +24,6 @@ export default function BrutalistCatalog(props: CatalogProps) {
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const filtered = selectedCategory === 'ALL'

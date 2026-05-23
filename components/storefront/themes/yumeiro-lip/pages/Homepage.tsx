@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { Sparkles, ArrowRight, Heart } from 'lucide-react';
 
 interface Product {
@@ -35,7 +34,6 @@ const lipSwatches = [
 
 export function YumeiroLipHomepage({ store, products, categories }: YumeiroLipHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [selectedSwatch, setSelectedSwatch] = useState<number | null>(null);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
@@ -49,7 +47,6 @@ export function YumeiroLipHomepage({ store, products, categories }: YumeiroLipHo
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   return (

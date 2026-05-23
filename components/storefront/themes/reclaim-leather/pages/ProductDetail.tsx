@@ -40,7 +40,6 @@ import {
 } from 'lucide-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 /* ─────────────────────────────────────────────────────────────────
@@ -177,7 +176,6 @@ export default function ReclaimLeatherProductDetail(props: ProductDetailProps) {
 
   /* ── Cart hookup ── */
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = () => {
     add(
@@ -191,7 +189,6 @@ export default function ReclaimLeatherProductDetail(props: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   return (

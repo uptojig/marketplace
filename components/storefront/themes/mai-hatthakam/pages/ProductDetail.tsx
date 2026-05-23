@@ -35,7 +35,6 @@ import {
 } from 'lucide-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 // ─────────────────────────────────────────────────────────────────────
@@ -104,7 +103,6 @@ function MaiHatthakamProductDetail(props: ProductDetailProps) {
   const { store, product, related } = props;
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // Gallery: dedupe imageUrl + images, fall back to placeholder rule
   // (no hex placeholder URL — we render an inline illustrative panel).
@@ -168,7 +166,6 @@ function MaiHatthakamProductDetail(props: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   const handleBuyNow = () => {

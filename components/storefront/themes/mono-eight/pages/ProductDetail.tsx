@@ -21,7 +21,6 @@ import React, { useMemo, useState } from 'react';
 import { Minus, Plus, ShoppingBag, ArrowRight, ChevronRight, Truck, RotateCcw, ShieldCheck } from 'lucide-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 // ----------------------------------------------------------------------------
@@ -104,7 +103,6 @@ function ProductDetail({ store, product, related }: ProductDetailProps) {
 
   // ── Cart wiring — global zustand stores, identical to Homepage. ──
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = () => {
     add(
@@ -118,7 +116,6 @@ function ProductDetail({ store, product, related }: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   // ── Price — compareAt only renders when strictly higher than the

@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 /* ──────────────────────────── Types ──────────────────────────── */
 
@@ -29,7 +28,6 @@ export interface HomepageProps {
 
 export function Homepage({ store, products, categories }: HomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -49,7 +47,6 @@ export function Homepage({ store, products, categories }: HomepageProps) {
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   /* percentage discount helper */

@@ -51,7 +51,6 @@ import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatTHB } from '@/lib/utils';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { WishlistButton } from '@/components/storefront/Wishlist';
 import type {
   ProductDetailHeroProduct,
@@ -270,7 +269,6 @@ function InfoColumn({
 }) {
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [qty, setQty] = useState(1);
   const [variantId, setVariantId] = useState<string | null>(
     product.variants?.[0]?.id ?? null,
@@ -309,7 +307,6 @@ function InfoColumn({
     const line = buildCartLine();
     add(line, qty);
     setAdded(true);
-    showConfirm(line.title, store.slug);
     setTimeout(() => setAdded(false), 1500);
   };
 

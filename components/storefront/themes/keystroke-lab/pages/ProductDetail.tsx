@@ -33,7 +33,6 @@ import {
   Volume2,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
@@ -182,7 +181,6 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
   // Cart wiring — useCart add + cartConfirm modal toast (same pattern
   // as the keystroke-lab Homepage card).
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = () => {
     add(
@@ -196,7 +194,6 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   const discount =

@@ -15,7 +15,6 @@
 
 import React, { useMemo, useState } from 'react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps as ScaffoldProductDetailProps } from '@/lib/templates/types';
 
@@ -275,7 +274,6 @@ export function WavelengthAudioProductDetail(props: WavelengthAudioProductDetail
 
   // ---- Cart wiring ----
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = () => {
     add(
@@ -289,7 +287,6 @@ export function WavelengthAudioProductDetail(props: WavelengthAudioProductDetail
       },
       qty,
     );
-    showConfirm(title, storeSlug);
   };
 
   const homeUrl = `/stores/${storeSlug}`;

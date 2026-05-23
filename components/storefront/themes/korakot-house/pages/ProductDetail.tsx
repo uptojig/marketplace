@@ -35,7 +35,6 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
@@ -124,7 +123,6 @@ const DEFAULT_SIZES = [
 export function KorakotHouseProductDetail({ store, product, related }: ProductDetailProps) {
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const gallery = useMemo(() => {
     if (product.images && product.images.length > 0) return product.images;
@@ -172,7 +170,6 @@ export function KorakotHouseProductDetail({ store, product, related }: ProductDe
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   const handleBuyNow = () => {

@@ -17,7 +17,6 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import {
@@ -182,7 +181,6 @@ function pickAttrUnique<T>(
 export function LinenAndLoomProductDetail(props: ProductDetailProps) {
   const { store, product, related } = props;
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // ── derived gallery (dedupe image + gallery list) ──────────────────────
   const gallery = useMemo(() => {
@@ -267,7 +265,6 @@ export function LinenAndLoomProductDetail(props: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   // ── description paragraphs (collapse blank lines) ──────────────────────

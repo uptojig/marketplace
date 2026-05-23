@@ -41,7 +41,6 @@ import {
 
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 // ────────────────────────────────────────────────────────────────────
@@ -149,7 +148,6 @@ export default function SalukiYogaProductDetail(props: ProductDetailProps) {
 
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // ── Gallery ───────────────────────────────────────────────────
   const gallery = useMemo(() => {
@@ -214,7 +212,6 @@ export default function SalukiYogaProductDetail(props: ProductDetailProps) {
 
   const handleAdd = () => {
     add(buildCartLine(), qty);
-    showConfirm(product.title, store.slug);
   };
 
   const handleBuyNow = () => {

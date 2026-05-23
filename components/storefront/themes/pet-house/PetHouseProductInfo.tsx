@@ -38,7 +38,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 // ── Type definitions ──────────────────────────────────────────────
 export interface PetHouseInfoVariant {
@@ -155,7 +154,6 @@ export function PetHouseProductInfo({
 }) {
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [qty, setQty] = useState(1);
   const [variantId, setVariantId] = useState<string | null>(
     product.variants[0]?.id ?? null,
@@ -223,7 +221,6 @@ export function PetHouseProductInfo({
     if (!canAdd) return;
     const line = buildCartLine();
     add(line, qty);
-    showConfirm(line.title, store.slug);
   };
 
   const handleBuyNow = () => {

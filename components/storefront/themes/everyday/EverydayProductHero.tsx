@@ -38,7 +38,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type {
   ProductDetailHeroProduct,
@@ -254,7 +253,6 @@ function InfoColumn({
 }) {
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [qty, setQty] = useState(1);
   const [variantIdx, setVariantIdx] = useState(0);
   const [added, setAdded] = useState(false);
@@ -289,7 +287,6 @@ function InfoColumn({
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   };

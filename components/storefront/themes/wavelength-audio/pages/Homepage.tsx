@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 interface Product {
   id: string;
@@ -26,7 +25,6 @@ interface WavelengthAudioHomepageProps {
 
 export function WavelengthAudioHomepage({ store, products }: WavelengthAudioHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const product = products[0] || {
     id: 'wv1-default',
@@ -48,7 +46,6 @@ export function WavelengthAudioHomepage({ store, products }: WavelengthAudioHome
       priceTHB: productToBuy.priceTHB,
       imageUrl: productToBuy.imageUrl || undefined,
     });
-    showConfirm(productToBuy.title, store.slug);
   };
 
   return (

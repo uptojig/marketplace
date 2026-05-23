@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { ArrowRight, Plus } from 'lucide-react';
 
 interface Product {
@@ -34,7 +33,6 @@ interface LinenAndLoomHomepageProps {
 
 export function LinenAndLoomHomepage({ store, products, categories }: LinenAndLoomHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -47,7 +45,6 @@ export function LinenAndLoomHomepage({ store, products, categories }: LinenAndLo
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const featuredProducts = products.slice(0, 8);

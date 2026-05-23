@@ -40,7 +40,6 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
@@ -119,7 +118,6 @@ function GalleryPlaceholder({ kind }: { kind: 'lifestyle' | 'product' }) {
 export function SmartloopHomeProductDetail(props: ProductDetailProps) {
   const { store, product, related } = props;
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const homeUrl = `/stores/${store.slug}`;
   const shopUrl = `/stores/${store.slug}/products`;
@@ -175,7 +173,6 @@ export function SmartloopHomeProductDetail(props: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   }
 
   return (

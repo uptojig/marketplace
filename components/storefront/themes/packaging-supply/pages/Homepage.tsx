@@ -15,7 +15,6 @@ import {
   Phone,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 interface Product {
@@ -63,7 +62,6 @@ const CATEGORY_EMOJI: Record<string, string> = {
 
 export function Homepage({ store, products, categories }: PackagingSupplyHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [selectedCat, setSelectedCat] = useState<string>('ทั้งหมด');
 
   const handleAdd = (p: Product, e?: React.MouseEvent) => {
@@ -77,7 +75,6 @@ export function Homepage({ store, products, categories }: PackagingSupplyHomepag
       priceTHB: p.priceTHB,
       imageUrl: p.imageUrl ?? undefined,
     });
-    showConfirm(p.title, store.slug);
   };
 
   const hero = useMemo(() => products.find((p) => p.imageUrl) ?? products[0], [products]);

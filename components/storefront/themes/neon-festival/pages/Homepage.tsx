@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Zap, Sparkles, Star, ChevronRight } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 interface Product {
@@ -51,7 +50,6 @@ export function Homepage({ store, products, categories, landingContent }: Props)
   const heroImage = landingContent?.heroImageUrl?.trim() || null;
 
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,7 +62,6 @@ export function Homepage({ store, products, categories, landingContent }: Props)
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const featured = products.slice(0, 8);

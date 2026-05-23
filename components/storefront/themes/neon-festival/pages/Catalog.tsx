@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 interface ProductCard {
@@ -51,7 +50,6 @@ export default function Catalog({
   buildSortUrl,
 }: CatalogProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAdd = (p: ProductCard, e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,7 +62,6 @@ export default function Catalog({
       priceTHB: p.priceTHB,
       imageUrl: p.imageUrl || undefined,
     });
-    showConfirm(p.title, store.slug);
   };
 
   return (

@@ -16,7 +16,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 interface VariantOption {
@@ -74,7 +73,6 @@ function moqTiers(base: number) {
 
 export function ProductDetail({ store, product, related }: PackagingSupplyProductDetailProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const gallery = useMemo(() => {
     const list: string[] = [];
@@ -114,7 +112,6 @@ export function ProductDetail({ store, product, related }: PackagingSupplyProduc
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   // Group variants by attribute type for picker rows

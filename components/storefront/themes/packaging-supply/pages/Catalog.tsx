@@ -13,7 +13,6 @@ import {
   Truck,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 interface CardProduct {
@@ -73,7 +72,6 @@ export function Catalog({
   buildSortUrl,
 }: PackagingSupplyCatalogProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const handleAdd = (p: CardProduct, e?: React.MouseEvent) => {
@@ -87,7 +85,6 @@ export function Catalog({
       priceTHB: p.priceTHB,
       imageUrl: p.imageUrl ?? undefined,
     });
-    showConfirm(p.title, store.slug);
   };
 
   return (

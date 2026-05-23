@@ -28,7 +28,6 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
@@ -137,7 +136,6 @@ export function InkstonePaperProductDetail({
   related,
 }: ProductDetailProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // Local-only UI state — Gallery active slide, picker selections, qty.
   // No server roundtrip; everything just feeds the cart on Add.
@@ -208,7 +206,6 @@ export function InkstonePaperProductDetail({
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   // Three trust badges that map to the brand promise on Homepage —

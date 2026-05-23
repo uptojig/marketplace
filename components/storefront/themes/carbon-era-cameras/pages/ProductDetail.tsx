@@ -32,7 +32,6 @@ import {
   Crosshair,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
@@ -89,7 +88,6 @@ function buildTechSpecs(
 
 export function ProductDetail({ store, product, related }: ProductDetailProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // Gallery: dedupe imageUrl into the images array so the first thumb is
   // always the primary shot.
@@ -155,7 +153,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   const breadcrumbCategory = product.categoryName ?? 'Catalog';

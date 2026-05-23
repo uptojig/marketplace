@@ -16,7 +16,6 @@ import Link from 'next/link';
 import { ChevronRight, Leaf, Droplet, Flame, ShieldCheck, Truck, Minus, Plus, Quote } from 'lucide-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 // ── Hand-drawn botanical sprig (sits behind the price block) ──────
@@ -90,7 +89,6 @@ const FALLBACK_DESCRIPTION =
 
 export function ProductDetail({ store, product, related }: ProductDetailProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // Gallery: dedup imageUrl + images
   const gallery = useMemo<string[]>(() => {
@@ -155,7 +153,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   const description = product.description?.trim() || FALLBACK_DESCRIPTION;

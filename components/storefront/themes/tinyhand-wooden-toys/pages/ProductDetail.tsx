@@ -34,7 +34,6 @@ import {
 } from '@tabler/icons-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 
 // ─── color token helpers ──────────────────────────────────────────────
@@ -169,7 +168,6 @@ export function TinyhandProductDetail({ store, product, related }: ProductDetail
 
   // cart
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAdd = () => {
     add(
@@ -183,7 +181,6 @@ export function TinyhandProductDetail({ store, product, related }: ProductDetail
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
   };
 
   const discount =
