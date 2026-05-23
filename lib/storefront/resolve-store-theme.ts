@@ -112,6 +112,13 @@ export interface ThemeInput {
    * regression). Only the editor sets this.
    */
   themeAccentOverride?: string | null;
+  /**
+   * Optional secondary accent override (hex). When set together with
+   * `themeAccentOverride`, primary takes the override and accent takes this
+   * secondary. When absent, the existing single-color behavior is preserved
+   * (override paints both --shop-primary and --shop-accent).
+   */
+  themeAccentSecondary?: string | null;
 }
 
 export interface ChromeTheme {
@@ -222,11 +229,18 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
 
   // Phase 3 — intentional color override. ONLY when the operator explicitly set
   // themeAccentOverride (NOT the wizard paletteId). Applies to every theme,
-  // including default chrome. Overrides both the CTA primary and the accent.
+  // including default chrome. Overrides the CTA primary; the accent gets the
+  // secondary override when provided, otherwise falls back to the primary
+  // override (preserving the original single-color behavior).
   if (store.themeAccentOverride) {
-    const c = store.themeAccentOverride;
-    familyVars = { ...familyVars, "--shop-primary": c, "--shop-accent": c };
-    familyAccent = c;
+    const primary = store.themeAccentOverride;
+    const accent = store.themeAccentSecondary ?? primary;
+    familyVars = {
+      ...familyVars,
+      "--shop-primary": primary,
+      "--shop-accent": accent,
+    };
+    familyAccent = primary;
   }
 
   return { chromeKey, familyClass, familyVars, familyAccent, familyButtonShape };

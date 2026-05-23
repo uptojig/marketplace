@@ -140,6 +140,12 @@ model Store {
   // brand pick that must NOT silently repaint a curated theme — see the
   // minimop24 red->purple regression). See lib/storefront/resolve-store-theme.ts.
   themeAccentOverride String?
+  // Optional secondary accent override (hex). When set together with
+  // themeAccentOverride, themeAccentOverride paints --shop-primary and
+  // themeAccentSecondary paints --shop-accent (instead of both being painted
+  // by themeAccentOverride). Used by stores that want a two-color brand match
+  // (e.g. logo with hot-pink lettering + sky-blue highlights).
+  themeAccentSecondary String?
   // Custom domain (vendor brings their own); subdomain is derived from slug
   customDomain String?  @unique
   // Legal/business info shown on contact page + footer
