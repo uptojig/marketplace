@@ -260,16 +260,16 @@ import { makeAboutAdapter } from '@/components/storefront/themes/_shared/about-a
 import { makeHelpAdapter } from '@/components/storefront/themes/_shared/help-adapter';
 
 // Bespoke PDP imports (Wave 3)
-import { mono_eight_ProductDetail } from '@/components/storefront/themes/mono-eight/adapters';
+import { mono_eight_ProductDetail, mono_eight_Cart } from '@/components/storefront/themes/mono-eight/adapters';
 import { atelier_27_ProductDetail, atelier_27_Cart } from '@/components/storefront/themes/atelier-27/adapters';
 import { caldera_skin_ProductDetail, caldera_skin_Cart } from '@/components/storefront/themes/caldera-skin/adapters';
 import { hinoki_apothecary_ProductDetail, hinoki_apothecary_Cart } from '@/components/storefront/themes/hinoki-apothecary/adapters';
 import { linen_and_loom_ProductDetail, linen_and_loom_Cart } from '@/components/storefront/themes/linen-and-loom/adapters';
 import { reclaim_leather_ProductDetail, reclaim_leather_Cart } from '@/components/storefront/themes/reclaim-leather/adapters';
 import { sirin_womenswear_ProductDetail, sirin_womenswear_Cart } from '@/components/storefront/themes/sirin-womenswear/adapters';
-import { yumeiro_lip_ProductDetail, yumeiro_lip_Cart } from '@/components/storefront/themes/yumeiro-lip/adapters';
+import { yumeiro_lip_ProductDetail, yumeiro_lip_Cart, yumeiro_lip_Catalog } from '@/components/storefront/themes/yumeiro-lip/adapters';
 import { lila_modest_ProductDetail } from '@/components/storefront/themes/lila-modest/adapters';
-import { carbon_era_cameras_ProductDetail, carbon_era_cameras_Cart } from '@/components/storefront/themes/carbon-era-cameras/adapters';
+import { carbon_era_cameras_ProductDetail, carbon_era_cameras_Cart, carbon_era_cameras_Catalog } from '@/components/storefront/themes/carbon-era-cameras/adapters';
 import { keystroke_lab_ProductDetail, keystroke_lab_Cart } from '@/components/storefront/themes/keystroke-lab/adapters';
 import { smartloop_home_ProductDetail } from '@/components/storefront/themes/smartloop-home/adapters';
 import { wavelength_audio_ProductDetail } from '@/components/storefront/themes/wavelength-audio/adapters';
@@ -630,6 +630,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(MonoEightHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('05'),
       pdp: mono_eight_ProductDetail,
+      cart: mono_eight_Cart,
       checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
@@ -750,7 +751,7 @@ export const templates: Record<TemplateId, Template> = {
       // fit the 240px aside; re-enable once a vertical adapter ships.
     },
     pages: {
-      catalog: makeCatalogAdapter('09'),
+      catalog: carbon_era_cameras_Catalog,
       pdp: carbon_era_cameras_ProductDetail,
       cart: carbon_era_cameras_Cart,
       checkout: makeCheckoutAdapter('01'),
@@ -1158,7 +1159,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(YumeiroLipHomepageAdapter, '07'),
-      catalog: makeCatalogAdapter('05'),
+      catalog: yumeiro_lip_Catalog,
       pdp: yumeiro_lip_ProductDetail,
       cart: yumeiro_lip_Cart,
       checkout: makeCheckoutAdapter('01'),
