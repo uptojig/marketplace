@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { Plus, Search, X, Image as ImageIcon, Languages, FolderTree } from "lucide-react";
+import { Plus, Image as ImageIcon, Languages, FolderTree } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import type { Prisma, StoreApprovalStatus } from "@prisma/client";
 import { getStoreQualitySnapshot } from "@/lib/admin/enrich-products";
 import { StoreRowActions } from "./row-actions";
 import { BulkThemeBar } from "./bulk-theme-bar";
+import { StoresSearchInput } from "./_search-input";
 import {
   Button,
-  Input,
   OperatorPageHeader,
   OperatorStatusBadge,
   OperatorFilterChips,
@@ -232,33 +232,12 @@ export default async function AdminStoresPage({
         ]}
       />
 
-      {/* Search */}
-      <form className="relative flex gap-2" role="search">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            name="q"
-            defaultValue={q ?? ""}
-            placeholder="ค้นหาชื่อร้าน, slug, หรืออีเมลเจ้าของ..."
-            className="pl-9 pr-9"
-            aria-label="ค้นหาร้าน"
-          />
-          {q && (
-            <Link
-              href={tabHref({ status: statusFilter ?? undefined })}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-              aria-label="ล้างคำค้น"
-              prefetch={false}
-            >
-              <X className="h-4 w-4" />
-            </Link>
-          )}
-        </div>
-        {statusFilter && <input type="hidden" name="status" value={statusFilter} />}
-        <Button type="submit" variant="outline">
-          ค้นหา
-        </Button>
-      </form>
+      {/* Search — live-debounced URL updates after 300ms, with form fallback for no-JS */}
+      <StoresSearchInput
+        initialQuery={q ?? ""}
+        statusFilter={statusFilter ?? null}
+        clearHref={tabHref({ status: statusFilter ?? undefined })}
+      />
 
       {/* Desktop table */}
       <div className="hidden md:block">

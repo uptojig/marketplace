@@ -611,20 +611,22 @@ export function StoreEditForm({ store }: { store: StoreData }) {
         </Section>
       </div>
 
-      <div className="flex items-center justify-between">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="text-destructive hover:bg-destructive/10"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          {deleting ? "กำลังลบ..." : "ลบร้านนี้"}
-        </Button>
-        <Button type="submit" disabled={saving}>
-          {saving ? "กำลังบันทึก..." : "บันทึก"}
-        </Button>
+      <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-stone-200 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+        <div className="flex items-center justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            {deleting ? "กำลังลบ..." : "ลบร้านนี้"}
+          </Button>
+          <Button type="submit" disabled={saving}>
+            {saving ? "กำลังบันทึก..." : "บันทึก"}
+          </Button>
+        </div>
       </div>
     </form>
   );
