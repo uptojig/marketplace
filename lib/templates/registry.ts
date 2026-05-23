@@ -266,7 +266,7 @@ import { caldera_skin_ProductDetail, caldera_skin_Cart } from '@/components/stor
 import { hinoki_apothecary_ProductDetail, hinoki_apothecary_Cart } from '@/components/storefront/themes/hinoki-apothecary/adapters';
 import { linen_and_loom_ProductDetail, linen_and_loom_Cart } from '@/components/storefront/themes/linen-and-loom/adapters';
 import { reclaim_leather_ProductDetail, reclaim_leather_Cart } from '@/components/storefront/themes/reclaim-leather/adapters';
-import { sirin_womenswear_ProductDetail, sirin_womenswear_Cart } from '@/components/storefront/themes/sirin-womenswear/adapters';
+import { sirin_womenswear_ProductDetail, sirin_womenswear_Cart, sirin_womenswear_Catalog } from '@/components/storefront/themes/sirin-womenswear/adapters';
 import { yumeiro_lip_ProductDetail, yumeiro_lip_Cart, yumeiro_lip_Catalog } from '@/components/storefront/themes/yumeiro-lip/adapters';
 import { lila_modest_ProductDetail } from '@/components/storefront/themes/lila-modest/adapters';
 import { carbon_era_cameras_ProductDetail, carbon_era_cameras_Cart, carbon_era_cameras_Catalog } from '@/components/storefront/themes/carbon-era-cameras/adapters';
@@ -1044,7 +1044,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(SirinHomepageAdapter, '03'),
-      catalog: makeCatalogAdapter('03'),
+      catalog: sirin_womenswear_Catalog,
       pdp: sirin_womenswear_ProductDetail,
       cart: sirin_womenswear_Cart,
       checkout: makeThaiCheckoutAdapter(),
