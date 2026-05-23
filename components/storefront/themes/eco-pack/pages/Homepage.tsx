@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Leaf, ShieldCheck, Truck, Package } from 'lucide-react';
+import { formatTHB } from '@/lib/utils';
 
 interface StoreInfo {
   name: string; // From Prisma - store name
@@ -135,7 +136,7 @@ export function Homepage({ store, featuredProducts, categories, reviews, shopUrl
                 <h3 className="font-medium text-[var(--shop-ink)] mb-1 flex-1">{p.name}</h3>
                 <p className="text-sm text-[var(--shop-ink-muted)] mb-2">{p.dimensions || 'Various sizes'}</p>
                 <div className="font-semibold text-[var(--shop-ink)]">
-                  {p.price ? `$${p.price.toFixed(2)}` : 'From $0.50/ea'}
+                  {p.price ? formatTHB(p.price) : 'เริ่มต้น ฿15/ชิ้น'}
                 </div>
               </a>
             ))}
