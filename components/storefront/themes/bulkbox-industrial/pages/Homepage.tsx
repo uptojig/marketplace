@@ -130,7 +130,7 @@ export function BulkboxHomepage({ store, products, categories }: HomepageProps) 
 
         {/* B2B Table Layout for Products */}
         <div className="bg-white border border-[#cbd5e1] rounded-lg shadow-sm overflow-hidden">
-          {products.map((product, idx) => {
+          {products.slice(0, 8).map((product, idx) => {
             const tiers = getPricingTiers(product.priceTHB);
             
             return (

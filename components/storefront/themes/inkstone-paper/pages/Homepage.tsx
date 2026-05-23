@@ -93,7 +93,7 @@ export function InkstonePaperHomepage({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
-          {products.map((product, idx) => {
+          {products.slice(0, 9).map((product, idx) => {
             const jpLabel = japaneseLabels[idx % japaneseLabels.length];
             const thLabel = thaiLabels[idx % thaiLabels.length];
             return (
@@ -155,6 +155,16 @@ export function InkstonePaperHomepage({
             );
           })}
         </div>
+        {products.length > 9 && (
+          <div className="mt-12 flex justify-center">
+            <Link
+              href={`/stores/${store.slug}/shop`}
+              className="inline-flex items-center gap-2 border border-[#c9974b] text-[#3a2e22] hover:bg-[#c9974b] hover:text-white font-[family:var(--font-kanit)] tracking-wider uppercase text-sm px-8 py-3 transition-colors"
+            >
+              ดูสินค้าทั้งหมด {products.length} รายการ
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* STORY SECTION */}

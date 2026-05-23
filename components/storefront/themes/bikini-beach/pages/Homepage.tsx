@@ -299,7 +299,7 @@ export function Homepage({
             <a className="bk-btn bk-btn-ghost bk-btn-sm" href={shopUrl}>ดูทั้งหมด <IconArrowRight size={14} /></a>
           </div>
           <div className="bk-products-grid">
-            {featuredProducts.map((p) => (
+            {featuredProducts.slice(0, 8).map((p) => (
               <a key={p.id} className="bk-pcard" href={`/shop/${p.slug}`}>
                 <div className={`bk-pcard-img ${p.bgVariant ?? 'bg-rose'}`}>
                   {p.tag && (
