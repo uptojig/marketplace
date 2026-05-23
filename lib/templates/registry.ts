@@ -261,7 +261,7 @@ import { makeHelpAdapter } from '@/components/storefront/themes/_shared/help-ada
 
 // Bespoke PDP imports (Wave 3)
 import { mono_eight_ProductDetail, mono_eight_Cart } from '@/components/storefront/themes/mono-eight/adapters';
-import { atelier_27_ProductDetail, atelier_27_Cart } from '@/components/storefront/themes/atelier-27/adapters';
+import { atelier_27_ProductDetail, atelier_27_Cart, atelier_27_Catalog } from '@/components/storefront/themes/atelier-27/adapters';
 import { caldera_skin_ProductDetail, caldera_skin_Cart } from '@/components/storefront/themes/caldera-skin/adapters';
 import { hinoki_apothecary_ProductDetail, hinoki_apothecary_Cart } from '@/components/storefront/themes/hinoki-apothecary/adapters';
 import { linen_and_loom_ProductDetail, linen_and_loom_Cart } from '@/components/storefront/themes/linen-and-loom/adapters';
@@ -678,7 +678,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(Atelier27HomepageAdapter, '02'),
-      catalog: makeCatalogAdapter('12'),
+      catalog: atelier_27_Catalog,
       pdp: atelier_27_ProductDetail,
       cart: atelier_27_Cart,
       checkout: makeThaiCheckoutAdapter(),
