@@ -54,6 +54,19 @@ import TaladSeeSodCart from '@/components/storefront/themes/talad-see-sod/pages/
 import TaladSeeSodCatalog from '@/components/storefront/themes/talad-see-sod/pages/Catalog';
 import TaladSeeSodCheckout from '@/components/storefront/themes/talad-see-sod/pages/Checkout';
 import {
+  NeonFestivalHeaderAdapter,
+  NeonFestivalFooterAdapter,
+  NeonFestivalStripAdapter,
+  NeonFestivalHomepageAdapter,
+  NeonFestivalAboutAdapter,
+  NeonFestivalHelpAdapter,
+  neon_festival_Catalog,
+  neon_festival_ProductDetail,
+  neon_festival_Cart,
+  neon_festival_Checkout,
+  neon_festival_Contact,
+} from '@/components/storefront/themes/neon-festival/adapters';
+import {
   BrutalistThaiHeaderAdapter,
   BrutalistThaiFooterAdapter,
   BrutalistThaiStripAdapter,
@@ -427,6 +440,29 @@ export const templates: Record<TemplateId, Template> = {
       catalog: TaladSeeSodCatalog,
       cart: TaladSeeSodCart,
       checkout: TaladSeeSodCheckout,
+    },
+  },
+
+  'neon-festival': {
+    id: 'neon-festival',
+    name: 'Neon Festival',
+    description: 'ร้านสายงานเทศกาล แสงนีออน ของแต่งคอนเสิร์ต สไตล์ Neo-Brutalism Pop-Art',
+    group: 'neon',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: NeonFestivalHeaderAdapter,
+      Footer: NeonFestivalFooterAdapter,
+      AnnouncementStrip: NeonFestivalStripAdapter,
+    },
+    pages: {
+      home: NeonFestivalHomepageAdapter,
+      catalog: neon_festival_Catalog,
+      pdp: neon_festival_ProductDetail,
+      cart: neon_festival_Cart,
+      checkout: neon_festival_Checkout,
+      about: NeonFestivalAboutAdapter,
+      help: NeonFestivalHelpAdapter,
+      contact: neon_festival_Contact,
     },
   },
 

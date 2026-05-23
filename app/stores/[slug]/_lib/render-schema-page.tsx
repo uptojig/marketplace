@@ -23,6 +23,8 @@ import { isBusinessModelStore } from "@/lib/landing/business-model";
 import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
+import { isNeonStore } from "@/lib/landing/neon";
+import { PolicyShell as NeonFestivalPolicyShell } from "@/components/storefront/themes/neon-festival/PolicyShell";
 import {
   FashionBeautyPolicyShell,
   fashionBeautyPolicyHeading,
@@ -121,6 +123,13 @@ function wrapInFamilyShell(
       <SpecialtyPolicyShell slug={store.slug} title={h.title} eyebrow={h.eyebrow}>
         {inner}
       </SpecialtyPolicyShell>
+    );
+  }
+  if (isNeonStore(familyKey)) {
+    return (
+      <NeonFestivalPolicyShell title={fallbackTitle}>
+        {inner}
+      </NeonFestivalPolicyShell>
     );
   }
   return inner;

@@ -37,6 +37,7 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
   everyday: ['everyday-retail', 'talad-see-sod'],
   taobao: ['taobao-style'],
   packaging: ['packaging-supply', 'pastel-pack'],
+  neon: ['neon-festival'],
 } as const;
 
 /** Inverse lookup: TemplateId → TemplateGroup. */

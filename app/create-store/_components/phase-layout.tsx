@@ -26,6 +26,7 @@ const GROUP_LABEL: Record<TemplateGroup, string> = {
   "everyday": "ขายปลีกทั่วไป",
   "taobao": "มาร์เก็ตเพลส",
   "packaging": "บรรจุภัณฑ์ & ซัพพลาย",
+  "neon": "นีออน & ของแต่งคอนเสิร์ต",
 };
 
 const GROUP_ORDER: TemplateGroup[] = [
@@ -39,6 +40,7 @@ const GROUP_ORDER: TemplateGroup[] = [
   "everyday",
   "taobao",
   "packaging",
+  "neon",
 ];
 
 /**

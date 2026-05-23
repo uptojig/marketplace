@@ -126,6 +126,14 @@ export const TEMPLATES: Template[] = [
     behavior: {},
   },
   {
+    id: "neon-festival",
+    name: "Neon Festival",
+    description: "นีออน ของแต่งคอนเสิร์ต Y2K rave · Neo-Brutalism Pop-Art",
+    group: "neon",
+    theme: { spacing: "default", radius: "sharp", titleScale: "display", font: "sans" },
+    behavior: { stickyCTA: "buy-now" },
+  },
+  {
     id: "brutalist-thai",
     name: "Brutalist Thai",
     description: "ดิบๆ เท่ๆ แฟชั่นแนวสตรีทและตัวอักษรใหญ่",

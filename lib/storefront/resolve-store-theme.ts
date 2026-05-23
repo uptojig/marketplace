@@ -74,6 +74,12 @@ import {
   communityCssVars,
   COMMUNITY_BODY_CLASS,
 } from "@/lib/landing/community";
+import {
+  isNeonStore,
+  neonCssVars,
+  NEON_BODY_CLASS,
+  NEON_TOKENS,
+} from "@/lib/landing/neon";
 import { isEverydayStore } from "@/lib/landing/everyday";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { isCaseStudioStore } from "@/lib/landing/case-studio";
@@ -89,6 +95,7 @@ export type ThemeKey =
   | "taobao"
   | "packaging"
   | "community"
+  | "neon"
   | "pet-house"
   | "case-studio"
   | "default";
@@ -147,6 +154,7 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   else if (isPackagingStore(key)) chromeKey = "packaging";
   else if (isTaobaoStore(key)) chromeKey = "taobao";
   else if (isCommunityStore(key)) chromeKey = "community";
+  else if (isNeonStore(key)) chromeKey = "neon";
 
   let familyClass = "";
   let familyVars: Record<string, string> = {};
@@ -202,6 +210,12 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyClass = COMMUNITY_BODY_CLASS;
       familyVars = communityCssVars();
       break;
+    case "neon":
+      familyClass = NEON_BODY_CLASS;
+      familyVars = neonCssVars();
+      familyAccent = NEON_TOKENS.primary;
+      familyButtonShape = "square";
+      break;
     default:
       break;
   }
@@ -241,6 +255,7 @@ export function resolveContentThemeKey(store: ThemeInput): ThemeKey {
   if (isTaobaoStore(key)) return "taobao";
   if (isPackagingStore(key)) return "packaging";
   if (isCommunityStore(key)) return "community";
+  if (isNeonStore(key)) return "neon";
   return "default";
 }
 
