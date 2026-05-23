@@ -69,6 +69,8 @@ export function PetitCoteHomepageAdapter(props: ScaffoldHomepageProps) {
 
 // Page re-exports
 export { default as petit_cote_Catalog } from './pages/Catalog';
-export { default as petit_cote_ProductDetail } from './pages/ProductDetail';
+// Bespoke editorial-boutique PDP consumes the canonical
+// `ProductDetailProps` directly — no adapter wrapper needed.
+export { PetitCoteProductDetail as petit_cote_ProductDetail } from './pages/ProductDetail';
 export { default as petit_cote_Cart } from './pages/Cart';
 export { default as petit_cote_Checkout } from './pages/Checkout';
