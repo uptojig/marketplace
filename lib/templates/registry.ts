@@ -370,7 +370,7 @@ export const templates: Record<TemplateId, Template> = {
       shellShape: 'full-bleed',
     },
     pages: {
-      pdp: makePdpAdapter('06', '02'),
+      pdp: BikiniProductDetailAdapter,
       checkout: makeThaiCheckoutAdapter(),
       catalog: makeCatalogAdapter('12'),
       home: enhanceHomepage(BikiniHomepageAdapter, '01'),
