@@ -204,6 +204,18 @@ const GROUP_DEFAULTS: Record<TemplateGroup, RecipePages> = {
     catalog: "product-category-05",
     cart: "shopping-cart-03",
   },
+  // Neon — Neo-Brutalism Pop-Art (Y2K rave / concert merch). High-energy
+  // hero + bold product grid; cart picks the chunkier shopping-cart-03.
+  neon: {
+    home: [
+      { type: "hero", id: "bento-grid-05" },
+      { type: "product-list", id: "product-list-04" },
+      { type: "product-list", id: "product-list-08" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
 };
 
 // ─── Doc-sourced recipes (27 entries) ──────────────────────────────────

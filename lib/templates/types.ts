@@ -35,7 +35,8 @@ export type TemplateGroup =
   | 'specialty'
   | 'everyday'
   | 'taobao'
-  | 'packaging';
+  | 'packaging'
+  | 'neon';
 
 export type TemplateId =
   | 'handmade'
@@ -71,7 +72,8 @@ export type TemplateId =
   | 'tinyhand-wooden-toys'
   | 'trailcraft-outdoors'
   | 'wavelength-audio'
-  | 'yumeiro-lip';
+  | 'yumeiro-lip'
+  | 'neon-festival';
 
 
 

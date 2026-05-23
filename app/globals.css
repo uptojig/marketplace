@@ -2817,3 +2817,63 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   theme-neon — Neo-Brutalism Pop-Art (Y2K rave / concert merch).
+   Signature: thick 4px black borders + hard offset shadows + bold
+   uppercase italic Kanit + press-down active state. Used by every
+   store whose templateId belongs to the `neon` group.
+   ───────────────────────────────────────────────────────────────── */
+
+.theme-neon {
+  color-scheme: light;
+}
+
+.theme-neon ::selection {
+  background-color: var(--shop-accent);
+  color: #000000;
+}
+
+/* Hard offset shadow utilities — the visual signature of the family.
+   Use `.neon-shadow-sm` for default buttons/cards, `.neon-shadow-lg`
+   for hero CTAs / featured product cards. */
+.theme-neon .neon-shadow-sm {
+  box-shadow: 4px 4px 0 0 #000000;
+}
+.theme-neon .neon-shadow-lg {
+  box-shadow: 8px 8px 0 0 #000000;
+}
+
+/* Press-down interactive pattern — matches the AI Studio reference.
+   Element nudges 4px right/down and loses its shadow on :active. */
+.theme-neon .neon-press {
+  transition: transform 0.06s ease-out, box-shadow 0.06s ease-out;
+}
+.theme-neon .neon-press:active {
+  transform: translate(4px, 4px);
+  box-shadow: none !important;
+}
+.theme-neon .neon-press-lg:active {
+  transform: translate(8px, 8px);
+  box-shadow: none !important;
+}
+
+/* Image treatment — grayscale by default, colors come out on hover.
+   Wrap product/hero images with `.neon-photo`. */
+.theme-neon .neon-photo {
+  filter: grayscale(1);
+  transition: filter 0.4s ease-out;
+}
+.theme-neon .neon-photo:hover,
+.theme-neon .group:hover .neon-photo {
+  filter: grayscale(0);
+}
+
+/* Hide scrollbar for category rails */
+.theme-neon .hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.theme-neon .hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
