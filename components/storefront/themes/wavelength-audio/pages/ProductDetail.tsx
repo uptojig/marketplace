@@ -3,14 +3,12 @@
 /**
  * wavelength-audio — bespoke Product Detail page
  *
- * Vibe: audio-gear · dark/light contrast · planar sound-wave illustrations ·
- * spec rail · Hi-Res / Bluetooth codec trust badges · sound-signature equalizer.
+ * Vibe: audio-gear · dark/light contrast · planar sound-wave illustrations.
  *
  * Uses `var(--shop-*)` tokens — never hardcoded hex values.
  * Accepts the canonical `ProductDetailProps` shape from `@/lib/templates/types`,
- * with extra bespoke fields surfaced via optional `extras` for editor / preview
- * wiring (close-up gallery, on-ear lifestyle shots, sound-signature curve,
- * codec / Hi-Res trust badges).
+ * with optional `extras` for editor / preview wiring (close-up gallery,
+ * on-ear lifestyle shots).
  */
 
 import React, { useMemo, useState } from 'react';
@@ -22,20 +20,6 @@ import type { ProductDetailProps as ScaffoldProductDetailProps } from '@/lib/tem
 // Types
 // ============================================================================
 
-interface EqualizerBand {
-  /** Display label (e.g. "60", "1k", "8k") */
-  label: string;
-  /** Relative dB shift, range roughly -6..+6 */
-  db: number;
-}
-
-interface TrustBadge {
-  /** Short headline (e.g. "Hi-Res Audio") */
-  label: string;
-  /** One-line spec value (e.g. "JAS Certified") */
-  value: string;
-}
-
 interface WavelengthAudioPdpExtras {
   /** Close-up + on-ear lifestyle gallery (overrides product.images). */
   gallery?: string[];
@@ -46,10 +30,6 @@ interface WavelengthAudioPdpExtras {
     /** Hex/CSS colour for the chip swatch (default: red accent). */
     swatch?: string;
   }[];
-  /** Sound-signature equalizer curve (4-7 bands recommended). */
-  equalizer?: EqualizerBand[];
-  /** Hi-Res / Bluetooth codec / driver-spec rail. */
-  trustBadges?: TrustBadge[];
 }
 
 /** Accepts the canonical scaffold props *plus* bespoke audio extras. */
@@ -71,121 +51,6 @@ const DEFAULT_GALLERY = [
   // cup detail
   'https://images.unsplash.com/photo-1599669454699-248893623440?q=80&w=1600',
 ];
-
-const DEFAULT_EQUALIZER: EqualizerBand[] = [
-  { label: '60', db: 1.5 },
-  { label: '250', db: 0 },
-  { label: '1k', db: -0.5 },
-  { label: '4k', db: 2 },
-  { label: '8k', db: 3 },
-  { label: '16k', db: 1 },
-];
-
-const DEFAULT_BADGES: TrustBadge[] = [
-  { label: 'Hi-Res Audio', value: 'JAS Certified · 40kHz' },
-  { label: 'Bluetooth 5.3', value: 'LDAC · aptX Adaptive' },
-  { label: 'Planar Magnetic', value: 'Driver 50mm' },
-  { label: 'รับประกัน 5 ปี', value: 'ผลิตในไต้หวัน' },
-];
-
-const DEFAULT_VARIANTS = [
-  { id: 'matte-black', label: 'Matte Black', swatch: '#0a0a0a' },
-  { id: 'satin-silver', label: 'Satin Silver', swatch: '#c0c4c8' },
-  { id: 'studio-red', label: 'Studio Red', swatch: '#dc2626' },
-];
-
-// ============================================================================
-// Sound-signature equalizer (inline SVG, themed via var(--shop-*))
-// ============================================================================
-
-function SoundSignatureCurve({ bands }: { bands: EqualizerBand[] }) {
-  const width = 560;
-  const height = 180;
-  const padding = 28;
-  const innerW = width - padding * 2;
-  const innerH = height - padding * 2;
-  const maxDb = 6;
-
-  const points = bands.map((b, i) => {
-    const x = padding + (innerW * i) / Math.max(1, bands.length - 1);
-    const y = padding + innerH / 2 - (b.db / maxDb) * (innerH / 2);
-    return { x, y, ...b };
-  });
-
-  // Smooth path (Catmull-Rom-ish via cubic-bezier between neighbours)
-  const path = points.reduce((d, p, i, arr) => {
-    if (i === 0) return `M ${p.x} ${p.y}`;
-    const prev = arr[i - 1];
-    const cx = (prev.x + p.x) / 2;
-    return `${d} C ${cx} ${prev.y}, ${cx} ${p.y}, ${p.x} ${p.y}`;
-  }, '');
-
-  return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      width="100%"
-      height="auto"
-      role="img"
-      aria-label="Sound signature equalizer curve"
-      className="block"
-    >
-      <defs>
-        <linearGradient id="wv-eq-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--shop-primary)" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="var(--shop-primary)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-
-      {/* horizontal gridlines */}
-      {[0.25, 0.5, 0.75].map((p) => (
-        <line
-          key={p}
-          x1={padding}
-          x2={width - padding}
-          y1={padding + innerH * p}
-          y2={padding + innerH * p}
-          stroke="currentColor"
-          strokeOpacity={p === 0.5 ? 0.25 : 0.08}
-          strokeDasharray={p === 0.5 ? '0' : '2 4'}
-        />
-      ))}
-
-      {/* fill under curve */}
-      <path
-        d={`${path} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`}
-        fill="url(#wv-eq-fill)"
-      />
-
-      {/* curve */}
-      <path
-        d={path}
-        fill="none"
-        stroke="var(--shop-primary)"
-        strokeWidth={2.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* band markers */}
-      {points.map((p) => (
-        <g key={p.label}>
-          <circle cx={p.x} cy={p.y} r={4} fill="var(--shop-primary)" />
-          <text
-            x={p.x}
-            y={height - 6}
-            textAnchor="middle"
-            fontSize="11"
-            fill="currentColor"
-            fillOpacity={0.6}
-            fontFamily="var(--font-kanit), sans-serif"
-          >
-            {p.label}
-          </text>
-        </g>
-      ))}
-    </svg>
-  );
-}
 
 // ============================================================================
 // Decorative background sound-wave (themed via currentColor → opacity layers)
@@ -254,18 +119,14 @@ export function WavelengthAudioProductDetail(props: WavelengthAudioProductDetail
     }
     // derive from scaffold variants if available
     const scaffoldVariants = product?.variants ?? [];
-    const derived = scaffoldVariants
+    return scaffoldVariants
       .map((v) => ({
         id: v.id,
         label: v.colorLabel ?? v.materialLabel ?? v.sizeLabel ?? 'Standard',
         swatch: undefined as string | undefined,
       }))
       .filter((v, i, arr) => arr.findIndex((x) => x.label === v.label) === i);
-    return derived.length > 0 ? derived : DEFAULT_VARIANTS;
   }, [props.extras?.variants, product?.variants]);
-
-  const equalizer = props.extras?.equalizer ?? DEFAULT_EQUALIZER;
-  const trustBadges = props.extras?.trustBadges ?? DEFAULT_BADGES;
 
   // ---- Local UI state ----
   const [activeImage, setActiveImage] = useState(0);
@@ -368,10 +229,6 @@ export function WavelengthAudioProductDetail(props: WavelengthAudioProductDetail
                   className="absolute inset-0 w-full h-full object-cover"
                 />
 
-                {/* Hi-Res sticker overlay (corner badge) */}
-                <div className="absolute top-4 left-4 px-3 py-1.5 bg-[var(--shop-ink)] text-[var(--shop-bg)] font-[family:var(--font-prompt)] text-[10px] tracking-[0.22em] uppercase font-bold">
-                  Hi-Res
-                </div>
                 <div className="absolute bottom-4 right-4 px-3 py-1.5 border border-[var(--shop-ink)]/30 bg-[var(--shop-bg)]/70 backdrop-blur font-[family:var(--font-kanit)] text-[11px] tracking-widest uppercase text-[var(--shop-ink)]">
                   {activeImage + 1} / {gallery.length}
                 </div>
@@ -382,9 +239,11 @@ export function WavelengthAudioProductDetail(props: WavelengthAudioProductDetail
           {/* ----- Buy Box ----- */}
           <div className="flex flex-col">
             {/* Category eyebrow */}
-            <div className="font-[family:var(--font-kanit)] text-[11px] tracking-[0.28em] uppercase text-[var(--shop-primary)] font-bold mb-3">
-              {categoryName} · Reference Series
-            </div>
+            {categoryName && (
+              <div className="font-[family:var(--font-kanit)] text-[11px] tracking-[0.28em] uppercase text-[var(--shop-primary)] font-bold mb-3">
+                {categoryName}
+              </div>
+            )}
 
             <h1 className="font-[family:var(--font-prompt)] text-3xl md:text-5xl tracking-tight font-bold text-[var(--shop-ink)] leading-[1.05] mb-5">
               {title}
@@ -405,9 +264,7 @@ export function WavelengthAudioProductDetail(props: WavelengthAudioProductDetail
                 </span>
               )}
             </div>
-            <p className="font-[family:var(--font-kanit)] text-xs text-[var(--shop-ink-muted)] mb-8">
-              ผ่อน 0% นาน 6 เดือน · เริ่ม {formatTHB(Math.round(priceTHB / 6))}/เดือน
-            </p>
+            <div className="mb-8" />
 
             {/* Variant picker */}
             {variants.length > 0 && (
@@ -493,85 +350,8 @@ export function WavelengthAudioProductDetail(props: WavelengthAudioProductDetail
                 เพิ่มลงตะกร้า · {formatTHB(priceTHB * qty)}
               </button>
             </div>
-
-            {/* Trust rail — Hi-Res / Bluetooth codec / driver spec */}
-            <div
-              className="grid grid-cols-2 gap-px bg-[var(--shop-border)] border border-[var(--shop-border)]"
-              role="list"
-              aria-label="คุณสมบัติเด่น"
-            >
-              {trustBadges.map((b) => (
-                <div
-                  key={b.label}
-                  role="listitem"
-                  className="bg-[var(--shop-card)] p-4 flex flex-col gap-1"
-                >
-                  <span className="font-[family:var(--font-prompt)] text-[11px] tracking-[0.2em] uppercase font-bold text-[var(--shop-primary)]">
-                    {b.label}
-                  </span>
-                  <span className="font-[family:var(--font-kanit)] text-sm text-[var(--shop-ink)] font-medium">
-                    {b.value}
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
-      </section>
-
-      {/* ============ Sound Signature ============ */}
-      <section className="relative z-10 border-y border-[var(--shop-border)] bg-[var(--shop-card)]">
-        <div className="container mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-10 lg:gap-16 items-center">
-          <div>
-            <div className="font-[family:var(--font-kanit)] text-[11px] tracking-[0.28em] uppercase text-[var(--shop-primary)] font-bold mb-3">
-              Sound Signature
-            </div>
-            <h2 className="font-[family:var(--font-prompt)] text-3xl md:text-4xl font-bold text-[var(--shop-ink)] leading-tight mb-5">
-              เสียงสมดุล ปลาย treble ที่ดูแลรายละเอียด
-            </h2>
-            <p className="font-[family:var(--font-kanit)] text-base text-[var(--shop-ink-muted)] leading-relaxed max-w-prose">
-              ปรับจูนโดย acoustic engineer ที่เคยมิกซ์อัลบั้มในสตูดิโอ Abbey Road ·
-              เน้นย่าน mid-high ที่ใส โดยไม่กัดหู และ bass ที่ลงลึกแต่ไม่ตื้น เหมาะกับ
-              acoustic / jazz / vocal / lo-fi
-            </p>
-          </div>
-          <div className="text-[var(--shop-ink)]">
-            <SoundSignatureCurve bands={equalizer} />
-          </div>
-        </div>
-      </section>
-
-      {/* ============ Spec Rail ============ */}
-      <section className="relative z-10 container mx-auto px-6 py-16">
-        <div className="font-[family:var(--font-kanit)] text-[11px] tracking-[0.28em] uppercase text-[var(--shop-primary)] font-bold mb-3">
-          Technical Specs
-        </div>
-        <h2 className="font-[family:var(--font-prompt)] text-3xl md:text-4xl font-bold text-[var(--shop-ink)] mb-10">
-          ข้อมูลทางเทคนิค
-        </h2>
-
-        <dl className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--shop-border)] border border-[var(--shop-border)]">
-          {[
-            { k: 'ไดรเวอร์', v: 'Planar Magnetic 50 มม.' },
-            { k: 'การตอบสนองความถี่', v: '10 Hz – 40 kHz' },
-            { k: 'ความต้านทาน', v: '32 Ω' },
-            { k: 'ความไว', v: '105 dB / 1mW' },
-            { k: 'น้ำหนัก', v: '320 g' },
-            { k: 'การเชื่อมต่อ', v: 'Bluetooth 5.3 · 3.5mm · USB-C' },
-            { k: 'รองรับ Codec', v: 'LDAC · aptX Adaptive · AAC' },
-            { k: 'อายุการใช้งานแบตเตอรี่', v: '40 ชม. (BT) · 60 ชม. (สาย)' },
-            { k: 'การชาร์จ', v: 'USB-C · ชาร์จเร็ว 10 นาที = 8 ชม.' },
-          ].map((row) => (
-            <div key={row.k} className="bg-[var(--shop-card)] p-5 flex flex-col gap-1">
-              <dt className="font-[family:var(--font-prompt)] text-[10px] tracking-[0.24em] uppercase font-bold text-[var(--shop-ink-muted)]">
-                {row.k}
-              </dt>
-              <dd className="font-[family:var(--font-kanit)] text-base font-medium text-[var(--shop-ink)]">
-                {row.v}
-              </dd>
-            </div>
-          ))}
-        </dl>
       </section>
 
       {/* ============ Related Products ============ */}

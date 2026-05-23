@@ -27,10 +27,7 @@ import {
   ShieldCheck,
   Truck,
   RotateCw,
-  Headphones,
-  Activity,
   ChevronRight,
-  Volume2,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 import { formatTHB } from '@/lib/utils';
@@ -40,110 +37,24 @@ import type { ProductDetailProps } from '@/lib/templates/types';
 // Local UI helpers
 // ----------------------------------------------------------------------------
 
-/** Six-character monospace ID slice — surfaces as "ID: ABC123" tag. */
-function shortId(id: string): string {
-  return id.slice(-6).toUpperCase();
-}
-
-/** Fake-but-deterministic switch/spec deck so the spec rack always has
- *  something on screen even before the supplier ships full specs. The
- *  hash drives index selection so the same product always shows the
- *  same spec — feels less mocked, more catalog. */
-function pickFromHash(id: string, len: number): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return h % len;
-}
-
-const SWITCH_TYPES = [
-  { code: 'TACTILE', label: 'แทคไทล์' },
-  { code: 'LINEAR', label: 'ลิเนียร์' },
-  { code: 'CLICKY', label: 'คลิกกี้' },
-  { code: 'SILENT', label: 'เงียบ' },
-] as const;
-
-const KEYCAP_PROFILES = [
-  { code: 'CHERRY', label: 'เชอร์รี่' },
-  { code: 'OEM', label: 'OEM' },
-  { code: 'SA', label: 'SA' },
-  { code: 'XDA', label: 'XDA' },
-] as const;
-
-/** Sound profile bars — drives the ASCII frequency meter row.
- *  We pick one of three "voices" deterministically per product so
- *  identical products would render the same waveform. */
-const SOUND_PROFILES: Array<{ name: string; bars: number[]; freq: string }> = [
-  { name: 'CREAMY THOCK', bars: [2, 4, 6, 8, 7, 5, 3, 4, 6, 7, 5, 3, 2], freq: '120–180 HZ' },
-  { name: 'CLACKY POP',   bars: [1, 3, 5, 7, 8, 6, 4, 5, 7, 8, 6, 4, 2], freq: '200–320 HZ' },
-  { name: 'MUTED MARBLE', bars: [3, 4, 5, 6, 5, 4, 3, 4, 5, 4, 3, 2, 2], freq: '80–140 HZ'  },
-];
-
-/** Spec rack rows derived from the product's variant labels. Falls
- *  back to deterministic fake specs so the box always feels populated. */
-function deriveSpecRows(
+/** Build distinct variant options from product.variants, deduped by label. */
+function buildVariantOptions(
   product: ProductDetailProps['product'],
-): Array<{ label: string; value: string }> {
-  const rows: Array<{ label: string; value: string }> = [];
-  if (product.categoryName) {
-    rows.push({ label: 'CATEGORY', value: product.categoryName.toUpperCase() });
-  }
-  rows.push({ label: 'SKU', value: shortId(product.id) });
-  rows.push({
-    label: 'STOCK',
-    value:
-      product.stockLeft != null
-        ? product.stockLeft > 0
-          ? `${product.stockLeft} U` // U = units
-          : 'BACKORDER'
-        : 'IN STOCK',
-  });
-  rows.push({
-    label: 'POLL RATE',
-    value: ['1000 HZ', '4000 HZ', '8000 HZ'][pickFromHash(product.id + 'p', 3)],
-  });
-  rows.push({
-    label: 'CONNECT',
-    value: ['USB-C', '2.4G + BT 5.0', 'TRI-MODE'][pickFromHash(product.id + 'c', 3)],
-  });
-  rows.push({
-    label: 'WEIGHT',
-    value: ['55 G', '780 G', '1.2 KG'][pickFromHash(product.id + 'w', 3)],
-  });
-  return rows;
-}
-
-/** Pull distinct labels for the two variant axes — switch / keycap.
- *  If the product carries actual variants we honor their labels;
- *  otherwise we surface our canned sets so the picker still works. */
-function deriveSwitchOptions(
-  product: ProductDetailProps['product'],
-): Array<{ code: string; label: string; key: string }> {
-  const fromData: Array<{ code: string; label: string; key: string }> = [];
-  const seen = new Set<string>();
-  for (const v of product.variants) {
-    const label = v.attributes?.['switch'] || v.attributes?.['สวิตช์'] || v.materialLabel;
-    if (!label || seen.has(label)) continue;
-    seen.add(label);
-    fromData.push({ code: label.toUpperCase().slice(0, 8), label, key: v.id });
-  }
-  if (fromData.length > 0) return fromData;
-  return SWITCH_TYPES.map((s) => ({ code: s.code, label: s.label, key: s.code }));
-}
-
-function deriveKeycapOptions(
-  product: ProductDetailProps['product'],
-): Array<{ code: string; label: string; key: string }> {
-  const fromData: Array<{ code: string; label: string; key: string }> = [];
+): Array<{ key: string; label: string; code: string }> {
+  const out: Array<{ key: string; label: string; code: string }> = [];
   const seen = new Set<string>();
   for (const v of product.variants) {
     const label =
-      v.attributes?.['keycap'] || v.attributes?.['คีย์แคป'] || v.colorLabel || v.sizeLabel;
+      v.colorLabel ||
+      v.sizeLabel ||
+      v.materialLabel ||
+      Object.values(v.attributes ?? {}).join(' / ') ||
+      '';
     if (!label || seen.has(label)) continue;
     seen.add(label);
-    fromData.push({ code: label.toUpperCase().slice(0, 8), label, key: v.id });
+    out.push({ key: v.id, label, code: label.toUpperCase().slice(0, 12) });
   }
-  if (fromData.length > 0) return fromData;
-  return KEYCAP_PROFILES.map((k) => ({ code: k.code, label: k.label, key: k.code }));
+  return out;
 }
 
 // ----------------------------------------------------------------------------
@@ -166,17 +77,10 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
   const [activeImage, setActiveImage] = useState(0);
   const [qty, setQty] = useState(1);
 
-  const switchOptions = useMemo(() => deriveSwitchOptions(product), [product]);
-  const keycapOptions = useMemo(() => deriveKeycapOptions(product), [product]);
-  const [selectedSwitch, setSelectedSwitch] = useState<string>(
-    switchOptions[0]?.key ?? '',
+  const variantOptions = useMemo(() => buildVariantOptions(product), [product]);
+  const [selectedVariant, setSelectedVariant] = useState<string>(
+    variantOptions[0]?.key ?? '',
   );
-  const [selectedKeycap, setSelectedKeycap] = useState<string>(
-    keycapOptions[0]?.key ?? '',
-  );
-
-  const specRows = useMemo(() => deriveSpecRows(product), [product]);
-  const soundProfile = SOUND_PROFILES[pickFromHash(product.id, SOUND_PROFILES.length)];
 
   // Cart wiring — useCart add + cartConfirm modal toast (same pattern
   // as the keystroke-lab Homepage card).
@@ -395,101 +299,21 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
               </div>
             )}
 
-            {/* ── Sound test placeholder (frequency meter) ────────── */}
-            <div
-              className="border p-5 mt-6"
-              style={{
-                borderColor: 'var(--shop-border)',
-                background: 'var(--shop-card)',
-                borderRadius: 'var(--shop-radius)',
-              }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div
-                  className="flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] font-bold"
-                  data-tech-mono="true"
-                  style={{ color: 'var(--shop-ink)' }}
-                >
-                  <Headphones size={14} aria-hidden="true" style={{ color: 'var(--shop-primary)' }} />
-                  SOUND TEST · <span style={{ color: 'var(--shop-primary)' }}>{soundProfile.name}</span>
-                </div>
-                <div
-                  className="text-[10px] uppercase tracking-[0.22em] flex items-center gap-1"
+          </div>
+
+          {/* ── Info column (buy block) ─────────────────────────── */}
+          <div className="flex flex-col">
+            {product.categoryName && (
+              <div className="flex items-center gap-3 mb-3">
+                <span
+                  className="text-[10px] uppercase tracking-[0.22em]"
                   data-tech-mono="true"
                   style={{ color: 'var(--shop-ink-muted)' }}
                 >
-                  <Activity size={11} aria-hidden="true" />
-                  {soundProfile.freq}
-                </div>
+                  {product.categoryName}
+                </span>
               </div>
-
-              {/* ASCII frequency bars */}
-              <div
-                className="flex items-end gap-1 h-16 mb-3 px-1"
-                role="img"
-                aria-label={`Sound profile: ${soundProfile.name}, ${soundProfile.freq}`}
-              >
-                {soundProfile.bars.map((h, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 transition-all"
-                    style={{
-                      height: `${(h / 8) * 100}%`,
-                      background: i % 3 === 0 ? 'var(--shop-primary)' : 'var(--shop-accent)',
-                      opacity: 0.4 + (h / 8) * 0.6,
-                      borderRadius: '1px',
-                    }}
-                  />
-                ))}
-              </div>
-
-              <button
-                type="button"
-                disabled
-                aria-disabled="true"
-                className="w-full flex items-center justify-center gap-2 py-2 text-[11px] uppercase tracking-[0.22em] border cursor-not-allowed"
-                data-tech-mono="true"
-                style={{
-                  borderColor: 'var(--shop-border)',
-                  color: 'var(--shop-ink-muted)',
-                  background: 'var(--shop-muted, var(--shop-bg))',
-                }}
-                title="ตัวอย่างเสียงจะเปิดให้ฟังเร็วๆ นี้"
-              >
-                <Volume2 size={12} aria-hidden="true" />
-                ▶ PLAY SAMPLE · COMING SOON
-              </button>
-            </div>
-          </div>
-
-          {/* ── Info column (spec rack + buy block) ──────────────── */}
-          <div className="flex flex-col">
-            {/* Status chip + title */}
-            <div className="flex items-center gap-3 mb-3">
-              <span
-                className="inline-flex items-center gap-2 px-2 py-1 text-[10px] uppercase tracking-[0.22em] border"
-                data-tech-mono="true"
-                style={{
-                  color: 'var(--shop-primary)',
-                  borderColor: 'var(--shop-primary)',
-                  background: 'color-mix(in srgb, var(--shop-primary) 8%, transparent)',
-                }}
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full animate-pulse"
-                  style={{ background: 'var(--shop-primary)' }}
-                  aria-hidden="true"
-                />
-                IN-LAB
-              </span>
-              <span
-                className="text-[10px] uppercase tracking-[0.22em]"
-                data-tech-mono="true"
-                style={{ color: 'var(--shop-ink-muted)' }}
-              >
-                ID · {shortId(product.id)}
-              </span>
-            </div>
+            )}
 
             <h1
               className="text-2xl md:text-3xl font-bold leading-tight mb-3"
@@ -543,155 +367,56 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
               )}
             </div>
 
-            {/* ── Spec rack ─────────────────────────────────────── */}
-            <div
-              className="border mb-6"
-              style={{
-                borderColor: 'var(--shop-border)',
-                background: 'var(--shop-card)',
-                borderRadius: 'var(--shop-radius)',
-              }}
-              role="table"
-              aria-label="Product specifications"
-            >
-              <div
-                className="px-4 py-2 border-b text-[10px] uppercase tracking-[0.22em] flex items-center justify-between"
-                data-tech-mono="true"
-                style={{
-                  borderColor: 'var(--shop-border)',
-                  color: 'var(--shop-ink-muted)',
-                  background: 'var(--shop-muted, var(--shop-bg))',
-                }}
-              >
-                <span>SPEC · /sys/specs.dat</span>
-                <span style={{ color: 'var(--shop-primary)' }}>READ-ONLY</span>
-              </div>
-              <div className="divide-y" style={{ borderColor: 'var(--shop-border)' }}>
-                {specRows.map((row, i) => (
-                  <div
-                    key={i}
-                    className="px-4 py-2 flex items-center justify-between text-[12px]"
-                    role="row"
-                    style={{ borderColor: 'var(--shop-border)' }}
-                  >
-                    <span
-                      className="uppercase tracking-[0.22em]"
-                      data-tech-mono="true"
-                      style={{ color: 'var(--shop-ink-muted)' }}
-                      role="cell"
-                    >
-                      {row.label}
+            {/* ── Variant picker (from real product.variants) ─────── */}
+            {variantOptions.length > 0 && (
+              <fieldset className="mb-6">
+                <legend
+                  className="flex items-center justify-between w-full mb-2 text-[11px] uppercase tracking-[0.22em]"
+                  data-tech-mono="true"
+                >
+                  <span style={{ color: 'var(--shop-ink)' }}>
+                    <span style={{ color: 'var(--shop-primary)' }}>$</span> --variant=
+                    <span style={{ color: 'var(--shop-ink)', fontWeight: 700 }}>
+                      {variantOptions.find((o) => o.key === selectedVariant)?.label ?? '—'}
                     </span>
-                    <span
-                      className="tabular-nums uppercase tracking-[0.12em] font-medium"
-                      data-tech-mono="true"
-                      style={{ color: 'var(--shop-ink)' }}
-                      role="cell"
-                    >
-                      {row.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Variant — switch type ─────────────────────────── */}
-            <fieldset className="mb-5">
-              <legend
-                className="flex items-center justify-between w-full mb-2 text-[11px] uppercase tracking-[0.22em]"
-                data-tech-mono="true"
-              >
-                <span style={{ color: 'var(--shop-ink)' }}>
-                  <span style={{ color: 'var(--shop-primary)' }}>$</span> --switch=
-                  <span style={{ color: 'var(--shop-ink)', fontWeight: 700 }}>
-                    {switchOptions.find((o) => o.key === selectedSwitch)?.label ?? '—'}
                   </span>
-                </span>
-                <span style={{ color: 'var(--shop-ink-muted)' }}>
-                  {switchOptions.length} OPT
-                </span>
-              </legend>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {switchOptions.map((opt) => {
-                  const active = opt.key === selectedSwitch;
-                  return (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => setSelectedSwitch(opt.key)}
-                      aria-pressed={active}
-                      className="px-3 py-2 text-[11px] uppercase tracking-[0.18em] border transition-colors text-left"
-                      data-tech-mono="true"
-                      style={{
-                        borderColor: active ? 'var(--shop-primary)' : 'var(--shop-border)',
-                        background: active
-                          ? 'color-mix(in srgb, var(--shop-primary) 10%, var(--shop-card))'
-                          : 'var(--shop-card)',
-                        color: active ? 'var(--shop-primary)' : 'var(--shop-ink)',
-                        borderRadius: 'calc(var(--shop-radius) * 0.5)',
-                      }}
-                    >
-                      <span className="block font-bold">{opt.code}</span>
-                      <span
-                        className="block text-[10px] mt-0.5"
-                        style={{ color: 'var(--shop-ink-muted)' }}
-                      >
-                        {opt.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </fieldset>
-
-            {/* ── Variant — keycap profile ──────────────────────── */}
-            <fieldset className="mb-6">
-              <legend
-                className="flex items-center justify-between w-full mb-2 text-[11px] uppercase tracking-[0.22em]"
-                data-tech-mono="true"
-              >
-                <span style={{ color: 'var(--shop-ink)' }}>
-                  <span style={{ color: 'var(--shop-primary)' }}>$</span> --keycap=
-                  <span style={{ color: 'var(--shop-ink)', fontWeight: 700 }}>
-                    {keycapOptions.find((o) => o.key === selectedKeycap)?.label ?? '—'}
+                  <span style={{ color: 'var(--shop-ink-muted)' }}>
+                    {variantOptions.length} OPT
                   </span>
-                </span>
-                <span style={{ color: 'var(--shop-ink-muted)' }}>
-                  {keycapOptions.length} OPT
-                </span>
-              </legend>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {keycapOptions.map((opt) => {
-                  const active = opt.key === selectedKeycap;
-                  return (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => setSelectedKeycap(opt.key)}
-                      aria-pressed={active}
-                      className="px-3 py-2 text-[11px] uppercase tracking-[0.18em] border transition-colors text-left"
-                      data-tech-mono="true"
-                      style={{
-                        borderColor: active ? 'var(--shop-primary)' : 'var(--shop-border)',
-                        background: active
-                          ? 'color-mix(in srgb, var(--shop-primary) 10%, var(--shop-card))'
-                          : 'var(--shop-card)',
-                        color: active ? 'var(--shop-primary)' : 'var(--shop-ink)',
-                        borderRadius: 'calc(var(--shop-radius) * 0.5)',
-                      }}
-                    >
-                      <span className="block font-bold">{opt.code}</span>
-                      <span
-                        className="block text-[10px] mt-0.5"
-                        style={{ color: 'var(--shop-ink-muted)' }}
+                </legend>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {variantOptions.map((opt) => {
+                    const active = opt.key === selectedVariant;
+                    return (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => setSelectedVariant(opt.key)}
+                        aria-pressed={active}
+                        className="px-3 py-2 text-[11px] uppercase tracking-[0.18em] border transition-colors text-left"
+                        data-tech-mono="true"
+                        style={{
+                          borderColor: active ? 'var(--shop-primary)' : 'var(--shop-border)',
+                          background: active
+                            ? 'color-mix(in srgb, var(--shop-primary) 10%, var(--shop-card))'
+                            : 'var(--shop-card)',
+                          color: active ? 'var(--shop-primary)' : 'var(--shop-ink)',
+                          borderRadius: 'calc(var(--shop-radius) * 0.5)',
+                        }}
                       >
-                        {opt.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </fieldset>
+                        <span className="block font-bold">{opt.code}</span>
+                        <span
+                          className="block text-[10px] mt-0.5"
+                          style={{ color: 'var(--shop-ink-muted)' }}
+                        >
+                          {opt.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            )}
 
             {/* ── Qty + subtotal ──────────────────────────────── */}
             <div
@@ -842,121 +567,6 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
         </div>
       </section>
 
-      {/* ── Switch / typing-feel section ─────────────────────────── */}
-      <section
-        className="border-t"
-        style={{
-          borderColor: 'var(--shop-border)',
-          background: 'var(--shop-muted, var(--shop-bg))',
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex items-end justify-between mb-6 pb-3 border-b" style={{ borderColor: 'var(--shop-border)' }}>
-            <div>
-              <div
-                className="text-[10px] uppercase tracking-[0.28em] mb-1"
-                data-tech-mono="true"
-                style={{ color: 'var(--shop-primary)' }}
-              >
-                /lab/typing-feel.md
-              </div>
-              <h2
-                className="text-xl md:text-2xl font-bold"
-                style={{
-                  color: 'var(--shop-ink)',
-                  fontFamily: 'var(--font-tech-display, var(--shop-font-display))',
-                }}
-              >
-                Switch & Typing Feel
-              </h2>
-            </div>
-            <span
-              className="text-[10px] uppercase tracking-[0.22em] hidden md:inline"
-              data-tech-mono="true"
-              style={{ color: 'var(--shop-ink-muted)' }}
-            >
-              CALIBRATED · LAB-RIG #04
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                label: 'ACTUATION FORCE',
-                value: '45 GF',
-                hint: 'น้ำหนักกดเริ่มต้น เบาพอสำหรับพิมพ์ทั้งวัน',
-              },
-              {
-                label: 'TOTAL TRAVEL',
-                value: '3.3 MM',
-                hint: 'ระยะกดสุด เหมาะกับ gamer + typist',
-              },
-              {
-                label: 'PRE-TRAVEL',
-                value: '1.9 MM',
-                hint: 'จุดส่งสัญญาณ — เร็วพอสำหรับ FPS',
-              },
-              {
-                label: 'BOTTOM-OUT',
-                value: '60 GF',
-                hint: 'น้ำหนักกดสุดทาง สัมผัสมั่นคง',
-              },
-              {
-                label: 'LIFE CYCLE',
-                value: '80 M',
-                hint: '80 ล้านครั้ง — ผ่าน Lab QA',
-              },
-              {
-                label: 'FACTORY LUBE',
-                value: 'KRYTOX 205g0',
-                hint: 'จาระบีโรงงาน นุ่ม ไม่ติดมือ',
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="border p-4"
-                style={{
-                  borderColor: 'var(--shop-border)',
-                  background: 'var(--shop-card)',
-                  borderRadius: 'var(--shop-radius)',
-                }}
-              >
-                <div
-                  className="flex items-center justify-between mb-2"
-                  data-tech-mono="true"
-                >
-                  <span
-                    className="text-[10px] uppercase tracking-[0.22em]"
-                    style={{ color: 'var(--shop-ink-muted)' }}
-                  >
-                    {item.label}
-                  </span>
-                  <span
-                    className="text-[10px] uppercase tracking-[0.22em]"
-                    style={{ color: 'var(--shop-primary)' }}
-                  >
-                    {String(i + 1).padStart(2, '0')} / 06
-                  </span>
-                </div>
-                <div
-                  className="text-2xl font-bold tabular-nums mb-2"
-                  data-tech-mono="true"
-                  style={{ color: 'var(--shop-ink)' }}
-                >
-                  {item.value}
-                </div>
-                <p
-                  className="text-xs leading-relaxed"
-                  style={{ color: 'var(--shop-ink-muted)', fontFamily: 'var(--shop-font)' }}
-                >
-                  {item.hint}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Description (collapsed-style block) ───────────────────── */}
       {product.description && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -1099,14 +709,6 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
                         [ NO PHOTO ]
                       </div>
                     )}
-                    <div
-                      aria-hidden="true"
-                      className="absolute top-1 left-2 text-[9px] uppercase tracking-[0.22em]"
-                      data-tech-mono="true"
-                      style={{ color: 'var(--shop-ink-muted)' }}
-                    >
-                      ID {shortId(r.id)}
-                    </div>
                   </div>
 
                   <div className="p-3">

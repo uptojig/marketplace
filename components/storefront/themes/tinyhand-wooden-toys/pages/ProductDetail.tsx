@@ -22,15 +22,12 @@ import {
   IconShoppingBag,
   IconBolt,
   IconShieldCheck,
-  IconLeaf,
   IconTruck,
   IconRefresh,
-  IconStarFilled,
   IconCheck,
   IconMinus,
   IconPlus,
   IconRulerMeasure,
-  IconBabyCarriage,
 } from '@tabler/icons-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
@@ -89,12 +86,11 @@ function FlatProductIllustration({ tint }: { tint: string }) {
   );
 }
 
-// ─── trust badges ─────────────────────────────────────────────────────
+// ─── trust badges (store-policy only, never product-specific claims) ─
 const TRUST_BADGES = [
-  { icon: IconShieldCheck, title: 'มาตรฐาน CE / EN71', desc: 'ผ่านการทดสอบความปลอดภัยยุโรป' },
-  { icon: IconLeaf, title: 'สีน้ำจากผัก', desc: 'Non-toxic · ปลอดภัยเมื่อเด็กเอาเข้าปาก' },
-  { icon: IconBabyCarriage, title: 'ออกแบบสำหรับเด็ก', desc: 'ขอบมน ไม่มีชิ้นส่วนแหลมคม' },
   { icon: IconTruck, title: 'ส่งฟรี ฿890+', desc: 'ส่งภายใน 1–3 วัน · มี tracking' },
+  { icon: IconRefresh, title: 'เปลี่ยน/คืน 14 วัน', desc: 'กล่องและซีลต้องอยู่สภาพเดิม' },
+  { icon: IconShieldCheck, title: 'คุ้มครองผู้ซื้อ', desc: 'โดย Basketplace' },
 ] as const;
 
 // ─── color label → token-derived swatch ───────────────────────────────
@@ -409,21 +405,6 @@ export function TinyhandProductDetail({ store, product, related }: ProductDetail
               {product.title}
             </h1>
 
-            {/* rating row (display-only) */}
-            <div className="flex items-center gap-2 mb-5" aria-label="คะแนนรีวิว 4.9 จาก 5">
-              <span className="flex" style={{ color: TONE.wood }}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <IconStarFilled key={i} size={16} aria-hidden="true" />
-                ))}
-              </span>
-              <span className="font-bold text-sm" style={{ color: TONE.ink }}>
-                4.9
-              </span>
-              <span className="text-sm" style={{ color: TONE.inkMuted }}>
-                · 248 รีวิวจากคุณพ่อคุณแม่
-              </span>
-            </div>
-
             {/* price */}
             <div className="flex items-baseline gap-3 flex-wrap mb-2">
               <span
@@ -449,33 +430,7 @@ export function TinyhandProductDetail({ store, product, related }: ProductDetail
                 </>
               )}
             </div>
-            <p className="text-sm mb-6" style={{ color: TONE.inkMuted }}>
-              ผ่อน 0% นาน 3 เดือน · {formatTHB(Math.round(product.priceTHB / 3))} / เดือน
-            </p>
-
-            {/* age range pill row */}
-            <div
-              className="rounded-2xl p-4 mb-6 flex items-center gap-4"
-              style={{
-                background: TONE.card,
-                border: `1px dashed ${TONE.border}`,
-              }}
-            >
-              <div
-                className="w-12 h-12 rounded-2xl grid place-items-center flex-shrink-0"
-                style={{ background: TONE.woodSoft, color: TONE.woodDeep }}
-              >
-                <IconBabyCarriage size={24} aria-hidden="true" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs uppercase tracking-wider font-bold mb-0.5" style={{ color: TONE.inkMuted }}>
-                  ช่วงอายุที่เหมาะสม
-                </div>
-                <div className="font-[family:var(--font-kanit)] text-lg font-bold" style={{ color: TONE.ink }}>
-                  1+ ขวบ — พัฒนาการ &amp; จินตนาการ
-                </div>
-              </div>
-            </div>
+            <div className="mb-6" />
 
             {/* color variants */}
             {colorLabels.length > 0 && (
@@ -606,16 +561,6 @@ export function TinyhandProductDetail({ store, product, related }: ProductDetail
                 </button>
               </div>
 
-              <span
-                className="text-xs font-bold inline-flex items-center gap-1.5 px-3 py-2 rounded-full"
-                style={{
-                  background: TONE.accentSoft,
-                  color: TONE.woodDeep,
-                }}
-              >
-                <IconCheck size={14} stroke={3} aria-hidden="true" />
-                พร้อมส่ง · ส่งภายใน 24 ชม.
-              </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
@@ -652,7 +597,7 @@ export function TinyhandProductDetail({ store, product, related }: ProductDetail
 
             {/* trust badges */}
             <ul
-              className="grid grid-cols-2 gap-2 mb-6"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6"
               aria-label="ความปลอดภัยและบริการ"
             >
               {TRUST_BADGES.map(({ icon: Icon, title, desc: badgeDesc }) => (
@@ -688,118 +633,37 @@ export function TinyhandProductDetail({ store, product, related }: ProductDetail
               ))}
             </ul>
 
-            {/* description / safety / material accordion */}
-            <div className="space-y-2">
-              <details
-                open
-                className="group rounded-2xl overflow-hidden"
-                style={{
-                  background: TONE.card,
-                  border: `1px solid ${TONE.border}`,
-                }}
-              >
-                <summary
-                  className="cursor-pointer list-none flex items-center justify-between px-5 py-4 font-[family:var(--font-kanit)] font-bold"
-                  style={{ color: TONE.ink }}
+            {/* description accordion (real DB description only) */}
+            {desc && (
+              <div className="space-y-2">
+                <details
+                  open
+                  className="group rounded-2xl overflow-hidden"
+                  style={{
+                    background: TONE.card,
+                    border: `1px solid ${TONE.border}`,
+                  }}
                 >
-                  <span>รายละเอียดของเล่น</span>
-                  <IconChevronRight
-                    size={18}
-                    aria-hidden="true"
-                    className="transition-transform group-open:rotate-90"
-                  />
-                </summary>
-                <div
-                  className="px-5 pb-5 text-sm leading-relaxed"
-                  style={{ color: TONE.inkMuted }}
-                >
-                  {desc ? (
-                    <p>{desc}</p>
-                  ) : (
-                    <p>
-                      ของเล่นไม้ designed สำหรับเสริมพัฒนาการกล้ามเนื้อมัดเล็ก
-                      ความคิดสร้างสรรค์ และการเรียนรู้ผ่านการเล่น เหมาะกับลูกน้อยช่วงอายุ
-                      1 ขวบขึ้นไป · ทำมือจากไม้บีชธรรมชาติ ชิ้นเดียวต่อชิ้น ไม่ใช่ผลิตจากโรงงาน
-                    </p>
-                  )}
-                </div>
-              </details>
-
-              <details
-                className="group rounded-2xl overflow-hidden"
-                style={{
-                  background: TONE.card,
-                  border: `1px solid ${TONE.border}`,
-                }}
-              >
-                <summary
-                  className="cursor-pointer list-none flex items-center justify-between px-5 py-4 font-[family:var(--font-kanit)] font-bold"
-                  style={{ color: TONE.ink }}
-                >
-                  <span>วัสดุ &amp; ความปลอดภัย</span>
-                  <IconChevronRight
-                    size={18}
-                    aria-hidden="true"
-                    className="transition-transform group-open:rotate-90"
-                  />
-                </summary>
-                <div
-                  className="px-5 pb-5 text-sm leading-relaxed space-y-2"
-                  style={{ color: TONE.inkMuted }}
-                >
-                  <p>
-                    <b style={{ color: TONE.ink }}>วัสดุ:</b> ไม้บีช (Beech) จากป่าปลูกทดแทนในยุโรป ·
-                    เคลือบขี้ผึ้งธรรมชาติ (beeswax) · สีย้อมจากผักผลไม้
-                  </p>
-                  <p>
-                    <b style={{ color: TONE.ink }}>มาตรฐาน:</b> ผ่านการทดสอบ EN71 (ยุโรป) และ ASTM F963 (สหรัฐฯ) ·
-                    ไม่มีโลหะหนัก · BPA free · Phthalate free
-                  </p>
-                  <p>
-                    <b style={{ color: TONE.ink }}>ขอบไม้:</b> ลบมุมแบบ Hand-sanded ทุกชิ้น
-                    เนื้อสัมผัสเรียบเนียน ไม่บาดมือเด็ก
-                  </p>
-                </div>
-              </details>
-
-              <details
-                className="group rounded-2xl overflow-hidden"
-                style={{
-                  background: TONE.card,
-                  border: `1px solid ${TONE.border}`,
-                }}
-              >
-                <summary
-                  className="cursor-pointer list-none flex items-center justify-between px-5 py-4 font-[family:var(--font-kanit)] font-bold"
-                  style={{ color: TONE.ink }}
-                >
-                  <span>การจัดส่ง &amp; การคืนสินค้า</span>
-                  <IconChevronRight
-                    size={18}
-                    aria-hidden="true"
-                    className="transition-transform group-open:rotate-90"
-                  />
-                </summary>
-                <div
-                  className="px-5 pb-5 text-sm leading-relaxed space-y-2"
-                  style={{ color: TONE.inkMuted }}
-                >
-                  <p className="flex items-start gap-2">
-                    <IconTruck size={16} className="flex-shrink-0 mt-0.5" style={{ color: TONE.woodDeep }} aria-hidden="true" />
-                    <span>
-                      ส่งฟรีเมื่อสั่งซื้อครบ ฿890 · Kerry / Flash Express ภายใน 1–3 วัน
-                      (กทม.) · 2–5 วัน (ตจว.)
-                    </span>
-                  </p>
-                  <p className="flex items-start gap-2">
-                    <IconRefresh size={16} className="flex-shrink-0 mt-0.5" style={{ color: TONE.woodDeep }} aria-hidden="true" />
-                    <span>
-                      เปลี่ยน/คืนได้ภายใน 14 วัน · กล่องและซีลต้องอยู่สภาพเดิม
-                    </span>
-                  </p>
-                </div>
-              </details>
-            </div>
+                  <summary
+                    className="cursor-pointer list-none flex items-center justify-between px-5 py-4 font-[family:var(--font-kanit)] font-bold"
+                    style={{ color: TONE.ink }}
+                  >
+                    <span>รายละเอียดสินค้า</span>
+                    <IconChevronRight
+                      size={18}
+                      aria-hidden="true"
+                      className="transition-transform group-open:rotate-90"
+                    />
+                  </summary>
+                  <div
+                    className="px-5 pb-5 text-sm leading-relaxed whitespace-pre-line"
+                    style={{ color: TONE.inkMuted }}
+                  >
+                    {desc}
+                  </div>
+                </details>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -35,13 +35,11 @@ import {
   Beaker,
   Check,
   ChevronRight,
-  Droplet,
   FlaskConical,
   Leaf,
   Minus,
   Plus,
   ShieldCheck,
-  Sparkles,
   TestTube,
   Truck,
 } from 'lucide-react';
@@ -49,42 +47,6 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { cn, formatTHB } from '@/lib/utils';
 import { useCart } from '@/lib/store/cart';
 import type { ProductDetailProps } from '@/lib/templates/types';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Static lab data — keeps the "clinical trial" cadence consistent with the
-// caldera-skin Homepage (SPEC_DATA there). Per-product specs are deterministic
-// off the product id so the same product always shows the same batch IDs.
-// ─────────────────────────────────────────────────────────────────────────────
-
-const LAB_ACTIVES = [
-  { icon: Droplet, label: 'Niacinamide 10%', detail: 'Pore visibility / barrier support' },
-  { icon: Sparkles, label: 'Centella Asiatica', detail: 'Soothing · pH 5.5 ± 0.5' },
-  { icon: Leaf, label: 'Ceramide NP 3%', detail: 'Lipid barrier renewal' },
-  { icon: Beaker, label: 'Panthenol 5%', detail: 'Hydration · post-procedure safe' },
-];
-
-const HOW_TO_USE = [
-  { step: '01', label: 'AM / PM', detail: 'หลังโทนเนอร์ ก่อนมอยส์เจอไรเซอร์' },
-  { step: '02', label: '2-3 หยด', detail: 'แตะลงบนใบหน้าและลำคอ' },
-  { step: '03', label: '60 วินาที', detail: 'รอให้ซึมก่อนชั้นต่อไป' },
-];
-
-function specsForProduct(id: string) {
-  let seed = 0;
-  for (let i = 0; i < id.length; i += 1) seed = (seed * 31 + id.charCodeAt(i)) >>> 0;
-  const batch = `CT-${String((seed % 900) + 100).padStart(3, '0')}`;
-  const lot = `LOT-${String((seed % 9000) + 1000)}`;
-  const ph = (35 + (seed % 30)) / 10; // 3.5 – 6.5
-  const volume = [15, 30, 50, 100][seed % 4];
-  const origin = ['MADE IN KOREA', 'MADE IN JAPAN', 'BANGKOK LAB'][seed % 3];
-  return {
-    batch,
-    lot,
-    ph: `${ph.toFixed(1)} ± 0.2`,
-    volume: `${volume} ml`,
-    origin,
-  };
-}
 
 function variantLabel(attrs: Record<string, string>): string {
   return Object.values(attrs).join(' / ');
@@ -95,8 +57,6 @@ function variantLabel(attrs: Record<string, string>): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function CalderaSkinProductDetail({ product, store, related }: ProductDetailProps) {
-  const specs = useMemo(() => specsForProduct(product.id), [product.id]);
-
   return (
     <div
       className="min-h-screen"
@@ -110,18 +70,12 @@ export function CalderaSkinProductDetail({ product, store, related }: ProductDet
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-4 sm:pt-6">
         <div className="lg:grid lg:grid-cols-[58%_42%] lg:gap-12">
-          <Gallery product={product} batch={specs.batch} />
-          <InfoColumn product={product} store={store} specs={specs} />
+          <Gallery product={product} />
+          <InfoColumn product={product} store={store} />
         </div>
       </section>
 
       <DescriptionBlock product={product} />
-
-      <KeyActives />
-
-      <HowToUse />
-
-      <SpecTable product={product} specs={specs} />
 
       <TrustBadges />
 
@@ -205,10 +159,8 @@ function Breadcrumb({
 
 function Gallery({
   product,
-  batch,
 }: {
   product: ProductDetailProps['product'];
-  batch: string;
 }) {
   const [idx, setIdx] = useState(0);
   const images = useMemo(() => {
@@ -276,22 +228,12 @@ function Gallery({
           </div>
         )}
 
-        {/* Main image with the batch ID chip pinned in the corner */}
+        {/* Main image */}
         <div className="flex-1 relative">
           <div
             className="rounded-sm border bg-white p-3 sm:p-4 relative"
             style={{ borderColor: 'var(--shop-border, #f5e1e8)' }}
           >
-            <span
-              className="absolute top-5 left-5 z-10 px-2 py-1 text-[9px] uppercase font-medium"
-              style={{
-                letterSpacing: '0.18em',
-                backgroundColor: 'var(--shop-ink, #3f1d2c)',
-                color: 'var(--shop-bg, #fbf8f4)',
-              }}
-            >
-              BATCH · {batch}
-            </span>
             <AspectRatio ratio={4 / 5}>
               <div
                 className="relative w-full h-full overflow-hidden"
@@ -352,11 +294,9 @@ function Gallery({
 function InfoColumn({
   product,
   store,
-  specs,
 }: {
   product: ProductDetailProps['product'];
   store: ProductDetailProps['store'];
-  specs: ReturnType<typeof specsForProduct>;
 }) {
   const router = useRouter();
   const add = useCart((s) => s.add);
@@ -407,24 +347,14 @@ function InfoColumn({
 
   return (
     <div className="pt-8 lg:pt-0 space-y-7">
-      {/* Eyebrow — origin chip in uppercase tracking */}
-      <div className="flex items-center gap-3 text-[10px] uppercase" style={{ letterSpacing: '0.22em' }}>
-        <span
-          className="inline-flex items-center gap-1.5 px-2 py-1 border"
-          style={{
-            borderColor: 'var(--shop-border, #f5e1e8)',
-            color: 'var(--shop-ink-muted, #a18792)',
-          }}
-        >
-          <FlaskConical className="w-3 h-3" />
-          {specs.origin}
-        </span>
-        {product.categoryName && (
+      {/* Eyebrow — category chip */}
+      {product.categoryName && (
+        <div className="flex items-center gap-3 text-[10px] uppercase" style={{ letterSpacing: '0.22em' }}>
           <span style={{ color: 'var(--shop-ink-muted, #a18792)' }}>
-            · {product.categoryName}
+            {product.categoryName}
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Title — display serif via fashion-beauty heading var */}
       <div className="space-y-3">
@@ -483,16 +413,6 @@ function InfoColumn({
           </>
         )}
       </div>
-
-      {/* Mini spec strip — pH / Volume / Lot */}
-      <dl
-        className="grid grid-cols-3 border-y"
-        style={{ borderColor: 'var(--shop-border, #f5e1e8)' }}
-      >
-        <SpecCell label="pH" value={specs.ph} />
-        <SpecCell label="Volume" value={specs.volume} divider />
-        <SpecCell label="Lot" value={specs.lot} divider />
-      </dl>
 
       {/* Variant picker */}
       {product.variants.length > 0 && (
@@ -691,42 +611,6 @@ function InfoColumn({
   );
 }
 
-function SpecCell({
-  label,
-  value,
-  divider,
-}: {
-  label: string;
-  value: string;
-  divider?: boolean;
-}) {
-  return (
-    <div
-      className={cn('px-3 py-3', divider && 'border-l')}
-      style={{ borderColor: 'var(--shop-border, #f5e1e8)' }}
-    >
-      <dt
-        className="text-[9px] uppercase"
-        style={{
-          letterSpacing: '0.18em',
-          color: 'var(--shop-ink-muted, #a18792)',
-        }}
-      >
-        {label}
-      </dt>
-      <dd
-        className="mt-1 text-sm font-medium"
-        style={{
-          color: 'var(--shop-ink, #3f1d2c)',
-          fontFamily: 'var(--font-kanit), var(--font-prompt), sans-serif',
-        }}
-      >
-        {value}
-      </dd>
-    </div>
-  );
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Description — soft surface block + lab-note divider.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -768,246 +652,6 @@ function DescriptionBlock({ product }: { product: ProductDetailProps['product'] 
         >
           {desc}
         </div>
-      </div>
-    </section>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Key Actives — ingredient call-out grid (the skincare-luxe signature row).
-// ─────────────────────────────────────────────────────────────────────────────
-
-function KeyActives() {
-  return (
-    <section
-      className="border-t"
-      style={{
-        borderColor: 'var(--shop-border, #f5e1e8)',
-        backgroundColor: 'var(--shop-muted, #fef2f2)',
-      }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-3">
-          <div>
-            <p
-              className="text-[10px] uppercase mb-3"
-              style={{
-                letterSpacing: '0.22em',
-                color: 'var(--shop-ink-muted, #a18792)',
-              }}
-            >
-              §02 · Active Ingredients
-            </p>
-            <h2
-              className="text-2xl sm:text-3xl"
-              style={{
-                fontFamily:
-                  'var(--font-kanit), var(--font-fashion-display), Georgia, serif',
-                fontWeight: 500,
-                color: 'var(--shop-ink, #3f1d2c)',
-              }}
-            >
-              สารสำคัญในสูตร
-            </h2>
-          </div>
-          <p
-            className="text-xs max-w-md"
-            style={{ color: 'var(--shop-ink-muted, #a18792)' }}
-          >
-            ผ่านการคัดสรรในห้องแล็บ · ความเข้มข้นที่งานวิจัยทางคลินิกรองรับ
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 border"
-          style={{ borderColor: 'var(--shop-border, #f5e1e8)' }}
-        >
-          {LAB_ACTIVES.map((a, i) => {
-            const Icon = a.icon;
-            return (
-              <div
-                key={a.label}
-                className={cn(
-                  'p-6 bg-white',
-                  i < LAB_ACTIVES.length - 1 &&
-                    'sm:border-r border-b sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:last-child]:border-r-0',
-                )}
-                style={{ borderColor: 'var(--shop-border, #f5e1e8)' }}
-              >
-                <Icon
-                  className="w-6 h-6 mb-4 stroke-[1.3]"
-                  style={{ color: 'var(--shop-primary, #f43f5e)' }}
-                />
-                <p
-                  className="text-sm font-medium mb-1"
-                  style={{
-                    fontFamily: 'var(--font-kanit), var(--font-prompt), sans-serif',
-                    color: 'var(--shop-ink, #3f1d2c)',
-                  }}
-                >
-                  {a.label}
-                </p>
-                <p
-                  className="text-xs leading-relaxed"
-                  style={{ color: 'var(--shop-ink-muted, #a18792)' }}
-                >
-                  {a.detail}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// How to use — 3-step ritual.
-// ─────────────────────────────────────────────────────────────────────────────
-
-function HowToUse() {
-  return (
-    <section
-      className="border-t"
-      style={{ borderColor: 'var(--shop-border, #f5e1e8)' }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
-        <div className="mb-10">
-          <p
-            className="text-[10px] uppercase mb-3"
-            style={{
-              letterSpacing: '0.22em',
-              color: 'var(--shop-ink-muted, #a18792)',
-            }}
-          >
-            §03 · Application Protocol
-          </p>
-          <h2
-            className="text-2xl sm:text-3xl"
-            style={{
-              fontFamily:
-                'var(--font-kanit), var(--font-fashion-display), Georgia, serif',
-              fontWeight: 500,
-              color: 'var(--shop-ink, #3f1d2c)',
-            }}
-          >
-            วิธีใช้
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {HOW_TO_USE.map((s) => (
-            <div key={s.step}>
-              <p
-                className="text-5xl mb-4 font-medium"
-                style={{
-                  color: 'var(--shop-primary, #f43f5e)',
-                  fontFamily: 'var(--font-kanit), var(--font-prompt), sans-serif',
-                  opacity: 0.4,
-                }}
-              >
-                {s.step}
-              </p>
-              <p
-                className="text-base font-medium mb-2"
-                style={{
-                  fontFamily: 'var(--font-kanit), var(--font-prompt), sans-serif',
-                  color: 'var(--shop-ink, #3f1d2c)',
-                }}
-              >
-                {s.label}
-              </p>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: 'var(--shop-ink-muted, #a18792)' }}
-              >
-                {s.detail}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Spec table — looks like a tear-sheet at the bottom of a product card.
-// ─────────────────────────────────────────────────────────────────────────────
-
-function SpecTable({
-  product,
-  specs,
-}: {
-  product: ProductDetailProps['product'];
-  specs: ReturnType<typeof specsForProduct>;
-}) {
-  const rows: { label: string; value: string }[] = [
-    { label: 'Batch ID', value: specs.batch },
-    { label: 'Lot Number', value: specs.lot },
-    { label: 'pH Range', value: specs.ph },
-    { label: 'Net Volume', value: specs.volume },
-    { label: 'Origin', value: specs.origin },
-    { label: 'SKU', value: product.id.slice(0, 8).toUpperCase() },
-  ];
-  return (
-    <section
-      className="border-t"
-      style={{ borderColor: 'var(--shop-border, #f5e1e8)' }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20 grid lg:grid-cols-[1fr_2fr] gap-10">
-        <div>
-          <p
-            className="text-[10px] uppercase mb-3"
-            style={{
-              letterSpacing: '0.22em',
-              color: 'var(--shop-ink-muted, #a18792)',
-            }}
-          >
-            §04 · Lab Tear-Sheet
-          </p>
-          <h2
-            className="text-2xl sm:text-3xl"
-            style={{
-              fontFamily:
-                'var(--font-kanit), var(--font-fashion-display), Georgia, serif',
-              fontWeight: 500,
-              color: 'var(--shop-ink, #3f1d2c)',
-            }}
-          >
-            ข้อมูลทางเทคนิค
-          </h2>
-        </div>
-        <dl
-          className="border-t border-b text-sm divide-y"
-          style={{ borderColor: 'var(--shop-border, #f5e1e8)' }}
-        >
-          {rows.map((r) => (
-            <div
-              key={r.label}
-              className="grid grid-cols-[1fr_2fr] py-3"
-              style={{ borderColor: 'var(--shop-border, #f5e1e8)' }}
-            >
-              <dt
-                className="text-[10px] uppercase self-center"
-                style={{
-                  letterSpacing: '0.18em',
-                  color: 'var(--shop-ink-muted, #a18792)',
-                }}
-              >
-                {r.label}
-              </dt>
-              <dd
-                style={{
-                  color: 'var(--shop-ink, #3f1d2c)',
-                  fontFamily: 'var(--font-kanit), var(--font-prompt), sans-serif',
-                }}
-              >
-                {r.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
       </div>
     </section>
   );
@@ -1087,7 +731,7 @@ function RelatedRail({
                 color: 'var(--shop-ink-muted, #a18792)',
               }}
             >
-              §05 · Same Lab
+              §02 · Same Lab
             </p>
             <h2
               className="text-2xl sm:text-3xl"
