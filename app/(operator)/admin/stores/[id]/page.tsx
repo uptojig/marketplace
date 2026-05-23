@@ -1,14 +1,36 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { OperatorPageHeader } from "@/components/operator/operator-page-header";
 import { StoreEditForm } from "./edit-form";
 import { LandingForm } from "./landing-form";
 import { BlockEditor } from "./block-editor";
 import { ApprovalPanel } from "./approval-panel";
-import { Button } from "@/components/operator/operator-primitives";
 
 export const dynamic = "force-dynamic";
+
+const APPROVAL_BADGE: Record<
+  "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED",
+  { label: string; className: string }
+> = {
+  PENDING: {
+    label: "รอตรวจ",
+    className: "border-amber-200 bg-amber-50 text-amber-900",
+  },
+  APPROVED: {
+    label: "อนุมัติแล้ว",
+    className: "border-green-200 bg-green-50 text-green-900",
+  },
+  REJECTED: {
+    label: "ปฏิเสธ",
+    className: "border-red-200 bg-red-50 text-red-900",
+  },
+  SUSPENDED: {
+    label: "ระงับชั่วคราว",
+    className: "border-gray-200 bg-gray-50 text-gray-700",
+  },
+};
 
 export default async function AdminStoreEditPage({ params }: { params: { id: string } }) {
   const store = await prisma.store.findUnique({
@@ -26,7 +48,7 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
       logoPosition: true,
       menuPosition: true,
       // Template/style fields — drive storefront rendering and AI
-      // design hints. Surfaced in the admin edit form's "Design" tab.
+      // design hints. Surfaced in the admin edit form's "Branding" tab.
       templateId: true,
       paletteId: true,
       niche: true,
@@ -90,55 +112,70 @@ export default async function AdminStoreEditPage({ params }: { params: { id: str
         : 0;
   const hasV12Schema = lb && typeof lb === "object" && !Array.isArray(lb) && Array.isArray((lb as Record<string, unknown>).pages);
 
+  const approvalBadge = APPROVAL_BADGE[store.approvalStatus];
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <Link
-          href="/admin/stores"
-          className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-        >
-          <ChevronLeft className="h-4 w-4" /> ร้านค้าทั้งหมด
-        </Link>
-        <div className="mt-2 flex items-start justify-between gap-4">
-          <div>
-            {/* Logo wins when present — operator uploaded brand artwork
-                belongs in the page header instead of the typed-out
-                store name string. Falls back to <h1>{name}</h1> when
-                no logoUrl is set. h-12 + w-auto keeps horizontal
-                wordmark logos at a sensible toolbar size without
-                cropping. */}
-            {store.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
+      <OperatorPageHeader
+        backHref="/admin/stores"
+        backLabel="ร้านค้าทั้งหมด"
+        titleNode={
+          store.logoUrl ? (
+            <div className="space-y-1">
+              {/* Logo wins when present — operator uploaded brand
+                  artwork belongs in the page header instead of the
+                  typed-out store name string. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={store.logoUrl}
                 alt={store.name}
                 className="h-12 w-auto max-w-[280px] object-contain"
               />
-            ) : (
-              <h1 className="text-2xl font-bold">{store.name}</h1>
-            )}
-            <p className="mt-1 text-sm text-muted-foreground">
-              เจ้าของ: {store.owner.name ?? store.owner.email} • {store._count.products} สินค้า •
-              สร้างเมื่อ {store.createdAt.toLocaleDateString("th-TH")}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/admin/stores/${store.id}/products`}>
-                เลือกสินค้า ({store._count.products})
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/admin/stores/${store.id}/landing-content`}>Landing content</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/stores/${store.slug}`} target="_blank">
-                ดูร้าน <ExternalLink className="h-3 w-3" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
+              <p className="text-xs text-muted-foreground">{store.name}</p>
+            </div>
+          ) : (
+            <h1 className="text-2xl font-bold tracking-tight">{store.name}</h1>
+          )
+        }
+        subtitle={
+          <>
+            เจ้าของ: {store.owner.name ?? store.owner.email} •{" "}
+            {store._count.products} สินค้า • สร้างเมื่อ{" "}
+            {store.createdAt.toLocaleDateString("th-TH")}
+          </>
+        }
+        meta={
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${approvalBadge.className}`}
+            title="สถานะการอนุมัติร้านค้า"
+          >
+            สถานะ: {approvalBadge.label}
+          </span>
+        }
+        actions={
+          <>
+            <Link
+              href={`/admin/stores/${store.id}/products`}
+              className="inline-flex items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            >
+              เลือกสินค้า ({store._count.products})
+            </Link>
+            <Link
+              href={`/admin/stores/${store.id}/landing-content`}
+              className="inline-flex items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            >
+              Landing content
+            </Link>
+            <Link
+              href={`/stores/${store.slug}`}
+              target="_blank"
+              className="inline-flex items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            >
+              ดูร้าน <ExternalLink className="h-3 w-3" />
+            </Link>
+          </>
+        }
+      />
 
       <ApprovalPanel
         storeId={store.id}

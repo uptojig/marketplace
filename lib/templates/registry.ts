@@ -254,20 +254,22 @@ import { makePdpAdapter } from '@/components/storefront/themes/_shared/pdp-adapt
 import { enhanceHomepage } from '@/components/storefront/themes/_shared/homepage-enhancer';
 import { makeCheckoutAdapter } from '@/components/storefront/themes/_shared/checkout-adapter';
 import { makeCartAdapter } from '@/components/storefront/themes/_shared/cart-adapter';
+import { makeThaiCartAdapter } from '@/components/storefront/themes/_shared/thai-cart-adapter';
+import { makeThaiCheckoutAdapter } from '@/components/storefront/themes/_shared/thai-checkout-adapter';
 import { makeAboutAdapter } from '@/components/storefront/themes/_shared/about-adapter';
 import { makeHelpAdapter } from '@/components/storefront/themes/_shared/help-adapter';
 
 // Bespoke PDP imports (Wave 3)
-import { mono_eight_ProductDetail } from '@/components/storefront/themes/mono-eight/adapters';
+import { mono_eight_ProductDetail, mono_eight_Cart } from '@/components/storefront/themes/mono-eight/adapters';
 import { atelier_27_ProductDetail, atelier_27_Cart } from '@/components/storefront/themes/atelier-27/adapters';
 import { caldera_skin_ProductDetail, caldera_skin_Cart } from '@/components/storefront/themes/caldera-skin/adapters';
 import { hinoki_apothecary_ProductDetail, hinoki_apothecary_Cart } from '@/components/storefront/themes/hinoki-apothecary/adapters';
 import { linen_and_loom_ProductDetail, linen_and_loom_Cart } from '@/components/storefront/themes/linen-and-loom/adapters';
 import { reclaim_leather_ProductDetail, reclaim_leather_Cart } from '@/components/storefront/themes/reclaim-leather/adapters';
 import { sirin_womenswear_ProductDetail, sirin_womenswear_Cart } from '@/components/storefront/themes/sirin-womenswear/adapters';
-import { yumeiro_lip_ProductDetail, yumeiro_lip_Cart } from '@/components/storefront/themes/yumeiro-lip/adapters';
+import { yumeiro_lip_ProductDetail, yumeiro_lip_Cart, yumeiro_lip_Catalog } from '@/components/storefront/themes/yumeiro-lip/adapters';
 import { lila_modest_ProductDetail } from '@/components/storefront/themes/lila-modest/adapters';
-import { carbon_era_cameras_ProductDetail, carbon_era_cameras_Cart } from '@/components/storefront/themes/carbon-era-cameras/adapters';
+import { carbon_era_cameras_ProductDetail, carbon_era_cameras_Cart, carbon_era_cameras_Catalog } from '@/components/storefront/themes/carbon-era-cameras/adapters';
 import { keystroke_lab_ProductDetail, keystroke_lab_Cart } from '@/components/storefront/themes/keystroke-lab/adapters';
 import { smartloop_home_ProductDetail } from '@/components/storefront/themes/smartloop-home/adapters';
 import { wavelength_audio_ProductDetail } from '@/components/storefront/themes/wavelength-audio/adapters';
@@ -339,8 +341,8 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(MaiHatthakamHomepageAdapter, '06'),
       catalog: makeCatalogAdapter('04'),
       pdp: makePdpAdapter('04', '05'),
-      cart: makeCartAdapter('01'),
-      checkout: makeCheckoutAdapter('01'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -369,7 +371,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       pdp: makePdpAdapter('06', '02'),
-      checkout: makeCheckoutAdapter('02'),
+      checkout: makeThaiCheckoutAdapter(),
       catalog: makeCatalogAdapter('12'),
       home: enhanceHomepage(BikiniHomepageAdapter, '01'),
       cart: BikiniCartBespoke,
@@ -454,7 +456,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       catalog: makeCatalogAdapter('01'),
       pdp: makePdpAdapter('03', '02'),
-      checkout: makeCheckoutAdapter('02'),
+      checkout: makeThaiCheckoutAdapter(),
     },
   },
 
@@ -516,7 +518,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       catalog: makeCatalogAdapter('01'),
       pdp: makePdpAdapter('08', '03'),
-      checkout: makeCheckoutAdapter('02'),
+      checkout: makeThaiCheckoutAdapter(),
       home: enhanceHomepage(SaiSingHomepageAdapter, '05'),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
@@ -628,7 +630,8 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(MonoEightHomepageAdapter, '03'),
       catalog: makeCatalogAdapter('05'),
       pdp: mono_eight_ProductDetail,
-      checkout: makeCheckoutAdapter('02'),
+      cart: mono_eight_Cart,
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -652,8 +655,8 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(LilaModestHomepageAdapter, '05'),
       catalog: makeCatalogAdapter('04'),
       pdp: lila_modest_ProductDetail,
-      cart: makeCartAdapter('03'),
-      checkout: makeCheckoutAdapter('04'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -703,7 +706,7 @@ export const templates: Record<TemplateId, Template> = {
       catalog: makeCatalogAdapter('12'),
       home: enhanceHomepage(BulkboxHomepageAdapter, '08'),
           pdp: makePdpAdapter('08', '04'),
-      checkout: makeCheckoutAdapter('02'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -748,7 +751,7 @@ export const templates: Record<TemplateId, Template> = {
       // fit the 240px aside; re-enable once a vertical adapter ships.
     },
     pages: {
-      catalog: makeCatalogAdapter('09'),
+      catalog: carbon_era_cameras_Catalog,
       pdp: carbon_era_cameras_ProductDetail,
       cart: carbon_era_cameras_Cart,
       checkout: makeCheckoutAdapter('01'),
@@ -773,7 +776,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(GlowLampCoHomepageAdapter, '06'),
       catalog: makeCatalogAdapter('02'),
       pdp: makePdpAdapter('02', '03'),
-          checkout: makeCheckoutAdapter('02'),
+          checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -816,7 +819,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(InkstonePaperHomepageAdapter, '01'),
       catalog: makeCatalogAdapter('05'),
       pdp: inkstone_paper_ProductDetail,
-      checkout: makeCheckoutAdapter('01'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -862,7 +865,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(KorakotHouseHomepageAdapter, '05'),
       catalog: makeCatalogAdapter('02'),
       pdp: korakot_house_ProductDetail,
-      checkout: makeCheckoutAdapter('04'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -907,7 +910,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       catalog: makeCatalogAdapter('04'),
       pdp: mai_hatthakam_ProductDetail,
-      checkout: makeCheckoutAdapter('02'),
+      checkout: makeThaiCheckoutAdapter(),
       home: enhanceHomepage(MaiHatthakamHomepageAdapter, '04'),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
@@ -928,7 +931,7 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: enhanceHomepage(PastelPackHomepageAdapter, '06'),
           pdp: makePdpAdapter('02', '03'),
-      checkout: makeCheckoutAdapter('04'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -952,7 +955,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(PetitCoteHomepageAdapter, '07'),
       catalog: makeCatalogAdapter('02'),
       pdp: petit_cote_ProductDetail,
-      checkout: makeCheckoutAdapter('01'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -976,7 +979,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(PigmentStudioHomepageAdapter, '08'),
       catalog: makeCatalogAdapter('08'),
           pdp: makePdpAdapter('05', '04'),
-      checkout: makeCheckoutAdapter('02'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -1019,7 +1022,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(SalukiYogaHomepageAdapter, '01'),
       catalog: makeCatalogAdapter('07'),
       pdp: saluki_yoga_ProductDetail,
-      checkout: makeCheckoutAdapter('01'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -1068,7 +1071,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(SmartloopHomeHomepageAdapter, '02'),
       catalog: makeCatalogAdapter('09'),
       pdp: smartloop_home_ProductDetail,
-      checkout: makeCheckoutAdapter('04'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -1089,7 +1092,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(TinyhandWoodenToysHomepageAdapter, '04'),
       catalog: makeCatalogAdapter('02'),
       pdp: tinyhand_wooden_toys_ProductDetail,
-      checkout: makeCheckoutAdapter('01'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -1110,7 +1113,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(TrailcraftHomepageAdapter, '05'),
       catalog: makeCatalogAdapter('07'),
       pdp: trailcraft_outdoors_ProductDetail,
-      checkout: makeCheckoutAdapter('02'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -1134,7 +1137,7 @@ export const templates: Record<TemplateId, Template> = {
       home: enhanceHomepage(WavelengthAudioHomepageAdapter, '06'),
       catalog: makeCatalogAdapter('07'),
       pdp: wavelength_audio_ProductDetail,
-      checkout: makeCheckoutAdapter('04'),
+      checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
@@ -1156,7 +1159,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(YumeiroLipHomepageAdapter, '07'),
-      catalog: makeCatalogAdapter('05'),
+      catalog: yumeiro_lip_Catalog,
       pdp: yumeiro_lip_ProductDetail,
       cart: yumeiro_lip_Cart,
       checkout: makeCheckoutAdapter('01'),
