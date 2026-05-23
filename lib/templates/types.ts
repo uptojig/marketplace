@@ -185,6 +185,7 @@ export interface TemplatePages {
   lookbook?: ComponentType<LookbookProps>;
   about?: ComponentType<AboutProps>;
   help?: ComponentType<HelpProps>;
+  contact?: ComponentType<ContactProps>;
 }
 
 // ----------------------------------------------------------------------------
@@ -387,6 +388,13 @@ export interface HelpProps {
   schemaPage?: unknown;
   /** Page slug being rendered (e.g. "faq", "shipping"). */
   pageSlug?: string;
+}
+
+/** Contact — store metadata for the contact-us page. Pulls contact +
+ *  address fields so a bespoke `Contact` component can render a form,
+ *  channel cards, and an optional map. */
+export interface ContactProps {
+  store: TemplateStoreSummary;
 }
 
 // ============================================================================
