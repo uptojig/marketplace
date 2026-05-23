@@ -25,7 +25,6 @@ import {
   IconLeaf,
   IconTruck,
   IconRefresh,
-  IconStarFilled,
   IconCheck,
   IconMinus,
   IconPlus,
@@ -409,20 +408,6 @@ export function TinyhandProductDetail({ store, product, related }: ProductDetail
               {product.title}
             </h1>
 
-            {/* rating row (display-only) */}
-            <div className="flex items-center gap-2 mb-5" aria-label="คะแนนรีวิว 4.9 จาก 5">
-              <span className="flex" style={{ color: TONE.wood }}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <IconStarFilled key={i} size={16} aria-hidden="true" />
-                ))}
-              </span>
-              <span className="font-bold text-sm" style={{ color: TONE.ink }}>
-                4.9
-              </span>
-              <span className="text-sm" style={{ color: TONE.inkMuted }}>
-                · 248 รีวิวจากคุณพ่อคุณแม่
-              </span>
-            </div>
 
             {/* price */}
             <div className="flex items-baseline gap-3 flex-wrap mb-2">
@@ -449,33 +434,7 @@ export function TinyhandProductDetail({ store, product, related }: ProductDetail
                 </>
               )}
             </div>
-            <p className="text-sm mb-6" style={{ color: TONE.inkMuted }}>
-              ผ่อน 0% นาน 3 เดือน · {formatTHB(Math.round(product.priceTHB / 3))} / เดือน
-            </p>
-
-            {/* age range pill row */}
-            <div
-              className="rounded-2xl p-4 mb-6 flex items-center gap-4"
-              style={{
-                background: TONE.card,
-                border: `1px dashed ${TONE.border}`,
-              }}
-            >
-              <div
-                className="w-12 h-12 rounded-2xl grid place-items-center flex-shrink-0"
-                style={{ background: TONE.woodSoft, color: TONE.woodDeep }}
-              >
-                <IconBabyCarriage size={24} aria-hidden="true" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs uppercase tracking-wider font-bold mb-0.5" style={{ color: TONE.inkMuted }}>
-                  ช่วงอายุที่เหมาะสม
-                </div>
-                <div className="font-[family:var(--font-kanit)] text-lg font-bold" style={{ color: TONE.ink }}>
-                  1+ ขวบ — พัฒนาการ &amp; จินตนาการ
-                </div>
-              </div>
-            </div>
+            <div className="mb-6" />
 
             {/* color variants */}
             {colorLabels.length > 0 && (
