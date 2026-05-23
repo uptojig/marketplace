@@ -1465,15 +1465,15 @@
   --shop-muted: #fef2f2;       /* rose-50 */
 }
 
-/* Headlines lift into the serif display face (Cormorant Garamond
-   via --font-fashion-display; Playfair Display + Noto Serif Thai
-   fallback). Body stays sans for legibility. */
+/* Headings use Kanit (Thai display sans) — matches the rest of the
+   storefront. Serif display fonts were removed per the project rule
+   "Google Thai fonts only — Prompt / Kanit / Google Sans".  */
 .theme-fashion-beauty h1,
 .theme-fashion-beauty h2,
 .theme-fashion-beauty h3 {
-  font-family: var(--font-fashion-display, "Cormorant Garamond"),
-    "Playfair Display", Georgia, "Noto Serif Thai", serif !important;
-  font-weight: 500;
+  font-family: var(--font-kanit), var(--font-prompt), "Kanit", "Prompt",
+    system-ui, sans-serif !important;
+  font-weight: 600;
   letter-spacing: -0.005em;
 }
 

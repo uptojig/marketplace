@@ -107,7 +107,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
       {/* 1 · Hero with live countdown */}
       <section
         className="relative overflow-hidden text-white"
-        style={{ background: 'var(--shop-primary-gradient)' }}
+        style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
       >
         <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-white/10 blur-3xl pointer-events-none" />
@@ -260,7 +260,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
               <span
                 className="w-12 h-12 rounded-full flex items-center justify-center text-lg shadow-sm text-white"
                 style={{
-                  background: 'var(--shop-primary-gradient)',
+                  background: 'var(--shop-primary-gradient, var(--shop-primary))',
                 }}
               >
                 <Tag size={18} />
@@ -287,7 +287,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
         >
           <div
             className="px-5 py-3 flex items-center justify-between text-white"
-            style={{ background: 'var(--shop-primary-gradient)', color: '#ffffff' }}
+            style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))', color: '#ffffff' }}
           >
             <div className="flex items-center gap-2">
               <Zap size={18} fill="currentColor" className="text-yellow-300" />
@@ -372,7 +372,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
                           className="h-full rounded-full transition-all"
                           style={{
                             width: `${stockPct}%`,
-                            background: 'var(--shop-primary-gradient)',
+                            background: 'var(--shop-primary-gradient, var(--shop-primary))',
                           }}
                         />
                       </div>
@@ -410,7 +410,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {allCatMix.map((p) => {
+          {allCatMix.slice(0, 10).map((p) => {
             const sp = fakeSocialProof(p.id);
             const hasDiscount = p.compareAtPriceTHB && p.compareAtPriceTHB > p.priceTHB;
             const pct = hasDiscount
@@ -499,7 +499,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
                   <button
                     onClick={(e) => handleAddToCart(p, e)}
                     className="w-full py-1.5 text-[11px] font-[family:var(--font-kanit)] font-black uppercase text-white rounded-md transition-opacity hover:opacity-90"
-                    style={{ background: 'var(--shop-primary-gradient)' }}
+                    style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
                   >
                     หยิบใส่ตะกร้า
                   </button>

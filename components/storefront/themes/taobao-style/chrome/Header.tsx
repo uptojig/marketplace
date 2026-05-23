@@ -65,7 +65,7 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
               <>
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-[family:var(--font-kanit)] font-black text-lg shadow-md"
-                  style={{ background: 'var(--shop-primary-gradient)' }}
+                  style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
                 >
                   淘
                 </div>
@@ -92,7 +92,7 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
             />
             <button
               className="px-4 sm:px-6 text-white text-sm font-[family:var(--font-prompt)] font-bold flex items-center gap-1.5 transition-opacity hover:opacity-90"
-              style={{ background: 'var(--shop-primary-gradient)' }}
+              style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
               aria-label="ค้นหา"
             >
               <Search size={16} />
@@ -135,7 +135,7 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
           <a
             href={`${urls.shop}?cat=flash`}
             className="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wide shrink-0 text-white shadow-sm"
-            style={{ background: 'var(--shop-primary-gradient)' }}
+            style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
           >
             <Zap size={12} fill="currentColor" /> Flash Sale
           </a>

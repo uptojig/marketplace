@@ -103,7 +103,7 @@ export function Cart({
         <a
           href={urls.shop}
           className="px-6 py-3 rounded-md text-sm font-[family:var(--font-kanit)] font-black uppercase text-white inline-flex items-center gap-2 transition-opacity hover:opacity-90"
-          style={{ background: 'var(--shop-primary-gradient)' }}
+          style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
         >
           เลือกซื้อสินค้า <ArrowRight size={16} />
         </a>
@@ -119,7 +119,7 @@ export function Cart({
       {/* Hot banner */}
       <section
         className="text-white"
-        style={{ background: 'var(--shop-primary-gradient)' }}
+        style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -308,7 +308,7 @@ export function Cart({
           >
             <div
               className="px-4 py-3 font-[family:var(--font-kanit)] font-black uppercase text-sm text-white"
-              style={{ background: 'var(--shop-primary-gradient)' }}
+              style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
             >
               สรุปคำสั่งซื้อ
             </div>
@@ -364,7 +364,7 @@ export function Cart({
               <a
                 href={urls.checkout}
                 className="w-full py-3 rounded-md text-sm font-[family:var(--font-kanit)] font-black uppercase text-white inline-flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
-                style={{ background: 'var(--shop-primary-gradient)' }}
+                style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
               >
                 ดำเนินการสั่งซื้อ <ArrowRight size={14} />
               </a>

@@ -106,7 +106,7 @@ export function Catalog({
       {/* Hot banner */}
       <section
         className="relative overflow-hidden text-white"
-        style={{ background: 'var(--shop-primary-gradient)' }}
+        style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -171,7 +171,7 @@ export function Catalog({
                   }`}
                   style={
                     selectedCats.length === 0
-                      ? { background: 'var(--shop-primary-gradient)' }
+                      ? { background: 'var(--shop-primary-gradient, var(--shop-primary))' }
                       : { color: 'var(--shop-ink)' }
                   }
                 >
@@ -274,7 +274,7 @@ export function Catalog({
                   style={
                     isActive
                       ? {
-                          background: 'var(--shop-primary-gradient)',
+                          background: 'var(--shop-primary-gradient, var(--shop-primary))',
                           color: 'white',
                         }
                       : {
@@ -420,7 +420,7 @@ export function Catalog({
                       <button
                         onClick={(e) => handleAddToCart(p, e)}
                         className="w-full py-1.5 text-[11px] font-[family:var(--font-kanit)] font-black uppercase text-white rounded-md transition-opacity hover:opacity-90"
-                        style={{ background: 'var(--shop-primary-gradient)' }}
+                        style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
                       >
                         หยิบใส่ตะกร้า
                       </button>
@@ -444,7 +444,7 @@ export function Catalog({
                     style={
                       isActive
                         ? {
-                            background: 'var(--shop-primary-gradient)',
+                            background: 'var(--shop-primary-gradient, var(--shop-primary))',
                             color: 'white',
                           }
                         : {
