@@ -100,7 +100,7 @@ export function Catalog({
 
   return (
     <main
-      className="min-h-screen font-sans"
+      className="min-h-screen font-[family:var(--font-prompt)]"
       style={{ background: 'var(--shop-bg)', color: 'var(--shop-ink)' }}
     >
       {/* Hot banner */}
@@ -126,11 +126,11 @@ export function Catalog({
             </div>
           </div>
           <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-[family:var(--font-prompt)] font-bold"
-            style={{ background: 'rgba(0,0,0,0.25)' }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-[family:var(--font-prompt)] font-bold text-white"
+            style={{ background: 'rgba(0,0,0,0.45)' }}
           >
             <Timer size={14} style={{ color: 'var(--shop-accent)' }} />
-            ปิดราคาดีลใน
+            <span className="text-white">ปิดราคาดีลใน</span>
             <span
               className="font-[family:var(--font-kanit)] font-black tabular-nums px-1.5 py-0.5 rounded"
               style={{ background: 'var(--shop-ink)', color: 'var(--shop-accent)' }}

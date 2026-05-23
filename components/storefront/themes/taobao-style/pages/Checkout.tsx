@@ -87,7 +87,7 @@ export function Checkout({ store }: CheckoutProps) {
 
   return (
     <main
-      className="min-h-screen font-sans pb-12"
+      className="min-h-screen font-[family:var(--font-prompt)] pb-12"
       style={{ background: 'var(--shop-bg)', color: 'var(--shop-ink)' }}
     >
       {/* Top bar */}

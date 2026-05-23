@@ -4,8 +4,6 @@ import {
   ArrowRight,
   Flame,
   Tag,
-  Truck,
-  ShieldCheck,
   Star,
   Zap,
   Timer,
@@ -103,7 +101,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
 
   return (
     <main
-      className="min-h-screen font-sans"
+      className="min-h-screen font-[family:var(--font-prompt)]"
       style={{ background: 'var(--shop-bg)', color: 'var(--shop-ink)' }}
     >
       {/* 1 · Hero with live countdown */}
@@ -119,29 +117,27 @@ export function Homepage({ store, products, categories }: HomepageProps) {
           <div className="lg:col-span-7 space-y-5">
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-[family:var(--font-kanit)] font-extrabold uppercase tracking-wide"
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-[family:var(--font-kanit)] font-extrabold uppercase tracking-wide shadow-md"
                 style={{ background: 'var(--shop-accent)', color: 'var(--shop-ink)' }}
               >
                 <Flame size={12} /> Mega Flash Sale
               </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-[family:var(--font-prompt)] font-bold bg-white/20 border border-white/30">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-[family:var(--font-prompt)] font-extrabold text-white bg-black/30 border border-white/60 backdrop-blur-sm">
                 ลดสูงสุด 70%
-              </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-[family:var(--font-prompt)] font-bold bg-white/20 border border-white/30">
-                <Truck size={12} /> ส่งฟรีทั้งร้าน
               </span>
             </div>
 
             <h1
-              className="font-[family:var(--font-kanit)] font-black text-3xl sm:text-4xl lg:text-5xl leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)]"
-              style={{ color: 'var(--shop-accent)' }}
+              className="font-[family:var(--font-kanit)] font-black text-3xl sm:text-4xl lg:text-5xl leading-tight text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"
             >
-              ลดเหี้ยน! ดีลร้อนที่สุดของวัน <br className="hidden sm:inline" />
-              เริ่มต้นเพียง ฿9.-
+              ดีลร้อนที่สุดของวัน <br className="hidden sm:inline" />
+              <span style={{ color: 'var(--shop-accent)' }}>
+                เริ่มต้นเพียง ฿9.-
+              </span>
             </h1>
 
-            <p className="text-white/90 font-[family:var(--font-prompt)] text-sm sm:text-base max-w-xl">
-              รวมสินค้ายอดฮิตจาก {store.name} · ส่งตรงจากผู้ขาย · ของแท้ 100% · เก็บเงินปลายทางได้ทุกออเดอร์
+            <p className="text-white font-[family:var(--font-prompt)] text-sm sm:text-base max-w-xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.35)]">
+              รวมสินค้ายอดฮิตจาก {store.name} · ส่งตรงจากผู้ขาย · เก็บเงินปลายทางได้ทุกออเดอร์
             </p>
 
             {/* Live countdown */}
@@ -293,15 +289,15 @@ export function Homepage({ store, products, categories }: HomepageProps) {
         >
           <div
             className="px-5 py-3 flex items-center justify-between text-white"
-            style={{ background: 'var(--shop-primary-gradient)' }}
+            style={{ background: 'var(--shop-primary-gradient)', color: '#ffffff' }}
           >
             <div className="flex items-center gap-2">
               <Zap size={18} fill="currentColor" style={{ color: 'var(--shop-accent)' }} />
-              <h2 className="font-[family:var(--font-kanit)] font-black text-lg uppercase">
+              <h2 className="font-[family:var(--font-kanit)] font-black text-lg uppercase text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
                 แฟลชเซลล์ ลดสุดในรอบเดือน
               </h2>
             </div>
-            <div className="flex items-center gap-1 text-xs font-[family:var(--font-prompt)] font-semibold">
+            <div className="flex items-center gap-1 text-xs font-[family:var(--font-prompt)] font-semibold text-white">
               <Timer size={12} /> ปิดใน {hh}:{mm}:{ss}
             </div>
           </div>
@@ -515,27 +511,6 @@ export function Homepage({ store, products, categories }: HomepageProps) {
           })}
         </div>
 
-        {/* Trust strip */}
-        <div
-          className="mt-10 rounded-xl px-5 py-4 grid grid-cols-2 lg:grid-cols-4 gap-4"
-          style={{ background: 'var(--shop-bg-soft)', border: `1px solid var(--shop-border)` }}
-        >
-          {[
-            { Icon: ShieldCheck, t: 'ของแท้ 100%' },
-            { Icon: Truck, t: 'ส่งฟรีเมื่อสั่งครบ ฿199' },
-            { Icon: Flame, t: 'ดีลใหม่ทุกวัน' },
-            { Icon: Tag, t: 'COD ทั่วประเทศ' },
-          ].map(({ Icon, t }) => (
-            <div
-              key={t}
-              className="flex items-center gap-2 text-xs font-[family:var(--font-prompt)] font-semibold"
-              style={{ color: 'var(--shop-ink)' }}
-            >
-              <Icon size={16} style={{ color: 'var(--shop-primary)' }} />
-              {t}
-            </div>
-          ))}
-        </div>
       </section>
     </main>
   );

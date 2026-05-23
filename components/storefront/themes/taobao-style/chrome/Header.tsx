@@ -29,7 +29,7 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
 
   return (
     <header
-      className="bg-white border-b font-sans"
+      className="bg-white border-b font-[family:var(--font-prompt)]"
       style={{ borderColor: 'var(--shop-border)' }}
     >
       {/* Row 1 — utility */}
@@ -52,25 +52,31 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
       {/* Row 2 — logo + search + cart */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex items-center gap-4 sm:gap-6">
-          {/* Logo */}
+          {/* Logo — image when present, otherwise mark + name fallback */}
           <a href={urls.home} className="flex items-center gap-2 shrink-0">
             {storeLogoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={storeLogoUrl} alt={storeName} className="h-10 w-auto object-contain" />
+              <img
+                src={storeLogoUrl}
+                alt={storeName}
+                className="h-10 sm:h-12 w-auto object-contain"
+              />
             ) : (
-              <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-[family:var(--font-kanit)] font-black text-lg shadow-md"
-                style={{ background: 'var(--shop-primary-gradient)' }}
-              >
-                淘
-              </div>
+              <>
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-[family:var(--font-kanit)] font-black text-lg shadow-md"
+                  style={{ background: 'var(--shop-primary-gradient)' }}
+                >
+                  淘
+                </div>
+                <span
+                  className="font-[family:var(--font-kanit)] font-black text-xl sm:text-2xl tracking-tight uppercase truncate max-w-[180px]"
+                  style={{ color: 'var(--shop-primary)' }}
+                >
+                  {storeName}
+                </span>
+              </>
             )}
-            <span
-              className="font-[family:var(--font-kanit)] font-black text-xl sm:text-2xl tracking-tight uppercase truncate max-w-[180px]"
-              style={{ color: 'var(--shop-primary)' }}
-            >
-              {storeName}
-            </span>
           </a>
 
           {/* Search bar — Taobao classic thick orange border */}

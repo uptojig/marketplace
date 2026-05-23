@@ -59,7 +59,7 @@ export function Cart({
   if (!mounted) {
     return (
       <main
-        className="min-h-[60vh] font-sans"
+        className="min-h-[60vh] font-[family:var(--font-prompt)]"
         style={{ background: 'var(--shop-bg)' }}
       />
     );
@@ -82,7 +82,7 @@ export function Cart({
   if (storeLines.length === 0) {
     return (
       <main
-        className="min-h-[60vh] font-sans flex flex-col items-center justify-center px-4 text-center"
+        className="min-h-[60vh] font-[family:var(--font-prompt)] flex flex-col items-center justify-center px-4 text-center"
         style={{ background: 'var(--shop-bg)', color: 'var(--shop-ink)' }}
       >
         <div
@@ -113,7 +113,7 @@ export function Cart({
 
   return (
     <main
-      className="min-h-screen font-sans pb-12"
+      className="min-h-screen font-[family:var(--font-prompt)] pb-12"
       style={{ background: 'var(--shop-bg)', color: 'var(--shop-ink)' }}
     >
       {/* Hot banner */}
