@@ -41,6 +41,11 @@ import { Homepage as BikiniHomepage } from './pages/Homepage';
 import { Catalog as BikiniCatalog } from './pages/Catalog';
 import { ProductDetail as BikiniProductDetail } from './pages/ProductDetail';
 import { Cart as BikiniCart } from './pages/Cart';
+// Bespoke Cart page (scaffold-CartProps shape) exported under the
+// `<theme>_Cart` snake-case convention so the registry can wire it
+// into the `cart` slot. Lives alongside the original designer `Cart`
+// named export (which BikiniCartAdapter below still consumes).
+export { default as bikini_beach_Cart } from './pages/Cart';
 import { Checkout as BikiniCheckout } from './pages/Checkout';
 import { Lookbook as BikiniLookbook } from './pages/Lookbook';
 import { About as BikiniAbout } from './pages/About';
