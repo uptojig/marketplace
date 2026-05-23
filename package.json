@@ -14,7 +14,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:generate": "prisma generate",
     "shadcn:studio:ecommerce": "node scripts/install-shadcn-studio-ecommerce.mjs",
-    "oauth:add-shop": "node scripts/add-shop-to-google-oauth.mjs"
+    "oauth:add-shop": "node scripts/add-shop-to-google-oauth.mjs",
+    "theme:new": "tsx scripts/theme-new/index.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
