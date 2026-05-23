@@ -568,6 +568,29 @@ export const templates: Record<TemplateId, Template> = {
     },
   },
 
+  'neon-festival': {
+    id: 'neon-festival',
+    name: 'Neon Festival',
+    description: 'ร้านสายงานเทศกาล แสงนีออน ของแต่งคอนเสิร์ต สไตล์ Neo-Brutalism Pop-Art',
+    group: 'neon',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: NeonFestivalHeaderAdapter,
+      Footer: NeonFestivalFooterAdapter,
+      AnnouncementStrip: NeonFestivalStripAdapter,
+    },
+    pages: {
+      home: NeonFestivalHomepageAdapter,
+      catalog: neon_festival_Catalog,
+      pdp: neon_festival_ProductDetail,
+      cart: neon_festival_Cart,
+      checkout: neon_festival_Checkout,
+      about: NeonFestivalAboutAdapter,
+      help: NeonFestivalHelpAdapter,
+      contact: neon_festival_Contact,
+    },
+  },
+
   'brutalist-thai': {
     id: 'brutalist-thai',
     name: 'Brutalist Thai',
