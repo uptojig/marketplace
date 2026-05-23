@@ -36,53 +36,6 @@ import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
 // ──────────────────────────────────────────────────────────────────────
-// Spec sheet helpers
-// ──────────────────────────────────────────────────────────────────────
-
-/**
- * Deterministic refurbish grade derived from product id so every product
- * gets a stable A+/A/B+ stamp without needing extra DB columns. Pure id
- * hash → never random across renders.
- */
-const GRADES = ['A+', 'A', 'A-', 'B+'] as const;
-function gradeFor(id: string): (typeof GRADES)[number] {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
-  return GRADES[Math.abs(h) % GRADES.length];
-}
-
-/**
- * Pull a deterministic five-row "tech specs" sheet from the product so
- * the table always renders, even when the supplier hasn't filled in
- * structured attributes yet. Real variants override the format / mount
- * rows when present.
- */
-function buildTechSpecs(
-  product: ProductDetailProps['product'],
-): { label: string; value: string }[] {
-  const grade = gradeFor(product.id);
-  const idTail = product.id.slice(-6).toUpperCase();
-  const lensVariant = product.variants.find((v) => v.colorLabel)?.colorLabel;
-  const sizeVariant = product.variants.find((v) => v.sizeLabel)?.sizeLabel;
-
-  const rows: { label: string; value: string }[] = [
-    { label: 'Format', value: sizeVariant ?? '135 / 35mm Film' },
-    { label: 'Lens Mount', value: lensVariant ?? 'Leica M-Mount' },
-    { label: 'Shutter Range', value: '1s – 1/1000s · B' },
-    { label: 'Light Meter', value: 'TTL · CdS Cell' },
-    { label: 'Inspection', value: '24-Point Pass' },
-    { label: 'Condition Grade', value: grade },
-    { label: 'Serial Code', value: `CEC-${idTail}` },
-  ];
-
-  if (product.categoryName) {
-    rows.splice(1, 0, { label: 'Body Type', value: product.categoryName });
-  }
-
-  return rows;
-}
-
-// ──────────────────────────────────────────────────────────────────────
 // Component
 // ──────────────────────────────────────────────────────────────────────
 
@@ -131,10 +84,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
   const [selectedSize, setSelectedSize] = useState<string | undefined>(
     sizeVariants[0],
   );
-
-  const grade = gradeFor(product.id);
-  const techSpecs = useMemo(() => buildTechSpecs(product), [product]);
-  const idTail = product.id.slice(-6).toUpperCase();
 
   const savings =
     product.originalPriceTHB && product.originalPriceTHB > product.priceTHB
@@ -208,26 +157,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
         <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-12 lg:gap-16">
           {/* ── Gallery (sticky on desktop) ── */}
           <div className="lg:sticky lg:top-24 lg:self-start">
-            {/* Top spec strip — frame counter */}
-            <div
-              className="flex items-center justify-between px-4 py-2 mb-3 border"
-              style={{
-                borderColor: 'var(--shop-ink)',
-                background: 'var(--shop-card)',
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-              }}
-            >
-              <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--shop-ink-muted)' }}>
-                Frame
-              </span>
-              <span className="text-xs font-bold" style={{ color: 'var(--shop-ink)' }}>
-                {String(activeImage + 1).padStart(2, '0')} / {String(Math.max(gallery.length, 1)).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--shop-ink-muted)' }}>
-                CEC-{idTail}
-              </span>
-            </div>
-
             {/* Main frame with technical crosshair overlay */}
             <div
               className="relative aspect-[4/3] overflow-hidden border"
@@ -278,22 +207,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
                 />
               </div>
 
-              {/* Grade stamp overlay (top right) */}
-              <div
-                className="absolute top-3 right-3 px-3 py-1.5 border-2 flex items-center gap-2"
-                style={{
-                  borderColor: 'var(--shop-ink)',
-                  background: 'var(--shop-card)',
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                }}
-              >
-                <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--shop-ink-muted)' }}>
-                  Grade
-                </span>
-                <span className="text-base font-black" style={{ color: 'var(--shop-ink)' }}>
-                  {grade}
-                </span>
-              </div>
             </div>
 
             {/* Thumb strip with frame numbers */}
@@ -379,7 +292,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
 
           {/* ── Info column ── */}
           <div className="flex flex-col">
-            {/* SKU & badges row */}
+            {/* Badges row */}
             <div
               className="flex flex-wrap items-center gap-2 mb-4 text-[10px] uppercase tracking-[0.2em]"
               style={{
@@ -387,12 +300,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
                 fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
               }}
             >
-              <span
-                className="px-2 py-1 border"
-                style={{ borderColor: 'var(--shop-border)', color: 'var(--shop-ink)' }}
-              >
-                SKU · CEC-{idTail}
-              </span>
               <span
                 className="px-2 py-1"
                 style={{
@@ -422,9 +329,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
               className="text-sm mb-6 leading-relaxed font-light"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              กล้องฟิล์มมือสองคัดเกรดผ่านการตรวจสภาพ 24 จุด · ระดับสภาพ{' '}
-              <span style={{ color: 'var(--shop-ink)' }} className="font-bold">{grade}</span>{' '}
-              · พร้อมใบรายงานสภาพและรับประกันชัตเตอร์ 90 วัน
+              กล้องฟิล์มมือสองคัดเกรดผ่านการตรวจสภาพ 24 จุด · พร้อมใบรายงานสภาพและรับประกันชัตเตอร์ 90 วัน
             </p>
 
             {/* Price */}
@@ -688,9 +593,9 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
           </div>
         </div>
 
-        {/* ── Spec sheet: description + tech specs table ── */}
+        {/* ── Spec sheet: description ── */}
         <section
-          className="mt-20 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-10 border-t pt-12"
+          className="mt-20 border-t pt-12"
           style={{ borderColor: 'var(--shop-ink)' }}
           aria-labelledby="spec-heading"
         >
@@ -724,7 +629,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
                 <>
                   <p>
                     {product.title} ถูกเลือกเข้าคลังของเราเพราะผ่านการตรวจสภาพการทำงานเต็มรูปแบบ
-                    ตัวเครื่องอยู่ในเกรด {grade} · ชัตเตอร์ทำงานทุกสปีดและถูกปรับสอบเทียบกับเครื่องวัด
+                    ชัตเตอร์ทำงานทุกสปีดและถูกปรับสอบเทียบกับเครื่องวัด
                   </p>
                   <p>
                     เลนส์เคลียร์ ไม่มีรา ฝ้าหรือเชื้อรา · กระจกซีลและซีลฟอยล์ใหม่
@@ -762,71 +667,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
             </div>
           </div>
 
-          {/* Specs table column */}
-          <div>
-            <div
-              className="text-[10px] uppercase tracking-[0.2em] mb-3"
-              style={{
-                color: 'var(--shop-ink-muted)',
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-              }}
-            >
-              § 02 · Technical Specifications
-            </div>
-            <div
-              className="border"
-              style={{
-                borderColor: 'var(--shop-ink)',
-                background: 'var(--shop-card)',
-              }}
-            >
-              <table className="w-full text-sm">
-                <caption className="sr-only">Technical specifications for {product.title}</caption>
-                <tbody>
-                  {techSpecs.map((row, i) => (
-                    <tr
-                      key={row.label}
-                      style={{
-                        borderTop: i === 0 ? 'none' : '1px solid var(--shop-border)',
-                      }}
-                    >
-                      <th
-                        scope="row"
-                        className="text-left px-5 py-3 text-[11px] uppercase tracking-[0.2em] font-bold align-top"
-                        style={{
-                          color: 'var(--shop-ink-muted)',
-                          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                          width: '45%',
-                        }}
-                      >
-                        {row.label}
-                      </th>
-                      <td
-                        className="px-5 py-3 font-bold"
-                        style={{
-                          color: 'var(--shop-ink)',
-                          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                        }}
-                      >
-                        {row.value}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Service log footnote */}
-            <p
-              className="mt-4 text-[11px] leading-relaxed"
-              style={{
-                color: 'var(--shop-ink-muted)',
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-              }}
-            >
-              * ข้อมูลทั้งหมดยืนยันโดยช่างเทคนิคของเรา · ดาวน์โหลด PDF รายงานสภาพแบบเต็มเพื่อดูค่าชัตเตอร์ที่วัดได้ตามสเกล
-            </p>
-          </div>
         </section>
 
         {/* ── Related / Lab Notes ── */}
@@ -870,8 +710,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
 
             <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {related.slice(0, 4).map((p) => {
-                const pGrade = gradeFor(p.id);
-                const pTail = p.id.slice(-6).toUpperCase();
                 return (
                   <li key={p.id}>
                     <Link
@@ -898,16 +736,6 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
                             <Camera className="w-10 h-10" aria-hidden="true" />
                           </div>
                         )}
-                        <span
-                          className="absolute top-2 left-2 px-2 py-0.5 text-[10px] uppercase tracking-widest font-bold"
-                          style={{
-                            background: 'var(--shop-ink)',
-                            color: 'var(--shop-card)',
-                            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                          }}
-                        >
-                          Grade {pGrade}
-                        </span>
                       </div>
                       <div className="p-4">
                         <div
@@ -917,7 +745,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
                             fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
                           }}
                         >
-                          {p.categoryName ?? 'Film Body'} · CEC-{pTail}
+                          {p.categoryName ?? 'Film Body'}
                         </div>
                         <h3
                           className="text-base font-bold leading-tight mb-3 line-clamp-2"

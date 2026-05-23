@@ -21,8 +21,6 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Mountain,
-  Droplets,
-  Wind,
   Compass,
   Footprints,
   ShieldCheck,
@@ -34,8 +32,6 @@ import {
   ShoppingCart,
   Zap,
   ChevronRight,
-  Snowflake,
-  Layers,
   Ruler,
   Tag,
 } from 'lucide-react';
@@ -48,18 +44,6 @@ const TOPO_SVG =
   "data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,60 Q30,30 60,60 T120,60' fill='none' stroke='currentColor' stroke-width='0.6' opacity='0.35'/%3E%3Cpath d='M0,80 Q30,50 60,80 T120,80' fill='none' stroke='currentColor' stroke-width='0.6' opacity='0.3'/%3E%3Cpath d='M0,40 Q30,10 60,40 T120,40' fill='none' stroke='currentColor' stroke-width='0.6' opacity='0.3'/%3E%3Cpath d='M0,100 Q30,70 60,100 T120,100' fill='none' stroke='currentColor' stroke-width='0.6' opacity='0.25'/%3E%3Cpath d='M0,20 Q30,-10 60,20 T120,20' fill='none' stroke='currentColor' stroke-width='0.6' opacity='0.25'/%3E%3C/svg%3E";
 
 // ── Helpers ────────────────────────────────────────────────────────────
-
-/** Stable pseudo-random spec generator so PDP shows technical readouts
- *  even when the supplier hasn't filled the structured spec rows yet. */
-function deriveSpecs(id: string) {
-  const code = (id.charCodeAt(0) || 0) + (id.charCodeAt(id.length - 1) || 0);
-  const weight = 220 + (code % 12) * 15; // 220g - 385g
-  const waterproof = 5000 + (code % 6) * 2500; // 5,000 - 17,500mm
-  const drop = 4 + (code % 4) * 2; // 4 / 6 / 8 / 10 mm
-  const stack = 22 + (code % 6) * 2; // 22 - 32mm
-  const tempRange = [-5 + (code % 8), 25 + (code % 12)] as [number, number];
-  return { weight, waterproof, drop, stack, tempRange };
-}
 
 /** Map a free-text Thai/English color label to a hex swatch. We never
  *  paint sheets with these — only the variant chip's `style` prop. */
@@ -151,10 +135,6 @@ export function ProductDetailPage(props: ProductDetailProps) {
     materialOptions[0] ?? null,
   );
   const [qty, setQty] = useState(1);
-
-  // ── Spec rail (pseudo-derived from product.id when the supplier
-  //    hasn't filled structured technical specs yet).
-  const specs = useMemo(() => deriveSpecs(product.id), [product.id]);
 
   const discount =
     product.originalPriceTHB && product.originalPriceTHB > product.priceTHB
@@ -317,19 +297,6 @@ export function ProductDetailPage(props: ProductDetailProps) {
                 />
               )}
 
-              {/* Coordinate readout (decorative — sits at bottom-left of
-                  the hero image as a "GPS waypoint" flourish). */}
-              <div
-                className="absolute bottom-3 left-4 right-4 z-10 flex items-center justify-between text-[10px] font-bold tracking-widest uppercase"
-                style={{ color: 'color-mix(in srgb, var(--shop-ink) 60%, transparent)' }}
-              >
-                <span className="font-[family:var(--font-kanit)]">
-                  N 18°47′ · E 98°59′
-                </span>
-                <span className="font-[family:var(--font-kanit)]">
-                  ELEV 2,565 M
-                </span>
-              </div>
             </div>
 
             {/* Thumb strip */}
@@ -453,38 +420,6 @@ export function ProductDetailPage(props: ProductDetailProps) {
               </div>
             )}
             {discount === 0 && <div className="mb-6" />}
-
-            {/* Spec-rail (waterproof / weight / drop / stack) */}
-            <div
-              className="grid grid-cols-2 sm:grid-cols-4 gap-0 rounded-xl overflow-hidden border-2 mb-6"
-              style={{
-                borderColor: 'var(--shop-ink)',
-                background: 'var(--shop-ink)',
-                color: 'var(--shop-bg)',
-              }}
-            >
-              <SpecCell
-                icon={<Droplets className="h-4 w-4" />}
-                label="Waterproof"
-                value={`${specs.waterproof.toLocaleString()}mm`}
-              />
-              <SpecCell
-                icon={<Wind className="h-4 w-4" />}
-                label="Weight"
-                value={`${specs.weight}g`}
-              />
-              <SpecCell
-                icon={<Layers className="h-4 w-4" />}
-                label="Drop / Stack"
-                value={`${specs.drop} / ${specs.stack}mm`}
-              />
-              <SpecCell
-                icon={<Snowflake className="h-4 w-4" />}
-                label="Temp"
-                value={`${specs.tempRange[0]}° / ${specs.tempRange[1]}°C`}
-                last
-              />
-            </div>
 
             {/* Variant rows */}
             {colorOptions.length > 0 && (
@@ -748,16 +683,6 @@ export function ProductDetailPage(props: ProductDetailProps) {
 
             <div className="mt-8 grid grid-cols-2 gap-4">
               <FeatureCard
-                icon={<Droplets className="h-5 w-5" />}
-                title="Waterproof"
-                copy={`${specs.waterproof.toLocaleString()}mm membrane — ผ่านมาตรฐานพายุฝน`}
-              />
-              <FeatureCard
-                icon={<Wind className="h-5 w-5" />}
-                title="Breathable"
-                copy="ระบายอากาศ 15,000 g/m² ใน 24 ชม."
-              />
-              <FeatureCard
                 icon={<Mountain className="h-5 w-5" />}
                 title="Vibram® Megagrip"
                 copy="พื้นรองเท้า/พื้นกริ๊ปสำหรับหินเปียก"
@@ -767,61 +692,6 @@ export function ProductDetailPage(props: ProductDetailProps) {
                 title="Bluesign® approved"
                 copy="ผ้าและสีย้อมผ่านมาตรฐานสิ่งแวดล้อม"
               />
-            </div>
-          </div>
-
-          {/* Spec table */}
-          <div className="lg:col-span-2">
-            <div
-              className="rounded-2xl overflow-hidden border-2"
-              style={{
-                borderColor: 'color-mix(in srgb, var(--shop-primary) 60%, transparent)',
-                background:
-                  'color-mix(in srgb, var(--shop-ink) 80%, var(--shop-bg))',
-              }}
-            >
-              <div
-                className="px-5 py-3 text-xs uppercase tracking-[0.3em] font-extrabold flex items-center justify-between"
-                style={{
-                  background: 'var(--shop-primary)',
-                  color: 'var(--shop-card)',
-                  fontFamily: 'var(--font-kanit), var(--shop-font)',
-                }}
-              >
-                <span>Spec Sheet</span>
-                <span>v.{(product.id.charCodeAt(0) || 1) % 9 + 1}.0</span>
-              </div>
-              <dl className="divide-y" style={{ borderColor: 'color-mix(in srgb, var(--shop-bg) 14%, transparent)' }}>
-                <SpecRow label="น้ำหนัก" value={`${specs.weight} กรัม`} />
-                <SpecRow
-                  label="ระดับกันน้ำ"
-                  value={`${specs.waterproof.toLocaleString()} มม.`}
-                />
-                <SpecRow
-                  label="Drop / Stack"
-                  value={`${specs.drop}mm / ${specs.stack}mm`}
-                />
-                <SpecRow
-                  label="ช่วงอุณหภูมิ"
-                  value={`${specs.tempRange[0]}° → ${specs.tempRange[1]}°C`}
-                />
-                <SpecRow
-                  label="วัสดุหลัก"
-                  value={
-                    materialOptions[0] ||
-                    'Ripstop Nylon 40D · DWR coating'
-                  }
-                />
-                <SpecRow
-                  label="การรับประกัน"
-                  value="2 ปี · งานเย็บและซิป"
-                />
-                <SpecRow
-                  label="ผลิตที่"
-                  value="เวียดนาม · โรงงาน Bluesign®"
-                  last
-                />
-              </dl>
             </div>
           </div>
         </div>
@@ -867,7 +737,6 @@ export function ProductDetailPage(props: ProductDetailProps) {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 lg:gap-6">
             {related.slice(0, 8).map((r) => {
-              const rSpecs = deriveSpecs(r.id);
               return (
                 <Link
                   key={r.id}
@@ -897,32 +766,6 @@ export function ProductDetailPage(props: ProductDetailProps) {
                     ) : (
                       <Mountain className="relative z-[1] h-12 w-12 opacity-30" aria-hidden="true" />
                     )}
-                  </div>
-                  <div
-                    className="px-3 py-1.5 flex items-center justify-between text-[10px] uppercase tracking-wider font-bold"
-                    style={{
-                      background: 'var(--shop-ink)',
-                      color: 'var(--shop-bg)',
-                      fontFamily: 'var(--font-kanit), var(--shop-font)',
-                    }}
-                  >
-                    <span className="inline-flex items-center gap-1">
-                      <Wind
-                        className="h-3 w-3"
-                        style={{ color: 'var(--shop-primary)' }}
-                        aria-hidden="true"
-                      />
-                      {rSpecs.weight}g
-                    </span>
-                    <span aria-hidden="true">·</span>
-                    <span className="inline-flex items-center gap-1">
-                      <Droplets
-                        className="h-3 w-3"
-                        style={{ color: 'var(--shop-primary)' }}
-                        aria-hidden="true"
-                      />
-                      {(rSpecs.waterproof / 1000).toFixed(0)}K
-                    </span>
                   </div>
                   <div className="p-4 flex flex-col gap-2 flex-1">
                     {r.categoryName && (
@@ -973,44 +816,6 @@ export function ProductDetailPage(props: ProductDetailProps) {
 }
 
 // ── Subcomponents ──────────────────────────────────────────────────────
-
-function SpecCell({
-  icon,
-  label,
-  value,
-  last,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  last?: boolean;
-}) {
-  return (
-    <div
-      className={`px-3 py-3 sm:py-4 flex flex-col gap-1 ${!last ? 'border-r' : ''} trail-spec-cell`}
-      style={{
-        borderColor: 'color-mix(in srgb, var(--shop-bg) 18%, transparent)',
-      }}
-    >
-      <div
-        className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold opacity-80"
-        style={{
-          fontFamily: 'var(--font-kanit), var(--shop-font)',
-          color: 'var(--shop-primary)',
-        }}
-      >
-        {icon}
-        {label}
-      </div>
-      <div
-        className="text-sm sm:text-base font-extrabold tracking-tight"
-        style={{ fontFamily: 'var(--font-kanit), var(--shop-font)' }}
-      >
-        {value}
-      </div>
-    </div>
-  );
-}
 
 function VariantRow({
   label,
@@ -1154,44 +959,6 @@ function FeatureCard({
       >
         {copy}
       </div>
-    </div>
-  );
-}
-
-function SpecRow({
-  label,
-  value,
-  last,
-}: {
-  label: string;
-  value: string;
-  last?: boolean;
-}) {
-  return (
-    <div
-      className={`flex items-center justify-between gap-4 px-5 py-3.5 ${!last ? 'border-b' : ''}`}
-      style={{
-        borderColor: 'color-mix(in srgb, var(--shop-bg) 14%, transparent)',
-      }}
-    >
-      <dt
-        className="text-xs uppercase tracking-widest font-bold"
-        style={{
-          color: 'color-mix(in srgb, var(--shop-bg) 70%, var(--shop-ink))',
-          fontFamily: 'var(--font-kanit), var(--shop-font)',
-        }}
-      >
-        {label}
-      </dt>
-      <dd
-        className="text-sm font-extrabold text-right"
-        style={{
-          color: 'var(--shop-bg)',
-          fontFamily: 'var(--font-kanit), var(--shop-font)',
-        }}
-      >
-        {value}
-      </dd>
     </div>
   );
 }

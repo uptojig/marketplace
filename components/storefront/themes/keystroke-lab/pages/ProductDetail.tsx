@@ -27,10 +27,7 @@ import {
   ShieldCheck,
   Truck,
   RotateCw,
-  Headphones,
-  Activity,
   ChevronRight,
-  Volume2,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 import { formatTHB } from '@/lib/utils';
@@ -39,21 +36,6 @@ import type { ProductDetailProps } from '@/lib/templates/types';
 // ----------------------------------------------------------------------------
 // Local UI helpers
 // ----------------------------------------------------------------------------
-
-/** Six-character monospace ID slice — surfaces as "ID: ABC123" tag. */
-function shortId(id: string): string {
-  return id.slice(-6).toUpperCase();
-}
-
-/** Fake-but-deterministic switch/spec deck so the spec rack always has
- *  something on screen even before the supplier ships full specs. The
- *  hash drives index selection so the same product always shows the
- *  same spec — feels less mocked, more catalog. */
-function pickFromHash(id: string, len: number): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return h % len;
-}
 
 const SWITCH_TYPES = [
   { code: 'TACTILE', label: 'แทคไทล์' },
@@ -69,17 +51,7 @@ const KEYCAP_PROFILES = [
   { code: 'XDA', label: 'XDA' },
 ] as const;
 
-/** Sound profile bars — drives the ASCII frequency meter row.
- *  We pick one of three "voices" deterministically per product so
- *  identical products would render the same waveform. */
-const SOUND_PROFILES: Array<{ name: string; bars: number[]; freq: string }> = [
-  { name: 'CREAMY THOCK', bars: [2, 4, 6, 8, 7, 5, 3, 4, 6, 7, 5, 3, 2], freq: '120–180 HZ' },
-  { name: 'CLACKY POP',   bars: [1, 3, 5, 7, 8, 6, 4, 5, 7, 8, 6, 4, 2], freq: '200–320 HZ' },
-  { name: 'MUTED MARBLE', bars: [3, 4, 5, 6, 5, 4, 3, 4, 5, 4, 3, 2, 2], freq: '80–140 HZ'  },
-];
-
-/** Spec rack rows derived from the product's variant labels. Falls
- *  back to deterministic fake specs so the box always feels populated. */
+/** Spec rack rows derived from the product's data. */
 function deriveSpecRows(
   product: ProductDetailProps['product'],
 ): Array<{ label: string; value: string }> {
@@ -87,7 +59,6 @@ function deriveSpecRows(
   if (product.categoryName) {
     rows.push({ label: 'CATEGORY', value: product.categoryName.toUpperCase() });
   }
-  rows.push({ label: 'SKU', value: shortId(product.id) });
   rows.push({
     label: 'STOCK',
     value:
@@ -96,18 +67,6 @@ function deriveSpecRows(
           ? `${product.stockLeft} U` // U = units
           : 'BACKORDER'
         : 'IN STOCK',
-  });
-  rows.push({
-    label: 'POLL RATE',
-    value: ['1000 HZ', '4000 HZ', '8000 HZ'][pickFromHash(product.id + 'p', 3)],
-  });
-  rows.push({
-    label: 'CONNECT',
-    value: ['USB-C', '2.4G + BT 5.0', 'TRI-MODE'][pickFromHash(product.id + 'c', 3)],
-  });
-  rows.push({
-    label: 'WEIGHT',
-    value: ['55 G', '780 G', '1.2 KG'][pickFromHash(product.id + 'w', 3)],
   });
   return rows;
 }
@@ -176,7 +135,6 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
   );
 
   const specRows = useMemo(() => deriveSpecRows(product), [product]);
-  const soundProfile = SOUND_PROFILES[pickFromHash(product.id, SOUND_PROFILES.length)];
 
   // Cart wiring — useCart add + cartConfirm modal toast (same pattern
   // as the keystroke-lab Homepage card).
@@ -395,71 +353,6 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
               </div>
             )}
 
-            {/* ── Sound test placeholder (frequency meter) ────────── */}
-            <div
-              className="border p-5 mt-6"
-              style={{
-                borderColor: 'var(--shop-border)',
-                background: 'var(--shop-card)',
-                borderRadius: 'var(--shop-radius)',
-              }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div
-                  className="flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] font-bold"
-                  data-tech-mono="true"
-                  style={{ color: 'var(--shop-ink)' }}
-                >
-                  <Headphones size={14} aria-hidden="true" style={{ color: 'var(--shop-primary)' }} />
-                  SOUND TEST · <span style={{ color: 'var(--shop-primary)' }}>{soundProfile.name}</span>
-                </div>
-                <div
-                  className="text-[10px] uppercase tracking-[0.22em] flex items-center gap-1"
-                  data-tech-mono="true"
-                  style={{ color: 'var(--shop-ink-muted)' }}
-                >
-                  <Activity size={11} aria-hidden="true" />
-                  {soundProfile.freq}
-                </div>
-              </div>
-
-              {/* ASCII frequency bars */}
-              <div
-                className="flex items-end gap-1 h-16 mb-3 px-1"
-                role="img"
-                aria-label={`Sound profile: ${soundProfile.name}, ${soundProfile.freq}`}
-              >
-                {soundProfile.bars.map((h, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 transition-all"
-                    style={{
-                      height: `${(h / 8) * 100}%`,
-                      background: i % 3 === 0 ? 'var(--shop-primary)' : 'var(--shop-accent)',
-                      opacity: 0.4 + (h / 8) * 0.6,
-                      borderRadius: '1px',
-                    }}
-                  />
-                ))}
-              </div>
-
-              <button
-                type="button"
-                disabled
-                aria-disabled="true"
-                className="w-full flex items-center justify-center gap-2 py-2 text-[11px] uppercase tracking-[0.22em] border cursor-not-allowed"
-                data-tech-mono="true"
-                style={{
-                  borderColor: 'var(--shop-border)',
-                  color: 'var(--shop-ink-muted)',
-                  background: 'var(--shop-muted, var(--shop-bg))',
-                }}
-                title="ตัวอย่างเสียงจะเปิดให้ฟังเร็วๆ นี้"
-              >
-                <Volume2 size={12} aria-hidden="true" />
-                ▶ PLAY SAMPLE · COMING SOON
-              </button>
-            </div>
           </div>
 
           {/* ── Info column (spec rack + buy block) ──────────────── */}
@@ -481,13 +374,6 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
                   aria-hidden="true"
                 />
                 IN-LAB
-              </span>
-              <span
-                className="text-[10px] uppercase tracking-[0.22em]"
-                data-tech-mono="true"
-                style={{ color: 'var(--shop-ink-muted)' }}
-              >
-                ID · {shortId(product.id)}
               </span>
             </div>
 
@@ -842,121 +728,6 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
         </div>
       </section>
 
-      {/* ── Switch / typing-feel section ─────────────────────────── */}
-      <section
-        className="border-t"
-        style={{
-          borderColor: 'var(--shop-border)',
-          background: 'var(--shop-muted, var(--shop-bg))',
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex items-end justify-between mb-6 pb-3 border-b" style={{ borderColor: 'var(--shop-border)' }}>
-            <div>
-              <div
-                className="text-[10px] uppercase tracking-[0.28em] mb-1"
-                data-tech-mono="true"
-                style={{ color: 'var(--shop-primary)' }}
-              >
-                /lab/typing-feel.md
-              </div>
-              <h2
-                className="text-xl md:text-2xl font-bold"
-                style={{
-                  color: 'var(--shop-ink)',
-                  fontFamily: 'var(--font-tech-display, var(--shop-font-display))',
-                }}
-              >
-                Switch & Typing Feel
-              </h2>
-            </div>
-            <span
-              className="text-[10px] uppercase tracking-[0.22em] hidden md:inline"
-              data-tech-mono="true"
-              style={{ color: 'var(--shop-ink-muted)' }}
-            >
-              CALIBRATED · LAB-RIG #04
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                label: 'ACTUATION FORCE',
-                value: '45 GF',
-                hint: 'น้ำหนักกดเริ่มต้น เบาพอสำหรับพิมพ์ทั้งวัน',
-              },
-              {
-                label: 'TOTAL TRAVEL',
-                value: '3.3 MM',
-                hint: 'ระยะกดสุด เหมาะกับ gamer + typist',
-              },
-              {
-                label: 'PRE-TRAVEL',
-                value: '1.9 MM',
-                hint: 'จุดส่งสัญญาณ — เร็วพอสำหรับ FPS',
-              },
-              {
-                label: 'BOTTOM-OUT',
-                value: '60 GF',
-                hint: 'น้ำหนักกดสุดทาง สัมผัสมั่นคง',
-              },
-              {
-                label: 'LIFE CYCLE',
-                value: '80 M',
-                hint: '80 ล้านครั้ง — ผ่าน Lab QA',
-              },
-              {
-                label: 'FACTORY LUBE',
-                value: 'KRYTOX 205g0',
-                hint: 'จาระบีโรงงาน นุ่ม ไม่ติดมือ',
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="border p-4"
-                style={{
-                  borderColor: 'var(--shop-border)',
-                  background: 'var(--shop-card)',
-                  borderRadius: 'var(--shop-radius)',
-                }}
-              >
-                <div
-                  className="flex items-center justify-between mb-2"
-                  data-tech-mono="true"
-                >
-                  <span
-                    className="text-[10px] uppercase tracking-[0.22em]"
-                    style={{ color: 'var(--shop-ink-muted)' }}
-                  >
-                    {item.label}
-                  </span>
-                  <span
-                    className="text-[10px] uppercase tracking-[0.22em]"
-                    style={{ color: 'var(--shop-primary)' }}
-                  >
-                    {String(i + 1).padStart(2, '0')} / 06
-                  </span>
-                </div>
-                <div
-                  className="text-2xl font-bold tabular-nums mb-2"
-                  data-tech-mono="true"
-                  style={{ color: 'var(--shop-ink)' }}
-                >
-                  {item.value}
-                </div>
-                <p
-                  className="text-xs leading-relaxed"
-                  style={{ color: 'var(--shop-ink-muted)', fontFamily: 'var(--shop-font)' }}
-                >
-                  {item.hint}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Description (collapsed-style block) ───────────────────── */}
       {product.description && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -1099,14 +870,6 @@ export function KeystrokeLabProductDetail(props: ProductDetailProps) {
                         [ NO PHOTO ]
                       </div>
                     )}
-                    <div
-                      aria-hidden="true"
-                      className="absolute top-1 left-2 text-[9px] uppercase tracking-[0.22em]"
-                      data-tech-mono="true"
-                      style={{ color: 'var(--shop-ink-muted)' }}
-                    >
-                      ID {shortId(r.id)}
-                    </div>
                   </div>
 
                   <div className="p-3">
