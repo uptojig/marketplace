@@ -1,8 +1,17 @@
-'use client';
-
 /**
  * Shared about adapter — generic brand-story page used by templates
  * that don't ship a bespoke About component.
+ *
+ * IMPORTANT: this module must NOT be `'use client'`. lib/templates/registry.ts
+ * CALLS `makeAboutAdapter()` at module top-level while building its `templates`
+ * map, and registry is reachable from server modules (e.g. /api/admin/stores
+ * → lib/store/template-fields → registry). If the factory lived in a client
+ * module the call resolved to a client-reference proxy and threw
+ * "TypeError: rS is not a function" while collecting page data — breaking
+ * every build (same pattern that broke pdp-adapter; see commit 6122a97).
+ * The component renders only static JSX (no hooks) so it can live in a
+ * server module; client-only children (none here) would handle their own
+ * boundary.
  *
  * Everything is CSS-var-driven (`--shop-primary`, `--shop-accent`,
  * `--shop-bg`, `--shop-ink`, `--shop-ink-muted`, `--shop-card`,
