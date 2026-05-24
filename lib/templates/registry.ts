@@ -328,12 +328,12 @@ import { makeHelpAdapter } from '@/components/storefront/themes/_shared/help-ada
 
 // Bespoke PDP imports (Wave 3)
 import { mono_eight_ProductDetail, mono_eight_Cart } from '@/components/storefront/themes/mono-eight/adapters';
-import { atelier_27_ProductDetail, atelier_27_Cart } from '@/components/storefront/themes/atelier-27/adapters';
+import { atelier_27_ProductDetail, atelier_27_Cart, atelier_27_Catalog } from '@/components/storefront/themes/atelier-27/adapters';
 import { caldera_skin_ProductDetail, caldera_skin_Cart } from '@/components/storefront/themes/caldera-skin/adapters';
 import { hinoki_apothecary_ProductDetail, hinoki_apothecary_Cart } from '@/components/storefront/themes/hinoki-apothecary/adapters';
 import { linen_and_loom_ProductDetail, linen_and_loom_Cart } from '@/components/storefront/themes/linen-and-loom/adapters';
 import { reclaim_leather_ProductDetail, reclaim_leather_Cart } from '@/components/storefront/themes/reclaim-leather/adapters';
-import { sirin_womenswear_ProductDetail, sirin_womenswear_Cart } from '@/components/storefront/themes/sirin-womenswear/adapters';
+import { sirin_womenswear_ProductDetail, sirin_womenswear_Cart, sirin_womenswear_Catalog } from '@/components/storefront/themes/sirin-womenswear/adapters';
 import { yumeiro_lip_ProductDetail, yumeiro_lip_Cart, yumeiro_lip_Catalog } from '@/components/storefront/themes/yumeiro-lip/adapters';
 import { lila_modest_ProductDetail } from '@/components/storefront/themes/lila-modest/adapters';
 import { carbon_era_cameras_ProductDetail, carbon_era_cameras_Cart, carbon_era_cameras_Catalog } from '@/components/storefront/themes/carbon-era-cameras/adapters';
@@ -381,8 +381,8 @@ import {
   PackagingSupplyFooterAdapter,
   PackagingSupplyStripAdapter,
   PackagingSupplyHomepageAdapter,
-  PackagingSupplyCatalog,
-  PackagingSupplyProductDetail,
+  PackagingSupplyCatalogAdapter,
+  PackagingSupplyProductDetailAdapter,
   PackagingSupplyCart,
   PackagingSupplyCheckout,
 } from '@/components/storefront/themes/packaging-supply/adapters';
@@ -390,6 +390,76 @@ import {
 
 
 
+
+import {
+  KonvyHeaderAdapter,
+  KonvyFooterAdapter,
+  KonvyStripAdapter,
+  KonvyHomepageAdapter,
+  KonvyAboutAdapter,
+  KonvyHelpAdapter,
+  konvy_Catalog,
+  konvy_ProductDetail,
+  konvy_Cart,
+  konvy_Checkout,
+  konvy_Contact,
+} from '@/components/storefront/themes/konvy/adapters';
+
+import {
+  OmnipackHeaderAdapter,
+  OmnipackFooterAdapter,
+  OmnipackStripAdapter,
+  OmnipackHomepageAdapter,
+  OmnipackAboutAdapter,
+  OmnipackHelpAdapter,
+  omnipack_Catalog,
+  omnipack_ProductDetail,
+  omnipack_Cart,
+  omnipack_Checkout,
+  omnipack_Contact,
+} from '@/components/storefront/themes/omnipack/adapters';
+
+import {
+  BlackwrappHeaderAdapter,
+  BlackwrappFooterAdapter,
+  BlackwrappStripAdapter,
+  BlackwrappHomepageAdapter,
+  BlackwrappAboutAdapter,
+  BlackwrappHelpAdapter,
+  blackwrapp_Catalog,
+  blackwrapp_ProductDetail,
+  blackwrapp_Cart,
+  blackwrapp_Checkout,
+  blackwrapp_Contact,
+} from '@/components/storefront/themes/blackwrapp/adapters';
+
+import {
+  GridmoduHeaderAdapter,
+  GridmoduFooterAdapter,
+  GridmoduStripAdapter,
+  GridmoduHomepageAdapter,
+  GridmoduAboutAdapter,
+  GridmoduHelpAdapter,
+  gridmodu_Catalog,
+  gridmodu_ProductDetail,
+  gridmodu_Cart,
+  gridmodu_Checkout,
+  gridmodu_Contact,
+} from '@/components/storefront/themes/gridmodu/adapters';
+
+import {
+  MotofogHeaderAdapter,
+  MotofogFooterAdapter,
+  MotofogStripAdapter,
+  MotofogHomepageAdapter,
+  MotofogAboutAdapter,
+  MotofogHelpAdapter,
+  motofog_Catalog,
+  motofog_ProductDetail,
+  motofog_Cart,
+  motofog_Checkout,
+  motofog_Contact,
+} from '@/components/storefront/themes/motofog/adapters';
 export const templates: Record<TemplateId, Template> = {
   handmade: {
     id: 'handmade',
@@ -562,8 +632,8 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: PackagingSupplyHomepageAdapter,
-      catalog: PackagingSupplyCatalog,
-      pdp: PackagingSupplyProductDetail,
+      catalog: PackagingSupplyCatalogAdapter,
+      pdp: PackagingSupplyProductDetailAdapter,
       cart: PackagingSupplyCart,
       checkout: PackagingSupplyCheckout,
       about: makeAboutAdapter(),
@@ -757,7 +827,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(Atelier27HomepageAdapter, '02'),
-      catalog: makeCatalogAdapter('12'),
+      catalog: atelier_27_Catalog,
       pdp: atelier_27_ProductDetail,
       cart: atelier_27_Cart,
       checkout: makeThaiCheckoutAdapter(),
@@ -1123,7 +1193,7 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: enhanceHomepage(SirinHomepageAdapter, '03'),
-      catalog: makeCatalogAdapter('03'),
+      catalog: sirin_womenswear_Catalog,
       pdp: sirin_womenswear_ProductDetail,
       cart: sirin_womenswear_Cart,
       checkout: makeThaiCheckoutAdapter(),
@@ -1246,9 +1316,122 @@ export const templates: Record<TemplateId, Template> = {
       help: makeHelpAdapter(),
     },
   },
+
+  'konvy': {
+    id: 'konvy',
+    name: 'Konvy',
+    description: 'Konvy',
+    group: 'fashion-beauty',
+    behavior: { bottomNav: 'visible' },
+    chrome: {
+      Header: KonvyHeaderAdapter,
+      Footer: KonvyFooterAdapter,
+      AnnouncementStrip: KonvyStripAdapter,
+    },
+    pages: {
+      home: KonvyHomepageAdapter,
+      catalog: konvy_Catalog,
+      pdp: konvy_ProductDetail,
+      cart: konvy_Cart,
+      checkout: konvy_Checkout,
+      about: KonvyAboutAdapter,
+      help: KonvyHelpAdapter,
+      contact: konvy_Contact,
+    },
+  },
+
+  'omnipack': {
+    id: 'omnipack',
+    name: 'OmniPack',
+    description: 'OmniPack',
+    group: 'packaging',
+    behavior: { bottomNav: 'visible' },
+    chrome: {
+      Header: OmnipackHeaderAdapter,
+      Footer: OmnipackFooterAdapter,
+      AnnouncementStrip: OmnipackStripAdapter,
+    },
+    pages: {
+      home: OmnipackHomepageAdapter,
+      catalog: omnipack_Catalog,
+      pdp: omnipack_ProductDetail,
+      cart: omnipack_Cart,
+      checkout: omnipack_Checkout,
+      about: OmnipackAboutAdapter,
+      help: OmnipackHelpAdapter,
+      contact: omnipack_Contact,
+    },
+  },
+
+  'blackwrapp': {
+    id: 'blackwrapp',
+    name: 'BlackWrapp',
+    description: 'BlackWrapp',
+    group: 'packaging',
+    behavior: { bottomNav: 'visible' },
+    chrome: {
+      Header: BlackwrappHeaderAdapter,
+      Footer: BlackwrappFooterAdapter,
+      AnnouncementStrip: BlackwrappStripAdapter,
+    },
+    pages: {
+      home: BlackwrappHomepageAdapter,
+      catalog: blackwrapp_Catalog,
+      pdp: blackwrapp_ProductDetail,
+      cart: blackwrapp_Cart,
+      checkout: blackwrapp_Checkout,
+      about: BlackwrappAboutAdapter,
+      help: BlackwrappHelpAdapter,
+      contact: blackwrapp_Contact,
+    },
+  },
+
+  'gridmodu': {
+    id: 'gridmodu',
+    name: 'GridModu',
+    description: 'GridModu',
+    group: 'lifestyle',
+    behavior: { bottomNav: 'visible' },
+    chrome: {
+      Header: GridmoduHeaderAdapter,
+      Footer: GridmoduFooterAdapter,
+      AnnouncementStrip: GridmoduStripAdapter,
+    },
+    pages: {
+      home: GridmoduHomepageAdapter,
+      catalog: gridmodu_Catalog,
+      pdp: gridmodu_ProductDetail,
+      cart: gridmodu_Cart,
+      checkout: gridmodu_Checkout,
+      about: GridmoduAboutAdapter,
+      help: GridmoduHelpAdapter,
+      contact: gridmodu_Contact,
+    },
+  },
+
+  'motofog': {
+    id: 'motofog',
+    name: 'MotoFog',
+    description: 'MotoFog',
+    group: 'lifestyle',
+    behavior: { bottomNav: 'visible' },
+    chrome: {
+      Header: MotofogHeaderAdapter,
+      Footer: MotofogFooterAdapter,
+      AnnouncementStrip: MotofogStripAdapter,
+    },
+    pages: {
+      home: MotofogHomepageAdapter,
+      catalog: motofog_Catalog,
+      pdp: motofog_ProductDetail,
+      cart: motofog_Cart,
+      checkout: motofog_Checkout,
+      about: MotofogAboutAdapter,
+      help: MotofogHelpAdapter,
+      contact: motofog_Contact,
+    },
+  },
 };
-
-
 
 // Re-export from the single source of truth.
 // Import TEMPLATE_GROUPS_MAP and alias for backwards compat.

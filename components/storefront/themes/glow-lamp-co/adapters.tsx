@@ -32,7 +32,7 @@ export function GlowLampCoHomepageAdapter(props: ScaffoldHomepageProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? undefined,
       }}
       products={props.products.map((p) => ({
         id: p.id,
@@ -42,7 +42,7 @@ export function GlowLampCoHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, name }))}
     />
   );
 }

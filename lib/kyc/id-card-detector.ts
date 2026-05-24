@@ -73,7 +73,8 @@ function loadModel(): Promise<any> {
       graphOptimizationLevel: "all",
     });
   }
-  return onnxSession;
+  // Just assigned above when null; non-null after the guard.
+  return onnxSession!;
 }
 
 // Letterbox resize: scale image while preserving aspect ratio, pad with

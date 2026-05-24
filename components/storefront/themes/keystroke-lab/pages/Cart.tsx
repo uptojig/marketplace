@@ -38,6 +38,8 @@ import { formatTHB } from '@/lib/utils';
 import type { Coupon } from '@/lib/coupons/types';
 import type { CartItem as CalcCartItem } from '@/lib/cart/types';
 
+import type { CartProps as ScaffoldCartProps } from '@/lib/templates/types';
+
 interface StoreLite {
   id: string;
   slug: string;
@@ -55,12 +57,11 @@ interface CartItemProp {
   variantLabel?: string | null;
 }
 
-export interface CartProps {
-  store: StoreLite;
-  /** Server-side prop (always empty in this dispatch path) — the real
-   *  cart lines come from the zustand store on mount. */
-  items: CartItemProp[];
-}
+// Re-export the canonical scaffold `CartProps` so the registry's
+// `ComponentType<CartProps>` slot accepts this component. The component
+// itself only reads `store.slug` (lines come from the zustand store on
+// mount), so the canonical `items: CartLineItem[]` field is ignored.
+export type CartProps = ScaffoldCartProps;
 
 const FREE_SHIPPING_THRESHOLD = 990;
 const DEFAULT_SHIPPING = 50;

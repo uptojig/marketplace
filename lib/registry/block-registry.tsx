@@ -60,13 +60,19 @@ type RegistryComponent = ComponentType<BlockProps>;
 // ─── Helpers — keep entries terse ───────────────────────────────────────
 
 function lazy(
-  loader: () => Promise<{ default: ComponentType<unknown> }>,
+  // Block authors haven't typed their components to BlockProps yet — many
+  // accept narrower / wider prop shapes (`ShoppingCartProps`,
+  // `{ apps: AppIcon[] }`, etc). Widen the loader to accept any default
+  // export so each `import(...)` resolves without erroring on the registry
+  // contract. The cast to `RegistryComponent` below preserves the uniform
+  // shape callers see.
+  loader: () => Promise<{ default: ComponentType<never> }>,
   opts: { ssr?: boolean } = {},
 ): RegistryComponent {
-  // The block author may not have typed their component to BlockProps yet;
-  // assert through `unknown` so the registry shape stays uniform without
-  // forcing a refactor of every existing block file in one go.
-  return dynamic(loader, { ssr: opts.ssr ?? true }) as RegistryComponent;
+  return dynamic(
+    loader as () => Promise<{ default: ComponentType<unknown> }>,
+    { ssr: opts.ssr ?? true },
+  ) as RegistryComponent;
 }
 
 // ─── Registry entries — grouped by category ─────────────────────────────

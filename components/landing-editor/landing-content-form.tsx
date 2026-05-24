@@ -1082,7 +1082,7 @@ function BlockComposer({
         </legend>
         <UiSelect
           label="PDP (หน้าสินค้า)"
-          value={value.pages.pdp}
+          value={value.pages.pdp ?? ""}
           onChange={(s) => setPages({ pdp: s })}
           options={BLOCK_CATEGORIES.find((c) => c.id === "pdp")?.blocks ?? []}
           required
@@ -1090,7 +1090,7 @@ function BlockComposer({
         />
         <UiSelect
           label="Catalog (หมวด / รายการสินค้า)"
-          value={value.pages.catalog}
+          value={value.pages.catalog ?? ""}
           onChange={(s) => setPages({ catalog: s })}
           options={[
             ...(BLOCK_CATEGORIES.find((c) => c.id === "product-list")?.blocks ??
@@ -1103,7 +1103,7 @@ function BlockComposer({
         />
         <UiSelect
           label="Cart (ตะกร้า)"
-          value={value.pages.cart}
+          value={value.pages.cart ?? ""}
           onChange={(s) => setPages({ cart: s })}
           options={BLOCK_CATEGORIES.find((c) => c.id === "cart")?.blocks ?? []}
           required

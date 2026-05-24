@@ -3,9 +3,18 @@ import React from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Search, Menu } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import type { HeaderProps } from '@/lib/templates/types';
 
-export function CarbonEraCamerasHeader({ store, categories }: HeaderProps) {
+/**
+ * Local prop shape — uses a nested `store` object + category objects
+ * with `{ id, slug, name }`, not the flat scaffold `HeaderProps`. The
+ * adapter in `adapters.tsx` re-packs the scaffold props into this shape.
+ */
+interface CarbonEraCamerasHeaderProps {
+  store: { name: string; slug: string; logoUrl?: string | null };
+  categories: { id: string; name: string; slug: string }[];
+}
+
+export function CarbonEraCamerasHeader({ store, categories }: CarbonEraCamerasHeaderProps) {
   const items = useCart((s) => s.lines);
   const storeItems = items.filter((i) => i.storeSlug === store.slug);
   const cartCount = storeItems.length;

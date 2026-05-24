@@ -42,7 +42,7 @@ export function SirinHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, name }))}
     />
   );
 }

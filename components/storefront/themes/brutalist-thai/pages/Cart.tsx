@@ -19,20 +19,16 @@ import { Minus, Plus, Trash2, ShoppingCart, ChevronRight, Truck, RotateCcw, Shie
 import { useEffect, useState } from 'react';
 import { useCart } from '@/lib/store/cart';
 import { formatTHB } from '@/lib/utils';
+import type { CartProps } from '@/lib/templates/types';
 
 const FONT_DISPLAY = 'font-[family:var(--font-google-sans)]';
 const FREE_SHIPPING_THRESHOLD = 990;
 const DEFAULT_SHIPPING = 50;
 
-interface StoreLite {
-  id: string;
-  slug: string;
-  name: string;
-  logoUrl: string | null;
-  primaryColor: string | null;
-}
-
-export default function BrutalistCart({ store }: { store: StoreLite }) {
+// Accept the canonical scaffold `CartProps` shape — the component
+// internally reads cart lines via zustand and only needs `store.slug`
+// + identity fields, so the extra `items`/threshold props are ignored.
+export default function BrutalistCart({ store }: CartProps) {
   const allLines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);

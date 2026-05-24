@@ -14,7 +14,12 @@ import { CarbonEraCamerasAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { CarbonEraCamerasHomepage } from './pages/Homepage';
 
 export function CarbonEraCamerasHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <CarbonEraCamerasHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }} categories={props.categories ?? []} />;
+  return (
+    <CarbonEraCamerasHeader
+      store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }}
+      categories={(props.categories ?? []).map((name) => ({ id: name, slug: name, name }))}
+    />
+  );
 }
 
 export function CarbonEraCamerasFooterAdapter(props: ScaffoldFooterProps) {
@@ -32,7 +37,7 @@ export function CarbonEraCamerasHomepageAdapter(props: ScaffoldHomepageProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? null,
       }}
       products={props.products.map((p) => ({
         id: p.id,

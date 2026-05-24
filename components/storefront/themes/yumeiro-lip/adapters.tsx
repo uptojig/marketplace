@@ -18,9 +18,9 @@ export function YumeiroLipHeaderAdapter(props: ScaffoldHeaderProps) {
       store={{
         name: props.storeName,
         slug: props.storeSlug,
-        logoUrl: props.storeLogoUrl,
+        logoUrl: props.storeLogoUrl ?? undefined,
       }}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, name }))}
     />
   );
 }
@@ -46,7 +46,7 @@ export function YumeiroLipHomepageAdapter(props: ScaffoldHomepageProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? undefined,
       }}
       products={props.products.map((p) => ({
         id: p.id,
@@ -56,7 +56,7 @@ export function YumeiroLipHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, name }))}
     />
   );
 }
