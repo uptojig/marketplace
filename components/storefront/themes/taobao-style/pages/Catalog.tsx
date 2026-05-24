@@ -175,7 +175,10 @@ export function Catalog({
                       : { color: 'var(--shop-ink)' }
                   }
                 >
-                  ทั้งหมด ({filteredCount})
+                  ทั้งหมด ({(selectedCats.length === 0
+                    ? filteredCount
+                    : Object.values(categoryCounts).reduce((a, b) => a + b, 0)
+                  ).toLocaleString()})
                 </a>
                 {categoryNames.map((c) => {
                   const isActive = selectedCats.includes(c);
