@@ -11,6 +11,7 @@
  * this project is "drawer for everything, no popup" — clicking
  * "หยิบใส่ตะกร้า" calls `useCart.add(...)` which auto-opens this drawer.
  */
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import {
@@ -31,11 +32,17 @@ interface Props {
 export function CartDrawer({ storeSlug, freeShippingThreshold = 990 }: Props) {
   const open = useCart((s) => s.drawerOpen);
   const closeDrawer = useCart((s) => s.closeDrawer);
-  const lines = useCart((s) =>
-    s.lines.filter((l) => l.storeSlug === storeSlug),
-  );
+  // Subscribe to the FULL lines array (stable reference) and derive the
+  // per-store slice with useMemo. Filtering inside the selector returns
+  // a new array on every store mutation → triggers React error #185
+  // (Maximum update depth exceeded / infinite re-render).
+  const allLines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
+  const lines = useMemo(
+    () => allLines.filter((l) => l.storeSlug === storeSlug),
+    [allLines, storeSlug],
+  );
 
   const subtotal = lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0);
   const remaining = Math.max(freeShippingThreshold - subtotal, 0);

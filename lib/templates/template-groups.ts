@@ -25,7 +25,7 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
   ],
   'electronics-tech': [
     'tech-compare', 'carbon-era-cameras', 'keystroke-lab',
-    'smartloop-home', 'wavelength-audio', 'casethep'],
+    'smartloop-home', 'wavelength-audio'],
   lifestyle: [
     'sport-active', 'mega-store', 'glow-lamp-co', 'inkstone-paper',
     'korakot-house', 'petit-cote', 'saluki-yoga',
@@ -35,7 +35,7 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
   ],
   community: ['live-commerce'],
   'business-model': ['wholesale-b2b', 'eco-pack', 'bulkbox-industrial'],
-  specialty: ['handmade', 'sai-sing', 'mai-hatthakam', 'pigment-studio'],
+  specialty: ['handmade', 'sai-sing', 'mai-hatthakam', 'pigment-studio', 'casethep'],
   everyday: ['everyday-retail', 'talad-see-sod'],
   taobao: ['taobao-style'],
   packaging: ['packaging-supply', 'pastel-pack', 'omnipack', 'blackwrapp'],
