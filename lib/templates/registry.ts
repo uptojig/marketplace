@@ -67,71 +67,17 @@ import {
   neon_festival_Contact,
 } from '@/components/storefront/themes/neon-festival/adapters';
 import {
-  EcoPackHeaderAdapter,
-  EcoPackFooterAdapter,
-  EcoPackStripAdapter,
-  EcoPackHomepageAdapter,
-  EcoPackCatalogAdapter,
-  EcoPackProductDetailAdapter,
-  EcoPackCartAdapter,
-  EcoPackCheckoutAdapter,
-  EcoPackAboutAdapter,
-  EcoPackHelpAdapter,
-} from '@/components/storefront/themes/eco-pack/adapters';
-import {
-  BikiniHeaderAdapter,
-  BikiniFooterAdapter,
-  BikiniStripAdapter,
-  BikiniHomepageAdapter,
-  BikiniCatalogAdapter,
-  BikiniProductDetailAdapter,
-  BikiniCartAdapter,
-  BikiniCheckoutAdapter,
-  BikiniLookbookAdapter,
-  BikiniAboutAdapter,
-  BikiniHelpAdapter,
-} from '@/components/storefront/themes/bikini-beach/adapters';
-import {
-  MegaStoreHeaderAdapter,
-  MegaStoreFooterAdapter,
-  MegaStoreStripAdapter,
-  MegaStoreHomepageAdapter,
-  MegaStoreCatalogAdapter,
-  MegaStoreProductDetailAdapter,
-  MegaStoreCartAdapter,
-  MegaStoreCheckoutAdapter,
-  MegaStoreAboutAdapter,
-  MegaStoreHelpAdapter,
-} from '@/components/storefront/themes/mega-store/adapters';
-
-import {
-  SaiSingHeaderAdapter,
-  SaiSingFooterAdapter,
-  SaiSingStripAdapter,
-  SaiSingHomepageAdapter,
-} from '@/components/storefront/themes/sai-sing/adapters';
-import {
-  TaladSeeSodHeaderAdapter,
-  TaladSeeSodFooterAdapter,
-  TaladSeeSodStripAdapter,
-  TaladSeeSodHomepageAdapter,
-} from '@/components/storefront/themes/talad-see-sod/adapters';
-import TaladSeeSodProductDetail from '@/components/storefront/themes/talad-see-sod/pages/ProductDetail';
-import TaladSeeSodCart from '@/components/storefront/themes/talad-see-sod/pages/Cart';
-import TaladSeeSodCatalog from '@/components/storefront/themes/talad-see-sod/pages/Catalog';
-import TaladSeeSodCheckout from '@/components/storefront/themes/talad-see-sod/pages/Checkout';
-import {
   CasethepHeaderAdapter,
   CasethepFooterAdapter,
   CasethepStripAdapter,
   CasethepHomepageAdapter,
   CasethepAboutAdapter,
   CasethepHelpAdapter,
-  neon_festival_Catalog,
-  neon_festival_ProductDetail,
-  neon_festival_Cart,
-  neon_festival_Checkout,
-  neon_festival_Contact,
+  casethep_Catalog,
+  casethep_ProductDetail,
+  casethep_Cart,
+  casethep_Checkout,
+  casethep_Contact,
 } from '@/components/storefront/themes/casethep/adapters';
 import {
   BrutalistThaiHeaderAdapter,
@@ -684,22 +630,10 @@ export const templates: Record<TemplateId, Template> = {
     },
   },
 
-  'neon-festival': {
-    id: 'neon-festival',
-    name: 'Neon Festival',
-    description: 'ร้านสายงานเทศกาล แสงนีออน ของแต่งคอนเสิร์ต สไตล์ Neo-Brutalism Pop-Art',
-    group: 'neon',
-    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
-    chrome: {
-      Header: NeonFestivalHeaderAdapter,
-      Footer: NeonFestivalFooterAdapter,
-      AnnouncementStrip: NeonFestivalStripAdapter,
-    },
-
   'casethep': {
     id: 'casethep',
     name: 'Casethep',
-    description: 'ร้านสายงานเทศกาล แสงนีออน ของแต่งคอนเสิร์ต สไตล์ Neo-Brutalism Pop-Art',
+    description: 'เคสมือถือ accessories tech สไตล์ Neo-Brutalism Pop-Art',
     group: 'electronics-tech',
     behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
     chrome: {
@@ -708,14 +642,14 @@ export const templates: Record<TemplateId, Template> = {
       AnnouncementStrip: CasethepStripAdapter,
     },
     pages: {
-      home: NeonFestivalHomepageAdapter,
-      catalog: neon_festival_Catalog,
-      pdp: neon_festival_ProductDetail,
-      cart: neon_festival_Cart,
-      checkout: neon_festival_Checkout,
-      about: NeonFestivalAboutAdapter,
-      help: NeonFestivalHelpAdapter,
-      contact: neon_festival_Contact,
+      home: CasethepHomepageAdapter,
+      catalog: casethep_Catalog,
+      pdp: casethep_ProductDetail,
+      cart: casethep_Cart,
+      checkout: casethep_Checkout,
+      about: CasethepAboutAdapter,
+      help: CasethepHelpAdapter,
+      contact: casethep_Contact,
     },
   },
 
