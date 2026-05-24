@@ -146,6 +146,12 @@ model Store {
   // by themeAccentOverride). Used by stores that want a two-color brand match
   // (e.g. logo with hot-pink lettering + sky-blue highlights).
   themeAccentSecondary String?
+  // Optional CSS gradient override for --shop-primary-gradient. Accepts any
+  // valid CSS background value (e.g. "linear-gradient(135deg, #FF458A 0%,
+  // #9333EA 100%)"). When NULL the theme family's curated gradient is used
+  // — or, for palettes that don't define one, --shop-primary-gradient stays
+  // undefined and consumers must rely on a fallback.
+  themePrimaryGradient String?
   // Custom domain (vendor brings their own); subdomain is derived from slug
   customDomain String?  @unique
   // Legal/business info shown on contact page + footer

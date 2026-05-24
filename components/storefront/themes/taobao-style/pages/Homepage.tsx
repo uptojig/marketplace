@@ -117,12 +117,15 @@ export function Homepage({ store, products, categories }: HomepageProps) {
           <div className="lg:col-span-7 space-y-5">
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-[family:var(--font-kanit)] font-extrabold uppercase tracking-wide shadow-md bg-white"
-                style={{ color: 'var(--shop-primary)' }}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-[family:var(--font-kanit)] font-extrabold uppercase tracking-wide shadow-md text-white"
+                style={{ background: 'var(--shop-primary)' }}
               >
                 <Flame size={12} /> Mega Flash Sale
               </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-[family:var(--font-prompt)] font-extrabold text-white bg-black/30 border border-white/60 backdrop-blur-sm">
+              <span
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-[family:var(--font-kanit)] font-extrabold tracking-wide shadow-md"
+                style={{ background: 'var(--shop-accent)', color: 'var(--shop-ink)' }}
+              >
                 ลดสูงสุด 70%
               </span>
             </div>
@@ -131,7 +134,10 @@ export function Homepage({ store, products, categories }: HomepageProps) {
               className="font-[family:var(--font-kanit)] font-black text-3xl sm:text-4xl lg:text-5xl leading-tight text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"
             >
               ดีลร้อนที่สุดของวัน <br className="hidden sm:inline" />
-              <span className="text-yellow-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+              <span
+                className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
+                style={{ color: 'var(--shop-accent)' }}
+              >
                 เริ่มต้นเพียง ฿9.-
               </span>
             </h1>
@@ -167,7 +173,8 @@ export function Homepage({ store, products, categories }: HomepageProps) {
             <div className="pt-1 flex gap-3">
               <a
                 href="#flash-rail"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-md text-sm font-[family:var(--font-kanit)] font-black uppercase shadow-lg hover:opacity-90 transition-opacity bg-yellow-300 text-slate-900"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-md text-sm font-[family:var(--font-kanit)] font-black uppercase shadow-lg hover:opacity-90 transition-opacity"
+                style={{ background: 'var(--shop-accent)', color: 'var(--shop-ink)' }}
               >
                 ช้อปดีลร้อน <ArrowRight size={16} />
               </a>
@@ -258,9 +265,10 @@ export function Homepage({ store, products, categories }: HomepageProps) {
               className="flex flex-col items-center gap-2 p-3 rounded-lg transition-colors hover:bg-[color:var(--shop-bg-soft)]"
             >
               <span
-                className="w-12 h-12 rounded-full flex items-center justify-center text-lg shadow-sm text-white"
+                className="w-12 h-12 rounded-full flex items-center justify-center text-lg shadow-sm"
                 style={{
                   background: 'var(--shop-primary-gradient, var(--shop-primary))',
+                  color: 'var(--shop-accent)',
                 }}
               >
                 <Tag size={18} />
@@ -290,7 +298,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
             style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))', color: '#ffffff' }}
           >
             <div className="flex items-center gap-2">
-              <Zap size={18} fill="currentColor" className="text-yellow-300" />
+              <Zap size={18} fill="currentColor" style={{ color: 'var(--shop-accent)' }} />
               <h2 className="font-[family:var(--font-kanit)] font-black text-lg uppercase text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
                 แฟลชเซลล์ ลดสุดในรอบเดือน
               </h2>

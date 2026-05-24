@@ -119,6 +119,12 @@ export interface ThemeInput {
    * (override paints both --shop-primary and --shop-accent).
    */
   themeAccentSecondary?: string | null;
+  /**
+   * Optional CSS gradient override for `--shop-primary-gradient`. Accepts
+   * any valid CSS background value. When provided it ALWAYS wins over the
+   * family-curated gradient (independent of accent overrides).
+   */
+  themePrimaryGradient?: string | null;
 }
 
 export interface ChromeTheme {
@@ -241,6 +247,12 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       "--shop-accent": accent,
     };
     familyAccent = primary;
+  }
+  if (store.themePrimaryGradient) {
+    familyVars = {
+      ...familyVars,
+      "--shop-primary-gradient": store.themePrimaryGradient,
+    };
   }
 
   return { chromeKey, familyClass, familyVars, familyAccent, familyButtonShape };

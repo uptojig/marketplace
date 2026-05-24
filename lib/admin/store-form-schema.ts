@@ -63,6 +63,7 @@ export const storeBrandingSchema = z.object({
   landingThemeVariant: z.string().optional().nullable(),
   themeAccentOverride: hexColor.optional().nullable(),
   themeAccentSecondary: hexColor.optional().nullable(),
+  themePrimaryGradient: z.string().trim().min(0).max(500).optional().nullable(),
 })
 
 // ── C. Address ─────────────────────────────────────────────────────────────
