@@ -2,6 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck, Truck, Headphones, CreditCard, Flame } from 'lucide-react';
+import { PaymentLogos } from '@/components/storefront/payment-logos';
 
 export interface FooterProps {
   store: {
@@ -216,21 +217,8 @@ export function Footer({ store, categories }: FooterProps) {
           <p>
             © {year} {store.name} · ทุกการสั่งซื้อปลอดภัย รับประกันคืนเงิน
           </p>
-          <div className="flex items-center gap-2 flex-wrap">
-            {['VISA', 'MASTER', 'JCB', 'PromptPay', 'COD', 'TrueMoney'].map((m) => (
-              <span
-                key={m}
-                className="px-2 py-1 text-[10px] font-extrabold uppercase rounded"
-                style={{
-                  background: 'var(--shop-muted)',
-                  color: 'var(--shop-ink)',
-                  border: `1px solid var(--shop-border)`,
-                }}
-              >
-                {m}
-              </span>
-            ))}
-          </div>
+          <PaymentLogos compact />
+
         </div>
       </div>
     </footer>
