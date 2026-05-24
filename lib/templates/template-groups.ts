@@ -21,6 +21,7 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
     'lookbook', 'bikini-beach', 'brutalist-thai', 'mono-eight', 'lila-modest',
     'caldera-skin', 'hinoki-apothecary', 'linen-and-loom', 'reclaim-leather',
     'sirin-womenswear', 'yumeiro-lip',
+    'konvy',
   ],
   'electronics-tech': [
     'tech-compare', 'carbon-era-cameras', 'keystroke-lab',
@@ -30,13 +31,15 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
     'sport-active', 'mega-store', 'glow-lamp-co', 'inkstone-paper',
     'korakot-house', 'petit-cote', 'saluki-yoga',
     'tinyhand-wooden-toys', 'trailcraft-outdoors',
+    'gridmodu',
+    'motofog',
   ],
   community: ['live-commerce'],
   'business-model': ['wholesale-b2b', 'eco-pack', 'bulkbox-industrial'],
   specialty: ['handmade', 'sai-sing', 'mai-hatthakam', 'pigment-studio'],
   everyday: ['everyday-retail', 'talad-see-sod'],
   taobao: ['taobao-style'],
-  packaging: ['packaging-supply', 'pastel-pack'],
+  packaging: ['packaging-supply', 'pastel-pack', 'omnipack', 'blackwrapp'],
   neon: ['neon-festival'],
 } as const;
 
