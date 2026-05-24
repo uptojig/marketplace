@@ -134,7 +134,8 @@ export function BikiniFooterAdapter(props: ScaffoldFooterProps) {
   return (
     <BikiniFooter
       storeName={props.store.name}
-      tagline={props.store.tagline ?? props.store.description ?? undefined}
+      storeLogoUrl={props.store.logoUrl ?? undefined}
+      tagline={props.store.description ?? props.store.tagline ?? undefined}
       navColumns={navColumns}
       paymentMethods={['VISA', 'MC', 'JCB', 'PROMPTPAY']}
       socialLinks={socialLinks}

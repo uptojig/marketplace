@@ -44,8 +44,12 @@ const saveSchema = z.object({
         raw: z.unknown().optional(),
       }),
     )
+    // Raised from 50 → 250 so real-merchant bulk imports (100+ SKUs from
+    // a single CJ category pull) don't hit "Invalid payload" (400). The
+    // save loop is sequential per item; 250 stays inside the route's
+    // execution window. Anything larger should be batched client-side.
     .min(1)
-    .max(50),
+    .max(250),
   // Optional admin-only override. Lets an ADMIN user import into any
   // store from /admin/stores/[id]/products/new without that store
   // belonging to them. The handler only honours this when the caller
