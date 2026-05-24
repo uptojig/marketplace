@@ -104,8 +104,10 @@ export const useCart = create<CartState>()(
         } else {
           set({ lines: [...get().lines, { ...line, qty }] });
         }
-        // Surface the drawer automatically so the buyer sees the item land.
-        set({ drawerOpen: true });
+        // (Auto-opening the drawer on every add caused theme-wide
+        // breakage — hydration mismatch on /checkout, conflicts with
+        // theme-local cart UIs. Reverted to silent add; buyers navigate
+        // to /cart explicitly via the header icon.)
       },
       setQty: (productId, qty, storeSlug) => {
         // Match (productId, storeSlug) when slug provided so per-store
