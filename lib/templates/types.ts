@@ -83,7 +83,12 @@ export type TemplateId =
   | 'trailcraft-outdoors'
   | 'wavelength-audio'
   | 'yumeiro-lip'
-  | 'neon-festival';
+  | 'neon-festival'
+  | 'konvy'
+  | 'omnipack'
+  | 'blackwrapp'
+  | 'gridmodu'
+  | 'motofog';
 
 
 

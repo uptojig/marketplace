@@ -1,0 +1,115 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { ShoppingCart } from 'lucide-react';
+import { useCart } from '@/lib/store/cart';
+import { formatTHB } from '@/lib/utils';
+import type { ProductDetailProps } from '@/lib/templates/types';
+
+/**
+ * BlackWrapp — product detail (scaffold).
+ */
+export default function ProductDetail({ store, product, related }: ProductDetailProps) {
+  const add = useCart((s) => s.add);
+  const images = Array.from(
+    new Set([product.imageUrl, ...product.images].filter((u): u is string => Boolean(u)))
+  );
+  const heroImage = images[0] ?? null;
+
+  return (
+    <div className="bg-[var(--shop-bg)] text-[var(--shop-ink)] font-[family:var(--font-prompt)]">
+      <div className="max-w-6xl mx-auto px-4 py-8 grid gap-8 md:grid-cols-2">
+        <div className="aspect-square bg-[var(--shop-bg-soft)] border border-[var(--shop-border)] rounded overflow-hidden">
+          {heroImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={heroImage} alt={product.title} className="w-full h-full object-cover" />
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <h1 className="font-[family:var(--font-kanit)] text-3xl font-black">
+            {product.title}
+          </h1>
+
+          <div className="flex items-baseline gap-3">
+            <span
+              className="text-2xl font-bold"
+              style={{ color: 'var(--shop-primary)' }}
+            >
+              {formatTHB(product.priceTHB)}
+            </span>
+            {product.originalPriceTHB ? (
+              <span className="text-sm line-through text-[var(--shop-ink-muted)]">
+                {formatTHB(product.originalPriceTHB)}
+              </span>
+            ) : null}
+          </div>
+
+          {product.description && (
+            <p className="text-sm text-[var(--shop-ink-muted)] whitespace-pre-line">
+              {product.description}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() =>
+              add({
+                productId: product.id,
+                storeSlug: store.slug,
+                storeName: store.name,
+                title: product.title,
+                priceTHB: product.priceTHB,
+                imageUrl: product.imageUrl || undefined,
+              })
+            }
+            className="mt-4 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-white font-bold"
+            style={{ background: 'var(--shop-primary)' }}
+          >
+            <ShoppingCart className="h-4 w-4" />
+            เพิ่มลงตะกร้า
+          </button>
+        </div>
+      </div>
+
+      {related.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-10">
+          <h2 className="font-[family:var(--font-kanit)] text-xl font-bold mb-4">
+            สินค้าที่เกี่ยวข้อง
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {related.slice(0, 8).map((p) => (
+              <Link
+                key={p.id}
+                href={`/stores/${store.slug}/products/${p.id}`}
+                className="bg-white border border-[var(--shop-border)] rounded overflow-hidden"
+              >
+                <div className="aspect-square bg-[var(--shop-bg-soft)]">
+                  {p.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.imageUrl}
+                      alt={p.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : null}
+                </div>
+                <div className="p-3">
+                  <span className="text-sm line-clamp-2">{p.title}</span>
+                  <div
+                    className="font-bold mt-2"
+                    style={{ color: 'var(--shop-primary)' }}
+                  >
+                    {formatTHB(p.priceTHB)}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
