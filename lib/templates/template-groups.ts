@@ -24,8 +24,7 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
   ],
   'electronics-tech': [
     'tech-compare', 'carbon-era-cameras', 'keystroke-lab',
-    'smartloop-home', 'wavelength-audio',
-  ],
+    'smartloop-home', 'wavelength-audio', 'casethep'],
   lifestyle: [
     'sport-active', 'mega-store', 'glow-lamp-co', 'inkstone-paper',
     'korakot-house', 'petit-cote', 'saluki-yoga',
