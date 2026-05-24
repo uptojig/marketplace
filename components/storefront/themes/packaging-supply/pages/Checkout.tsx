@@ -44,11 +44,11 @@ const STEPS: Array<{ id: Step; label: string }> = [
   { id: 3, label: 'ชำระเงิน' },
 ];
 
+// ANYPAY-only — gateway routes to PromptPay / Visa / Mastercard /
+// TrueMoney / Rabbit LINE Pay internally. COD removed per project rule
+// (CJ Dropshipping does not support cash-on-delivery).
 const PAYMENTS = [
-  { id: 'promptpay', label: 'PromptPay QR', icon: QrCode, note: 'รับรหัส QR หลังกดสั่ง' },
-  { id: 'card', label: 'บัตรเครดิต / เดบิต', icon: CreditCard, note: 'VISA · Mastercard · JCB' },
-  { id: 'cod', label: 'เก็บเงินปลายทาง (COD)', icon: Banknote, note: 'จ่ายเมื่อรับของ' },
-  { id: 'transfer', label: 'โอนผ่านบัญชีธนาคาร', icon: Building2, note: 'แนบสลิปยืนยัน' },
+  { id: 'anypay', label: 'ANYPAY · พร้อมเพย์ / บัตร / TrueMoney', icon: CreditCard, note: 'ระบบรับชำระเงินที่ปลอดภัย รองรับทุกช่องทาง' },
 ];
 
 const SHIPPING_OPTIONS = [

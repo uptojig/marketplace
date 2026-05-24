@@ -82,11 +82,11 @@ const DEFAULT_SHIPPING: ShippingOption[] = [
   { value: 'pickup', label: 'Self Pickup', description: '📍 รับเองที่ Showroom Asok', price: 0, estimate: 'พรุ่งนี้' },
 ];
 
+// ANYPAY-only per project rule. AnyPay gateway internally routes to
+// PromptPay / Visa / Mastercard / TrueMoney / Rabbit LINE Pay / etc.
+// COD removed (CJ Dropshipping does not support it).
 const DEFAULT_PAYMENT: PaymentOption[] = [
-  { value: 'card', label: 'Credit / Debit Card', description: 'VISA, Mastercard, AMEX · ผ่อน 0% นาน 3 เดือน', icon: <IconCreditCard size={22} /> },
-  { value: 'promptpay', label: 'PromptPay QR', description: 'สแกน QR · ชำระทันที · ไม่มีค่าธรรมเนียม', icon: <IconWallet size={22} color="#0F62FE" /> },
-  { value: 'truemoney', label: 'TrueMoney Wallet', description: 'จ่ายผ่าน TrueMoney Wallet App', icon: <IconWallet size={22} color="#F97316" /> },
-  { value: 'cod', label: 'Cash on Delivery', description: 'จ่ายเงินสดเมื่อรับสินค้า · +฿30', icon: <IconCash size={22} color="#10B981" /> },
+  { value: 'anypay', label: 'ANYPAY · พร้อมเพย์ / บัตร / TrueMoney', description: 'ระบบรับชำระเงินที่ปลอดภัย รองรับทุกช่องทาง', icon: <IconCreditCard size={22} /> },
 ];
 
 // ============ Component ============
@@ -110,8 +110,8 @@ export function Checkout({
 
   const sub = subtotal ?? items.reduce((s, i) => s + i.price * i.qty, 0);
   const shippingPrice = shippingOptions.find(s => s.value === selectedShipping)?.price ?? 0;
-  const codFee = selectedPayment === 'cod' ? 30 : 0;
-  const total = sub - promoAmount + shippingPrice + codFee;
+  // ANYPAY-only — no per-method surcharge.
+  const total = sub - promoAmount + shippingPrice;
 
   const update = <K extends keyof ShippingAddress>(k: K, v: ShippingAddress[K]) => setForm(s => ({ ...s, [k]: v }));
 
@@ -290,7 +290,6 @@ export function Checkout({
                 <span>ค่าจัดส่ง</span>
                 <span style={shippingPrice === 0 ? { color: '#10B981', fontWeight: 800 } : undefined}>{shippingPrice === 0 ? 'ฟรี' : `฿${shippingPrice}`}</span>
               </div>
-              {codFee > 0 && <div className="bk-summary-row"><span>ค่าธรรมเนียม COD</span><span>฿{codFee}</span></div>}
               <div className="bk-summary-row total">
                 <span>รวม</span>
                 <span className="amount">฿{total.toLocaleString()}</span>
