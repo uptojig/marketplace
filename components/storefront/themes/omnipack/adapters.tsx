@@ -1,94 +1,75 @@
 'use client';
 
+/**
+ * OmniPack — scaffold → designer prop adapters.
+ *
+ * Each adapter accepts the scaffold's generic `*Props` shape (from
+ * `lib/templates/types`) and threads the per-store `storeSlug` (plus a
+ * few derived helpers) into the bespoke OmniPack components. The
+ * scaffold itself never sees the OmniPack-specific extensions.
+ */
+
 import React from 'react';
 import type {
   HomepageProps as ScaffoldHomepageProps,
+  CatalogProps as ScaffoldCatalogProps,
+  ProductDetailProps as ScaffoldProductDetailProps,
+  CartProps as ScaffoldCartProps,
+  CheckoutProps as ScaffoldCheckoutProps,
   HeaderProps as ScaffoldHeaderProps,
   FooterProps as ScaffoldFooterProps,
   AnnouncementStripProps as ScaffoldStripProps,
-  AboutProps as ScaffoldAboutProps,
-  HelpProps as ScaffoldHelpProps,
 } from '@/lib/templates/types';
 
-import { Header as OmnipackHeader } from './chrome/Header';
-import { Footer as OmnipackFooter } from './chrome/Footer';
-import { AnnouncementStrip as OmnipackStrip } from './chrome/AnnouncementStrip';
-import { Homepage as OmnipackHomepage } from './pages/Homepage';
-import { About as OmnipackAbout } from './pages/About';
-import { Help as OmnipackHelp } from './pages/Help';
+import { OmnipackHeader } from './chrome/Header';
+import { OmnipackFooter } from './chrome/Footer';
+import { OmnipackAnnouncementStrip } from './chrome/AnnouncementStrip';
+import { OmnipackHomepage } from './pages/Homepage';
+import { OmnipackCatalog } from './pages/Catalog';
+import { OmnipackProductDetail } from './pages/ProductDetail';
+import { OmnipackCart } from './pages/Cart';
+import { OmnipackCheckout } from './pages/Checkout';
+
+// ── Chrome adapters ───────────────────────────────────────────────
 
 export function OmnipackHeaderAdapter(props: ScaffoldHeaderProps) {
-  return (
-    <OmnipackHeader
-      storeSlug={props.storeSlug}
-      storeName={props.storeName}
-      storeLogoUrl={props.storeLogoUrl}
-      categories={props.categories ?? []}
-    />
-  );
+  return <OmnipackHeader {...props} />;
 }
 
 export function OmnipackFooterAdapter(props: ScaffoldFooterProps) {
-  return (
-    <OmnipackFooter
-      store={props.store}
-      categories={props.categories ?? []}
-      availableSupportPages={props.availableSupportPages ?? []}
-    />
-  );
+  return <OmnipackFooter {...props} />;
 }
 
 export function OmnipackStripAdapter(props: ScaffoldStripProps) {
-  return (
-    <OmnipackStrip
-      storeName={props.storeName}
-      message={props.message}
-      mobileMessage={props.mobileMessage}
-    />
-  );
+  return <OmnipackAnnouncementStrip {...props} />;
 }
+
+// ── Page adapters ─────────────────────────────────────────────────
 
 export function OmnipackHomepageAdapter(props: ScaffoldHomepageProps) {
   return (
     <OmnipackHomepage
-      store={{
-        id: props.store.id,
-        name: props.store.name,
-        slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
-      }}
-      products={props.products.map((p) => ({
-        id: p.id,
-        title: p.title,
-        priceTHB: p.priceTHB,
-        compareAtPriceTHB: p.compareAtPriceTHB ?? null,
-        imageUrl: p.imageUrl ?? null,
-        categoryName: p.categoryName ?? null,
-      }))}
-      categories={props.categories}
-      landingContent={props.landingContent ?? null}
+      {...props}
+      storeSlug={props.store.slug}
+      totalProductCount={props.products.length}
     />
   );
 }
 
-export function OmnipackAboutAdapter(props: ScaffoldAboutProps) {
-  return <OmnipackAbout store={props.store} />;
+export function OmnipackCatalogAdapter(props: ScaffoldCatalogProps) {
+  return <OmnipackCatalog {...props} storeSlug={props.store.slug} />;
 }
 
-export function OmnipackHelpAdapter(props: ScaffoldHelpProps) {
-  return (
-    <OmnipackHelp
-      store={props.store}
-      schemaPage={props.schemaPage}
-      pageSlug={props.pageSlug}
-    />
-  );
+export function OmnipackProductDetailAdapter(
+  props: ScaffoldProductDetailProps,
+) {
+  return <OmnipackProductDetail {...props} storeSlug={props.store.slug} />;
 }
 
-// Page re-exports (default exports — used directly in registry)
-export { default as omnipack_Catalog } from './pages/Catalog';
-export { default as omnipack_ProductDetail } from './pages/ProductDetail';
-export { default as omnipack_Cart } from './pages/Cart';
-export { default as omnipack_Checkout } from './pages/Checkout';
-export { default as omnipack_Contact } from './pages/Contact';
-export { OmnipackPolicyShell } from './PolicyShell';
+export function OmnipackCartAdapter(props: ScaffoldCartProps) {
+  return <OmnipackCart {...props} storeSlug={props.store.slug} />;
+}
+
+export function OmnipackCheckoutAdapter(props: ScaffoldCheckoutProps) {
+  return <OmnipackCheckout {...props} storeSlug={props.store.slug} />;
+}

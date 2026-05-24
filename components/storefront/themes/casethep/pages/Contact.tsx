@@ -1,19 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, MessageCircle, Facebook, Instagram, Send, Sparkles } from 'lucide-react';
+import { Mail, Phone, MessageCircle, MapPin, Send, Check } from 'lucide-react';
 
 interface ContactProps {
   store: {
     id: string;
     slug: string;
     name: string;
-    logoUrl?: string | null;
     contactEmail?: string | null;
     contactPhone?: string | null;
     lineId?: string | null;
-    facebookUrl?: string | null;
-    instagramUrl?: string | null;
     addressLine1?: string | null;
     addressLine2?: string | null;
     subdistrict?: string | null;
@@ -28,10 +25,9 @@ function joinAddress(parts: Array<string | null | undefined>): string {
 }
 
 export default function Contact({ store }: ContactProps) {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<'idle' | 'success' | 'error'>('idle');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
+  const [error, setError] = useState<string | null>(null);
 
   const line1 = joinAddress([store.addressLine1, store.addressLine2]);
   const line2 = joinAddress([store.subdistrict, store.district]);
@@ -40,227 +36,208 @@ export default function Contact({ store }: ContactProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
-    setErrorMsg(null);
+    setStatus('submitting');
+    setError(null);
     try {
-      const res = await fetch(`/api/stores/${store.slug}/contact`, {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          storeSlug: store.slug,
+          name: form.name,
+          email: form.email,
+          message: form.message,
+        }),
       });
-      if (res.ok) {
-        setResult('success');
-        setForm({ name: '', email: '', subject: '', message: '' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.ok !== false) {
+        setStatus('done');
+        setForm({ name: '', email: '', message: '' });
       } else {
-        // Fallback for stores without the contact API — open default mail client
-        const mailto = `mailto:${store.contactEmail || ''}?subject=${encodeURIComponent(
-          form.subject || `[${store.name}] ติดต่อจากเว็บไซต์`,
-        )}&body=${encodeURIComponent(`${form.message}\n\nจาก: ${form.name} <${form.email}>`)}`;
-        window.location.href = mailto;
-        setResult('success');
+        setStatus('error');
+        setError(data?.error ?? 'ไม่สามารถส่งข้อความได้');
       }
     } catch {
-      setErrorMsg('เครือข่ายไม่ตอบสนอง ลองอีกครั้ง');
-      setResult('error');
-    } finally {
-      setSubmitting(false);
+      setStatus('error');
+      setError('เครือข่ายไม่ตอบสนอง ลองอีกครั้ง');
     }
   }
 
   return (
-    <div className="bg-[#fafafa] text-black font-[family:var(--font-prompt)] min-h-screen">
-      {/* Hero */}
-      <section className="bg-pink-500 border-b-4 border-black px-4 py-12 sm:py-16 relative overflow-hidden">
-        <div
-          className="absolute -bottom-10 -right-10 w-48 h-48 bg-yellow-400 border-4 border-black rotate-12 hidden md:block"
-          aria-hidden
-        />
-        <div className="max-w-5xl mx-auto relative z-10">
-          <div className="inline-block bg-yellow-400 border-4 border-black px-4 py-1 text-xs font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4 font-[family:var(--font-kanit)]">
-            Contact
-          </div>
-          <h1 className="font-[family:var(--font-kanit)] text-4xl sm:text-6xl font-black uppercase italic tracking-tighter text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">
+    <div
+      className="font-[family:var(--font-prompt)] min-h-screen"
+      style={{ background: 'var(--shop-bg, #FBF8F3)', color: 'var(--shop-ink, #1A1A1F)' }}
+    >
+      <section className="px-4 sm:px-6 lg:px-8 pt-12 pb-8">
+        <div className="max-w-5xl mx-auto">
+          <span
+            className="inline-block rounded-full px-3 py-1 text-[11px] font-medium tracking-wide mb-4"
+            style={{
+              background: 'rgba(255,90,106,0.10)',
+              color: 'var(--shop-primary, #FF5A6A)',
+            }}
+          >
             ติดต่อเรา
+          </span>
+          <h1 className="font-[family:var(--font-kanit)] text-3xl sm:text-4xl font-semibold tracking-tight">
+            สวัสดีค่ะ ทักได้เลย
           </h1>
-          <p className="text-white font-bold mt-3 uppercase tracking-widest text-sm">
-            ตอบกลับภายใน 24 ชั่วโมง
+          <p className="text-sm text-[color:var(--shop-ink-muted,#6B7280)] mt-2">
+            ทีมงานของเราตอบเร็วภายใน 1 ชั่วโมงในช่วงเวลาทำการ
           </p>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 grid lg:grid-cols-[1fr_360px] gap-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 grid lg:grid-cols-[1fr_360px] gap-6 lg:gap-10">
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 space-y-4"
+          className="rounded-2xl bg-white p-6 sm:p-8 space-y-4"
+          style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
         >
-          <h2 className="font-[family:var(--font-kanit)] font-black text-2xl uppercase italic border-b-4 border-black pb-3 mb-4">
-            ส่งข้อความหาเรา
+          <h2 className="font-[family:var(--font-kanit)] font-semibold text-lg tracking-tight">
+            ส่งข้อความ
           </h2>
-
-          {result === 'success' && (
-            <div className="border-4 border-black bg-green-400 p-4 font-[family:var(--font-kanit)] font-black uppercase text-sm flex items-center gap-2">
-              <Sparkles className="w-5 h-5" /> ส่งข้อความเรียบร้อย! เราจะรีบติดต่อกลับ
+          {status === 'done' ? (
+            <div
+              className="rounded-2xl p-6 text-center"
+              style={{
+                background: 'rgba(255,90,106,0.05)',
+                border: '1px solid rgba(255,90,106,0.20)',
+              }}
+            >
+              <div
+                className="w-10 h-10 rounded-full mx-auto mb-3 flex items-center justify-center text-white"
+                style={{
+                  background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))',
+                }}
+              >
+                <Check className="w-5 h-5" />
+              </div>
+              <p className="font-[family:var(--font-kanit)] font-semibold">ส่งข้อความเรียบร้อย</p>
+              <p className="text-sm text-[color:var(--shop-ink-muted,#6B7280)] mt-1">
+                เราจะติดต่อกลับโดยเร็วที่สุด
+              </p>
             </div>
+          ) : (
+            <>
+              <div>
+                <label className="block text-xs font-medium mb-1.5">ชื่อ</label>
+                <input
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full rounded-xl border border-[color:var(--shop-ink,#1A1A1F)]/10 bg-white px-4 py-2.5 text-sm focus:outline-none focus:border-[color:var(--shop-primary,#FF5A6A)] transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5">อีเมล</label>
+                <input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="w-full rounded-xl border border-[color:var(--shop-ink,#1A1A1F)]/10 bg-white px-4 py-2.5 text-sm focus:outline-none focus:border-[color:var(--shop-primary,#FF5A6A)] transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5">ข้อความ</label>
+                <textarea
+                  required
+                  rows={5}
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  className="w-full rounded-xl border border-[color:var(--shop-ink,#1A1A1F)]/10 bg-white px-4 py-2.5 text-sm focus:outline-none focus:border-[color:var(--shop-primary,#FF5A6A)] transition-colors resize-y"
+                />
+              </div>
+              {error && (
+                <div
+                  className="rounded-xl px-4 py-3 text-xs"
+                  style={{
+                    background: 'rgba(220,38,38,0.08)',
+                    color: '#B91C1C',
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={status === 'submitting'}
+                className="inline-flex items-center justify-center gap-2 rounded-full h-11 px-6 text-sm font-medium text-white transition-transform disabled:opacity-60 hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))',
+                }}
+              >
+                <Send className="w-4 h-4" />
+                {status === 'submitting' ? 'กำลังส่ง…' : 'ส่งข้อความ'}
+              </button>
+            </>
           )}
-          {errorMsg && (
-            <div className="border-4 border-red-600 bg-red-50 text-red-700 p-4 font-bold uppercase text-xs tracking-widest">
-              {errorMsg}
-            </div>
-          )}
-
-          <Field label="ชื่อ" value={form.name} onChange={(v) => setForm({ ...form, name: v })} required />
-          <Field label="อีเมล" value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" required />
-          <Field label="หัวข้อ" value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} required />
-          <div>
-            <label className="block font-[family:var(--font-kanit)] font-black uppercase text-xs tracking-widest mb-1">
-              ข้อความ
-            </label>
-            <textarea
-              value={form.message}
-              onChange={(e) => setForm({ ...form, message: e.target.value })}
-              required
-              rows={6}
-              className="w-full border-4 border-black px-3 py-2 text-sm font-bold focus:outline-none focus:bg-yellow-100 resize-y"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="h-14 w-full px-6 bg-pink-500 text-white border-4 border-black font-[family:var(--font-kanit)] font-black uppercase tracking-widest shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-400 hover:text-black active:translate-x-2 active:translate-y-2 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            <Send className="w-5 h-5" />
-            {submitting ? 'กำลังส่ง…' : 'ส่งข้อความ'}
-          </button>
         </form>
 
-        {/* Contact methods */}
+        {/* Channels */}
         <aside className="space-y-4">
-          {store.contactEmail && (
-            <ContactCard
-              icon={Mail}
-              label="อีเมล"
-              value={store.contactEmail}
-              href={`mailto:${store.contactEmail}`}
-              bg="bg-pink-500 text-white"
-            />
-          )}
-          {store.contactPhone && (
-            <ContactCard
-              icon={Phone}
-              label="โทรศัพท์"
-              value={store.contactPhone}
-              href={`tel:${store.contactPhone.replace(/\s+/g, '')}`}
-              bg="bg-yellow-400 text-black"
-            />
-          )}
-          {store.lineId && (
-            <ContactCard
-              icon={MessageCircle}
-              label="LINE"
-              value={`@${store.lineId}`}
-              href={`https://line.me/ti/p/~${store.lineId}`}
-              bg="bg-green-400 text-black"
-            />
-          )}
-          {store.facebookUrl && (
-            <ContactCard
-              icon={Facebook}
-              label="Facebook"
-              value="Messenger"
-              href={store.facebookUrl}
-              bg="bg-blue-600 text-white"
-            />
-          )}
-          {store.instagramUrl && (
-            <ContactCard
-              icon={Instagram}
-              label="Instagram"
-              value="DM"
-              href={store.instagramUrl}
-              bg="bg-pink-500 text-white"
-            />
-          )}
-          {hasAddress && (
-            <div className="border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="w-5 h-5 text-pink-500" />
-                <span className="font-[family:var(--font-kanit)] font-black uppercase text-xs tracking-widest">
-                  ที่อยู่
-                </span>
-              </div>
-              <div className="text-sm leading-relaxed">
-                {line1 && <p>{line1}</p>}
-                {line2 && <p>{line2}</p>}
-                {line3 && <p>{line3}</p>}
-              </div>
-            </div>
-          )}
+          <div
+            className="rounded-2xl bg-white p-5"
+            style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
+          >
+            <h3 className="font-[family:var(--font-kanit)] font-semibold text-sm tracking-tight mb-3">
+              ช่องทางติดต่อ
+            </h3>
+            <ul className="space-y-3 text-sm">
+              {store.contactPhone && (
+                <li className="flex items-start gap-2.5">
+                  <Phone className="w-4 h-4 mt-0.5 text-[color:var(--shop-primary,#FF5A6A)]" />
+                  <a
+                    href={`tel:${store.contactPhone.replace(/\s+/g, '')}`}
+                    className="hover:text-[color:var(--shop-primary,#FF5A6A)]"
+                  >
+                    {store.contactPhone}
+                  </a>
+                </li>
+              )}
+              {store.contactEmail && (
+                <li className="flex items-start gap-2.5">
+                  <Mail className="w-4 h-4 mt-0.5 text-[color:var(--shop-primary,#FF5A6A)]" />
+                  <a
+                    href={`mailto:${store.contactEmail}`}
+                    className="hover:text-[color:var(--shop-primary,#FF5A6A)] break-all"
+                  >
+                    {store.contactEmail}
+                  </a>
+                </li>
+              )}
+              {store.lineId && (
+                <li className="flex items-start gap-2.5">
+                  <MessageCircle className="w-4 h-4 mt-0.5 text-[color:var(--shop-primary,#FF5A6A)]" />
+                  <a
+                    href={`https://line.me/ti/p/~${store.lineId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-[color:var(--shop-primary,#FF5A6A)]"
+                  >
+                    LINE: {store.lineId}
+                  </a>
+                </li>
+              )}
+              {hasAddress && (
+                <li className="flex items-start gap-2.5">
+                  <MapPin className="w-4 h-4 mt-0.5 text-[color:var(--shop-primary,#FF5A6A)]" />
+                  <div className="leading-relaxed text-[color:var(--shop-ink-muted,#6B7280)]">
+                    {line1 && <div>{line1}</div>}
+                    {line2 && <div>{line2}</div>}
+                    {line3 && <div>{line3}</div>}
+                  </div>
+                </li>
+              )}
+            </ul>
+          </div>
+          <p className="text-[11px] text-[color:var(--shop-ink-muted,#6B7280)] px-4">
+            เวลาทำการ: จันทร์–เสาร์ 9:00–18:00 น.
+          </p>
         </aside>
       </div>
     </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  type = 'text',
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: string;
-  required?: boolean;
-}) {
-  return (
-    <div>
-      <label className="block font-[family:var(--font-kanit)] font-black uppercase text-xs tracking-widest mb-1">
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        className="w-full border-4 border-black px-3 py-2 text-sm font-bold focus:outline-none focus:bg-yellow-100"
-      />
-    </div>
-  );
-}
-
-function ContactCard({
-  icon: Icon,
-  label,
-  value,
-  href,
-  bg,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  href: string;
-  bg: string;
-}) {
-  return (
-    <a
-      href={href}
-      target={href.startsWith('http') ? '_blank' : undefined}
-      rel={href.startsWith('http') ? 'noreferrer' : undefined}
-      className={`block border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all ${bg}`}
-    >
-      <div className="flex items-center gap-3">
-        <Icon className="w-6 h-6 shrink-0" />
-        <div className="min-w-0">
-          <p className="font-[family:var(--font-kanit)] font-black uppercase text-[10px] tracking-widest opacity-80">
-            {label}
-          </p>
-          <p className="font-[family:var(--font-kanit)] font-black uppercase text-sm truncate">{value}</p>
-        </div>
-      </div>
-    </a>
   );
 }

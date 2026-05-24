@@ -1,34 +1,54 @@
 'use client';
-
 import React from 'react';
-import { Megaphone } from 'lucide-react';
+import { Truck } from 'lucide-react';
 
-interface Props {
+export interface AnnouncementStripProps {
   storeName: string;
   message?: string;
   mobileMessage?: string;
 }
 
-const DEFAULT_MESSAGE = 'ส่งฟรีเมื่อช้อปครบ ฿990 · รับประกันคุณภาพทุกชิ้น';
-
 /**
- * BlackWrapp — announcement strip (scaffold).
+ * BlackWrapp — announcement strip.
  *
- * Designer should swap to a marquee / countdown / promo banner that
- * matches the brand vibe.
+ * Near-black ribbon with a single accent-color icon. The gradient
+ * fallback ensures the strip keeps reading even on tenants that only
+ * set `--shop-primary` and skip the gradient override.
  */
-export function AnnouncementStrip({ message, mobileMessage }: Props) {
-  const text = message?.trim() || DEFAULT_MESSAGE;
-  const mobile = mobileMessage?.trim() || text;
+export function AnnouncementStrip({
+  message,
+  mobileMessage,
+}: AnnouncementStripProps) {
+  const desktop = message?.trim() || 'DELIVERED — ส่งฟรีทั่วประเทศ · ห่อพรีเมียม';
+  const mobile = mobileMessage?.trim() || message?.trim() || 'DELIVERED — ส่งฟรี';
 
   return (
     <div
-      className="text-white text-xs sm:text-sm font-[family:var(--font-kanit)] font-bold px-4 py-2 text-center tracking-wide flex items-center justify-center gap-2"
-      style={{ background: 'var(--shop-primary)' }}
+      className="font-[family:var(--font-prompt)] border-b border-white/5"
+      style={{ background: '#0A0A0A', color: '#FAFAFA' }}
     >
-      <Megaphone className="h-4 w-4 shrink-0" aria-hidden />
-      <span className="hidden sm:inline">{text}</span>
-      <span className="sm:hidden">{mobile}</span>
+      <div className="mx-auto flex max-w-7xl items-center justify-center gap-3 px-4 py-2.5">
+        <span
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full"
+          style={{
+            background: 'var(--shop-primary-gradient, var(--shop-primary))',
+            color: '#0A0A0A',
+          }}
+          aria-hidden="true"
+        >
+          <Truck size={11} strokeWidth={2.5} />
+        </span>
+        <p
+          className="hidden sm:block text-[11px] tracking-[0.35em] uppercase font-medium"
+        >
+          {desktop}
+        </p>
+        <p className="sm:hidden text-[10px] tracking-[0.3em] uppercase font-medium">
+          {mobile}
+        </p>
+      </div>
     </div>
   );
 }
+
+export default AnnouncementStrip;

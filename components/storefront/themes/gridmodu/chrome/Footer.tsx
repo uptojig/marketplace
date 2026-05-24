@@ -2,7 +2,15 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Facebook, Instagram, MessageCircle } from 'lucide-react';
+import {
+  Facebook,
+  Instagram,
+  MessageCircle,
+  Mail,
+  Phone,
+  MapPin,
+  ShieldCheck,
+} from 'lucide-react';
 
 interface Props {
   store: {
@@ -37,34 +45,71 @@ const SUPPORT_LABELS: Record<string, string> = {
   terms: 'ข้อกำหนดการใช้งาน',
 };
 
+function joinAddress(parts: Array<string | null | undefined>): string {
+  return parts.map((p) => p?.trim()).filter(Boolean).join(' ');
+}
+
 /**
- * GridModu — bespoke footer (scaffold).
+ * GridModu — Footer. Carbon dark, store address visible, every
+ * service link is a `<Link>`, ANYPAY badge.
  */
-export function Footer({ store, categories = [], availableSupportPages = [] }: Props) {
+export function Footer({
+  store,
+  categories = [],
+  availableSupportPages = [],
+}: Props) {
   const supportLinks = availableSupportPages.filter((s) => SUPPORT_LABELS[s]);
+  const address = joinAddress([
+    store.addressLine1,
+    store.addressLine2,
+    store.subdistrict,
+    store.district,
+    store.province,
+    store.postalCode,
+  ]);
+
   return (
-    <footer
-      className="bg-[var(--shop-bg-soft)] border-t border-[var(--shop-border)] text-[var(--shop-ink)] font-[family:var(--font-prompt)]"
-    >
-      <div className="max-w-7xl mx-auto px-4 py-12 grid gap-8 md:grid-cols-4">
+    <footer className="bg-[#0E0E10] border-t border-[#1F1F23] text-[#E5E7EB] font-[family:var(--font-prompt)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid gap-8 md:grid-cols-4">
+        {/* Brand block */}
         <div>
-          <h3 className="font-[family:var(--font-kanit)] font-bold text-lg mb-2">
-            {store.name}
-          </h3>
+          <div className="flex items-center gap-2 mb-3">
+            <span
+              className="inline-block h-4 w-1"
+              style={{ background: 'var(--shop-accent, #00BFFF)' }}
+              aria-hidden
+            />
+            <h3 className="font-[family:var(--font-kanit)] font-semibold uppercase tracking-wider text-base text-white">
+              {store.name}
+            </h3>
+          </div>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-[#6B7280] font-[family:var(--font-kanit)] font-semibold mb-3">
+            MOTO · PARTS · TUNING
+          </p>
           {store.tagline && (
-            <p className="text-sm text-[var(--shop-ink-muted)]">{store.tagline}</p>
+            <p className="text-xs text-[#9CA3AF] leading-relaxed">
+              {store.tagline}
+            </p>
           )}
         </div>
 
+        {/* Categories */}
         {categories.length > 0 && (
           <div>
-            <h4 className="font-bold mb-2">หมวดหมู่</h4>
-            <ul className="space-y-1 text-sm">
+            <h4 className="font-[family:var(--font-kanit)] font-semibold uppercase tracking-wider text-xs text-white mb-3 flex items-center gap-2">
+              <span
+                className="inline-block h-3 w-1"
+                style={{ background: 'var(--shop-accent, #00BFFF)' }}
+                aria-hidden
+              />
+              หมวดหมู่
+            </h4>
+            <ul className="space-y-1.5">
               {categories.slice(0, 6).map((cat) => (
                 <li key={cat}>
                   <Link
                     href={`/stores/${store.slug}/category?cat=${encodeURIComponent(cat)}`}
-                    className="hover:underline"
+                    className="text-xs text-[#9CA3AF] hover:text-[var(--shop-accent,#00BFFF)] transition-colors tracking-wider uppercase font-[family:var(--font-kanit)] font-semibold"
                   >
                     {cat}
                   </Link>
@@ -74,49 +119,140 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: P
           </div>
         )}
 
+        {/* Support */}
         {supportLinks.length > 0 && (
           <div>
-            <h4 className="font-bold mb-2">บริการลูกค้า</h4>
-            <ul className="space-y-1 text-sm">
+            <h4 className="font-[family:var(--font-kanit)] font-semibold uppercase tracking-wider text-xs text-white mb-3 flex items-center gap-2">
+              <span
+                className="inline-block h-3 w-1"
+                style={{ background: 'var(--shop-accent, #00BFFF)' }}
+                aria-hidden
+              />
+              บริการลูกค้า
+            </h4>
+            <ul className="space-y-1.5">
               {supportLinks.map((slug) => (
                 <li key={slug}>
-                  <Link href={`/stores/${store.slug}/${slug}`} className="hover:underline">
+                  <Link
+                    href={`/stores/${store.slug}/${slug}`}
+                    className="text-xs text-[#9CA3AF] hover:text-[var(--shop-accent,#00BFFF)] transition-colors"
+                  >
                     {SUPPORT_LABELS[slug]}
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href={`/stores/${store.slug}/cart`}
+                  className="text-xs text-[#9CA3AF] hover:text-[var(--shop-accent,#00BFFF)] transition-colors"
+                >
+                  ตะกร้าของคุณ
+                </Link>
+              </li>
             </ul>
           </div>
         )}
 
+        {/* Contact + address */}
         <div>
-          <h4 className="font-bold mb-2">ติดต่อเรา</h4>
-          <ul className="space-y-1 text-sm">
-            {store.contactPhone && <li>โทร: {store.contactPhone}</li>}
-            {store.contactEmail && <li>{store.contactEmail}</li>}
+          <h4 className="font-[family:var(--font-kanit)] font-semibold uppercase tracking-wider text-xs text-white mb-3 flex items-center gap-2">
+            <span
+              className="inline-block h-3 w-1"
+              style={{ background: 'var(--shop-accent, #00BFFF)' }}
+              aria-hidden
+            />
+            ติดต่อเรา
+          </h4>
+          <ul className="space-y-1.5 text-xs text-[#9CA3AF]">
+            {store.contactPhone && (
+              <li className="flex items-start gap-2">
+                <Phone
+                  className="h-3.5 w-3.5 mt-0.5 shrink-0"
+                  style={{ color: 'var(--shop-accent, #00BFFF)' }}
+                  aria-hidden
+                />
+                <span className="tabular-nums">{store.contactPhone}</span>
+              </li>
+            )}
+            {store.contactEmail && (
+              <li className="flex items-start gap-2">
+                <Mail
+                  className="h-3.5 w-3.5 mt-0.5 shrink-0"
+                  style={{ color: 'var(--shop-accent, #00BFFF)' }}
+                  aria-hidden
+                />
+                <span className="break-all">{store.contactEmail}</span>
+              </li>
+            )}
+            {store.lineId && (
+              <li className="flex items-start gap-2">
+                <MessageCircle
+                  className="h-3.5 w-3.5 mt-0.5 shrink-0"
+                  style={{ color: 'var(--shop-accent, #00BFFF)' }}
+                  aria-hidden
+                />
+                <span>LINE: {store.lineId}</span>
+              </li>
+            )}
+            {address && (
+              <li className="flex items-start gap-2">
+                <MapPin
+                  className="h-3.5 w-3.5 mt-0.5 shrink-0"
+                  style={{ color: 'var(--shop-accent, #00BFFF)' }}
+                  aria-hidden
+                />
+                <span className="leading-relaxed">{address}</span>
+              </li>
+            )}
           </ul>
-          <div className="flex gap-3 mt-3">
+
+          <div className="flex gap-2 mt-4">
             {store.facebookUrl && (
-              <a href={store.facebookUrl} aria-label="Facebook" target="_blank" rel="noreferrer">
-                <Facebook className="h-5 w-5" />
+              <a
+                href={store.facebookUrl}
+                aria-label="Facebook"
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-sm border border-[#1F1F23] text-[#9CA3AF] hover:border-[var(--shop-accent,#00BFFF)] hover:text-[var(--shop-accent,#00BFFF)] transition-colors"
+              >
+                <Facebook className="h-4 w-4" />
               </a>
             )}
             {store.instagramUrl && (
-              <a href={store.instagramUrl} aria-label="Instagram" target="_blank" rel="noreferrer">
-                <Instagram className="h-5 w-5" />
+              <a
+                href={store.instagramUrl}
+                aria-label="Instagram"
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-sm border border-[#1F1F23] text-[#9CA3AF] hover:border-[var(--shop-accent,#00BFFF)] hover:text-[var(--shop-accent,#00BFFF)] transition-colors"
+              >
+                <Instagram className="h-4 w-4" />
               </a>
-            )}
-            {store.lineId && (
-              <span aria-label="LINE" title={`LINE: ${store.lineId}`}>
-                <MessageCircle className="h-5 w-5" />
-              </span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="border-t border-[var(--shop-border)] py-4 text-center text-xs text-[var(--shop-ink-muted)]">
-        © {new Date().getFullYear()} {store.name}
+      {/* Bottom bar */}
+      <div className="border-t border-[#1F1F23] bg-[#15151A]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-[10px] tracking-[0.2em] uppercase text-[#6B7280] font-[family:var(--font-kanit)] font-semibold tabular-nums">
+            © {new Date().getFullYear()} {store.name} · ALL RIGHTS RESERVED
+          </p>
+          <div className="flex items-center gap-2">
+            <ShieldCheck
+              className="h-3.5 w-3.5"
+              style={{ color: 'var(--shop-accent, #00BFFF)' }}
+              aria-hidden
+            />
+            <span
+              className="text-[10px] tracking-[0.2em] uppercase font-[family:var(--font-kanit)] font-semibold"
+              style={{ color: 'var(--shop-accent, #00BFFF)' }}
+            >
+              จ่ายผ่าน ANYPAY · ปลอดภัย
+            </span>
+          </div>
+        </div>
       </div>
     </footer>
   );

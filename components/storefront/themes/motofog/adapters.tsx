@@ -1,94 +1,70 @@
 'use client';
 
+/**
+ * MotoFog — scaffold → designer Prop adapters.
+ *
+ * Bridges the storefront scaffold's HeaderProps/HomepageProps/etc.
+ * (lib/templates/types.ts) into the MotoFog theme components. All
+ * pages are bespoke (not shared-block adapters) because the racing
+ * aesthetic needs custom layout & motion.
+ */
+
 import React from 'react';
 import type {
-  HomepageProps as ScaffoldHomepageProps,
   HeaderProps as ScaffoldHeaderProps,
   FooterProps as ScaffoldFooterProps,
   AnnouncementStripProps as ScaffoldStripProps,
-  AboutProps as ScaffoldAboutProps,
-  HelpProps as ScaffoldHelpProps,
+  HomepageProps as ScaffoldHomepageProps,
+  CatalogProps as ScaffoldCatalogProps,
+  ProductDetailProps as ScaffoldProductDetailProps,
+  CartProps as ScaffoldCartProps,
+  CheckoutProps as ScaffoldCheckoutProps,
 } from '@/lib/templates/types';
 
-import { Header as MotofogHeader } from './chrome/Header';
-import { Footer as MotofogFooter } from './chrome/Footer';
-import { AnnouncementStrip as MotofogStrip } from './chrome/AnnouncementStrip';
-import { Homepage as MotofogHomepage } from './pages/Homepage';
-import { About as MotofogAbout } from './pages/About';
-import { Help as MotofogHelp } from './pages/Help';
+import { MotoFogHeader } from './chrome/Header';
+import { MotoFogFooter } from './chrome/Footer';
+import { MotoFogStrip } from './chrome/AnnouncementStrip';
+import { MotoFogHomepage } from './pages/Homepage';
+import { MotoFogCatalog } from './pages/Catalog';
+import { MotoFogProductDetail } from './pages/ProductDetail';
+import { MotoFogCart } from './pages/Cart';
+import { MotoFogCheckout } from './pages/Checkout';
 
-export function MotofogHeaderAdapter(props: ScaffoldHeaderProps) {
-  return (
-    <MotofogHeader
-      storeSlug={props.storeSlug}
-      storeName={props.storeName}
-      storeLogoUrl={props.storeLogoUrl}
-      categories={props.categories ?? []}
-    />
-  );
+export function MotoFogHeaderAdapter(props: ScaffoldHeaderProps) {
+  return <MotoFogHeader {...props} />;
 }
 
-export function MotofogFooterAdapter(props: ScaffoldFooterProps) {
-  return (
-    <MotofogFooter
-      store={props.store}
-      categories={props.categories ?? []}
-      availableSupportPages={props.availableSupportPages ?? []}
-    />
-  );
+export function MotoFogFooterAdapter(props: ScaffoldFooterProps) {
+  return <MotoFogFooter {...props} />;
 }
 
-export function MotofogStripAdapter(props: ScaffoldStripProps) {
-  return (
-    <MotofogStrip
-      storeName={props.storeName}
-      message={props.message}
-      mobileMessage={props.mobileMessage}
-    />
-  );
+export function MotoFogStripAdapter(props: ScaffoldStripProps) {
+  return <MotoFogStrip {...props} />;
 }
 
-export function MotofogHomepageAdapter(props: ScaffoldHomepageProps) {
-  return (
-    <MotofogHomepage
-      store={{
-        id: props.store.id,
-        name: props.store.name,
-        slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
-      }}
-      products={props.products.map((p) => ({
-        id: p.id,
-        title: p.title,
-        priceTHB: p.priceTHB,
-        compareAtPriceTHB: p.compareAtPriceTHB ?? null,
-        imageUrl: p.imageUrl ?? null,
-        categoryName: p.categoryName ?? null,
-      }))}
-      categories={props.categories}
-      landingContent={props.landingContent ?? null}
-    />
-  );
+export function MotoFogHomepageAdapter(props: ScaffoldHomepageProps) {
+  return <MotoFogHomepage {...props} />;
 }
 
-export function MotofogAboutAdapter(props: ScaffoldAboutProps) {
-  return <MotofogAbout store={props.store} />;
+export function MotoFogCatalogAdapter(props: ScaffoldCatalogProps) {
+  return <MotoFogCatalog {...props} />;
 }
 
-export function MotofogHelpAdapter(props: ScaffoldHelpProps) {
-  return (
-    <MotofogHelp
-      store={props.store}
-      schemaPage={props.schemaPage}
-      pageSlug={props.pageSlug}
-    />
-  );
+export function MotoFogProductDetailAdapter(props: ScaffoldProductDetailProps) {
+  return <MotoFogProductDetail {...props} />;
 }
 
-// Page re-exports (default exports — used directly in registry)
+export function MotoFogCartAdapter(props: ScaffoldCartProps) {
+  return <MotoFogCart {...props} />;
+}
+
+export function MotoFogCheckoutAdapter(props: ScaffoldCheckoutProps) {
+  return <MotoFogCheckout {...props} />;
+}
+
+// Per-route page re-exports (matching trailcraft-outdoors convention).
+export { default as motofog_Homepage } from './pages/Homepage';
 export { default as motofog_Catalog } from './pages/Catalog';
 export { default as motofog_ProductDetail } from './pages/ProductDetail';
 export { default as motofog_Cart } from './pages/Cart';
 export { default as motofog_Checkout } from './pages/Checkout';
-export { default as motofog_Contact } from './pages/Contact';
-export { MotofogPolicyShell } from './PolicyShell';

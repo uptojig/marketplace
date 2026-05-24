@@ -10,24 +10,43 @@ interface Props {
 /**
  * Bespoke policy / info page wrapper for Casethep. Used by
  * /shipping /returns /privacy /terms when wrapInFamilyShell()
- * matches the neon family.
+ * matches the casethep theme. Clean, minimal — cream backdrop,
+ * rounded card, primary CSS-var accent for headings + links.
  */
 export function PolicyShell({ title, children }: Props) {
   return (
-    <div className="bg-[#fafafa] text-black font-[family:var(--font-prompt)]">
-      <section className="bg-blue-600 border-b-4 border-black px-4 py-12 sm:py-16">
+    <div
+      className="font-[family:var(--font-prompt)]"
+      style={{ background: 'var(--shop-bg, #FBF8F3)', color: 'var(--shop-ink, #1A1A1F)' }}
+    >
+      <section className="px-4 pt-12 pb-8 sm:pt-16 sm:pb-10">
         <div className="max-w-5xl mx-auto">
-          <div className="inline-block bg-yellow-400 border-4 border-black px-4 py-1 text-xs font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-6">
-            Policy
-          </div>
-          <h1 className="font-[family:var(--font-kanit)] text-4xl sm:text-6xl font-black uppercase italic tracking-tighter text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">
+          <span
+            className="inline-block rounded-full px-4 py-1.5 text-[11px] font-semibold tracking-wide mb-5"
+            style={{
+              background: 'var(--shop-primary, #FF5A6A)',
+              color: '#fff',
+            }}
+          >
+            Casethep · นโยบาย
+          </span>
+          <h1 className="font-[family:var(--font-kanit)] text-3xl sm:text-5xl font-semibold tracking-tight">
             {title}
           </h1>
         </div>
       </section>
 
-      <section className="px-4 py-12">
-        <article className="max-w-3xl mx-auto bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-10 prose prose-sm sm:prose-base prose-headings:font-[family:var(--font-kanit)] prose-headings:uppercase prose-headings:italic prose-headings:tracking-tight prose-headings:font-black prose-h2:text-pink-600 prose-h3:text-blue-600 prose-strong:text-black prose-a:text-pink-600 prose-a:font-bold prose-a:underline prose-a:decoration-4 prose-a:underline-offset-4 hover:prose-a:text-yellow-600 prose-li:marker:text-pink-500">
+      <section className="px-4 pb-16">
+        <article
+          className="max-w-3xl mx-auto bg-white rounded-2xl p-6 sm:p-10 prose prose-sm sm:prose-base
+            prose-headings:font-[family:var(--font-kanit)] prose-headings:font-semibold prose-headings:tracking-tight
+            prose-h2:text-[color:var(--shop-primary,#FF5A6A)]
+            prose-h3:text-[color:var(--shop-ink,#1A1A1F)]
+            prose-a:text-[color:var(--shop-primary,#FF5A6A)] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+            prose-strong:text-[color:var(--shop-ink,#1A1A1F)]
+            prose-li:marker:text-[color:var(--shop-primary,#FF5A6A)]"
+          style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04)' }}
+        >
           {children}
         </article>
       </section>

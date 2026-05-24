@@ -1,124 +1,153 @@
 'use client';
 
+/**
+ * OmniPack — sticky storefront header.
+ *
+ * Kraft-card surface, rounded-full search pill, Kanit logo + Prompt nav.
+ * Cart count is read from the per-store zustand selector so the badge
+ * reflects only THIS store's lines.
+ */
+
 import React from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Search, Menu } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, PackageOpen } from 'lucide-react';
+import type { HeaderProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
 
-interface Props {
-  storeSlug: string;
-  storeName: string;
-  storeLogoUrl?: string | null;
-  categories?: string[];
-}
-
-/**
- * OmniPack — bespoke header (scaffold).
- *
- * Replace with the designer's final layout — search field, mega-menu,
- * category chips, mobile sheet, etc. Cart count + search action paths
- * are wired so the scaffold is shoppable on day 1.
- */
-export function Header({ storeSlug, storeName, storeLogoUrl, categories = [] }: Props) {
-  const count = useCart((s) => s.lines.filter((line) => line.storeSlug === storeSlug).length);
-  const initial = storeName.trim().slice(0, 1).toUpperCase();
-  const visibleCats = categories.slice(0, 6);
+export function OmnipackHeader(props: HeaderProps) {
+  const { storeSlug, storeName, storeLogoUrl, categories } = props;
+  const cartCount = useCart((s) => s.countForStore(storeSlug));
+  const homeUrl = `/stores/${storeSlug}`;
+  const shopUrl = `/stores/${storeSlug}/category`;
+  const cartUrl = `/stores/${storeSlug}/cart`;
+  const cats = (categories ?? []).slice(0, 5);
 
   return (
     <header
-      className="bg-[var(--shop-bg)] border-b border-[var(--shop-border)] text-[var(--shop-ink)]"
+      className="sticky top-0 z-40 border-b font-[family:var(--font-prompt)]"
+      style={{
+        backgroundColor: 'var(--shop-card)',
+        borderColor: 'var(--shop-border)',
+      }}
     >
-      <div className="max-w-7xl mx-auto flex items-center gap-4 px-4 py-3">
-        <Link
-          href={`/stores/${storeSlug}/`}
-          className="flex items-center gap-2 shrink-0"
-        >
-          {storeLogoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={storeLogoUrl}
-              alt={storeName}
-              className="h-9 w-9 rounded object-cover"
-            />
-          ) : (
-            <span
-              className="h-9 w-9 rounded grid place-items-center font-[family:var(--font-kanit)] font-black text-white"
-              style={{ background: 'var(--shop-primary)' }}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-4 h-20">
+          {/* Mobile menu trigger */}
+          <button
+            className="lg:hidden p-2 -ml-2 rounded-md hover:bg-[var(--shop-bg-soft,var(--shop-bg))]"
+            style={{ color: 'var(--shop-ink)' }}
+            aria-label="Open menu"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+
+          {/* Logo */}
+          <Link href={homeUrl} className="flex items-center gap-3 shrink-0">
+            {storeLogoUrl ? (
+              <img
+                src={storeLogoUrl}
+                alt={storeName}
+                className="h-10 w-10 object-contain rounded-md"
+              />
+            ) : (
+              <div
+                className="h-10 w-10 rounded-md flex items-center justify-center text-white"
+                style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
+              >
+                <PackageOpen className="w-5 h-5" />
+              </div>
+            )}
+            <div className="hidden sm:flex flex-col leading-tight">
+              <span
+                className="font-[family:var(--font-kanit)] font-medium text-lg tracking-tight"
+                style={{ color: 'var(--shop-ink)' }}
+              >
+                {storeName}
+              </span>
+              <span
+                className="text-[10px] font-medium tracking-wide"
+                style={{ color: 'var(--shop-ink-muted)' }}
+              >
+                บรรจุภัณฑ์สำเร็จรูป · ส่งทันที
+              </span>
+            </div>
+          </Link>
+
+          {/* Search pill */}
+          <div className="hidden md:flex flex-1 max-w-md mx-4">
+            <label
+              className="flex items-center gap-2 w-full rounded-full border px-4 py-2"
+              style={{
+                backgroundColor: 'var(--shop-bg)',
+                borderColor: 'var(--shop-border)',
+              }}
             >
-              {initial}
-            </span>
-          )}
-          <span className="font-[family:var(--font-kanit)] font-bold text-lg hidden sm:block">
-            {storeName}
-          </span>
-        </Link>
+              <Search className="w-4 h-4" style={{ color: 'var(--shop-ink-muted)' }} />
+              <input
+                type="search"
+                placeholder="ค้นหากล่อง · ซองไปรษณีย์ · ขนาด..."
+                className="flex-1 bg-transparent outline-none text-sm font-[family:var(--font-prompt)]"
+                style={{ color: 'var(--shop-ink)' }}
+              />
+            </label>
+          </div>
 
-        <form
-          action={`/stores/${storeSlug}/search`}
-          method="get"
-          className="flex-1 max-w-xl"
-          role="search"
-        >
-          <label className="relative block">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--shop-ink-muted)]"
-              aria-hidden
-            />
-            <input
-              type="search"
-              name="q"
-              placeholder="ค้นหาสินค้า..."
-              aria-label="ค้นหาสินค้า"
-              className="w-full pl-9 pr-3 py-2 rounded border border-[var(--shop-border)] bg-[var(--shop-bg-soft)] text-[var(--shop-ink)] focus:outline-none focus:ring-2"
-              style={{ accentColor: 'var(--shop-primary)' }}
-            />
-          </label>
-        </form>
-
-        <Link
-          href={`/stores/${storeSlug}/cart`}
-          className="relative inline-flex items-center justify-center p-2 rounded hover:bg-[var(--shop-muted)]"
-          aria-label="ตะกร้าสินค้า"
-        >
-          <ShoppingCart className="h-5 w-5" />
-          {count > 0 && (
-            <span
-              className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold grid place-items-center text-white"
-              style={{ background: 'var(--shop-primary)' }}
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-6 ml-auto">
+            <Link
+              href={shopUrl}
+              className="text-sm font-medium hover:opacity-80"
+              style={{ color: 'var(--shop-ink)' }}
             >
-              {count}
-            </span>
-          )}
-        </Link>
-
-        <button
-          type="button"
-          aria-label="เมนู"
-          className="md:hidden p-2 rounded hover:bg-[var(--shop-muted)]"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-      </div>
-
-      {visibleCats.length > 0 && (
-        <nav
-          aria-label="หมวดหมู่"
-          className="hidden md:block border-t border-[var(--shop-border)] bg-[var(--shop-bg-soft)]"
-        >
-          <ul className="max-w-7xl mx-auto flex gap-2 px-4 py-2 overflow-x-auto">
-            {visibleCats.map((cat) => (
-              <li key={cat}>
-                <Link
-                  href={`/stores/${storeSlug}/category?cat=${encodeURIComponent(cat)}`}
-                  className="inline-block whitespace-nowrap px-3 py-1 rounded-full border border-[var(--shop-border)] text-sm hover:bg-[var(--shop-muted)]"
-                >
-                  {cat}
-                </Link>
-              </li>
+              สินค้าทั้งหมด
+            </Link>
+            {cats.map((cat) => (
+              <Link
+                key={cat}
+                href={`${shopUrl}?cat=${encodeURIComponent(cat)}`}
+                className="text-sm font-medium hover:opacity-80"
+                style={{ color: 'var(--shop-ink-muted)' }}
+              >
+                {cat}
+              </Link>
             ))}
-          </ul>
-        </nav>
-      )}
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 ml-auto lg:ml-0">
+            <button
+              className="md:hidden p-2 rounded-full hover:bg-[var(--shop-bg-soft,var(--shop-bg))]"
+              style={{ color: 'var(--shop-ink)' }}
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+            <button
+              className="hidden sm:flex p-2 rounded-full hover:bg-[var(--shop-bg-soft,var(--shop-bg))]"
+              style={{ color: 'var(--shop-ink)' }}
+              aria-label="Account"
+            >
+              <User className="w-5 h-5" />
+            </button>
+            <Link
+              href={cartUrl}
+              className="relative p-2 rounded-full hover:bg-[var(--shop-bg-soft,var(--shop-bg))]"
+              style={{ color: 'var(--shop-ink)' }}
+              aria-label="Cart"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span
+                  className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--shop-primary)' }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+      </div>
     </header>
   );
 }
