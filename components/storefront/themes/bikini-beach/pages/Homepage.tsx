@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   IconArrowRight,
   IconPhoto,
@@ -289,7 +289,13 @@ export function Homepage({
       </section>
 
       {/* BESTSELLERS */}
-      <section className="bk-section">
+      <BikiniPaginatedGrid
+        products={featuredProducts}
+        shopUrl={shopUrl}
+        onQuickAdd={onQuickAdd}
+      />
+      {/* BESTSELLERS (legacy single-page render, unreachable) */}
+      <section className="bk-section" style={{ display: 'none' }}>
         <div className="bk-container">
           <div className="bk-section-head">
             <div>
@@ -484,3 +490,137 @@ export function Homepage({
 }
 
 export default Homepage;
+
+/**
+ * Client-side paginated grid for the BESTSELLERS section.
+ *
+ * 8 products per page with [‹ 1 / N ›] controls. Replaces the old
+ * `featuredProducts.slice(0, 8)` cap so buyers can flip through every
+ * product without leaving the homepage. Catalog page handles full
+ * filtering / sort; this is the curated browse-on-homepage view.
+ */
+const PAGE_SIZE_BIKINI_HOME = 8;
+
+function BikiniPaginatedGrid({
+  products,
+  shopUrl,
+  onQuickAdd,
+}: {
+  products: Product[];
+  shopUrl: string;
+  onQuickAdd?: (id: string) => void;
+}) {
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE_BIKINI_HOME));
+  const start = (page - 1) * PAGE_SIZE_BIKINI_HOME;
+  const slice = products.slice(start, start + PAGE_SIZE_BIKINI_HOME);
+
+  return (
+    <section className="bk-section">
+      <div className="bk-container">
+        <div className="bk-section-head">
+          <div>
+            <span className="bk-kicker">★ Customer Favorites</span>
+            <h2>
+              เบสต์เซลเลอร์{' '}
+              <em className="bk-grad-coral" style={{ fontStyle: 'normal' }}>
+                ขายดีที่สุด
+              </em>
+            </h2>
+          </div>
+          <a className="bk-btn bk-btn-ghost bk-btn-sm" href={shopUrl}>
+            ดูทั้งหมด <IconArrowRight size={14} />
+          </a>
+        </div>
+        <div className="bk-products-grid">
+          {slice.map((p) => (
+            <a key={p.id} className="bk-pcard" href={`/shop/${p.slug}`}>
+              <div className={`bk-pcard-img ${p.bgVariant ?? 'bg-rose'}`}>
+                {p.tag && (
+                  <div className="bk-pcard-tags">
+                    <span className={`bk-tag bk-tag-${p.tag}`}>
+                      {p.tagLabel ?? p.tag.toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="bk-pcard-fav"
+                  aria-label="Add to wishlist"
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  <IconHeart size={16} />
+                </button>
+                {p.illustration}
+                <button
+                  type="button"
+                  className="bk-pcard-quick"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onQuickAdd?.(p.id);
+                  }}
+                >
+                  <IconEye size={14} /> ดูสินค้า
+                </button>
+              </div>
+              <div className="bk-pcard-info">
+                <div className="bk-pcard-name">{p.name}</div>
+                {p.desc && <div className="bk-pcard-desc">{p.desc}</div>}
+                <div className="bk-pcard-foot">
+                  <div>
+                    <span className="bk-price">฿{p.price.toLocaleString()}</span>
+                    {p.was && <span className="bk-was">฿{p.was.toLocaleString()}</span>}
+                  </div>
+                  {p.rating && (
+                    <div className="bk-meta">
+                      <IconStarFilled size={11} className="star" />
+                      {p.rating} {p.reviewCount && `(${p.reviewCount})`}
+                    </div>
+                  )}
+                </div>
+                {p.colors && (
+                  <div className="bk-pcard-colors">
+                    {p.colors.map((c, i) => (
+                      <div key={i} className="bk-pcard-color" style={{ background: c }} />
+                    ))}
+                    {p.extraColorCount && (
+                      <div className="bk-pcard-color more">+{p.extraColorCount}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+        {totalPages > 1 && (
+          <nav
+            aria-label="หน้า"
+            className="mt-8 flex items-center justify-center gap-3"
+          >
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="bk-btn bk-btn-ghost bk-btn-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              ‹ ก่อนหน้า
+            </button>
+            <span className="text-sm font-bold tabular-nums">
+              {page} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="bk-btn bk-btn-ghost bk-btn-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              ถัดไป ›
+            </button>
+          </nav>
+        )}
+      </div>
+    </section>
+  );
+}

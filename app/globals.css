@@ -1634,6 +1634,14 @@
 .theme-bikini-beach .bk-pcard { background: white; border-radius: 20px; overflow: hidden; cursor: pointer; transition: all 0.3s; position: relative; display: block; text-align: left; border: 0; padding: 0; }
 .theme-bikini-beach .bk-pcard:hover { transform: translateY(-6px); box-shadow: 0 16px 32px -12px rgba(236, 72, 153, 0.2); }
 .theme-bikini-beach .bk-pcard-img { aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; padding: 30px; position: relative; background: var(--bikini-bg-rose); }
+/* Boost real product photo saturation — CJ-sourced product images often
+   land low-saturation; this lifts them so a beach store actually feels
+   beach-y. Only applied to <img> inside product cards so the SVG
+   illustrations (already colored) are not affected. */
+.theme-bikini-beach .bk-pcard-img img,
+.theme-bikini-beach .bk-pcard img {
+  filter: saturate(1.35) contrast(1.05);
+}
 .theme-bikini-beach .bk-pcard-img.bg-rose { background: var(--bikini-bg-rose); }
 .theme-bikini-beach .bk-pcard-img.bg-sky { background: var(--bikini-bg-sky); }
 .theme-bikini-beach .bk-pcard-img.bg-yellow { background: var(--bikini-bg-yellow); }
