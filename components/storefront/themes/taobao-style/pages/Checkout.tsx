@@ -48,8 +48,8 @@ export function Checkout({ store }: CheckoutProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const [shipping, setShipping] = useState<'std' | 'express' | 'cod'>('std');
-  const [payment, setPayment] = useState<'promptpay' | 'card' | 'cod' | 'truemoney'>('promptpay');
+  const [shipping, setShipping] = useState<'std' | 'express'>('std');
+  const [payment, setPayment] = useState<'anypay'>('anypay');
 
   const totalSeconds = flashDeadlineSeconds(store.slug);
   const [remaining, setRemaining] = useState(totalSeconds);
@@ -75,7 +75,6 @@ export function Checkout({ store }: CheckoutProps) {
   const shippingTable: Record<typeof shipping, { label: string; sub: string; fee: number }> = {
     std: { label: 'ส่งมาตรฐาน', sub: '2-3 วันทำการ · เคอรี่ / Flash', fee: subtotal >= 990 ? 0 : 50 },
     express: { label: 'ส่งด่วน', sub: 'ในวันเดียว · เฉพาะกรุงเทพฯ', fee: 120 },
-    cod: { label: 'เก็บปลายทาง (COD)', sub: 'จ่ายตอนรับของ', fee: subtotal >= 990 ? 0 : 70 },
   };
   const shippingFee = shippingTable[shipping].fee;
   const grandTotal = subtotal + shippingFee;
@@ -192,7 +191,7 @@ export function Checkout({ store }: CheckoutProps) {
                 <Truck size={16} /> วิธีจัดส่ง
               </header>
               <div className="p-4 space-y-2">
-                {(['std', 'express', 'cod'] as const).map((s) => {
+                {(['std', 'express'] as const).map((s) => {
                   const item = shippingTable[s];
                   const isActive = shipping === s;
                   return (
@@ -253,10 +252,7 @@ export function Checkout({ store }: CheckoutProps) {
               <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {(
                   [
-                    { id: 'promptpay', l: 'พร้อมเพย์ / QR Code', Icon: Wallet },
-                    { id: 'card', l: 'บัตรเครดิต / เดบิต', Icon: CreditCard },
-                    { id: 'truemoney', l: 'TrueMoney Wallet', Icon: Wallet },
-                    { id: 'cod', l: 'เก็บเงินปลายทาง (COD)', Icon: Truck },
+                    { id: 'anypay', l: 'ANYPAY · พร้อมเพย์ / บัตร / TrueMoney', Icon: Wallet },
                   ] as const
                 ).map(({ id, l, Icon }) => {
                   const isActive = payment === id;

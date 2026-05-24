@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Link from 'next/link';
 import { ShieldCheck, Truck, Headphones, CreditCard, Flame } from 'lucide-react';
 
 export interface FooterProps {
@@ -10,6 +11,13 @@ export interface FooterProps {
     contactEmail?: string | null;
     contactPhone?: string | null;
     lineId?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    subdistrict?: string | null;
+    district?: string | null;
+    province?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
   };
   categories: string[];
 }
@@ -29,7 +37,7 @@ export function Footer({ store, categories }: FooterProps) {
     { Icon: ShieldCheck, title: 'รับประกันของแท้', sub: 'ทุกออเดอร์ตรวจก่อนส่ง 100%' },
     { Icon: Truck, title: 'ส่งฟรีทั่วประเทศ', sub: 'เมื่อสั่งครบ ฿199.-' },
     { Icon: Headphones, title: 'แชทตอบไว 24 ชม.', sub: 'มีทีมงานคนไทยดูแล' },
-    { Icon: CreditCard, title: 'จ่ายปลายทาง (COD)', sub: 'พร้อมเพย์ · บัตรเครดิต · ผ่อน 0%' },
+    { Icon: CreditCard, title: 'จ่ายผ่าน ANYPAY', sub: 'พร้อมเพย์ · บัตรเครดิต · TrueMoney' },
   ];
 
   return (
@@ -140,11 +148,26 @@ export function Footer({ store, categories }: FooterProps) {
               className="space-y-2 text-xs font-[family:var(--font-prompt)]"
               style={{ color: 'var(--shop-ink-muted)' }}
             >
-              <li>วิธีการสั่งซื้อ</li>
-              <li>การจัดส่ง · ค่าส่ง</li>
-              <li>การคืนสินค้า · คืนเงิน</li>
-              <li>เก็บเงินปลายทาง (COD)</li>
-              <li>รับประกันของแท้</li>
+              <li>
+                <Link href={`/stores/${store.slug}/help`} className="hover:underline">
+                  วิธีการสั่งซื้อ
+                </Link>
+              </li>
+              <li>
+                <Link href={`/stores/${store.slug}/shipping`} className="hover:underline">
+                  การจัดส่ง · ค่าส่ง
+                </Link>
+              </li>
+              <li>
+                <Link href={`/stores/${store.slug}/returns`} className="hover:underline">
+                  การคืนสินค้า · คืนเงิน
+                </Link>
+              </li>
+              <li>
+                <Link href={`/stores/${store.slug}/help#warranty`} className="hover:underline">
+                  รับประกันของแท้
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -163,6 +186,21 @@ export function Footer({ store, categories }: FooterProps) {
               {store.contactPhone && <li>โทร: {store.contactPhone}</li>}
               {store.contactEmail && <li>อีเมล: {store.contactEmail}</li>}
               {store.lineId && <li>LINE: @{store.lineId}</li>}
+              {(store.addressLine1 || store.subdistrict || store.district || store.province) && (
+                <li className="pt-1">
+                  ที่อยู่:&nbsp;
+                  {[
+                    store.addressLine1,
+                    store.addressLine2,
+                    store.subdistrict,
+                    store.district,
+                    store.province,
+                    store.postalCode,
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                </li>
+              )}
               <li>ตอบกลับใน 1-2 ชั่วโมง · 09:00 - 22:00</li>
             </ul>
           </div>

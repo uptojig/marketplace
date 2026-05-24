@@ -59,6 +59,13 @@ export function TaobaoStyleFooterAdapter(props: ScaffoldFooterProps) {
         contactEmail: props.store.contactEmail ?? null,
         contactPhone: props.store.contactPhone ?? null,
         lineId: props.store.lineId ?? null,
+        addressLine1: props.store.addressLine1 ?? null,
+        addressLine2: props.store.addressLine2 ?? null,
+        subdistrict: props.store.subdistrict ?? null,
+        district: props.store.district ?? null,
+        province: props.store.province ?? null,
+        postalCode: props.store.postalCode ?? null,
+        country: props.store.country ?? null,
       }}
       categories={props.categories ?? []}
     />
