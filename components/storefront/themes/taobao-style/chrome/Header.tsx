@@ -81,7 +81,7 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
 
           {/* Search bar — Taobao classic thick orange border */}
           <div
-            className="flex-1 flex items-stretch rounded-md overflow-hidden border-2 max-w-2xl"
+            className="flex-1 flex items-stretch rounded-full overflow-hidden border-2 max-w-2xl"
             style={{ borderColor: 'var(--shop-primary)' }}
           >
             <input

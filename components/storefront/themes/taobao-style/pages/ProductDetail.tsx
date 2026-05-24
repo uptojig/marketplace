@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Star,
   Flame,
@@ -74,6 +75,7 @@ export interface ProductDetailProps {
  */
 export function ProductDetail({ store, product, related }: ProductDetailProps) {
   const add = useCart((s) => s.add);
+  const router = useRouter();
 
   const gallery = useMemo(() => {
     const main = product.imageUrl ? [product.imageUrl] : [];
@@ -487,7 +489,10 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
                 <ShoppingCart size={16} /> หยิบใส่ตะกร้า
               </button>
               <button
-                onClick={handleAdd}
+                onClick={() => {
+                  handleAdd();
+                  router.push(`/stores/${store.slug}/checkout`);
+                }}
                 className="flex-1 min-w-[180px] py-3 rounded-md text-sm font-[family:var(--font-kanit)] font-black uppercase transition-opacity hover:opacity-90"
                 style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))', color: '#ffffff' }}
               >
