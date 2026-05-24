@@ -91,12 +91,7 @@ export function Footer({
   navColumns = DEFAULT_NAV,
   paymentMethods = DEFAULT_PAYMENT,
   socialLinks = DEFAULT_SOCIAL,
-  contact = {
-    line: '@bikini551',
-    email: 'hello@bikini551.com',
-    phone: '02-456-7890',
-    address: 'กรุงเทพมหานคร 10110',
-  },
+  contact = {},
   showAppButtons = true,
   copyright,
   bottomLinks = [],

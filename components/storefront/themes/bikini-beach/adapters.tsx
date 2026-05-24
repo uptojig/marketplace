@@ -136,12 +136,23 @@ export function BikiniFooterAdapter(props: ScaffoldFooterProps) {
       storeName={props.store.name}
       tagline={props.store.tagline ?? props.store.description ?? undefined}
       navColumns={navColumns}
-      paymentMethods={['VISA', 'MC', 'PROMPTPAY', 'COD']}
+      paymentMethods={['VISA', 'MC', 'JCB', 'PROMPTPAY']}
       socialLinks={socialLinks}
       contact={{
         line: props.store.lineId ?? undefined,
         email: props.store.contactEmail ?? undefined,
         phone: props.store.contactPhone ?? undefined,
+        address:
+          [
+            props.store.addressLine1,
+            props.store.addressLine2,
+            props.store.subdistrict,
+            props.store.district,
+            props.store.province,
+            props.store.postalCode,
+          ]
+            .filter(Boolean)
+            .join(' ') || undefined,
       }}
       bottomLinks={[
         { label: 'Privacy', href: '/privacy' },
