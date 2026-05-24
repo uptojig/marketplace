@@ -1,34 +1,46 @@
 'use client';
 
-import React from 'react';
-import { Megaphone } from 'lucide-react';
-
-interface Props {
-  storeName: string;
-  message?: string;
-  mobileMessage?: string;
-}
-
-const DEFAULT_MESSAGE = 'ส่งฟรีเมื่อช้อปครบ ฿990 · รับประกันคุณภาพทุกชิ้น';
-
 /**
- * MotoFog — announcement strip (scaffold).
+ * MotoFog — racing announcement strip.
  *
- * Designer should swap to a marquee / countdown / promo banner that
- * matches the brand vibe.
+ * High-contrast accent gradient (uses --shop-primary-gradient with a
+ * --shop-primary fallback) and angular skewed edges to read like a
+ * racing flag / pit-banner.
  */
-export function AnnouncementStrip({ message, mobileMessage }: Props) {
-  const text = message?.trim() || DEFAULT_MESSAGE;
-  const mobile = mobileMessage?.trim() || text;
 
+import React from 'react';
+import { Zap } from 'lucide-react';
+import type { AnnouncementStripProps } from '@/lib/templates/types';
+
+export function MotoFogStrip(_props: AnnouncementStripProps) {
   return (
     <div
-      className="text-white text-xs sm:text-sm font-[family:var(--font-kanit)] font-bold px-4 py-2 text-center tracking-wide flex items-center justify-center gap-2"
-      style={{ background: 'var(--shop-primary)' }}
+      className="relative w-full overflow-hidden font-[family:var(--font-prompt)] text-[11px] sm:text-xs tracking-widest uppercase font-bold py-2 text-black"
+      style={{
+        background:
+          'var(--shop-primary-gradient, var(--shop-primary, #FF6B35))',
+      }}
     >
-      <Megaphone className="h-4 w-4 shrink-0" aria-hidden />
-      <span className="hidden sm:inline">{text}</span>
-      <span className="sm:hidden">{mobile}</span>
+      {/* Speed-line stripes — pure CSS, no motion lib needed. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-25"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(110deg, transparent 0 14px, rgba(0,0,0,0.35) 14px 16px)',
+        }}
+      />
+
+      <div className="relative max-w-7xl mx-auto px-4 flex items-center justify-center gap-3">
+        <Zap className="h-3.5 w-3.5 shrink-0" />
+        <span className="hidden sm:inline">
+          ส่งฟรีทั่วประเทศ · สั่งครบ ฿1,990 · จ่ายผ่าน AnyPay เท่านั้น
+        </span>
+        <span className="sm:hidden">ส่งฟรี ฿1,990+ · AnyPay</span>
+        <Zap className="h-3.5 w-3.5 shrink-0" />
+      </div>
     </div>
   );
 }
+
+export default MotoFogStrip;

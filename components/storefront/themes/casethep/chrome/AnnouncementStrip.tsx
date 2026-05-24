@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Sparkles } from 'lucide-react';
 
 interface Props {
   storeName: string;
@@ -9,19 +8,26 @@ interface Props {
   mobileMessage?: string;
 }
 
-const DEFAULT_DESKTOP = 'ฉลองเปิดร้านใหม่! โค้ดลด 50% ทุกรายการ ช้อปเลย!';
-const DEFAULT_MOBILE = 'โค้ดลด 50% ทุกรายการ';
+const DEFAULT_DESKTOP = 'จัดส่งฟรีทั่วประเทศ เมื่อช้อปครบ ฿990 · ส่งภายใน 1-3 วัน';
+const DEFAULT_MOBILE = 'ส่งฟรีเมื่อช้อปครบ ฿990';
 
+/**
+ * Casethep accent gradient strip. Falls back to flat --shop-primary
+ * when the per-store gradient var isn't set (PR #153 / #154 paint).
+ */
 export function AnnouncementStrip({ message, mobileMessage }: Props) {
   const desktop = message?.trim() || DEFAULT_DESKTOP;
   const mobile = mobileMessage?.trim() || message?.trim() || DEFAULT_MOBILE;
 
   return (
-    <div className="bg-yellow-400 text-black py-2 px-4 text-center text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 border-b-4 border-black font-[family:var(--font-kanit)]">
-      <Sparkles className="w-4 h-4 shrink-0" />
+    <div
+      className="text-white text-center text-[11px] sm:text-xs py-2 px-4 tracking-wide font-[family:var(--font-prompt)] font-medium"
+      style={{
+        background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))',
+      }}
+    >
       <span className="hidden sm:inline">{desktop}</span>
       <span className="sm:hidden">{mobile}</span>
-      <Sparkles className="w-4 h-4 shrink-0" />
     </div>
   );
 }

@@ -2,8 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Zap, Sparkles, Star, ChevronRight } from 'lucide-react';
-import { useCart } from '@/lib/store/cart';
+import { ChevronRight, Smartphone, Star, Sparkles } from 'lucide-react';
 import { formatTHB } from '@/lib/utils';
 
 interface Product {
@@ -35,93 +34,148 @@ interface Props {
   landingContent?: LandingContent | null;
 }
 
-const DEFAULT_HEADLINE = 'สว่างไสว\nทุกปาร์ตี้';
-const DEFAULT_SUB =
-  'รวมไอเท็มสายปาร์ตี้ แสงนีออน และของแต่งคอนเสิร์ต ให้คุณโดดเด่นที่สุดในงาน ดึงดูดทุกสายตา';
-const DEFAULT_CTA = 'ช้อปเลย';
+const DEFAULT_HEADLINE = 'เคสมือถือ\nสไตล์คุณ';
+const DEFAULT_SUB = 'คัดสรรเคสคุณภาพ ลายสวย สีสันโดน — รองรับ iPhone และ Samsung ทุกรุ่นยอดนิยม';
+const DEFAULT_CTA = 'ช้อปคอลเลกชัน';
 
-const CATEGORY_ICONS = [Zap, Sparkles, Star] as const;
+const DEVICES = [
+  { id: 'iphone-15', label: 'iPhone 15 / Pro', sub: 'รุ่นใหม่ล่าสุด' },
+  { id: 'iphone-14', label: 'iPhone 14 / Pro', sub: 'ขายดีตลอดกาล' },
+  { id: 'iphone-13', label: 'iPhone 13', sub: 'ราคาคุ้ม' },
+  { id: 'samsung-s24', label: 'Samsung S24', sub: 'รุ่นเรือธง' },
+  { id: 'samsung-s23', label: 'Samsung S23', sub: 'พร้อมส่ง' },
+  { id: 'all', label: 'รุ่นอื่นๆ', sub: 'ดูทั้งหมด' },
+];
+
+// Trending color swatches — purely decorative, real swatch logic
+// belongs on the PDP / variant picker. These are CSS gradient stops
+// so they render without external data.
+const TRENDING_COLORS = [
+  { name: 'Coral Pink', hex: '#FF8597' },
+  { name: 'Cream', hex: '#F4ECDC' },
+  { name: 'Sage Green', hex: '#A8C5A2' },
+  { name: 'Sky Blue', hex: '#A7C8E5' },
+  { name: 'Lavender', hex: '#C6B4D8' },
+  { name: 'Midnight', hex: '#22232A' },
+  { name: 'Mocha', hex: '#8A6F5C' },
+  { name: 'Sand', hex: '#E2C9A0' },
+];
+
+const REVIEWS = [
+  {
+    name: 'พลอย',
+    rating: 5,
+    text: 'เคสสวยมาก สีตรงปก ส่งไว แพ็คดีไม่บุบเลย จะกลับมาซื้ออีกแน่นอนค่ะ',
+  },
+  {
+    name: 'มิ้นท์',
+    rating: 5,
+    text: 'ใส่แล้วน่ารักมาก กันกระแทกได้จริง ปุ่มกดยังลื่นปกติ ตอบแชทไวด้วยค่ะ',
+  },
+  {
+    name: 'จูน',
+    rating: 5,
+    text: 'สีจริงสวยกว่ารูปอีก งานเนี้ยบมาก เพื่อนถามว่าซื้อที่ไหน ราคาดีงาม',
+  },
+];
 
 export function Homepage({ store, products, categories, landingContent }: Props) {
   const headline = landingContent?.heroHeadline?.trim() || DEFAULT_HEADLINE;
   const sub = landingContent?.heroSubheadline?.trim() || DEFAULT_SUB;
   const ctaLabel = landingContent?.heroCtaLabel?.trim() || DEFAULT_CTA;
   const ctaUrl = landingContent?.heroCtaUrl?.trim() || `/stores/${store.slug}/category`;
-  const heroImage = landingContent?.heroImageUrl?.trim() || null;
+  const heroImage = landingContent?.heroImageUrl?.trim() || products[0]?.imageUrl || null;
 
-  const add = useCart((s) => s.add);
-
-  const handleAddToCart = (product: Product, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    add({
-      productId: product.id,
-      storeSlug: store.slug,
-      storeName: store.name,
-      title: product.title,
-      priceTHB: product.priceTHB,
-      imageUrl: product.imageUrl || undefined,
-    });
-  };
-
-  const featured = products.slice(0, 8);
+  // Homepage cap: 12 + "ดูสินค้าทั้งหมด N รายการ" CTA when length > 12
+  const FEATURED_CAP = 12;
+  const featured = products.slice(0, FEATURED_CAP);
+  const overflow = products.length > FEATURED_CAP;
 
   return (
-    <div className="bg-[#fafafa] text-black font-[family:var(--font-prompt)]">
-      {/* Hero */}
-      <section className="relative overflow-hidden py-16 md:py-24 px-4 border-b-4 border-black bg-blue-600">
+    <div
+      className="font-[family:var(--font-prompt)]"
+      style={{ background: 'var(--shop-bg, #FBF8F3)', color: 'var(--shop-ink, #1A1A1F)' }}
+    >
+      {/* Hero — large product floating with subtle gradient backdrop */}
+      <section className="relative overflow-hidden">
         <div
-          className="absolute -top-10 -right-10 w-64 h-64 bg-green-400 border-4 border-black rotate-12 flex items-end p-8 z-0 hidden md:flex"
+          className="absolute inset-0 -z-10"
           aria-hidden
-        >
-          <div className="text-black font-[family:var(--font-kanit)] font-black text-5xl uppercase italic leading-none">
-            NEW<br />SALE
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto relative z-10 grid md:grid-cols-2 gap-12 items-center">
-          <div className="text-center md:text-left space-y-6">
-            <div className="inline-block bg-yellow-400 border-4 border-black px-4 py-1 text-xs font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-[family:var(--font-kanit)]">
-              Collection {new Date().getFullYear() + 543}
-            </div>
-            <h1 className="font-[family:var(--font-kanit)] text-5xl md:text-7xl lg:text-8xl font-black leading-[0.95] uppercase italic tracking-tighter text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] whitespace-pre-line">
+          style={{
+            background:
+              'radial-gradient(60% 60% at 80% 30%, rgba(255,90,106,0.18) 0%, rgba(255,90,106,0) 60%), radial-gradient(50% 50% at 15% 80%, rgba(255,213,128,0.30) 0%, rgba(255,213,128,0) 65%)',
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-16 sm:pb-24 grid lg:grid-cols-2 gap-10 items-center">
+          <div className="space-y-6">
+            <span
+              className="inline-block rounded-full px-3 py-1 text-[11px] font-medium tracking-wide"
+              style={{
+                background: 'rgba(255,90,106,0.10)',
+                color: 'var(--shop-primary, #FF5A6A)',
+              }}
+            >
+              คอลเลกชันใหม่
+            </span>
+            <h1 className="font-[family:var(--font-kanit)] text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05] whitespace-pre-line">
               {headline}
             </h1>
-            <p className="text-white font-bold text-base sm:text-lg max-w-lg mx-auto md:mx-0 border-l-4 border-yellow-400 pl-4 bg-black/20 p-4">
+            <p className="text-base sm:text-lg text-[color:var(--shop-ink-muted,#6B7280)] max-w-md leading-relaxed">
               {sub}
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 href={ctaUrl}
-                className="inline-flex items-center justify-center h-14 px-8 italic bg-white text-black hover:bg-yellow-400 border-4 border-black font-[family:var(--font-kanit)] font-black uppercase tracking-widest text-base shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all"
+                className="inline-flex items-center justify-center gap-2 rounded-full h-12 px-6 text-white text-sm font-medium transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))',
+                }}
               >
-                {ctaLabel} <ChevronRight className="w-6 h-6 ml-1" />
+                {ctaLabel} <ChevronRight className="w-4 h-4" />
               </Link>
               <Link
                 href={`/stores/${store.slug}/category`}
-                className="inline-flex items-center justify-center h-14 px-8 italic bg-pink-500 text-white hover:bg-yellow-400 hover:text-black border-4 border-black font-[family:var(--font-kanit)] font-black uppercase tracking-widest text-base shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all"
+                className="inline-flex items-center justify-center gap-2 rounded-full h-12 px-6 text-sm font-medium border border-[color:var(--shop-ink,#1A1A1F)]/15 hover:border-[color:var(--shop-primary,#FF5A6A)] hover:text-[color:var(--shop-primary,#FF5A6A)] transition-colors"
               >
-                ดูสินค้าทั้งหมด
+                เลือกรุ่นโทรศัพท์
               </Link>
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-md aspect-square flex justify-center items-center">
-            <div className="absolute inset-0 bg-yellow-400 border-4 border-black -rotate-6 transition-transform duration-500 hover:rotate-0" />
-            <div className="absolute inset-0 bg-pink-400 border-4 border-black rotate-6 transition-transform duration-500 hover:rotate-12" />
-            <div className="relative h-full w-full border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden">
+          {/* Hero product — floating with shadow */}
+          <div className="relative mx-auto w-full max-w-md aspect-square">
+            <div
+              className="absolute -inset-4 rounded-3xl"
+              aria-hidden
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(255,90,106,0.12) 0%, rgba(255,213,128,0.20) 100%)',
+                filter: 'blur(20px)',
+              }}
+            />
+            <div
+              className="relative w-full h-full rounded-3xl overflow-hidden bg-white"
+              style={{
+                boxShadow:
+                  '0 30px 60px -20px rgba(0,0,0,0.20), 0 10px 20px -5px rgba(0,0,0,0.06)',
+              }}
+            >
               {heroImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={heroImage}
                   alt={store.name}
-                  className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-pink-400 via-yellow-400 to-blue-400">
-                  <div className="font-[family:var(--font-kanit)] font-black text-7xl text-black uppercase italic rotate-[-8deg] drop-shadow-[4px_4px_0_rgba(255,255,255,1)]">
-                    {store.name.slice(0, 1)}
-                  </div>
+                <div
+                  className="w-full h-full flex items-center justify-center"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, #FFE5E9 0%, #FFF4E5 50%, #E9F4FF 100%)',
+                  }}
+                >
+                  <Smartphone className="w-24 h-24 text-[color:var(--shop-primary,#FF5A6A)]/40" />
                 </div>
               )}
             </div>
@@ -129,130 +183,256 @@ export function Homepage({ store, products, categories, landingContent }: Props)
         </div>
       </section>
 
-      {/* Categories Rail */}
+      {/* Device picker — "เลือกรุ่น" tile row */}
+      <section className="px-4 sm:px-6 lg:px-8 pb-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-5">
+            <div>
+              <h2 className="font-[family:var(--font-kanit)] text-2xl sm:text-3xl font-semibold tracking-tight">
+                เลือกรุ่นของคุณ
+              </h2>
+              <p className="text-sm text-[color:var(--shop-ink-muted,#6B7280)] mt-1">
+                เลือกรุ่นโทรศัพท์เพื่อดูเคสที่รองรับ
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {DEVICES.map((d) => (
+              <Link
+                key={d.id}
+                href={`/stores/${store.slug}/category?cat=${encodeURIComponent(d.label)}`}
+                className="group rounded-2xl bg-white p-4 hover:-translate-y-1 transition-transform"
+                style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04)' }}
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center mb-3"
+                  style={{
+                    background: 'rgba(255,90,106,0.10)',
+                    color: 'var(--shop-primary, #FF5A6A)',
+                  }}
+                >
+                  <Smartphone className="w-4 h-4" />
+                </div>
+                <p className="font-[family:var(--font-kanit)] font-medium text-sm leading-snug">{d.label}</p>
+                <p className="text-[11px] text-[color:var(--shop-ink-muted,#6B7280)] mt-0.5">{d.sub}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured cases grid — square aspect, color dots below name, price + sale tag */}
+      <section className="px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="font-[family:var(--font-kanit)] text-2xl sm:text-3xl font-semibold tracking-tight">
+                เคสมาใหม่
+              </h2>
+              <p className="text-sm text-[color:var(--shop-ink-muted,#6B7280)] mt-1">
+                สั่งเลย ส่งเร็วภายใน 1–3 วันทำการ
+              </p>
+            </div>
+            <Link
+              href={`/stores/${store.slug}/category`}
+              className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-[color:var(--shop-primary,#FF5A6A)] hover:underline"
+            >
+              ดูทั้งหมด <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {featured.length === 0 ? (
+            <div
+              className="rounded-2xl bg-white p-10 text-center"
+              style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
+            >
+              <Sparkles className="w-8 h-8 mx-auto mb-3 text-[color:var(--shop-primary,#FF5A6A)]" />
+              <p className="font-[family:var(--font-kanit)] text-lg font-semibold">
+                ยังไม่มีสินค้าในร้าน
+              </p>
+              <p className="text-sm text-[color:var(--shop-ink-muted,#6B7280)] mt-1">
+                เพิ่มสินค้าผ่านระบบจัดการร้านได้เลย
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {featured.map((p, idx) => {
+                const hasDiscount =
+                  p.compareAtPriceTHB && p.compareAtPriceTHB > p.priceTHB;
+                const discountPct = hasDiscount
+                  ? Math.round(
+                      ((p.compareAtPriceTHB! - p.priceTHB) / p.compareAtPriceTHB!) * 100,
+                    )
+                  : 0;
+                // Decorative swatches — every card hints 4 colors.
+                const swatches = [
+                  TRENDING_COLORS[idx % TRENDING_COLORS.length],
+                  TRENDING_COLORS[(idx + 2) % TRENDING_COLORS.length],
+                  TRENDING_COLORS[(idx + 4) % TRENDING_COLORS.length],
+                  TRENDING_COLORS[(idx + 6) % TRENDING_COLORS.length],
+                ];
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/stores/${store.slug}/products/${p.id}`}
+                    className="group rounded-2xl bg-white overflow-hidden hover:-translate-y-1 transition-transform flex flex-col"
+                    style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04)' }}
+                  >
+                    <div className="relative aspect-square bg-[#F5F1EB] overflow-hidden">
+                      {hasDiscount && (
+                        <span
+                          className="absolute top-3 left-3 z-10 rounded-full text-[10px] font-semibold px-2.5 py-1 text-white"
+                          style={{ background: 'var(--shop-primary, #FF5A6A)' }}
+                        >
+                          -{discountPct}%
+                        </span>
+                      )}
+                      {p.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={p.imageUrl}
+                          alt={p.title}
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Smartphone className="w-10 h-10 text-[color:var(--shop-primary,#FF5A6A)]/30" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 sm:p-4 flex flex-col gap-2 flex-1">
+                      {p.categoryName && (
+                        <p className="text-[10px] uppercase tracking-wide text-[color:var(--shop-ink-muted,#6B7280)]">
+                          {p.categoryName}
+                        </p>
+                      )}
+                      <h3 className="font-[family:var(--font-kanit)] font-medium text-sm leading-snug line-clamp-2 flex-1">
+                        {p.title}
+                      </h3>
+                      <div className="flex items-center gap-1 mt-0.5" aria-label="สีให้เลือก">
+                        {swatches.map((c, i) => (
+                          <span
+                            key={`${p.id}-${i}`}
+                            className="w-3 h-3 rounded-full border border-black/5"
+                            style={{ background: c.hex }}
+                            title={c.name}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="font-[family:var(--font-kanit)] font-semibold text-base">
+                          {formatTHB(p.priceTHB)}
+                        </span>
+                        {hasDiscount && (
+                          <span className="text-xs text-[color:var(--shop-ink-muted,#6B7280)] line-through">
+                            {formatTHB(p.compareAtPriceTHB!)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* "ดูสินค้าทั้งหมด N รายการ" CTA — gated on length > 12 */}
+          {overflow && (
+            <div className="mt-8 flex justify-center">
+              <Link
+                href={`/stores/${store.slug}/category`}
+                className="inline-flex items-center gap-2 rounded-full h-11 px-6 text-sm font-medium border border-[color:var(--shop-ink,#1A1A1F)]/15 hover:border-[color:var(--shop-primary,#FF5A6A)] hover:text-[color:var(--shop-primary,#FF5A6A)] transition-colors"
+              >
+                ดูสินค้าทั้งหมด {products.length} รายการ <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Trending colors swatch wall */}
+      <section className="px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="max-w-7xl mx-auto rounded-3xl bg-white p-6 sm:p-10" style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04)' }}>
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="font-[family:var(--font-kanit)] text-2xl sm:text-3xl font-semibold tracking-tight">
+                สีมาแรงปีนี้
+              </h2>
+              <p className="text-sm text-[color:var(--shop-ink-muted,#6B7280)] mt-1">
+                คัดสีโทนฮอตจากเทรนด์ปาเลทล่าสุด
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-4">
+            {TRENDING_COLORS.map((c) => (
+              <div key={c.name} className="text-center">
+                <div
+                  className="aspect-square rounded-full mb-2 mx-auto w-14 sm:w-16 border border-black/5"
+                  style={{ background: c.hex }}
+                  aria-hidden
+                />
+                <p className="text-[11px] sm:text-xs text-[color:var(--shop-ink-muted,#6B7280)]">{c.name}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Categories rail (only if real categories exist) */}
       {categories.length > 0 && (
-        <section className="py-8 bg-green-400 border-b-4 border-black">
-          <div className="max-w-7xl mx-auto px-4 flex flex-nowrap overflow-x-auto gap-4 sm:gap-6 hide-scrollbar items-center">
-            <span className="shrink-0 font-[family:var(--font-kanit)] font-black text-lg sm:text-xl italic uppercase px-4 border-r-4 border-black">
-              หมวดหมู่
-            </span>
-            {categories.slice(0, 8).map((cat, idx) => {
-              const Icon = CATEGORY_ICONS[idx % CATEGORY_ICONS.length];
-              return (
+        <section className="px-4 sm:px-6 lg:px-8 pb-16">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-end justify-between mb-5">
+              <h2 className="font-[family:var(--font-kanit)] text-2xl sm:text-3xl font-semibold tracking-tight">
+                หมวดหมู่
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {categories.slice(0, 12).map((cat) => (
                 <Link
                   key={cat}
                   href={`/stores/${store.slug}/category?cat=${encodeURIComponent(cat)}`}
-                  className="shrink-0 h-12 sm:h-14 border-4 border-black bg-white text-black hover:bg-black hover:text-white px-4 sm:px-6 flex items-center gap-2 active:translate-x-1 active:translate-y-1"
+                  className="inline-flex items-center rounded-full bg-white px-4 h-9 text-sm border border-[color:var(--shop-ink,#1A1A1F)]/10 hover:border-[color:var(--shop-primary,#FF5A6A)] hover:text-[color:var(--shop-primary,#FF5A6A)] transition-colors"
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-[family:var(--font-kanit)] text-sm sm:text-base font-black uppercase">
-                    {cat}
-                  </span>
+                  {cat}
                 </Link>
-              );
-            })}
-            <Link
-              href={`/stores/${store.slug}/category`}
-              className="shrink-0 h-12 sm:h-14 px-4 sm:px-6 flex items-center font-[family:var(--font-kanit)] font-black uppercase tracking-widest text-black hover:bg-white border-4 border-transparent hover:border-black active:translate-x-1 active:translate-y-1"
-            >
-              ดูทั้งหมด →
-            </Link>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* Product Grid */}
-      <section className="py-12 sm:py-16 px-4 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6 border-b-4 border-black pb-8">
-          <h2 className="font-[family:var(--font-kanit)] text-3xl sm:text-5xl font-black flex items-center gap-3 uppercase italic">
-            <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-pink-500 fill-pink-500" />
-            <span>สินค้ามาแรง</span>
-          </h2>
-          <Link
-            href={`/stores/${store.slug}/category`}
-            className="h-12 px-6 sm:px-8 flex items-center justify-center font-[family:var(--font-kanit)] font-black uppercase tracking-widest bg-black text-white hover:bg-pink-500 hover:text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-colors"
-          >
-            ดูทั้งหมด →
-          </Link>
+      {/* Reviews snippet */}
+      <section className="px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="font-[family:var(--font-kanit)] text-2xl sm:text-3xl font-semibold tracking-tight">
+                ลูกค้าพูดถึงเรา
+              </h2>
+              <p className="text-sm text-[color:var(--shop-ink-muted,#6B7280)] mt-1">
+                คะแนนเฉลี่ย 4.9 / 5 จากรีวิวทั้งหมด
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {REVIEWS.map((r, i) => (
+              <div
+                key={i}
+                className="rounded-2xl bg-white p-5"
+                style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04)' }}
+              >
+                <div className="flex gap-0.5 mb-3 text-[color:var(--shop-primary,#FF5A6A)]" aria-label={`${r.rating} ดาว`}>
+                  {Array.from({ length: r.rating }).map((_, k) => (
+                    <Star key={k} className="w-4 h-4 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm leading-relaxed text-[color:var(--shop-ink,#1A1A1F)]">“{r.text}”</p>
+                <p className="text-xs text-[color:var(--shop-ink-muted,#6B7280)] mt-3">— คุณ{r.name}</p>
+              </div>
+            ))}
+          </div>
         </div>
-
-        {featured.length === 0 ? (
-          <div className="text-center py-16 border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <p className="font-[family:var(--font-kanit)] text-2xl font-black uppercase italic">
-              ยังไม่มีสินค้าในร้าน
-            </p>
-            <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-2">
-              เพิ่มสินค้าผ่านระบบจัดการร้านได้เลย
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {featured.map((product, idx) => {
-              const hasDiscount =
-                product.compareAtPriceTHB && product.compareAtPriceTHB > product.priceTHB;
-              const tag = hasDiscount
-                ? `ลด ${Math.round(((product.compareAtPriceTHB! - product.priceTHB) / product.compareAtPriceTHB!) * 100)}%`
-                : idx === 0
-                ? 'ขายดี'
-                : idx === 3
-                ? 'ใหม่'
-                : null;
-              return (
-                <Link
-                  key={product.id}
-                  href={`/stores/${store.slug}/products/${product.id}`}
-                  className="group bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-400 active:translate-x-2 active:translate-y-2 active:shadow-none transition-all flex flex-col"
-                >
-                  <div className="relative aspect-square overflow-hidden border-b-4 border-black bg-slate-100">
-                    {tag && (
-                      <div className="absolute top-4 -left-2 z-10 bg-pink-500 text-white font-[family:var(--font-kanit)] font-black text-xs uppercase px-4 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                        {tag}
-                      </div>
-                    )}
-                    {product.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={product.imageUrl}
-                        alt={product.title}
-                        className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-pink-300 to-yellow-300">
-                        <Sparkles className="w-12 h-12 text-black/40" />
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={(e) => handleAddToCart(product, e)}
-                      aria-label="เพิ่มในตะกร้า"
-                      className="absolute bottom-4 right-4 z-10 w-12 h-12 border-4 border-black flex items-center justify-center bg-yellow-400 text-black hover:bg-black hover:text-white active:translate-x-1 active:translate-y-1 transition-transform"
-                    >
-                      <ShoppingCart className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <div className="p-4 sm:p-5 space-y-2 sm:space-y-3 flex-1 flex flex-col">
-                    <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest">
-                      Item #{product.id.slice(-6)}
-                    </div>
-                    <h3 className="font-[family:var(--font-kanit)] font-black text-lg sm:text-xl uppercase leading-tight line-clamp-2 flex-1">
-                      {product.title}
-                    </h3>
-                    <div className="flex items-baseline gap-3 pt-1">
-                      <span className="font-[family:var(--font-kanit)] font-black text-xl sm:text-2xl text-pink-600">
-                        {formatTHB(product.priceTHB)}
-                      </span>
-                      {hasDiscount && (
-                        <span className="text-sm font-bold text-slate-400 line-through">
-                          {formatTHB(product.compareAtPriceTHB!)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
       </section>
     </div>
   );

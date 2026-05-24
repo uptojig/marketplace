@@ -26,33 +26,35 @@ interface FaqItem {
 const PAGE_TITLES: Record<string, string> = {
   faq: 'คำถามที่พบบ่อย',
   'order-guide': 'วิธีสั่งซื้อ',
-  'size-guide': 'คู่มือขนาด',
+  'size-guide': 'คู่มือเลือกขนาด',
+  shipping: 'การจัดส่ง',
+  returns: 'นโยบายคืนสินค้า',
 };
 
 const DEFAULT_FAQS: FaqItem[] = [
   {
     q: 'สั่งซื้อสินค้าอย่างไร?',
-    a: 'เลือกสินค้าจากหน้าร้าน กดเพิ่มในตะกร้า ตรวจสอบรายการ แล้วกรอกที่อยู่จัดส่งเพื่อชำระเงิน — ระบบรองรับพร้อมเพย์ โอนผ่านธนาคาร และบัตรเครดิต/เดบิต',
+    a: 'เลือกสินค้าจากหน้าร้าน เพิ่มในตะกร้า ตรวจสอบรายการ จากนั้นกรอกที่อยู่และชำระเงินผ่าน ANYPAY (PromptPay / บัตร / โอน) ระบบจะส่งอีเมลยืนยันให้ทันที',
   },
   {
     q: 'ใช้เวลาจัดส่งกี่วัน?',
-    a: 'EMS 1-2 วันทำการ · ลงทะเบียน 3-5 วันทำการ ทั่วประเทศ ส่งทุกวันจันทร์-ศุกร์ ตัดรอบ 14:00 ของแต่ละวัน',
+    a: 'EMS 1–2 วันทำการ · ลงทะเบียน 3–5 วันทำการ ตัดรอบจัดส่งทุก 14:00 น. จันทร์–ศุกร์',
   },
   {
     q: 'ส่งฟรีเมื่อไหร่?',
-    a: 'ส่งฟรีเมื่อสั่งซื้อครบ 990 บาท · ไม่ครบขั้นต่ำคิดค่าจัดส่ง 30-50 บาทตามวิธีจัดส่งที่เลือก',
+    a: 'ส่งฟรีทั่วประเทศเมื่อสั่งซื้อครบ ฿990 — ไม่ครบขั้นต่ำคิดค่าจัดส่ง ฿30–50 บาทตามรูปแบบที่เลือก',
   },
   {
     q: 'เปลี่ยน/คืนสินค้าได้ไหม?',
-    a: 'รับประกันความพึงพอใจ — คืนเงินภายใน 7 วันหลังรับสินค้า สินค้าต้องอยู่ในสภาพเดิม ไม่ผ่านการใช้งาน ไม่ฉีกขาด ค่าจัดส่งคืนผู้ซื้อรับผิดชอบ',
+    a: 'รับประกันความพึงพอใจ คืนเงินภายใน 7 วันหลังรับสินค้า สินค้าต้องอยู่ในสภาพเดิม ไม่ผ่านการใช้งาน',
   },
   {
-    q: 'มีหน้าร้านไหม?',
-    a: 'เราเป็นร้านออนไลน์ 100% — ติดต่อสอบถามได้ผ่าน LINE / Facebook / โทรศัพท์ ในเวลาทำการ 9:00-21:00 ทุกวัน',
+    q: 'เคสรองรับรุ่นไหนบ้าง?',
+    a: 'เรามีเคสสำหรับ iPhone 15 / 14 / 13 / Pro ทุกรุ่น และ Samsung Galaxy S24 / S23 — ดูรุ่นที่รองรับได้ในหน้าสินค้า',
   },
   {
-    q: 'สินค้าเรืองแสง/นีออน มีรับประกันไหม?',
-    a: 'สินค้านีออน LED แท่งไฟ และอุปกรณ์อิเล็กทรอนิกส์ทุกชิ้นรับประกัน 30 วันจากวันที่ได้รับ — หากมีปัญหา ติดต่อเราเพื่อเปลี่ยนสินค้าใหม่ฟรี',
+    q: 'ชำระเงินอย่างไร?',
+    a: 'รองรับการชำระผ่าน ANYPAY: PromptPay, บัตรเครดิต/เดบิต, และโอนผ่านธนาคาร — ไม่มีเก็บเงินปลายทาง',
   },
 ];
 
@@ -71,20 +73,29 @@ export function Help({ store, pageSlug = 'faq' }: HelpProps) {
     : DEFAULT_FAQS;
 
   return (
-    <div className="bg-[#fafafa] text-black font-[family:var(--font-prompt)] min-h-screen">
+    <div
+      className="font-[family:var(--font-prompt)] min-h-screen"
+      style={{ background: 'var(--shop-bg, #FBF8F3)', color: 'var(--shop-ink, #1A1A1F)' }}
+    >
       {/* Hero */}
-      <section className="bg-blue-600 border-b-4 border-black px-4 py-12 sm:py-16">
+      <section className="px-4 sm:px-6 lg:px-8 pt-12 pb-8">
         <div className="max-w-5xl mx-auto">
-          <div className="inline-block bg-yellow-400 border-4 border-black px-4 py-1 text-xs font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4 font-[family:var(--font-kanit)]">
-            Help Center
-          </div>
-          <h1 className="font-[family:var(--font-kanit)] text-4xl sm:text-6xl font-black uppercase italic tracking-tighter text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">
+          <span
+            className="inline-block rounded-full px-3 py-1 text-[11px] font-medium tracking-wide mb-4"
+            style={{
+              background: 'rgba(255,90,106,0.10)',
+              color: 'var(--shop-primary, #FF5A6A)',
+            }}
+          >
+            ช่วยเหลือ
+          </span>
+          <h1 className="font-[family:var(--font-kanit)] text-3xl sm:text-4xl font-semibold tracking-tight">
             {title}
           </h1>
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-6">
         {/* Search */}
         <div className="relative">
           <input
@@ -92,20 +103,24 @@ export function Help({ store, pageSlug = 'faq' }: HelpProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="ค้นหาคำถาม..."
-            className="w-full border-4 border-black bg-white px-4 py-3 pl-12 text-sm font-bold uppercase focus:outline-none focus:bg-yellow-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            className="w-full rounded-full bg-white border border-[color:var(--shop-ink,#1A1A1F)]/10 px-4 py-3 pl-11 text-sm focus:outline-none focus:border-[color:var(--shop-primary,#FF5A6A)] transition-colors"
+            style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--shop-ink-muted,#6B7280)]" />
         </div>
 
         {/* FAQ accordion */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           {filtered.length === 0 ? (
-            <div className="text-center py-12 border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <p className="font-[family:var(--font-kanit)] text-xl font-black uppercase italic">
+            <div
+              className="rounded-2xl bg-white p-10 text-center"
+              style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
+            >
+              <p className="font-[family:var(--font-kanit)] text-lg font-semibold mb-1">
                 ไม่พบคำถามที่ค้นหา
               </p>
-              <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-2">
-                ลองคำอื่น หรือติดต่อเราโดยตรง
+              <p className="text-sm text-[color:var(--shop-ink-muted,#6B7280)]">
+                ลองคำอื่น หรือทักหาเราโดยตรง
               </p>
             </div>
           ) : (
@@ -114,23 +129,25 @@ export function Help({ store, pageSlug = 'faq' }: HelpProps) {
               return (
                 <div
                   key={f.q}
-                  className="border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  className="rounded-2xl bg-white overflow-hidden"
+                  style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
                 >
                   <button
                     type="button"
                     onClick={() => setOpenIdx(open ? null : idx)}
-                    className="w-full flex items-center justify-between gap-3 px-5 py-4 hover:bg-yellow-400 active:translate-x-1 active:translate-y-1"
+                    className="w-full flex items-center justify-between gap-3 px-5 py-4 hover:bg-[#F5F1EB] transition-colors"
                     aria-expanded={open}
                   >
-                    <span className="font-[family:var(--font-kanit)] font-black uppercase text-left text-sm sm:text-base">
-                      {f.q}
-                    </span>
+                    <span className="font-medium text-sm sm:text-base text-left">{f.q}</span>
                     <ChevronDown
-                      className={`w-5 h-5 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+                      className={`w-4 h-4 shrink-0 transition-transform text-[color:var(--shop-ink-muted,#6B7280)] ${open ? 'rotate-180' : ''}`}
                     />
                   </button>
                   {open && (
-                    <div className="px-5 py-4 border-t-4 border-black bg-[#fafafa] text-sm leading-relaxed">
+                    <div
+                      className="px-5 py-4 text-sm leading-relaxed text-[color:var(--shop-ink,#1A1A1F)]/85 border-t"
+                      style={{ borderColor: 'rgba(0,0,0,0.06)' }}
+                    >
                       {f.a}
                     </div>
                   )}
@@ -141,47 +158,51 @@ export function Help({ store, pageSlug = 'faq' }: HelpProps) {
         </div>
 
         {/* Contact CTA */}
-        <div className="mt-12 bg-pink-500 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 text-white">
-          <h3 className="font-[family:var(--font-kanit)] text-2xl sm:text-3xl font-black uppercase italic mb-2 drop-shadow-[3px_3px_0_rgba(0,0,0,1)]">
+        <div
+          className="rounded-2xl p-6 sm:p-8 text-white"
+          style={{
+            background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))',
+            boxShadow: '0 20px 40px -10px rgba(255,90,106,0.30)',
+          }}
+        >
+          <h3 className="font-[family:var(--font-kanit)] text-xl sm:text-2xl font-semibold tracking-tight mb-1">
             ยังหาคำตอบไม่เจอ?
           </h3>
-          <p className="text-sm font-bold uppercase tracking-widest mb-6 opacity-90">
-            ทักหาเราได้ทุกช่องทาง
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <p className="text-sm opacity-90 mb-5">ทักหาเราได้ทุกช่องทาง ตอบเร็วภายใน 1 ชั่วโมง</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {store.lineId && (
               <a
                 href={`https://line.me/ti/p/~${store.lineId}`}
                 target="_blank"
                 rel="noreferrer"
-                className="border-4 border-black bg-green-400 text-black p-4 font-[family:var(--font-kanit)] font-black uppercase text-sm tracking-widest text-center hover:bg-yellow-400 active:translate-x-1 active:translate-y-1 flex items-center justify-center gap-2"
+                className="inline-flex items-center justify-center gap-2 rounded-full h-10 px-4 text-sm font-medium bg-white text-[color:var(--shop-primary,#FF5A6A)] hover:bg-white/90 transition-colors"
               >
-                <MessageCircle className="w-5 h-5" /> LINE
+                <MessageCircle className="w-4 h-4" /> LINE
               </a>
             )}
             {store.contactEmail && (
               <a
                 href={`mailto:${store.contactEmail}`}
-                className="border-4 border-black bg-yellow-400 text-black p-4 font-[family:var(--font-kanit)] font-black uppercase text-sm tracking-widest text-center hover:bg-white active:translate-x-1 active:translate-y-1 flex items-center justify-center gap-2"
+                className="inline-flex items-center justify-center gap-2 rounded-full h-10 px-4 text-sm font-medium bg-white text-[color:var(--shop-primary,#FF5A6A)] hover:bg-white/90 transition-colors"
               >
-                <Mail className="w-5 h-5" /> Email
+                <Mail className="w-4 h-4" /> อีเมล
               </a>
             )}
             {store.contactPhone && (
               <a
                 href={`tel:${store.contactPhone.replace(/\s+/g, '')}`}
-                className="border-4 border-black bg-blue-600 text-white p-4 font-[family:var(--font-kanit)] font-black uppercase text-sm tracking-widest text-center hover:bg-yellow-400 hover:text-black active:translate-x-1 active:translate-y-1 flex items-center justify-center gap-2"
+                className="inline-flex items-center justify-center gap-2 rounded-full h-10 px-4 text-sm font-medium bg-white text-[color:var(--shop-primary,#FF5A6A)] hover:bg-white/90 transition-colors"
               >
-                <Phone className="w-5 h-5" /> โทร
+                <Phone className="w-4 h-4" /> โทร
               </a>
             )}
-            <Link
-              href={`/stores/${store.slug}/contact`}
-              className="border-4 border-black bg-white text-black p-4 font-[family:var(--font-kanit)] font-black uppercase text-sm tracking-widest text-center hover:bg-yellow-400 active:translate-x-1 active:translate-y-1 flex items-center justify-center gap-2 col-span-1 sm:col-span-3"
-            >
-              หน้าติดต่อเรา →
-            </Link>
           </div>
+          <Link
+            href={`/stores/${store.slug}/contact`}
+            className="block mt-3 text-center text-xs underline underline-offset-4 opacity-90 hover:opacity-100"
+          >
+            ไปที่หน้าติดต่อเรา →
+          </Link>
         </div>
       </div>
     </div>

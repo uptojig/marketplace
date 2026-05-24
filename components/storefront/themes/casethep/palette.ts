@@ -1,30 +1,35 @@
 /**
- * Casethep palette — Neo-Brutalism Pop-Art.
- * Used by bespoke chrome / pages in this theme. The 9 CSS vars
- * (--shop-primary, --shop-accent, etc.) come from
- * `lib/landing/neon.ts → neonCssVars()` at the family level; these
- * extras are theme-specific accents / state colors that don't fit
- * the standard --shop-* surface.
+ * Casethep palette — exports kept for back-compat with the registry
+ * scaffolding (do not touch). The bespoke chrome / pages in this theme
+ * paint via the standard CSS variable cascade (`var(--shop-primary)`,
+ * `var(--shop-accent)`, `var(--shop-primary-gradient)`) so the per-store
+ * `themeAccentOverride` system from PRs #153 / #154 paints the theme
+ * correctly. These hex constants are only a fallback for places that
+ * cannot use CSS vars (e.g. SVG `stroke` values inside `dangerouslySet
+ * InnerHTML`).
  */
 
 export const NEON_FESTIVAL_HEX = {
-  // Core palette (mirror NEON_TOKENS for direct hex use in components)
-  primary: '#FF458A',         // pink-500
-  primaryHover: '#fb7185',    // pink-400
-  primaryDark: '#be185d',     // pink-700
-  accent: '#42A5F5',          // yellow-500
-  accentBright: '#facc15',    // yellow-400 (the AI Studio reference uses 400)
-  secondary: '#2563eb',       // blue-600
-  secondaryBright: '#3b82f6', // blue-500
-  highlight: '#4ade80',       // green-400 — used for "NEW SALE" badges
-  ink: '#000000',
-  inkMuted: '#64748b',        // slate-500
-  bg: '#fafafa',
-  card: '#ffffff',
+  // Casethep defaults — minimal clean phone-case shop. Coral primary
+  // with a soft cream backdrop. Live theme paint comes from the
+  // --shop-* CSS vars at the family level; these constants are only a
+  // fallback for inline SVG / canvas.
+  primary: '#FF5A6A',         // coral-rose CTA
+  primaryHover: '#FF7588',    // coral-rose-light
+  primaryDark: '#E0394C',     // coral-rose-deep
+  accent: '#FFD580',          // soft warm yellow accent
+  accentBright: '#FFC559',
+  secondary: '#5B6B82',       // soft slate
+  secondaryBright: '#7C8AA0',
+  highlight: '#86EFAC',
+  ink: '#1A1A1F',
+  inkMuted: '#6B7280',
+  bg: '#FBF8F3',              // cream background
+  card: '#FFFFFF',
 
-  // Status (for forms / cart errors)
-  success: '#16a34a',         // green-600
-  warning: '#f59e0b',         // amber-500
-  error: '#dc2626',           // red-600
-  info: '#2563eb',            // blue-600
+  // Status colors used in inline form / toast surfaces
+  success: '#16A34A',
+  warning: '#F59E0B',
+  error: '#DC2626',
+  info: '#2563EB',
 } as const;

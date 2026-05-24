@@ -1,124 +1,182 @@
 'use client';
-
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Search, Menu } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 
-interface Props {
+export interface HeaderProps {
   storeSlug: string;
   storeName: string;
   storeLogoUrl?: string | null;
-  categories?: string[];
+  categories: string[];
+  accent?: string;
 }
 
 /**
- * BlackWrapp — bespoke header (scaffold).
+ * BlackWrapp — premium dark header.
  *
- * Replace with the designer's final layout — search field, mega-menu,
- * category chips, mobile sheet, etc. Cart count + search action paths
- * are wired so the scaffold is shoppable on day 1.
+ * Near-black surface, hair-thin divider, accent-color cart badge with
+ * a subtle glow, rounded-full search box that lights up on focus.
+ * Mobile drawer drops down from the same near-black tone so the
+ * silhouette stays calm.
  */
-export function Header({ storeSlug, storeName, storeLogoUrl, categories = [] }: Props) {
-  const count = useCart((s) => s.lines.filter((line) => line.storeSlug === storeSlug).length);
-  const initial = storeName.trim().slice(0, 1).toUpperCase();
-  const visibleCats = categories.slice(0, 6);
+export function Header({
+  storeSlug,
+  storeName,
+  storeLogoUrl,
+  categories,
+}: HeaderProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const cartCount = useCart((s) => s.countForStore(storeSlug));
+
+  const urls = {
+    home: `/stores/${storeSlug}`,
+    shop: `/stores/${storeSlug}/category`,
+    cart: `/stores/${storeSlug}/cart`,
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    window.location.href = `${urls.shop}?q=${encodeURIComponent(q)}`;
+  };
 
   return (
     <header
-      className="bg-[var(--shop-bg)] border-b border-[var(--shop-border)] text-[var(--shop-ink)]"
+      className="sticky top-0 z-50 font-[family:var(--font-prompt)] border-b border-white/5 backdrop-blur-md"
+      style={{ background: 'rgba(10,10,10,0.85)', color: '#FAFAFA' }}
     >
-      <div className="max-w-7xl mx-auto flex items-center gap-4 px-4 py-3">
-        <Link
-          href={`/stores/${storeSlug}/`}
-          className="flex items-center gap-2 shrink-0"
-        >
-          {storeLogoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={storeLogoUrl}
-              alt={storeName}
-              className="h-9 w-9 rounded object-cover"
-            />
-          ) : (
-            <span
-              className="h-9 w-9 rounded grid place-items-center font-[family:var(--font-kanit)] font-black text-white"
-              style={{ background: 'var(--shop-primary)' }}
-            >
-              {initial}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between gap-4 lg:h-20">
+          {/* Mobile menu */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="lg:hidden -ml-2 p-2 text-white/80 hover:text-white transition-colors"
+            aria-label={mobileOpen ? 'ปิดเมนู' : 'เปิดเมนู'}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X size={20} strokeWidth={1.75} /> : <Menu size={20} strokeWidth={1.75} />}
+          </button>
+
+          {/* Brand */}
+          <Link
+            href={urls.home}
+            className="flex items-center gap-2.5 shrink-0 group"
+          >
+            {storeLogoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={storeLogoUrl}
+                alt={storeName}
+                className="h-8 w-auto object-contain"
+              />
+            ) : (
+              <span
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full font-[family:var(--font-kanit)] font-medium text-sm"
+                style={{
+                  background: 'var(--shop-primary-gradient, var(--shop-primary))',
+                  color: '#0A0A0A',
+                  boxShadow: '0 0 18px var(--shop-primary, #00FF88)40',
+                }}
+              >
+                {storeName.charAt(0).toUpperCase()}
+              </span>
+            )}
+            <span className="font-[family:var(--font-kanit)] font-medium text-base sm:text-lg tracking-[0.15em] text-white truncate max-w-[180px] sm:max-w-none">
+              {storeName}
             </span>
-          )}
-          <span className="font-[family:var(--font-kanit)] font-bold text-lg hidden sm:block">
-            {storeName}
-          </span>
-        </Link>
+          </Link>
 
-        <form
-          action={`/stores/${storeSlug}/search`}
-          method="get"
-          className="flex-1 max-w-xl"
-          role="search"
-        >
-          <label className="relative block">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--shop-ink-muted)]"
-              aria-hidden
-            />
-            <input
-              type="search"
-              name="q"
-              placeholder="ค้นหาสินค้า..."
-              aria-label="ค้นหาสินค้า"
-              className="w-full pl-9 pr-3 py-2 rounded border border-[var(--shop-border)] bg-[var(--shop-bg-soft)] text-[var(--shop-ink)] focus:outline-none focus:ring-2"
-              style={{ accentColor: 'var(--shop-primary)' }}
-            />
-          </label>
-        </form>
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-8">
+            {categories.slice(0, 4).map((cat) => (
+              <Link
+                key={cat}
+                href={`${urls.shop}?cat=${encodeURIComponent(cat)}`}
+                className="font-[family:var(--font-prompt)] text-[12px] tracking-[0.18em] text-white/70 hover:text-white transition-colors duration-300"
+              >
+                {cat}
+              </Link>
+            ))}
+          </nav>
 
-        <Link
-          href={`/stores/${storeSlug}/cart`}
-          className="relative inline-flex items-center justify-center p-2 rounded hover:bg-[var(--shop-muted)]"
-          aria-label="ตะกร้าสินค้า"
-        >
-          <ShoppingCart className="h-5 w-5" />
-          {count > 0 && (
-            <span
-              className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold grid place-items-center text-white"
-              style={{ background: 'var(--shop-primary)' }}
+          {/* Search + cart */}
+          <div className="flex items-center gap-3">
+            <form
+              onSubmit={handleSearch}
+              className="hidden md:flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 focus-within:border-[var(--shop-primary,#00FF88)] focus-within:shadow-[0_0_0_3px_rgba(0,255,136,0.12)] transition-all duration-300"
+              role="search"
             >
-              {count}
-            </span>
-          )}
-        </Link>
+              <Search size={14} strokeWidth={1.75} className="text-white/50" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="ค้นหาสินค้า"
+                className="w-40 lg:w-52 bg-transparent text-xs text-white placeholder:text-white/40 outline-none"
+                aria-label="ค้นหาสินค้า"
+              />
+            </form>
 
-        <button
-          type="button"
-          aria-label="เมนู"
-          className="md:hidden p-2 rounded hover:bg-[var(--shop-muted)]"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+            <Link
+              href={urls.cart}
+              className="relative p-2 text-white/80 hover:text-white transition-colors"
+              aria-label="ตะกร้าสินค้า"
+            >
+              <ShoppingBag size={20} strokeWidth={1.75} />
+              {cartCount > 0 && (
+                <span
+                  className="absolute -top-0.5 -right-0.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums"
+                  style={{
+                    background: 'var(--shop-primary-gradient, var(--shop-primary))',
+                    color: '#0A0A0A',
+                    boxShadow: '0 0 12px var(--shop-primary, #00FF88)55',
+                  }}
+                  aria-label={`${cartCount} รายการในตะกร้า`}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {visibleCats.length > 0 && (
-        <nav
-          aria-label="หมวดหมู่"
-          className="hidden md:block border-t border-[var(--shop-border)] bg-[var(--shop-bg-soft)]"
-        >
-          <ul className="max-w-7xl mx-auto flex gap-2 px-4 py-2 overflow-x-auto">
-            {visibleCats.map((cat) => (
-              <li key={cat}>
-                <Link
-                  href={`/stores/${storeSlug}/category?cat=${encodeURIComponent(cat)}`}
-                  className="inline-block whitespace-nowrap px-3 py-1 rounded-full border border-[var(--shop-border)] text-sm hover:bg-[var(--shop-muted)]"
-                >
-                  {cat}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="lg:hidden border-t border-white/5 bg-[#0A0A0A] px-4 sm:px-6 py-5 space-y-1">
+          <form
+            onSubmit={handleSearch}
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 mb-4 focus-within:border-[var(--shop-primary,#00FF88)]"
+            role="search"
+          >
+            <Search size={14} strokeWidth={1.75} className="text-white/50" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="ค้นหาสินค้า"
+              className="flex-1 bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+              aria-label="ค้นหาสินค้า"
+            />
+          </form>
+          {categories.slice(0, 8).map((cat) => (
+            <Link
+              key={cat}
+              href={`${urls.shop}?cat=${encodeURIComponent(cat)}`}
+              onClick={() => setMobileOpen(false)}
+              className="block py-2.5 font-[family:var(--font-kanit)] text-sm tracking-[0.1em] text-white/80 hover:text-white border-b border-white/5 last:border-0 transition-colors"
+            >
+              {cat}
+            </Link>
+          ))}
+        </div>
       )}
     </header>
   );
 }
+
+export default Header;
