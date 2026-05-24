@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Heart, Sparkles, ArrowRight, Star } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 import { formatTHB } from '@/lib/utils';
-import { KONVY_PALETTES } from '@/lib/landing/konvy-palettes';
 
 interface Product {
   id: string;
@@ -144,42 +143,10 @@ export function Homepage({ store, products, categories, landingContent }: Props)
         </div>
       </section>
 
-      {/* Palette swatch row */}
-      <section className="bg-white border-b border-[var(--shop-border)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-            <div>
-              <p
-                className="text-[11px] uppercase tracking-[0.2em] font-semibold mb-1"
-                style={{ color: 'var(--shop-primary)' }}
-              >
-                Curated palettes
-              </p>
-              <h2 className="font-[family:var(--font-kanit)] text-xl sm:text-2xl font-semibold">
-                เลือกเฉดที่ใช่จาก 7 K-Beauty Shades
-              </h2>
-            </div>
-          </div>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-            {KONVY_PALETTES.map((p) => (
-              <div
-                key={p.id}
-                className="group shrink-0 flex flex-col items-center gap-2"
-                aria-label={p.name}
-              >
-                <div
-                  className="h-14 w-14 sm:h-16 sm:w-16 rounded-full ring-2 ring-white shadow-md transition-transform group-hover:scale-110 group-hover:shadow-lg"
-                  style={{ background: p.gradient }}
-                  aria-hidden
-                />
-                <span className="text-[11px] sm:text-xs font-medium text-center whitespace-nowrap">
-                  {p.name.split(' ')[0]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* (Palette swatch row removed — it was decoration only.
+          The functional skin picker now lives as a floating widget
+          mounted from `app/stores/[slug]/layout.tsx → <SkinPicker />`
+          so visitors actually CLICK swatches to re-skin the store.) */}
 
       {/* Featured products */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
