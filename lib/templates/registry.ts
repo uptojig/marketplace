@@ -643,11 +643,13 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: CasethepHomepageAdapter,
-      // FALLBACK: bespoke casethep_Catalog 500s on production despite
-      // tsc/build passing. Swap to the shared makeCatalogAdapter('01')
-      // (rounded-2xl grid that fits the casethep minimal aesthetic) so
-      // /category renders cleanly while we debug the bespoke one.
-      catalog: makeCatalogAdapter('01'),
+      // DELIBERATELY OMIT `catalog:` so /category falls through to the
+      // family-level ElectronicsTechCategoryPage (which IS reachable for
+      // electronics-tech themes — see app/stores/[slug]/category/page.tsx
+      // line ~377). Multiple bespoke-catalog variants tried for casethep
+      // (casethep_Catalog, makeCatalogAdapter('01'), makeCatalogAdapter('12'))
+      // all 500'd on production despite tsc + pnpm build passing locally.
+      // Leaving catalog undefined lets the family catalog render cleanly.
       pdp: casethep_ProductDetail,
       cart: casethep_Cart,
       checkout: casethep_Checkout,
