@@ -19,7 +19,7 @@ export function AnnouncementStrip({ storeName, message }: AnnouncementStripProps
   const messages = [
     { icon: Flame, text: message ?? `${storeName} ⚡ แฟลชเซลล์ ลดสูงสุด 70% วันนี้เท่านั้น!` },
     { icon: Truck, text: 'ส่งฟรีทั่วประเทศเมื่อสั่งครบ ฿199.- · กรุงเทพฯ ส่งวันเดียวถึง' },
-    { icon: ShieldCheck, text: 'รับประกันของแท้ 100% · เก็บเงินปลายทาง · คืนเงินภายใน 7 วัน' },
+    { icon: ShieldCheck, text: 'คัดสรรคุณภาพ · คืนเงินภายใน 7 วัน' },
   ];
 
   const [index, setIndex] = useState(0);

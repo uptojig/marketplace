@@ -284,7 +284,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
                 className="px-2 py-0.5 rounded text-[10px] font-[family:var(--font-prompt)] font-bold"
                 style={{ background: 'var(--shop-muted)', color: 'var(--shop-ink)' }}
               >
-                ของแท้ 100%
+                คัดสรรคุณภาพ
               </span>
             </div>
 
@@ -507,7 +507,7 @@ export function ProductDetail({ store, product, related }: ProductDetailProps) {
             style={{ border: `1px solid var(--shop-border)` }}
           >
             {[
-              { Icon: ShieldCheck, t: 'รับประกันของแท้' },
+              { Icon: ShieldCheck, t: 'คัดสรรคุณภาพ' },
               { Icon: Truck, t: 'ส่งฟรี ฿199+' },
               { Icon: RotateCw, t: 'คืนสินค้าได้ 7 วัน' },
             ].map(({ Icon, t }) => (

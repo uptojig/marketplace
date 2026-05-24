@@ -375,7 +375,7 @@ export function Cart({
               >
                 <div className="flex items-center gap-1">
                   <ShieldCheck size={12} style={{ color: 'var(--shop-primary)' }} />
-                  ของแท้ 100%
+                  คัดสรรคุณภาพ
                 </div>
                 <div className="flex items-center gap-1">
                   <Truck size={12} style={{ color: 'var(--shop-primary)' }} />

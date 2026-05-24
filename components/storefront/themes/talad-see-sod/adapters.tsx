@@ -49,7 +49,7 @@ export function TaladSeeSodFooterAdapter(props: ScaffoldFooterProps) {
 }
 
 const DEFAULT_TALAD_ANNOUNCEMENT =
-  'ส่งฟรีเมื่อช้อปครบ ฿199.- · ร้านแนะนำของแท้ 100%';
+  'ส่งฟรีเมื่อช้อปครบ ฿199.- · ร้านแนะนำคัดสรรคุณภาพ';
 
 export function TaladSeeSodStripAdapter(props: ScaffoldStripProps) {
   const message = props.message?.trim() || DEFAULT_TALAD_ANNOUNCEMENT;

@@ -242,7 +242,7 @@ export default function ProductDetail({ store, product, related }: ProductDetail
             </div>
             <div className="border-4 border-black bg-pink-500 text-white p-3 text-center">
               <ShieldCheck className="w-6 h-6 mx-auto mb-1" />
-              <p className="text-[10px] font-black uppercase tracking-widest">ของแท้ 100%</p>
+              <p className="text-[10px] font-black uppercase tracking-widest">คัดสรรคุณภาพ</p>
             </div>
             <div className="border-4 border-black bg-blue-600 text-white p-3 text-center">
               <Zap className="w-6 h-6 mx-auto mb-1" />

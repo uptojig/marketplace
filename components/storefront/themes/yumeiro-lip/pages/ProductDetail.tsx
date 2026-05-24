@@ -143,7 +143,7 @@ const DEFAULT_FINISH_NOTES = [
 const DEFAULT_TRUST_BADGES = [
   { icon: Truck, label: 'ส่งฟรี ฿590+', desc: 'ส่งภายใน 24 ชม.' },
   { icon: RotateCcw, label: 'คืนได้ 14 วัน', desc: 'หากซีลไม่แกะ' },
-  { icon: ShieldCheck, label: 'ของแท้ 100%', desc: 'จากแบรนด์โดยตรง' },
+  { icon: ShieldCheck, label: 'คัดสรรคุณภาพ', desc: 'จากแบรนด์โดยตรง' },
 ];
 
 // ───────────────────────────────────────────────────────────────────
