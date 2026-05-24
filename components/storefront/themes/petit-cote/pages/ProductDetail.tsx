@@ -579,7 +579,7 @@ export function PetitCoteProductDetail({ store, product, related }: ProductDetai
               {[
                 { Icon: Truck, label: 'ส่งฟรี', detail: 'ทั่วไทย ฿1,500+' },
                 { Icon: RotateCcw, label: 'คืนได้', detail: 'ภายใน 14 วัน' },
-                { Icon: ShieldCheck, label: 'รับประกัน', detail: 'ของแท้ 100%' },
+                { Icon: ShieldCheck, label: 'รับประกัน', detail: 'คัดสรรคุณภาพ' },
               ].map(({ Icon, label, detail }) => (
                 <li
                   key={label}

@@ -93,7 +93,7 @@ export function Footer({ store, categories, availableSupportPages = [] }: Footer
               {blurb}
             </p>
             <div className="bg-yellow-300 text-[#dc2626] text-[10px] font-[family:var(--font-kanit)] font-black border border-red-500 px-2 py-1 inline-block rotate-[-1deg] shadow-sm">
-              ส่งเร็วพิเศษ · รับประกันของแท้
+              ส่งเร็วพิเศษ · คัดสรรคุณภาพ
             </div>
           </div>
 

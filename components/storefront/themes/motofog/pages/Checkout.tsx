@@ -274,7 +274,7 @@ export function MotoFogCheckout({ store }: CheckoutProps) {
                     style={{ color: 'var(--shop-accent, #FFC72C)' }}
                   >
                     <ShieldCheck className="h-3 w-3" />
-                    ไม่มีบริการเก็บเงินปลายทาง (COD)
+                    
                   </div>
                 </div>
               </div>

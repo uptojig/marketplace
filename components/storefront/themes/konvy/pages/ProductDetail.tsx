@@ -331,7 +331,7 @@ export default function ProductDetail({
           {/* Trust badges */}
           <div className="grid grid-cols-3 gap-2 py-5 border-t border-[var(--shop-border)] mb-6">
             {[
-              { Icon: ShieldCheck, label: 'ของแท้ 100%' },
+              { Icon: ShieldCheck, label: 'คัดสรรคุณภาพ' },
               { Icon: Truck, label: 'ส่งฟรี ฿590+' },
               { Icon: Sparkles, label: 'จ่าย ANYPAY' },
             ].map(({ Icon, label }) => (

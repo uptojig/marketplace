@@ -676,7 +676,7 @@ function FeatureCards() {
         />
         <FeatureCard
           icon={<ShieldCheck className="h-7 w-7" />}
-          title="ของแท้ 100%"
+          title="คัดสรรคุณภาพ"
           subtitle="รับประกันจากร้าน · มีใบกำกับภาษีให้ทุกออเดอร์"
         />
         <FeatureCard

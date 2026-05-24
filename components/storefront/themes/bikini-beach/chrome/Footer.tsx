@@ -33,6 +33,7 @@ export interface SocialLink {
 
 export interface FooterProps {
   storeName?: string;
+  storeLogoUrl?: string | null;
   tagline?: string;
   navColumns?: FooterNavColumn[];
   paymentMethods?: string[];
@@ -86,6 +87,7 @@ const SOCIAL_ICON: Record<string, React.ReactNode> = {
  */
 export function Footer({
   storeName = 'BIKINI551',
+  storeLogoUrl,
   tagline = 'Fashion beachwear · Quality goods · Fast shipping · บีกีนี่และชุดว่ายน้ำสำหรับผู้หญิงเอเชีย ทุก body shape · ตั้งแต่ปี 2566',
   navColumns = DEFAULT_NAV,
   paymentMethods = DEFAULT_PAYMENT,
@@ -105,7 +107,21 @@ export function Footer({
       <div className="bk-container">
         <div className="bk-footer-grid">
           <div>
-            <h4>{storeName}</h4>
+            {storeLogoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={storeLogoUrl}
+                alt={storeName}
+                style={{
+                  maxHeight: 56,
+                  width: 'auto',
+                  display: 'block',
+                  marginBottom: 12,
+                }}
+              />
+            ) : (
+              <h4>{storeName}</h4>
+            )}
             <p className="bk-footer-tag">{tagline}</p>
             <div className="bk-footer-social">
               {socialLinks.map((s) => (

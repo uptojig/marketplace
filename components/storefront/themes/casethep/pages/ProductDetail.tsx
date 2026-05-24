@@ -403,7 +403,7 @@ export default function ProductDetail({ store, product, related }: ProductDetail
           <div className="grid grid-cols-3 gap-3 pt-2">
             {[
               { icon: Truck, label: 'ส่งใน 1–3 วัน' },
-              { icon: ShieldCheck, label: 'ของแท้ 100%' },
+              { icon: ShieldCheck, label: 'คัดสรรคุณภาพ' },
               { icon: RefreshCw, label: 'เปลี่ยน/คืน 7 วัน' },
             ].map((t) => (
               <div

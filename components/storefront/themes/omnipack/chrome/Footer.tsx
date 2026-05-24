@@ -77,7 +77,7 @@ export function OmnipackFooter(props: FooterProps) {
             >
               ANYPAY
             </span>
-            <span>จ่ายผ่าน ANYPAY · ไม่มีเก็บปลายทาง</span>
+            <span>จ่ายผ่าน ANYPAY</span>
           </div>
         </div>
       </div>

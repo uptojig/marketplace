@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   ShoppingBag,
@@ -35,11 +35,17 @@ export default function Cart({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const items = useCart((s) =>
-    s.lines.filter((line) => line.storeSlug === store.slug),
-  );
+  // Subscribe to the stable lines array and derive the per-store slice
+  // with useMemo. Filtering inside the selector returns a new array on
+  // every store mutation → triggers React error #185 (Maximum update
+  // depth exceeded).
+  const allLines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
+  const items = useMemo(
+    () => allLines.filter((line) => line.storeSlug === store.slug),
+    [allLines, store.slug],
+  );
 
   const subtotal = items.reduce(
     (sum, line) => sum + line.priceTHB * line.qty,

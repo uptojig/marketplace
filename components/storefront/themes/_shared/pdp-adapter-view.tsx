@@ -372,7 +372,7 @@ export function PdpAdapterView({
               />
               <Badge
                 icon={<ShieldCheck className="h-4 w-4" />}
-                title="ของแท้ 100%"
+                title="คัดสรรคุณภาพ"
                 body="คัดสรรโดยร้านค้า"
               />
               <Badge

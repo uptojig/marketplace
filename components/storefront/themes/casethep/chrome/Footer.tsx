@@ -112,7 +112,7 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: F
               <ShieldCheck className="w-4 h-4" />
             </span>
             <div>
-              <p className="font-medium">ของแท้ 100%</p>
+              <p className="font-medium">คัดสรรคุณภาพ</p>
               <p className="text-[11px] text-[color:var(--shop-ink-muted,#6B7280)]">รับประกันคุณภาพ</p>
             </div>
           </div>
