@@ -22,6 +22,7 @@ const BACKFILL_COOLDOWN_MS = 5 * 60 * 1000;
 import { ShopFloatingButtons } from "@/components/shop/ShopFloatingButtons";
 import { CookiesBar } from "@/components/shop/CookiesBar";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
+import { SkinPicker } from "@/components/storefront/skin-picker";
 import { resolveFamily } from "@/lib/landing/families";
 import { resolveStoreTheme } from "@/lib/storefront/resolve-store-theme";
 import { getStoreBySlug } from "@/lib/storefront/get-store";
@@ -495,6 +496,7 @@ export default async function ShopLayout({
             <CookiesBar />
             <ShopFloatingButtons primaryColor={familyAccent ?? tokens.accent} />
             <CartDrawer storeSlug={store.slug} />
+            <SkinPicker templateId={store.templateId} />
           </>
         }
       />
@@ -607,6 +609,7 @@ export default async function ShopLayout({
           <CookiesBar />
           <ShopFloatingButtons primaryColor={accent} />
           <CartDrawer storeSlug={store.slug} />
+            <SkinPicker templateId={store.templateId} />
         </>
       }
     />
