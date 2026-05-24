@@ -448,7 +448,7 @@ export default async function ShopLayout({
       : { tokens: undefined, themeClass: undefined };
     const { tokens, themeClass } = resolveChromeTokens({
       templateId: undefined,
-      primaryColor: family?.themeColor ?? store.primaryColor,
+      primaryColor: store.primaryColor ?? family?.themeColor,
       override: preset.tokens,
     });
     // Family E retains its theme-cyber back-compat alias.
@@ -500,22 +500,22 @@ export default async function ShopLayout({
   }
 
   // Primary accent precedence:
-  //   1. Design family's themeColor (resolveFamily handles A-I codes
+  //   1. Operator-set store.primaryColor (manual override always wins —
+  //      operators reported their picker choice silently overridden by
+  //      the family default; #120 flipped this so the admin UI's color
+  //      actually applies to the rendered storefront)
+  //   2. Design family's themeColor (resolveFamily handles A-I codes
   //      AND legacy "minimal" / "cute" via LEGACY_TO_FAMILY mapping)
-  //   2. Operator-set store.primaryColor (manual override)
   //   3. Default brand blue
-  // Operator picks a family in the landing-form picker, and we expect
-  // the WHOLE storefront (cart / product / contact / category) to
-  // cascade to the same accent — not just the agent-rendered home.
-  // Legacy values that pre-date the v3 picker still get a real family
-  // color so old stores aren't stuck on default blue.
+  // Legacy stores with no operator color still get a real family color
+  // via the fallback so old stores aren't stuck on default blue.
   const effectiveTpl = effectiveTemplateId(store);
   const template = effectiveTpl && effectiveTpl in STORE_TEMPLATES
     ? STORE_TEMPLATES[effectiveTpl as TemplateId]
     : null;
 
   const family = resolveFamily(store.landingThemeVariant);
-  const primary = family?.themeColor ?? store.primaryColor ?? "#0f172a";
+  const primary = store.primaryColor ?? family?.themeColor ?? "#0f172a";
 
   const categoryRows = await prisma.product.findMany({
     where: { storeId: store.id, active: true, categoryName: { not: null } },

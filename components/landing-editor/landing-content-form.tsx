@@ -25,12 +25,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import type {
-  ColorOverrides,
-  CtaBlock,
-  FaqItem,
-  FeaturedTile,
-  Testimonial,
+import {
+  isValidLandingUrl,
+  LANDING_URL_HINT,
+  type ColorOverrides,
+  type CtaBlock,
+  type FaqItem,
+  type FeaturedTile,
+  type Testimonial,
 } from "@/lib/store/landing-content";
 import {
   uiConfigSchema,
@@ -271,8 +273,8 @@ export function LandingContentForm({
               onChange={(s) => update("heroCtaLabel", s)}
               placeholder={themeDefaults.heroCtaLabel ?? "เช่น เลือกซื้อเลย"}
             />
-            <FieldText
-              label="ปุ่ม CTA — ลิงก์"
+            <FieldUrl
+              label="ปุ่ม CTA — ลิงก์ปลายทาง (URL)"
               value={v.heroCtaUrl}
               onChange={(s) => update("heroCtaUrl", s)}
               placeholder={themeDefaults.heroCtaUrl ?? "/category/featured หรือ https://..."}
@@ -287,7 +289,7 @@ export function LandingContentForm({
             previewHeight={300}
             cover
           />
-          <FieldText
+          <FieldUrl
             label="วิดีโอ Hero (URL)"
             value={v.heroVideoUrl}
             onChange={(s) => update("heroVideoUrl", s)}
@@ -337,8 +339,8 @@ export function LandingContentForm({
               "ส่งฟรี 990+"
             }
           />
-          <FieldText
-            label="ลิงก์"
+          <FieldUrl
+            label="ลิงก์ปลายทาง (URL)"
             value={v.announcementLinkUrl}
             onChange={(s) => update("announcementLinkUrl", s)}
             placeholder="/promo/free-shipping"
@@ -370,7 +372,7 @@ export function LandingContentForm({
             previewHeight={320}
             cover
           />
-          <FieldText
+          <FieldUrl
             label="วิดีโอ (URL)"
             value={v.aboutVideoUrl}
             onChange={(s) => update("aboutVideoUrl", s)}
@@ -410,8 +412,8 @@ export function LandingContentForm({
                   onChange={(s) => set({ ...item, label: s })}
                   placeholder="กระเป๋าผู้หญิง"
                 />
-                <FieldText
-                  label="ลิงก์ (href)"
+                <FieldUrl
+                  label="ลิงก์ปลายทาง (URL หรือ /path)"
                   value={item.href ?? ""}
                   onChange={(s) => set({ ...item, href: s })}
                   placeholder="/category/bags"
@@ -450,10 +452,11 @@ export function LandingContentForm({
                     value={item.ctaLabel ?? ""}
                     onChange={(s) => set({ ...item, ctaLabel: s })}
                   />
-                  <FieldText
-                    label="ปุ่ม — ลิงก์"
+                  <FieldUrl
+                    label="ปุ่ม — ลิงก์ปลายทาง (URL)"
                     value={item.ctaUrl ?? ""}
                     onChange={(s) => set({ ...item, ctaUrl: s })}
+                    placeholder="/category/sale หรือ https://..."
                   />
                 </div>
                 <FieldImage
@@ -683,6 +686,42 @@ function FieldText({
           placeholder={placeholder}
           className="mt-1"
         />
+      )}
+    </div>
+  );
+}
+
+// Mirrors `optionalUrl` from `lib/store/landing-content.ts` so the operator
+// gets the same accept/reject decision client-side as they would server-side
+// — but with a friendly inline Thai hint so they know how to recover. The
+// server validator still runs on PUT, so this is purely a UX layer.
+function FieldUrl({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (s: string) => void;
+  placeholder?: string;
+}) {
+  const trimmed = value.trim();
+  const invalid = trimmed.length > 0 && !isValidLandingUrl(trimmed);
+  return (
+    <div>
+      <Label>{label}</Label>
+      <Input
+        type="text"
+        inputMode="url"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-invalid={invalid || undefined}
+        className={`mt-1 ${invalid ? "border-rose-400 focus-visible:ring-rose-300" : ""}`}
+      />
+      {invalid && (
+        <p className="mt-1 text-xs text-rose-600">{LANDING_URL_HINT}</p>
       )}
     </div>
   );
