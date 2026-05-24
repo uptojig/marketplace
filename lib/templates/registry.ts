@@ -643,7 +643,11 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: CasethepHomepageAdapter,
-      catalog: casethep_Catalog,
+      // FALLBACK: bespoke casethep_Catalog 500s on production despite
+      // tsc/build passing. Swap to the shared makeCatalogAdapter('01')
+      // (rounded-2xl grid that fits the casethep minimal aesthetic) so
+      // /category renders cleanly while we debug the bespoke one.
+      catalog: makeCatalogAdapter('01'),
       pdp: casethep_ProductDetail,
       cart: casethep_Cart,
       checkout: casethep_Checkout,
