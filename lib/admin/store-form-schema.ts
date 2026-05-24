@@ -62,6 +62,7 @@ export const storeBrandingSchema = z.object({
   templateId: z.string().optional().nullable(),
   landingThemeVariant: z.string().optional().nullable(),
   themeAccentOverride: hexColor.optional().nullable(),
+  themeAccentSecondary: hexColor.optional().nullable(),
 })
 
 // ── C. Address ─────────────────────────────────────────────────────────────
