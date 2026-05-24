@@ -374,7 +374,7 @@ export default function ProductDetail({ store, product, related }: ProductDetail
                 style={{ color: 'var(--shop-accent, #00BFFF)' }}
               />
               <span className="text-[10px] tracking-wider uppercase text-[#9CA3AF] font-[family:var(--font-kanit)] font-semibold">
-                รับประกันของแท้
+                คัดสรรคุณภาพ
               </span>
             </div>
           </div>

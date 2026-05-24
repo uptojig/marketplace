@@ -1,7 +1,40 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, ShoppingCart, Zap, Tag, Bell } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
+
+/**
+ * LiveClock — minimal Thai date+time chip rendered in the utility
+ * top-bar. Updates every second on the client; SSR pass leaves the
+ * value blank (suppressHydrationWarning) so the time doesn't differ
+ * between server render and client mount.
+ */
+function LiveClock() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  if (!now) {
+    return <span suppressHydrationWarning className="opacity-0">--/-- --:--:--</span>;
+  }
+  const date = now.toLocaleDateString('th-TH', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  const time = now.toLocaleTimeString('th-TH', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+  return (
+    <span suppressHydrationWarning>
+      {date} · {time}
+    </span>
+  );
+}
 
 export interface HeaderProps {
   storeSlug: string;
@@ -39,12 +72,9 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
       >
         <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between text-[color:var(--shop-ink-muted)]">
           <span className="hidden sm:inline">ยินดีต้อนรับสู่ {storeName}</span>
-          <div className="flex items-center gap-4 ml-auto">
-            <span className="flex items-center gap-1">
-              <Bell size={11} /> แจ้งเตือนดีล
-            </span>
-            <span className="hidden sm:inline">ติดตามคำสั่งซื้อ</span>
-            <span className="hidden md:inline">ดาวน์โหลดแอพ</span>
+          <div className="flex items-center gap-2 ml-auto tabular-nums">
+            <Bell size={11} />
+            <LiveClock />
           </div>
         </div>
       </div>

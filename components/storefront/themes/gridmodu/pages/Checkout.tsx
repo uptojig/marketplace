@@ -204,7 +204,7 @@ export default function Checkout({ store }: CheckoutProps) {
                 />
               </div>
               <p className="mt-3 text-[10px] tracking-wider uppercase text-[#6B7280] font-[family:var(--font-kanit)] font-semibold">
-                ไม่รับเก็บเงินปลายทาง (NO COD)
+                
               </p>
             </div>
           </fieldset>

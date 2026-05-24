@@ -74,7 +74,7 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: P
   ]);
 
   const trustIcons = [
-    { Icon: Sparkles, title: 'ของแท้ 100%', sub: 'ตรวจคุณภาพก่อนส่งทุกชิ้น' },
+    { Icon: Sparkles, title: 'คัดสรรคุณภาพ', sub: 'ตรวจคุณภาพก่อนส่งทุกชิ้น' },
     { Icon: Truck, title: 'ส่งฟรีทั่วประเทศ', sub: 'เมื่อสั่งครบ ฿590' },
     { Icon: Headphones, title: 'ดูแลโดยทีมงานคนไทย', sub: 'แชทตอบไว 09:00-22:00' },
     { Icon: ShieldCheck, title: 'จ่ายผ่าน ANYPAY', sub: 'พร้อมเพย์ · บัตร · TrueMoney' },
@@ -258,7 +258,7 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: P
                       href={`/stores/${store.slug}/help#authentic`}
                       className="hover:text-[var(--shop-primary)] transition-colors"
                     >
-                      รับประกันของแท้
+                      คัดสรรคุณภาพ
                     </Link>
                   </li>
                 </>

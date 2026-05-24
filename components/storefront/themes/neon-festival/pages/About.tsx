@@ -21,7 +21,7 @@ const DEFAULT_DESCRIPTION =
 const VALUES = [
   { icon: Zap, title: 'Bold Energy', desc: 'แสงสีและพลังเทศกาลในทุกชิ้น' },
   { icon: Star, title: 'Festival First', desc: 'คัดสรรเพื่อสายงานเทศกาลโดยเฉพาะ' },
-  { icon: ShieldCheck, title: 'Of Course', desc: 'ของแท้ 100% รับประกันคืนเงิน 7 วัน' },
+  { icon: ShieldCheck, title: 'Of Course', desc: 'คัดสรรคุณภาพ รับประกันคืนเงิน 7 วัน' },
   { icon: Heart, title: 'Made With Love', desc: 'ทุกออเดอร์แพ็คอย่างใส่ใจ' },
 ];
 

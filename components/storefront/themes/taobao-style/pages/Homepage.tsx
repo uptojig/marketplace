@@ -140,7 +140,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
             </h1>
 
             <p className="text-white font-[family:var(--font-prompt)] text-sm sm:text-base max-w-xl">
-              รวมสินค้ายอดฮิตจาก {store.name} · ส่งตรงจากผู้ขาย · เก็บเงินปลายทางได้ทุกออเดอร์
+              รวมสินค้ายอดฮิตจาก {store.name} · ส่งตรงจากผู้ขาย
             </p>
 
             {/* Live countdown */}

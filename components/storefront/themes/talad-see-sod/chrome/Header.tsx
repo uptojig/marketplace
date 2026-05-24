@@ -39,7 +39,7 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
             </a>
             
             <div className="hidden lg:block bg-yellow-300 text-red-700 text-[10px] font-[family:var(--font-kanit)] font-extrabold uppercase border border-red-700 px-1.5 py-0.5 rounded shadow-sm rotate-3">
-              ของแท้ 100%
+              คัดสรรคุณภาพ
             </div>
           </div>
 
