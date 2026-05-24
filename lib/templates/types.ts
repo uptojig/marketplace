@@ -36,7 +36,8 @@ export type TemplateGroup =
   | 'everyday'
   | 'taobao'
   | 'packaging'
-  | 'neon';
+  | 'neon'
+;
 
 export type TemplateId =
   // Legacy aliases — referenced by `LEGACY_SLUG_TEMPLATE`
@@ -88,7 +89,9 @@ export type TemplateId =
   | 'omnipack'
   | 'blackwrapp'
   | 'gridmodu'
-  | 'motofog';
+  | 'motofog'
+  | 'casethep';
+
 
 
 
