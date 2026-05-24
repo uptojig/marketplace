@@ -294,60 +294,6 @@ export function Homepage({
         shopUrl={shopUrl}
         onQuickAdd={onQuickAdd}
       />
-      {/* BESTSELLERS (legacy single-page render, unreachable) */}
-      <section className="bk-section" style={{ display: 'none' }}>
-        <div className="bk-container">
-          <div className="bk-section-head">
-            <div>
-              <span className="bk-kicker">★ Customer Favorites</span>
-              <h2>เบสต์เซลเลอร์ <em className="bk-grad-coral" style={{ fontStyle: 'normal' }}>ขายดีที่สุด</em></h2>
-            </div>
-            <a className="bk-btn bk-btn-ghost bk-btn-sm" href={shopUrl}>ดูทั้งหมด <IconArrowRight size={14} /></a>
-          </div>
-          <div className="bk-products-grid">
-            {featuredProducts.slice(0, 8).map((p) => (
-              <a key={p.id} className="bk-pcard" href={`/shop/${p.slug}`}>
-                <div className={`bk-pcard-img ${p.bgVariant ?? 'bg-rose'}`}>
-                  {p.tag && (
-                    <div className="bk-pcard-tags">
-                      <span className={`bk-tag bk-tag-${p.tag}`}>{p.tagLabel ?? p.tag.toUpperCase()}</span>
-                    </div>
-                  )}
-                  <button type="button" className="bk-pcard-fav" aria-label="Add to wishlist" onClick={(e) => { e.preventDefault(); }}><IconHeart size={16} /></button>
-                  {p.illustration}
-                  <button type="button" className="bk-pcard-quick" onClick={(e) => { e.preventDefault(); onQuickAdd?.(p.id); }}>
-                    <IconEye size={14} /> ดูสินค้า
-                  </button>
-                </div>
-                <div className="bk-pcard-info">
-                  <div className="bk-pcard-name">{p.name}</div>
-                  {p.desc && <div className="bk-pcard-desc">{p.desc}</div>}
-                  <div className="bk-pcard-foot">
-                    <div>
-                      <span className="bk-price">฿{p.price.toLocaleString()}</span>
-                      {p.was && <span className="bk-was">฿{p.was.toLocaleString()}</span>}
-                    </div>
-                    {p.rating && (
-                      <div className="bk-meta">
-                        <IconStarFilled size={11} className="star" />
-                        {p.rating} {p.reviewCount && `(${p.reviewCount})`}
-                      </div>
-                    )}
-                  </div>
-                  {p.colors && (
-                    <div className="bk-pcard-colors">
-                      {p.colors.map((c, i) => (
-                        <div key={i} className="bk-pcard-color" style={{ background: c }} />
-                      ))}
-                      {p.extraColorCount && <div className="bk-pcard-color more">+{p.extraColorCount}</div>}
-                    </div>
-                  )}
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* LOOKBOOK TEASER */}
       <section className="bk-section bk-section-coral">
