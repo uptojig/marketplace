@@ -1,0 +1,39 @@
+/**
+ * {{THEME_NAME}} palette — scaffolded by `pnpm theme:new`.
+ *
+ * The 9 family CSS vars (--shop-primary, --shop-accent, --shop-ink,
+ * --shop-bg, --shop-bg-soft, --shop-muted, --shop-border,
+ * --shop-savings, --shop-ink-muted) come from the family detector in
+ * `lib/landing/<family>.ts`. The extended hex below is for state colors
+ * (hover / dark / semantic) that don't fit the standard --shop-* surface.
+ *
+ * Replace these placeholders with the final brand palette once the
+ * designer signs off.
+ */
+
+import type { BlockPalette } from '../_shared/palette';
+
+export const {{THEME_CONST}}_PALETTE: BlockPalette = {
+  background: '{{BG}}',
+  muted: '{{BG}}',
+  card: '#ffffff',
+  cardForeground: '{{INK}}',
+  border: '{{ACCENT}}',
+  foreground: '{{INK}}',
+  mutedForeground: '{{INK}}',
+  primary: '{{PRIMARY}}',
+  primaryForeground: '#ffffff',
+};
+
+export const {{THEME_CONST}}_HEX = {
+  primary: '{{PRIMARY}}',
+  primaryHover: '{{PRIMARY}}',
+  primaryDark: '{{PRIMARY}}',
+  accent: '{{ACCENT}}',
+  ink: '{{INK}}',
+  bg: '{{BG}}',
+  success: '#16a34a',
+  warning: '#f59e0b',
+  error: '#dc2626',
+  info: '#2563eb',
+} as const;
