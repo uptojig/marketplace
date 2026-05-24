@@ -22,14 +22,12 @@ import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 
-export function CartDrawer() {
-  const openDrawer = useCart((s) => s.openDrawer);
+export function CartDrawer({ storeSlug }: { storeSlug?: string } = {}) {
   const count = useCart((s) => s.lines.reduce((acc, l) => acc + l.qty, 0));
-
+  const href = storeSlug ? `/stores/${storeSlug}/cart` : '/cart';
   return (
-    <button
-      type="button"
-      onClick={openDrawer}
+    <Link
+      href={href}
       aria-label="เปิดตะกร้า"
       className="relative p-2 text-stone-600 hover:text-stone-900 transition-colors"
     >
@@ -39,7 +37,7 @@ export function CartDrawer() {
           {count}
         </span>
       )}
-    </button>
+    </Link>
   );
 }
 
