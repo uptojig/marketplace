@@ -67,10 +67,9 @@ const DEFAULT_SOCIAL: SocialLink[] = [
 const DEFAULT_PAYMENT = [
   'VISA',
   'MC',
-  'AMEX',
+  'JCB',
   'PROMPTPAY',
   'TRUEMONEY',
-  'COD',
 ];
 
 const SOCIAL_ICON: Record<string, React.ReactNode> = {
