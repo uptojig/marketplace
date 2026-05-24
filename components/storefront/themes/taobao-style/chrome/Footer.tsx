@@ -149,22 +149,22 @@ export function Footer({ store, categories }: FooterProps) {
               style={{ color: 'var(--shop-ink-muted)' }}
             >
               <li>
-                <Link href={`/stores/${store.slug}/help`} className="hover:underline">
+                <Link href={`/stores/${store.slug}/help/order-guide`} className="hover:underline">
                   วิธีการสั่งซื้อ
                 </Link>
               </li>
               <li>
-                <Link href={`/stores/${store.slug}/shipping`} className="hover:underline">
+                <Link href={`/stores/${store.slug}/help/shipping`} className="hover:underline">
                   การจัดส่ง · ค่าส่ง
                 </Link>
               </li>
               <li>
-                <Link href={`/stores/${store.slug}/returns`} className="hover:underline">
+                <Link href={`/stores/${store.slug}/help/refund`} className="hover:underline">
                   การคืนสินค้า · คืนเงิน
                 </Link>
               </li>
               <li>
-                <Link href={`/stores/${store.slug}/help#warranty`} className="hover:underline">
+                <Link href={`/stores/${store.slug}/help/warranty`} className="hover:underline">
                   รับประกันของแท้
                 </Link>
               </li>
