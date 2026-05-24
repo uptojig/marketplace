@@ -131,18 +131,15 @@ export function Homepage({ store, products, categories }: HomepageProps) {
             </div>
 
             <h1
-              className="font-[family:var(--font-kanit)] font-black text-3xl sm:text-4xl lg:text-5xl leading-tight text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"
+              className="font-[family:var(--font-kanit)] font-black text-3xl sm:text-4xl lg:text-5xl leading-tight text-white"
             >
               ดีลร้อนที่สุดของวัน <br className="hidden sm:inline" />
-              <span
-                className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
-                style={{ color: 'var(--shop-accent)' }}
-              >
+              <span style={{ color: 'var(--shop-accent)' }}>
                 เริ่มต้นเพียง ฿9.-
               </span>
             </h1>
 
-            <p className="text-white font-[family:var(--font-prompt)] text-sm sm:text-base max-w-xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.35)]">
+            <p className="text-white font-[family:var(--font-prompt)] text-sm sm:text-base max-w-xl">
               รวมสินค้ายอดฮิตจาก {store.name} · ส่งตรงจากผู้ขาย · เก็บเงินปลายทางได้ทุกออเดอร์
             </p>
 
