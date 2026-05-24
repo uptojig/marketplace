@@ -634,7 +634,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'casethep',
     name: 'Casethep',
     description: 'เคสมือถือ accessories tech สไตล์ Neo-Brutalism Pop-Art',
-    group: 'electronics-tech',
+    group: 'specialty',
     behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
     chrome: {
       Header: CasethepHeaderAdapter,
