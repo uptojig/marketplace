@@ -199,7 +199,7 @@ export function Footer({ store, categories, availableSupportPages = [] }: Footer
 
         {/* Bottom footer */}
         <div className="pt-8 border-t border-[#fdba74] text-center text-xs text-[#9a3412] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© {currentYear} {store.name}. จัดส่งจากกรุงเทพฯ ประเทศไทย.</p>
+          <p>© {currentYear} {store.name}.</p>
           <div className="flex gap-4">
             <span className="font-extrabold text-[10px] text-yellow-600 bg-yellow-100 border border-yellow-200 px-2 py-0.5 rounded">KANIT BLACK DESIGN</span>
           </div>

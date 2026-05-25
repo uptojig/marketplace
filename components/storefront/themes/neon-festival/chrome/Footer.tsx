@@ -220,7 +220,6 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: F
               </Link>
             )}
           </div>
-          <p>Bangkok, Thailand</p>
         </div>
       </div>
     </footer>

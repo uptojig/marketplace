@@ -17,7 +17,7 @@ export function TinyhandWoodenToysHeaderAdapter(props: ScaffoldHeaderProps) {
 }
 
 export function TinyhandWoodenToysFooterAdapter(props: ScaffoldFooterProps) {
-  return <TinyhandFooter storeName={props.store.name} storeSlug={props.store.slug} />;
+  return <TinyhandFooter store={props.store} />;
 }
 
 export function TinyhandWoodenToysStripAdapter(props: ScaffoldStripProps) {

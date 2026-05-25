@@ -6,9 +6,24 @@ export interface FooterProps {
     name: string;
     slug: string;
     logoUrl?: string | null;
+    description?: string | null;
+    tagline?: string | null;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
+    lineId?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    subdistrict?: string | null;
+    district?: string | null;
+    province?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
   };
   categories: string[];
 }
+
+const DEFAULT_BRAND_COPY =
+  'เสื้อผ้าคุณภาพ ออกแบบและตัดเย็บใส่ใจทุกขั้นตอน';
 
 export function Footer({ store, categories }: FooterProps) {
   const currentYear = new Date().getFullYear();
@@ -16,6 +31,27 @@ export function Footer({ store, categories }: FooterProps) {
     home: `/stores/${store.slug}`,
     shop: `/stores/${store.slug}/category`,
   };
+
+  const brandCopy =
+    store.description?.trim() ||
+    store.tagline?.trim() ||
+    DEFAULT_BRAND_COPY;
+
+  const addressParts = [
+    store.addressLine1,
+    store.addressLine2,
+    store.subdistrict,
+    store.district,
+    store.province,
+    store.postalCode,
+    store.country,
+  ].filter((p): p is string => Boolean(p && p.trim()));
+
+  const hasAnyContact =
+    addressParts.length > 0 ||
+    Boolean(store.contactEmail) ||
+    Boolean(store.contactPhone) ||
+    Boolean(store.lineId);
 
   return (
     <footer className="bg-[#0a0a0a] border-t border-[#1c1c1c]">
@@ -36,8 +72,7 @@ export function Footer({ store, categories }: FooterProps) {
               )}
             </a>
             <p className="font-[family:var(--font-prompt)] text-xs leading-relaxed text-[#e8e2d4]/50 max-w-sm">
-              ผ้าเนื้อหนา ตัดเรียบ ใส่ได้ทุกวัน — คอลเลกชันเสื้อผ้าสตรีทแวร์ไทย
-              เน้นโครงสร้างผ้า ตัดเย็บในกรุงเทพฯ จำนวนจำกัด 80 ตัวต่อคอลเลกชัน
+              {brandCopy}
             </p>
           </div>
 
@@ -94,15 +129,27 @@ export function Footer({ store, categories }: FooterProps) {
           </div>
 
           {/* Contact */}
-          <div className="md:col-span-2">
-            <span className="font-[family:var(--font-kanit)] text-[10px] font-black uppercase tracking-[0.25em] text-[#e8e2d4]/40 block mb-4">
-              ติดต่อ
-            </span>
-            <p className="font-[family:var(--font-prompt)] text-xs text-[#e8e2d4]/60 leading-relaxed">
-              กรุงเทพมหานคร<br />
-              ประเทศไทย
-            </p>
-          </div>
+          {hasAnyContact && (
+            <div className="md:col-span-2">
+              <span className="font-[family:var(--font-kanit)] text-[10px] font-black uppercase tracking-[0.25em] text-[#e8e2d4]/40 block mb-4">
+                ติดต่อ
+              </span>
+              <ul className="font-[family:var(--font-prompt)] text-xs text-[#e8e2d4]/60 leading-relaxed space-y-1.5">
+                {addressParts.length > 0 && <li>{addressParts.join(' ')}</li>}
+                {store.contactPhone && (
+                  <li>
+                    <a href={`tel:${store.contactPhone}`} className="hover:text-[#e8e2d4] transition-colors">{store.contactPhone}</a>
+                  </li>
+                )}
+                {store.contactEmail && (
+                  <li>
+                    <a href={`mailto:${store.contactEmail}`} className="hover:text-[#e8e2d4] transition-colors break-all">{store.contactEmail}</a>
+                  </li>
+                )}
+                {store.lineId && <li>LINE {store.lineId}</li>}
+              </ul>
+            </div>
+          )}
 
         </div>
       </div>
@@ -114,7 +161,7 @@ export function Footer({ store, categories }: FooterProps) {
             © {currentYear} {store.name}
           </span>
           <span className="font-[family:var(--font-kanit)] text-[9px] font-black uppercase tracking-[0.3em] text-[#e8e2d4]/20">
-            MONO EIGHT · BANGKOK
+            MONO EIGHT
           </span>
         </div>
       </div>

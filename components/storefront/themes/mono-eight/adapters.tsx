@@ -26,10 +26,7 @@ export function MonoEightHeaderAdapter(props: ScaffoldHeaderProps) {
 export function MonoEightFooterAdapter(props: ScaffoldFooterProps) {
   return (
     <MonoEightFooter
-      store={{
-        name: props.store.name,
-        slug: props.store.slug,
-      }}
+      store={props.store}
       categories={props.categories ?? []}
     />
   );

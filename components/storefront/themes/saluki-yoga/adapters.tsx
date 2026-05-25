@@ -23,13 +23,7 @@ export function SalukiYogaHeaderAdapter(props: ScaffoldHeaderProps) {
 }
 
 export function SalukiYogaFooterAdapter(props: ScaffoldFooterProps) {
-  return (
-    <SalukiFooter 
-      storeSlug={props.store.slug}
-      storeName={props.store.name}
-      tagline="เสื้อผ้าโยคะและพีลาทิส ผลิตจากผ้ารีไซเคิล"
-    />
-  );
+  return <SalukiFooter store={props.store} />;
 }
 
 export function SalukiYogaStripAdapter(props: ScaffoldStripProps) {
