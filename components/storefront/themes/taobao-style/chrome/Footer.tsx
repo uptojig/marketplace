@@ -38,7 +38,7 @@ export function Footer({ store, categories }: FooterProps) {
     { Icon: ShieldCheck, title: 'คัดสรรคุณภาพ', sub: 'ทุกออเดอร์ตรวจก่อนส่ง 100%' },
     { Icon: Truck, title: 'ส่งฟรีทั่วประเทศ', sub: 'เมื่อสั่งครบ ฿199.-' },
     { Icon: Headphones, title: 'แชทตอบไว 24 ชม.', sub: 'มีทีมงานคนไทยดูแล' },
-    { Icon: CreditCard, title: 'จ่ายผ่าน ANYPAY', sub: 'พร้อมเพย์ · บัตรเครดิต · TrueMoney' },
+    { Icon: CreditCard, title: 'จ่ายผ่าน ANYPAY', sub: 'สะดวก ปลอดภัย ได้มาตรฐาน' },
   ];
 
   return (
@@ -217,7 +217,7 @@ export function Footer({ store, categories }: FooterProps) {
           <p>
             © {year} {store.name} · ทุกการสั่งซื้อปลอดภัย รับประกันคืนเงิน
           </p>
-          <PaymentLogos compact only={['promptpay']} />
+
 
         </div>
       </div>

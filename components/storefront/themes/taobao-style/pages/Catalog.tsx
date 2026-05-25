@@ -1,7 +1,8 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Flame, Filter, Star, Timer, Zap, ArrowRight } from 'lucide-react';
+import { Flame, Filter, Star, Timer, ArrowRight } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
+import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import { soldChip, flashDeadlineSeconds } from '../palette';
 
@@ -56,6 +57,24 @@ export function Catalog({
   buildSortUrl,
 }: CatalogProps) {
   const add = useCart((s) => s.add);
+  const showConfirm = useCartConfirmation((s) => s.show);
+
+  // Price range filter (client-side)
+  const priceRanges = [
+    { label: 'ต่ำกว่า ฿99', min: 0, max: 99 },
+    { label: '฿100-499', min: 100, max: 499 },
+    { label: '฿500-999', min: 500, max: 999 },
+    { label: '฿1k+', min: 1000, max: Infinity },
+  ];
+  const [activePriceRange, setActivePriceRange] = useState<string | null>(null);
+
+  const displayProducts = useMemo(() => {
+    if (!activePriceRange) return pageProducts;
+    const range = priceRanges.find((r) => r.label === activePriceRange);
+    if (!range) return pageProducts;
+    return pageProducts.filter((p) => p.priceTHB >= range.min && p.priceTHB <= range.max);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageProducts, activePriceRange]);
 
   const handleAddToCart = (p: CatalogProduct, e: React.MouseEvent) => {
     e.preventDefault();
@@ -68,6 +87,7 @@ export function Catalog({
       priceTHB: p.priceTHB,
       imageUrl: p.imageUrl || undefined,
     });
+    showConfirm(p.title, store.slug);
   };
 
   const sortOptions = [
@@ -219,37 +239,32 @@ export function Catalog({
                 ช่วงราคา
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {['ต่ำกว่า ฿99', '฿100-499', '฿500-999', '฿1k+'].map((label) => (
-                  <span
-                    key={label}
-                    className="px-2.5 py-1 rounded-full text-[10px] font-[family:var(--font-prompt)] font-bold cursor-pointer"
-                    style={{
-                      background: 'var(--shop-muted)',
-                      color: 'var(--shop-ink)',
-                      border: `1px solid var(--shop-border)`,
-                    }}
-                  >
-                    {label}
-                  </span>
-                ))}
+                {priceRanges.map((range) => {
+                  const isActive = activePriceRange === range.label;
+                  return (
+                    <button
+                      key={range.label}
+                      onClick={() => setActivePriceRange(isActive ? null : range.label)}
+                      className="px-2.5 py-1 rounded-full text-[10px] font-[family:var(--font-prompt)] font-bold cursor-pointer transition-colors"
+                      style={
+                        isActive
+                          ? {
+                              background: 'var(--shop-primary-gradient, var(--shop-primary))',
+                              color: 'white',
+                              border: `1px solid var(--shop-primary)`,
+                            }
+                          : {
+                              background: 'var(--shop-muted)',
+                              color: 'var(--shop-ink)',
+                              border: `1px solid var(--shop-border)`,
+                            }
+                      }
+                    >
+                      {range.label}
+                    </button>
+                  );
+                })}
               </div>
-            </div>
-
-            {/* Free shipping toggle */}
-            <div
-              className="rounded-lg p-3 flex items-center gap-2"
-              style={{
-                background: 'var(--shop-bg-soft)',
-                border: `1px solid var(--shop-primary)`,
-              }}
-            >
-              <Zap size={14} style={{ color: 'var(--shop-primary)' }} />
-              <span
-                className="text-xs font-[family:var(--font-prompt)] font-bold"
-                style={{ color: 'var(--shop-primary)' }}
-              >
-                เฉพาะรายการส่งฟรี
-              </span>
             </div>
           </div>
         </aside>
@@ -315,7 +330,7 @@ export function Catalog({
           )}
 
           {/* Grid */}
-          {pageProducts.length === 0 ? (
+          {displayProducts.length === 0 ? (
             <div
               className="bg-white rounded-lg py-16 text-center"
               style={{ border: `1px solid var(--shop-border)` }}
@@ -324,12 +339,12 @@ export function Catalog({
                 className="text-sm font-[family:var(--font-prompt)] font-bold"
                 style={{ color: 'var(--shop-ink-muted)' }}
               >
-                ไม่พบสินค้าในตัวกรองนี้
+                ไม่พบสินค้าในช่วงราคานี้
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {pageProducts.map((p) => {
+              {displayProducts.map((p) => {
                 const sp = fakeSocialProof(p.id);
                 const hasDiscount = p.compareAtPriceTHB && p.compareAtPriceTHB > p.priceTHB;
                 const pct = hasDiscount

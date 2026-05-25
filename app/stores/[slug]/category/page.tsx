@@ -67,9 +67,11 @@ const TECH_MONO_FONT =
 export const dynamic = "force-dynamic";
 
 const SORT_OPTIONS: Record<string, { label: string; orderBy: { [k: string]: "asc" | "desc" } }> = {
+  recommended: { label: "แนะนำ", orderBy: { createdAt: "desc" } },
   newest: { label: "ใหม่ล่าสุด", orderBy: { createdAt: "desc" } },
   "price-asc": { label: "ราคาต่ำ → สูง", orderBy: { priceTHB: "asc" } },
   "price-desc": { label: "ราคาสูง → ต่ำ", orderBy: { priceTHB: "desc" } },
+  popular: { label: "ขายดี", orderBy: { createdAt: "asc" } },
 };
 
 const PAGE_SIZE = 12;

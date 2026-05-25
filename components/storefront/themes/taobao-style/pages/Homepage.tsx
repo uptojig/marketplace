@@ -10,6 +10,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
+import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import { soldChip, flashDeadlineSeconds } from '../palette';
 
@@ -44,6 +45,7 @@ export interface HomepageProps {
  */
 export function Homepage({ store, products, categories }: HomepageProps) {
   const add = useCart((s) => s.add);
+  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (p: HomepageProduct, e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,6 +58,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
       priceTHB: p.priceTHB,
       imageUrl: p.imageUrl || undefined,
     });
+    showConfirm(p.title, store.slug);
   };
 
   const urls = {
@@ -135,7 +138,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
             >
               ดีลร้อนที่สุดของวัน <br className="hidden sm:inline" />
               <span style={{ color: 'var(--shop-accent)' }}>
-                เริ่มต้นเพียง ฿9.-
+                เริ่มต้นเพียง ฿45.-
               </span>
             </h1>
 
@@ -255,7 +258,28 @@ export function Homepage({ store, products, categories }: HomepageProps) {
       {/* 2 · Category icon grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-10 gap-3">
-          {categories.slice(0, 10).map((c) => (
+          {/* All-categories button */}
+          <a
+            href={`/stores/${store.slug}/category`}
+            className="flex flex-col items-center gap-2 p-3 rounded-lg transition-colors hover:bg-[color:var(--shop-bg-soft)]"
+          >
+            <span
+              className="w-12 h-12 rounded-full flex items-center justify-center text-lg shadow-sm"
+              style={{
+                background: 'var(--shop-accent)',
+                color: 'var(--shop-ink)',
+              }}
+            >
+              <Tag size={18} />
+            </span>
+            <span
+              className="text-[11px] font-[family:var(--font-prompt)] font-semibold text-center line-clamp-1 w-full"
+              style={{ color: 'var(--shop-ink)' }}
+            >
+              ทั้งหมด
+            </span>
+          </a>
+          {categories.slice(0, 9).map((c) => (
             <a
               key={c}
               href={`${urls.shop}?cat=${encodeURIComponent(c)}`}
