@@ -67,6 +67,14 @@ export async function uploadBuffer(args: {
   contentType: string;
   body: Buffer | Uint8Array;
   fixedKey?: string;
+  /**
+   * When true, upload as a private object — no public-read ACL is set.
+   * Use for digital-product assets (PDF / XLSX / AI / ZIP) so the key
+   * alone can't unlock the file; callers must request a presigned
+   * download URL through `presignDownload()` gated on a DigitalUnlock.
+   * Default false preserves the legacy logo/image behaviour.
+   */
+  private?: boolean;
 }): Promise<{ key: string; publicUrl: string }> {
   const c = getClient();
   const key = args.fixedKey ? args.fixedKey.replace(/^\/+|\/+$/g, "") : buildKey(args.prefix, args.filename);
@@ -76,10 +84,10 @@ export async function uploadBuffer(args: {
       Key: key,
       Body: args.body,
       ContentType: args.contentType,
-      ACL: "public-read",
+      ACL: args.private ? "private" : "public-read",
     }),
   );
-  return { key, publicUrl: publicUrlFor(key) };
+  return { key, publicUrl: args.private ? "" : publicUrlFor(key) };
 }
 
 export interface PresignedUpload {

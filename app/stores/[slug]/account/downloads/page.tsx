@@ -204,19 +204,20 @@ export default async function DownloadsPage({
                               .{asset.fileFormat} · {asset.fileSizeMB.toFixed(1)} MB
                             </p>
                           </div>
-                          <button
-                            type="button"
-                            disabled
-                            title="ระบบดาวน์โหลดมาในเร็วๆ นี้ — Phase 2"
-                            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold opacity-60 cursor-not-allowed"
+                          <a
+                            href={`/api/digital/download/${unlock.id}/${asset.id}`}
+                            // Same-tab navigation so the browser inherits the
+                            // session cookie; the API 302's to a 10-min
+                            // signed Spaces URL with Content-Disposition.
+                            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
                             style={{
-                              background: 'var(--shop-bg-soft,#f4f4f5)',
-                              color: 'var(--shop-ink,#0a0a0a)',
+                              background:
+                                'var(--shop-primary-gradient, var(--shop-primary,#0a0a0a))',
                             }}
                           >
                             <FileDown size={14} />
                             ดาวน์โหลด
-                          </button>
+                          </a>
                         </li>
                       ))}
                     </ul>

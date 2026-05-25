@@ -13,6 +13,10 @@ import {
   Textarea,
   Checkbox,
 } from "@/components/operator/operator-primitives";
+import {
+  DigitalAssetsManager,
+  type DigitalAssetRow,
+} from "./digital-assets-manager";
 
 type ProductType = "PHYSICAL" | "DIGITAL";
 type DigitalKind = "EBOOK" | "EXCEL" | "VECTOR" | "PROMPT" | "ARCHIVE" | "OTHER";
@@ -39,9 +43,11 @@ type FormValues = {
 export function ProductEditForm({
   productId,
   defaultValues,
+  initialDigitalAssets = [],
 }: {
   productId: string;
   defaultValues: FormValues;
+  initialDigitalAssets?: DigitalAssetRow[];
 }) {
   const router = useRouter();
   const [form, setForm] = useState<FormValues>(defaultValues);
@@ -263,10 +269,17 @@ export function ProductEditForm({
               )}
 
               {form.digitalKind && form.digitalKind !== "PROMPT" && (
-                <OperatorCallout tone="info">
-                  อัปโหลดไฟล์ {form.digitalKind} จะมาใน Phase 2 — สำหรับตอนนี้ใช้
-                  PROMPT type เพื่อเปิดทดสอบระบบปลดล็อก
-                </OperatorCallout>
+                <div className="space-y-2 border-t pt-4">
+                  <h4 className="text-sm font-semibold">ไฟล์ดิจิทัล</h4>
+                  <p className="text-xs text-muted-foreground">
+                    ผู้ซื้อจะเห็นไฟล์เหล่านี้ใน /account/downloads หลังชำระเงินสำเร็จ
+                    (ผ่าน signed URL อายุ 10 นาที)
+                  </p>
+                  <DigitalAssetsManager
+                    productId={productId}
+                    initialAssets={initialDigitalAssets}
+                  />
+                </div>
               )}
             </>
           )}
