@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   ChevronLeft,
@@ -55,6 +55,13 @@ export default function BlackwrappCheckout(props: CheckoutProps) {
   const subtotal = useCart((s) => s.subtotalForStore(store.slug));
 
   const [form, setForm] = useState<ShippingForm>(EMPTY_FORM);
+  // useCart is persisted to localStorage and rehydrates on the client.
+  // SSR sees lines=[] while the client may have items, which would flip
+  // the tree from empty-state to form on first render and trip the
+  // store-level error boundary. Defer the cart-dependent branches until
+  // after mount so the first client render matches SSR.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const FREE_SHIPPING_THRESHOLD = 990;
   const FLAT_SHIPPING_THB = 50;
@@ -73,6 +80,16 @@ export default function BlackwrappCheckout(props: CheckoutProps) {
     // server-side cart on the next request.
     window.location.href = `/stores/${store.slug}/checkout/anypay`;
   };
+
+  if (!mounted) {
+    return (
+      <main
+        className="font-[family:var(--font-prompt)] min-h-screen"
+        style={{ background: '#0A0A0A', color: '#FAFAFA' }}
+        aria-hidden
+      />
+    );
+  }
 
   if (items.length === 0) {
     return (
