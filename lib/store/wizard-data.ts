@@ -389,6 +389,14 @@ export const TEMPLATES: Template[] = [
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
   },
+  {
+    id: "caseinw",
+    name: "CaseINW",
+    description: "เคสมือถือ Gen-Z · purple + acid green · gradient hero + custom studio · ticker",
+    group: "specialty",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { stickyCTA: "buy-now" },
+  },
 ];
 
 // ─── Palettes ──────────────────────────────────────────────────────────────

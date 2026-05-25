@@ -91,7 +91,8 @@ export type TemplateId =
   | 'gridmodu'
   | 'motofog'
   | 'casethep'
-  | 'casetify-clone';
+  | 'casetify-clone'
+  | 'caseinw';
 
 
 

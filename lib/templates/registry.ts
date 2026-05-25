@@ -414,6 +414,13 @@ import {
   CasetifyCloneHomepageAdapter,
 } from '@/components/storefront/themes/casetify-clone/adapters';
 
+import {
+  CaseinwHeaderAdapter,
+  CaseinwFooterAdapter,
+  CaseinwStripAdapter,
+  CaseinwHomepageAdapter,
+} from '@/components/storefront/themes/caseinw/adapters';
+
 export const templates: Record<TemplateId, Template> = {
   handmade: {
     id: 'handmade',
@@ -1393,6 +1400,28 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: CasetifyCloneHomepageAdapter,
+      catalog: makeCatalogAdapter('05'),
+      pdp: makePdpAdapter('03', '04'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter(),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
+    },
+  },
+
+  caseinw: {
+    id: 'caseinw',
+    name: 'CaseINW',
+    description: 'เคสมือถือ Gen-Z · purple/acid-green · gradient hero + custom studio',
+    group: 'specialty',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: CaseinwHeaderAdapter,
+      Footer: CaseinwFooterAdapter,
+      AnnouncementStrip: CaseinwStripAdapter,
+    },
+    pages: {
+      home: CaseinwHomepageAdapter,
       catalog: makeCatalogAdapter('05'),
       pdp: makePdpAdapter('03', '04'),
       cart: makeThaiCartAdapter(),

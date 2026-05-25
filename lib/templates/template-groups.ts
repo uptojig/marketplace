@@ -35,7 +35,7 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
   ],
   community: ['live-commerce'],
   'business-model': ['wholesale-b2b', 'eco-pack', 'bulkbox-industrial'],
-  specialty: ['handmade', 'sai-sing', 'mai-hatthakam', 'pigment-studio', 'casethep', 'casetify-clone'],
+  specialty: ['handmade', 'sai-sing', 'mai-hatthakam', 'pigment-studio', 'casethep', 'casetify-clone', 'caseinw'],
   everyday: ['everyday-retail', 'talad-see-sod'],
   taobao: ['taobao-style'],
   packaging: ['packaging-supply', 'pastel-pack', 'omnipack', 'blackwrapp'],
