@@ -29,6 +29,7 @@ interface Props {
     name: string;
     slug: string;
     logoUrl?: string | null;
+    bannerUrl?: string | null;
   };
   products: Product[];
   categories: string[];
@@ -61,7 +62,8 @@ export function Homepage({ store, products, categories, landingContent }: Props)
   const ctaLabel = landingContent?.heroCtaLabel?.trim() || DEFAULT_CTA;
   const ctaUrl =
     landingContent?.heroCtaUrl?.trim() || `/stores/${store.slug}/category`;
-  const heroImage = landingContent?.heroImageUrl?.trim() || null;
+  const heroImage =
+    landingContent?.heroImageUrl?.trim() || store.bannerUrl?.trim() || null;
 
   const add = useCart((s) => s.add);
   const featured = products.slice(0, MAX_FEATURED);

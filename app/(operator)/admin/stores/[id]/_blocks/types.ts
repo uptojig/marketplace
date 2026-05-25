@@ -31,6 +31,7 @@ export const BLOCK_TYPES: ReadonlyArray<string> = [
  *  else falls back to raw JSON editing. */
 export const TYPED_FORM_BLOCK_TYPES: ReadonlyArray<string> = [
   "HeroBanner",
+  "CategoryBanner",
   "OfferGrid",
   "FAQ",
   "CTA",

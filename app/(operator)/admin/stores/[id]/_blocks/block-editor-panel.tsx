@@ -5,6 +5,7 @@ import { Loader2, Wand2 } from "lucide-react";
 
 import { type Block, TYPED_FORM_BLOCK_TYPES } from "./types";
 import { HeroBannerForm } from "./block-forms/hero-banner-form";
+import { CategoryBannerForm } from "./block-forms/category-banner-form";
 import { OfferGridForm } from "./block-forms/offer-grid-form";
 import { FaqForm } from "./block-forms/faq-form";
 import { CtaForm } from "./block-forms/cta-form";
@@ -194,6 +195,14 @@ function TypedForm({
     case "HeroBanner":
       return (
         <HeroBannerForm
+          content={content}
+          onChange={onChange}
+          disabled={disabled}
+        />
+      );
+    case "CategoryBanner":
+      return (
+        <CategoryBannerForm
           content={content}
           onChange={onChange}
           disabled={disabled}

@@ -34,6 +34,28 @@ import {
   ShoppingCart,
   Star,
   ChevronRight,
+  Package,
+  Box,
+  Gift,
+  Tag,
+  ShoppingBag,
+  Heart,
+  Sparkles,
+  Layers,
+  Scissors,
+  Wrench,
+  Shirt,
+  Coffee,
+  Utensils,
+  Smartphone,
+  Home,
+  Baby,
+  Dog,
+  Leaf,
+  Music,
+  Camera,
+  Book,
+  type LucideIcon,
 } from "lucide-react";
 import type { ThemeVariant } from "@/lib/landing/families";
 import { Button } from "@/components/ui/button";
@@ -1592,6 +1614,47 @@ function Reviews({
   );
 }
 
+// Icon names usable in CategoryBanner's per-category `icon` field. Keep
+// curated — avoids shipping all of lucide and lets the admin form expose
+// a finite picker. Names are case-insensitive on lookup.
+const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
+  package: Package,
+  box: Box,
+  gift: Gift,
+  tag: Tag,
+  truck: Truck,
+  mail: Mail,
+  shoppingbag: ShoppingBag,
+  shoppingcart: ShoppingCart,
+  heart: Heart,
+  sparkles: Sparkles,
+  star: Star,
+  flame: Flame,
+  layers: Layers,
+  scissors: Scissors,
+  wrench: Wrench,
+  shirt: Shirt,
+  coffee: Coffee,
+  utensils: Utensils,
+  smartphone: Smartphone,
+  home: Home,
+  baby: Baby,
+  dog: Dog,
+  leaf: Leaf,
+  music: Music,
+  camera: Camera,
+  book: Book,
+};
+
+export const CATEGORY_ICON_NAMES: ReadonlyArray<string> = Object.keys(
+  CATEGORY_ICON_MAP,
+);
+
+function resolveCategoryIcon(name: string | undefined): LucideIcon | null {
+  if (!name) return null;
+  return CATEGORY_ICON_MAP[name.toLowerCase()] ?? null;
+}
+
 function CategoryBanner({
   content,
   theme,
@@ -1606,6 +1669,9 @@ function CategoryBanner({
   const subtitle = s(content.subtitle);
   const layout = s(content.layout) ?? "grid-3";
   const aspectRatio = s(content.aspectRatio) ?? "4/3";
+  const cardStyle = s(content.cardStyle) ?? "overlay"; // "overlay" | "icon-card"
+  const viewAllHref = s(content.viewAllHref);
+  const viewAllLabel = s(content.viewAllLabel) ?? "ดูทั้งหมด";
   const categories = arr<Record<string, unknown>>(content.categories);
   if (categories.length === 0) return null;
 
@@ -1621,20 +1687,45 @@ function CategoryBanner({
             ? "flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2"
             : "grid gap-4 sm:grid-cols-2 md:grid-cols-3"; // grid-3 default
 
+  const resolvedViewAllHref =
+    viewAllHref &&
+    viewAllHref.startsWith("/") &&
+    !viewAllHref.startsWith(`/stores/`)
+      ? `/stores/${storeSlug}${viewAllHref}`
+      : viewAllHref;
+
   return (
     <section className="px-6 py-12">
       <div className="mx-auto max-w-6xl">
-        {title && (
-          <h2 className={`mb-2 text-center text-2xl font-bold sm:text-3xl ${t.headline}`}>
-            {title}
-          </h2>
+        {(title || resolvedViewAllHref) && (
+          <div className="mb-2 flex items-end justify-between gap-4">
+            <div className="flex-1">
+              {title && (
+                <h2 className={`text-2xl font-bold sm:text-3xl ${t.headline}`}>
+                  {title}
+                </h2>
+              )}
+              {subtitle && (
+                <p className="mt-1 text-sm text-stone-600">{subtitle}</p>
+              )}
+            </div>
+            {resolvedViewAllHref && (
+              <Link
+                href={resolvedViewAllHref}
+                className="inline-flex items-center gap-1 whitespace-nowrap text-sm font-semibold text-stone-700 hover:text-stone-900"
+              >
+                {viewAllLabel} <ChevronRight className="h-4 w-4" />
+              </Link>
+            )}
+          </div>
         )}
-        {subtitle && (
+        {!title && subtitle && (
           <p className="mb-8 text-center text-sm text-stone-600">{subtitle}</p>
         )}
-        <div className={containerClass}>
+        <div className={`${containerClass} mt-6`}>
           {categories.map((cat, i) => {
             const name = s(cat.name);
+            const description = s(cat.description);
             const imageUrl = s(cat.imageUrl);
             const imageMobileUrl = s(cat.imageMobileUrl) ?? imageUrl;
             const altText = s(cat.altText) ?? name ?? `category ${i + 1}`;
@@ -1642,12 +1733,92 @@ function CategoryBanner({
             const ctaText = s(cat.ctaText) ?? "ดูสินค้า";
             const badge = s(cat.badge);
             const productCount = n(cat.productCount);
+            const IconCmp = resolveCategoryIcon(s(cat.icon));
 
             const href =
               linkTo && linkTo.startsWith("/") && !linkTo.startsWith(`/stores/`)
                 ? `/stores/${storeSlug}${linkTo}`
                 : linkTo ?? `/stores/${storeSlug}`;
 
+            // icon-card variant: light card, optional image on top, icon
+            // chip + name + description below — matches the
+            // "เลือกตามประเภท" 4-card layout from the packaging
+            // marketplace mock.
+            if (cardStyle === "icon-card") {
+              const cardClass =
+                layout === "carousel"
+                  ? `flex w-[70%] flex-shrink-0 snap-center flex-col overflow-hidden ${t.cardRadius} bg-white ring-1 ${t.ring} transition hover:shadow-md sm:w-[40%]`
+                  : layout === "masonry"
+                    ? `mb-4 flex break-inside-avoid flex-col overflow-hidden ${t.cardRadius} bg-white ring-1 ${t.ring} transition hover:shadow-md`
+                    : `flex flex-col overflow-hidden ${t.cardRadius} bg-white ring-1 ${t.ring} transition hover:shadow-md`;
+
+              return (
+                <Link key={i} href={href} className={`${cardClass} group`}>
+                  {imageUrl && (
+                    <picture>
+                      <source
+                        media="(max-width: 640px)"
+                        srcSet={imageMobileUrl}
+                      />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imageUrl}
+                        alt={altText}
+                        className="w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                        style={{ aspectRatio }}
+                      />
+                    </picture>
+                  )}
+                  <div className="flex flex-1 flex-col gap-2 p-4">
+                    {IconCmp && (
+                      <span
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${
+                          isPlayful(theme)
+                            ? "bg-pink-100 text-pink-600"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                        aria-hidden="true"
+                      >
+                        <IconCmp className="h-5 w-5" />
+                      </span>
+                    )}
+                    {name && (
+                      <p className="text-base font-semibold text-stone-900">
+                        {name}
+                      </p>
+                    )}
+                    {description && (
+                      <p className="text-xs leading-relaxed text-stone-600">
+                        {description}
+                      </p>
+                    )}
+                    <div className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-stone-500">
+                      {typeof productCount === "number" && (
+                        <span>
+                          {productCount.toLocaleString("th-TH")} รายการ
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1 font-semibold text-stone-700">
+                        {ctaText} <ChevronRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </div>
+                  {badge && (
+                    <span
+                      className={`absolute left-3 top-3 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        isPlayful(theme)
+                          ? "bg-pink-500 text-white"
+                          : "bg-amber-500 text-white"
+                      }`}
+                    >
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            }
+
+            // overlay variant (default, original behavior)
             const cardClass =
               layout === "carousel"
                 ? `relative w-[80%] flex-shrink-0 snap-center overflow-hidden ${t.cardRadius} bg-white ring-1 ${t.ring} sm:w-[40%]`
@@ -1678,6 +1849,14 @@ function CategoryBanner({
                     }`}
                   >
                     {badge}
+                  </span>
+                )}
+                {IconCmp && (
+                  <span
+                    className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-stone-800 shadow-sm"
+                    aria-hidden="true"
+                  >
+                    <IconCmp className="h-4 w-4" />
                   </span>
                 )}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-4">

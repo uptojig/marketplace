@@ -153,7 +153,7 @@ export function Homepage({ store, products, categories, landingContent }: Props)
           </div>
 
           {/* Right: Featured tile (image + spec card) */}
-          <div className="bg-[#15151A] relative flex items-stretch">
+          <div className="bg-[#15151A] relative flex items-end">
             {heroImage ? (
               <img
                 src={heroImage}
