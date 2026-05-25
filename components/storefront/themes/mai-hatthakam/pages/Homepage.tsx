@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Flame, Leaf, Hand, MapPin } from 'lucide-react';
+import { ArrowRight, Flame, Leaf, Hand, MapPin, PawPrint, Star, Heart } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
@@ -52,41 +52,151 @@ export function MaiHatthakamHomepage({ store, products, categories }: MaiHatthak
 
   const featuredProducts = products.slice(0, 4);
 
+  const isZugarbox = store.slug === 'zugarbox';
+
   return (
     <div className="bg-[#fef9f1] text-[#3a1a07] font-[family:var(--font-kanit)]">
       
       {/* Hero Section */}
-      <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=2940&auto=format&fit=crop" 
-            alt="ช่างปั้นกำลังขึ้นรูปดินบนแป้นหมุน" 
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-[#3a1a07]/50 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#fef9f1] via-transparent to-transparent opacity-90" />
-        </div>
-        
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-20">
-          <span className="inline-flex items-center px-3 py-1 rounded-full border border-[#fde8c8]/50 text-[#fde8c8] text-xs uppercase tracking-widest mb-6 backdrop-blur-sm">
-            <Flame className="w-3 h-3 mr-2 text-[#d97706]" />
-            Batch 20 · เชียงราย
-          </span>
-          <h1 className="text-5xl md:text-7xl font-bold text-[#fef9f1] mb-6 font-[family:var(--font-prompt)] drop-shadow-lg leading-tight">
-            ทุกใบ ปั้นด้วยมือ
-          </h1>
-          <p className="text-lg md:text-xl text-[#fde8c8] mb-10 max-w-2xl mx-auto leading-relaxed font-light drop-shadow-md">
-            แก้ว ถ้วยชา และจาน ทำมือทีละชิ้นที่เชียงราย ดินแม่ขมิ้นจากแม่อาย เคลือบขี้เถ้าจากแกลบข้าวเหนียว ผลิตเป็นล็อต 20 ชิ้น
-          </p>
-          <Link 
-            href={`/stores/${store.slug}/c/all`}
-            className="inline-flex items-center justify-center px-8 py-4 bg-[#d97706] text-[#fef9f1] hover:bg-[#7c2d12] transition-colors duration-300 font-medium text-lg rounded-sm shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transform"
-          >
-            ดูล็อตล่าสุด
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Link>
-        </div>
-      </section>
+      {isZugarbox ? (
+        <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#fef5e7] via-[#fffbf7] to-[#fedec9] py-16 sm:py-24">
+          {/* Soft Glowing Blur Blobs */}
+          <div className="absolute top-10 left-10 w-[300px] h-[300px] sm:w-[450px] sm:h-[450px] bg-[#ffe4cc]/50 rounded-full filter blur-[80px] sm:blur-[120px] -z-10 pointer-events-none" />
+          <div className="absolute bottom-10 right-10 w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] bg-[#ffd1b3]/40 rounded-full filter blur-[100px] sm:blur-[140px] -z-10 pointer-events-none" />
+          
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+              
+              {/* Left Content Column */}
+              <div className="lg:col-span-8 text-left space-y-6">
+                <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#fde8c8]/70 border border-[#fde8c8] text-[#7c2d12] text-xs font-semibold tracking-wider uppercase backdrop-blur-sm shadow-sm select-none">
+                  <PawPrint className="w-4 h-4 mr-2 text-[#e67e22] fill-[#e67e22]" />
+                  คอลเลกชันทาสแมว
+                </span>
+                
+                <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-bold text-[#3a1a07] font-[family:var(--font-prompt)] leading-[1.25] tracking-tight">
+                  <span className="lg:whitespace-nowrap">ไอเทมน่ารักสไตล์สีน้ำสุดคิ้วท์</span>
+                  <br className="hidden lg:inline" />
+                  <span className="lg:whitespace-nowrap">ที่จะทำให้ใจคุณฟู</span>
+                </h1>
+                
+                <p className="text-[#5c3e2b] text-base sm:text-lg max-w-xl leading-relaxed font-light">
+                  ช้อปแก้วเซรามิก ลายแมวเหมียวสุดอบอุ่น, เครื่องเขียนสีน้ำสุดละมุน และของใช้ของตกแต่งบ้านดีไซน์พิเศษ สำหรับคนรักสัตว์และงานคราฟต์
+                </p>
+                
+                <div className="flex flex-wrap items-center gap-4 pt-2">
+                  <Link 
+                    href={`/stores/${store.slug}/c/all`}
+                    className="inline-flex items-center justify-center px-8 py-3.5 bg-[#e67e22] hover:bg-[#d35400] text-white font-semibold text-base rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 transform"
+                  >
+                    ช้อปความน่ารัก
+                  </Link>
+                  <Link 
+                    href={`/stores/${store.slug}/c/all`}
+                    className="inline-flex items-center justify-center px-8 py-3.5 bg-white hover:bg-[#fef5e7]/30 border border-[#5c3e2b]/20 hover:border-[#5c3e2b]/50 text-[#5c3e2b] font-semibold text-base rounded-full shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 transform"
+                  >
+                    ดูคอลเลกชันใหม่
+                  </Link>
+                </div>
+                
+                <div className="flex items-center gap-4 pt-6">
+                  <div className="flex -space-x-3">
+                    <img 
+                      src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=80&h=80&fit=crop" 
+                      alt="Avatar 1" 
+                      className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm"
+                    />
+                    <img 
+                      src="https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=80&h=80&fit=crop" 
+                      alt="Avatar 2" 
+                      className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm"
+                    />
+                    <img 
+                      src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=80&h=80&fit=crop" 
+                      alt="Avatar 3" 
+                      className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm"
+                    />
+                    <img 
+                      src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=80&h=80&fit=crop" 
+                      alt="Avatar 4" 
+                      className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-0.5 text-[#facc15]">
+                      <Star className="w-3.5 h-3.5 fill-[#facc15] text-[#facc15]" />
+                      <Star className="w-3.5 h-3.5 fill-[#facc15] text-[#facc15]" />
+                      <Star className="w-3.5 h-3.5 fill-[#facc15] text-[#facc15]" />
+                      <Star className="w-3.5 h-3.5 fill-[#facc15] text-[#facc15]" />
+                      <Star className="w-3.5 h-3.5 fill-[#facc15] text-[#facc15]" />
+                    </div>
+                    <span className="text-xs sm:text-sm text-[#5c3e2b]/80 font-[family:var(--font-prompt)] font-medium mt-0.5">
+                      รีวิวจากทาสแมวและคนรักความคราฟท์กว่า 500+ คน
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Right Image Card Column */}
+              <div className="lg:col-span-4 flex justify-center lg:justify-end items-center relative py-6">
+                <div className="relative rotate-[-1.5deg] hover:rotate-0 transition-all duration-500 hover:scale-[1.02] bg-white p-4 pb-6 rounded-3xl border border-[#fedec9] shadow-[0_20px_50px_rgba(240,180,120,0.15)] max-w-sm sm:max-w-md w-full">
+                  <div className="relative aspect-[1.1] overflow-hidden rounded-2xl bg-[#fef9f1]">
+                    <img 
+                      src="/cat_ceramics_hero.png" 
+                      alt="แก้วเซรามิกรูปแมวน่ารักและขวดน้ำ" 
+                      className="w-full h-full object-cover"
+                    />
+                    
+                    {/* Badge at the bottom-left of the image */}
+                    <div className="absolute bottom-4 left-4 flex items-center bg-white shadow-lg rounded-2xl p-2 border border-[#fedec9]/40 select-none">
+                      <div className="w-9 h-9 rounded-xl bg-[#e67e22] flex items-center justify-center text-white shadow-sm">
+                        <Heart className="w-5 h-5 fill-white text-white" />
+                      </div>
+                      <div className="flex flex-col text-left ml-2.5 pr-2">
+                        <span className="text-xs font-bold text-[#3a1a07] font-[family:var(--font-prompt)] leading-tight">ดีไซน์เฉพาะตัว</span>
+                        <span className="text-[10px] text-[#5c3e2b]/70 font-[family:var(--font-prompt)] mt-0.5">ดีไซน์เฉพาะตัว</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <img 
+              src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=2940&auto=format&fit=crop" 
+              alt="ช่างปั้นกำลังขึ้นรูปดินบนแป้นหมุน" 
+              className="w-full h-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-[#3a1a07]/50 mix-blend-multiply" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#fef9f1] via-transparent to-transparent opacity-90" />
+          </div>
+          
+          <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-20">
+            <span className="inline-flex items-center px-3 py-1 rounded-full border border-[#fde8c8]/50 text-[#fde8c8] text-xs uppercase tracking-widest mb-6 backdrop-blur-sm">
+              <Flame className="w-3 h-3 mr-2 text-[#d97706]" />
+              Batch 20 · เชียงราย
+            </span>
+            <h1 className="text-5xl md:text-7xl font-bold text-[#fef9f1] mb-6 font-[family:var(--font-prompt)] drop-shadow-lg leading-tight">
+              ทุกใบ ปั้นด้วยมือ
+            </h1>
+            <p className="text-lg md:text-xl text-[#fde8c8] mb-10 max-w-2xl mx-auto leading-relaxed font-light drop-shadow-md">
+              แก้ว ถ้วยชา และจาน ทำมือทีละชิ้นที่เชียงราย ดินแม่ขมิ้นจากแม่อาย เคลือบขี้เถ้าจากแกลบข้าวเหนียว ผลิตเป็นล็อต 20 ชิ้น
+            </p>
+            <Link 
+              href={`/stores/${store.slug}/c/all`}
+              className="inline-flex items-center justify-center px-8 py-4 bg-[#d97706] text-[#fef9f1] hover:bg-[#7c2d12] transition-colors duration-300 font-medium text-lg rounded-sm shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transform"
+            >
+              ดูล็อตล่าสุด
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Brand Philosophy / Tagline */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#fef9f1]">
