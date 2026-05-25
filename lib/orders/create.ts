@@ -16,7 +16,11 @@ export interface CartLine {
 export interface CreateOrderInput {
   userId: string;
   items: CartLine[];
-  address: PlaceOrderAddress;
+  /** Optional. Required for any order containing a PHYSICAL product;
+   *  may be omitted when every line is a DIGITAL product. This is
+   *  re-verified server-side here using the products' productType so
+   *  a hostile client can't suppress shipping just by lying. */
+  address?: PlaceOrderAddress;
   shippingTHB?: number;
   /** Operator-typed coupon codes from the cart. Each is re-validated
    *  server-side here; invalid codes are silently dropped so a stale
@@ -35,13 +39,25 @@ export async function createOrderFromCart(input: CreateOrderInput) {
     throw new Error("Some products are unavailable");
   }
 
+  // Server-side gate: if address is absent, every product MUST be
+  // DIGITAL. Otherwise the buyer is trying to ship physical goods to
+  // nowhere.
+  const allDigital = products.every((p) => p.productType === "DIGITAL");
+  if (!input.address && !allDigital) {
+    throw new Error("ต้องระบุที่อยู่จัดส่งสำหรับสินค้าทั่วไป");
+  }
+
   const lineMap = new Map(input.items.map((i) => [i.productId, i.qty]));
   const subtotalNumber = products.reduce(
     (acc, p) => acc + Number(p.priceTHB) * (lineMap.get(p.id) ?? 0),
     0,
   );
   const subtotal = new Prisma.Decimal(subtotalNumber);
-  const shippingNumber = input.shippingTHB ?? 0;
+  // Digital-only orders never accrue shipping. Even if a caller passed
+  // a non-zero shippingTHB by mistake (UI race, stale state), we zero
+  // it out here so the buyer is never charged for a parcel that doesn't
+  // exist.
+  const shippingNumber = allDigital ? 0 : (input.shippingTHB ?? 0);
   const shipping = new Prisma.Decimal(shippingNumber);
 
   // ── Resolve + validate coupons ───────────────────────────────
@@ -118,7 +134,8 @@ export async function createOrderFromCart(input: CreateOrderInput) {
         shippingTHB: shippingAfter,
         discountTHB: discount,
         totalTHB: total,
-        shippingAddressJson: input.address as unknown as Prisma.InputJsonValue,
+        shippingAddressJson:
+          (input.address ?? Prisma.JsonNull) as unknown as Prisma.InputJsonValue,
         items: {
           create: products.map((p) => ({
             productId: p.id,

@@ -53,7 +53,18 @@ export function CheckoutCart({
             <img src={l.imageUrl} alt={l.title} className="h-16 w-16 shrink-0 rounded object-cover" />
           )}
           <div className="flex-1 space-y-1">
-            <div className="line-clamp-2 text-sm font-medium">{l.title}</div>
+            <div className="flex items-start gap-1.5 flex-wrap">
+              <div className="line-clamp-2 text-sm font-medium">{l.title}</div>
+              {l.productType === "DIGITAL" && (
+                <span
+                  className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0"
+                  style={{ background: "var(--shop-primary, #0a0a0a)", color: "#fff" }}
+                  title="สินค้าดิจิทัล — ไม่มีการจัดส่ง"
+                >
+                  💾 Digital
+                </span>
+              )}
+            </div>
             <div className="text-xs text-muted-foreground">{l.storeName}</div>
             <div className="flex items-center justify-between pt-1">
               {editable ? (

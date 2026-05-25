@@ -38,6 +38,16 @@ export default async function AdminProductEditPage({
       promptText: true,
       promptSample: true,
       store: { select: { id: true, name: true, slug: true } },
+      digitalAssets: {
+        select: {
+          id: true,
+          fileName: true,
+          fileFormat: true,
+          fileSizeMB: true,
+          isPreview: true,
+        },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
   if (!product) notFound();
@@ -92,6 +102,13 @@ export default async function AdminProductEditPage({
           promptText: product.promptText ?? "",
           promptSample: product.promptSample ?? "",
         }}
+        initialDigitalAssets={product.digitalAssets.map((a) => ({
+          id: a.id,
+          fileName: a.fileName,
+          fileFormat: a.fileFormat,
+          fileSizeMB: Number(a.fileSizeMB),
+          isPreview: a.isPreview,
+        }))}
       />
 
       <OperatorCallout tone="neutral">

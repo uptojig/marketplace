@@ -29,6 +29,19 @@ export interface CartLineDisplay {
   storeSlug: string;
   storeName: string;
   qty: number;
+  /** Optional. When omitted, the line is treated as PHYSICAL — so legacy
+   *  add() call sites across themes don't need to change. Digital add
+   *  paths (PromptViewer, future file-based digital PDPs) should pass
+   *  this explicitly so checkout can skip shipping and the cart UI can
+   *  render a "DIGITAL" badge. */
+  productType?: "PHYSICAL" | "DIGITAL";
+  digitalKind?:
+    | "PROMPT"
+    | "EBOOK"
+    | "EXCEL"
+    | "VECTOR"
+    | "ARCHIVE"
+    | "OTHER";
 }
 
 interface CartState {
@@ -185,6 +198,7 @@ export const useCart = create<CartState>()(
       subtotalTHB: () => get().lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0),
       count: () => get().lines.reduce((acc, l) => acc + l.qty, 0),
     }),
+
     {
       name: "marketplace-cart",
       // `drawerOpen` is a transient UI flag — re-opening on every reload
@@ -196,3 +210,17 @@ export const useCart = create<CartState>()(
     },
   ),
 );
+
+/** True when EVERY non-zero line in the per-store cart is digital. Used
+ *  to skip the shipping-address step at checkout and to drop shipping
+ *  cost from the cart total. Empty cart returns false so callers don't
+ *  accidentally treat an empty cart as "all digital" and short-circuit
+ *  validation. */
+export function isAllDigitalForStore(
+  lines: CartLineDisplay[],
+  storeSlug: string,
+): boolean {
+  const slice = lines.filter((l) => l.storeSlug === storeSlug && l.qty > 0);
+  if (slice.length === 0) return false;
+  return slice.every((l) => l.productType === "DIGITAL");
+}

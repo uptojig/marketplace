@@ -397,6 +397,14 @@ export const TEMPLATES: Template[] = [
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
   },
+  {
+    id: "sheetlab-formula",
+    name: "Sheetlab Formula",
+    description: "ขายสูตร Excel · spreadsheet grid · digital-first · ดาวน์โหลดทันที",
+    group: "specialty",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { stickyCTA: "buy-now" },
+  },
 ];
 
 // ─── Palettes ──────────────────────────────────────────────────────────────

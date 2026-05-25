@@ -2,7 +2,10 @@ import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { placeExternalOrder } from "./automate";
 import { getNotifier } from "@/lib/notify";
-import { sendOrderPaidEmail } from "@/lib/transactional-email";
+import {
+  sendOrderPaidEmail,
+  sendDigitalUnlockReadyEmail,
+} from "@/lib/transactional-email";
 import { createDigitalUnlocksForOrder } from "@/lib/digital/create-unlocks";
 
 export interface MarkPaidInput {
@@ -43,8 +46,10 @@ export async function markOrderPaid(input: MarkPaidInput): Promise<{ applied: bo
   // Idempotent: orderItemId is @unique so a webhook replay is a no-op.
   // Failures here never roll back PAID — buyer can still re-fetch via
   // the support flow if the unlock didn't create for any reason.
+  let createdUnlocks = 0;
   try {
     const { created, alreadyExisted } = await createDigitalUnlocksForOrder(input.orderId);
+    createdUnlocks = created;
     if (created + alreadyExisted > 0) {
       await notifier.info("order.digital.unlocks_created", {
         orderId: input.orderId,
@@ -57,6 +62,22 @@ export async function markOrderPaid(input: MarkPaidInput): Promise<{ applied: bo
       orderId: input.orderId,
       message: err instanceof Error ? err.message : String(err),
     });
+  }
+
+  // Fire the digital-fulfillment email only when we actually created
+  // new unlocks. On a webhook replay (createdUnlocks === 0 because rows
+  // already existed) we stay silent so the buyer doesn't get a second
+  // "your files are ready" email for the same order.
+  if (createdUnlocks > 0) {
+    const digitalEmailResult = await sendDigitalUnlockReadyEmail({
+      orderId: input.orderId,
+    });
+    if (!digitalEmailResult.ok) {
+      await notifier.info("order.digital.email_skipped", {
+        orderId: input.orderId,
+        reason: digitalEmailResult.reason,
+      });
+    }
   }
 
   // Synchronous fan-out for MVP. Failures inside placeExternalOrder are caught and notified
