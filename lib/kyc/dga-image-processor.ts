@@ -371,6 +371,12 @@ export async function finalizeDgaCapture(args: {
   state: string;
   missing?: string[];
   checklist: ChecklistEntry[];
+  addressMismatch?: {
+    registered: string | null;
+    contact: string | null;
+    registeredHouseNumber: string | null;
+    contactHouseNumber: string | null;
+  };
 }> {
   const { sessionId, sw, sse } = args;
   lapAndEmit(sw, sse, "session_check");
@@ -387,6 +393,42 @@ export async function finalizeDgaCapture(args: {
       state: "S1_DGA_CAPTURE",
       missing: missingRequired,
       checklist,
+    };
+  }
+
+  // Same house-number sanity check as the review-confirm gate, run EARLY here
+  // (CAPTURE → REVIEW) so a confirmed mismatch blocks BEFORE the editable
+  // review screen. This stops a vendor from hand-editing the contact address
+  // field to fake a match — the only fix is to correct the address in DGA and
+  // re-upload fresh screenshots. finalizeDgaReview keeps the same check as a
+  // backstop in case a later edit reintroduces a mismatch.
+  const registeredAddress = checklist.find((e) => e.key === "registeredAddress")?.value ?? null;
+  const contactAddress = checklist.find((e) => e.key === "contactAddress")?.value ?? null;
+  const addressCheck = compareDgaAddressesByHouseNumber(registeredAddress, contactAddress);
+
+  if (addressCheck && !addressCheck.matched && addressCheck.reason === "house_number_mismatch") {
+    await auditWizardEvent({
+      sessionId,
+      actor: "system",
+      event: "s1.dga.address_mismatch_blocked",
+      payload: {
+        gate: "capture",
+        registered_house_number: addressCheck.left,
+        contact_house_number: addressCheck.right,
+        registered_address: registeredAddress,
+        contact_address: contactAddress,
+      },
+    });
+    return {
+      ok: false,
+      state: "S1_DGA_CAPTURE",
+      checklist,
+      addressMismatch: {
+        registered: registeredAddress,
+        contact: contactAddress,
+        registeredHouseNumber: addressCheck.left,
+        contactHouseNumber: addressCheck.right,
+      },
     };
   }
 

@@ -3,7 +3,6 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, Scissors, ShieldCheck, HeartHandshake } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 interface Product {
   id: string;
@@ -33,7 +32,6 @@ interface ReclaimLeatherHomepageProps {
 
 export function ReclaimLeatherHomepage({ store, products, categories }: ReclaimLeatherHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,7 +44,6 @@ export function ReclaimLeatherHomepage({ store, products, categories }: ReclaimL
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const featuredProducts = products.slice(0, 4);

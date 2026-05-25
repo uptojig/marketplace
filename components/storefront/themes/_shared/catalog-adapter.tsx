@@ -7,6 +7,8 @@
  */
 
 import React, { lazy, Suspense } from 'react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { CatalogProps } from '@/lib/templates/types';
 
 // Lazy-load all 12 variants
@@ -36,22 +38,89 @@ function toProductCards(props: CatalogProps) {
   }));
 }
 
+/**
+ * Pagination footer rendered below every shared-catalog block.
+ *
+ * The shadcn-studio product-category-* blocks don't include a paginator
+ * (they're decorative grids), so without this footer themes that use
+ * the shared adapter render every product on one (very long) page.
+ *
+ * Uses `var(--shop-*)` so the footer picks up the active theme's
+ * primary / ink / border tokens without per-theme styling.
+ */
+function CatalogPaginationFooter({
+  currentPage,
+  totalPages,
+  filteredCount,
+  buildUrl,
+}: Pick<CatalogProps, 'currentPage' | 'totalPages' | 'filteredCount' | 'buildUrl'>) {
+  if (totalPages <= 1) return null;
+  const prev = Math.max(1, currentPage - 1);
+  const next = Math.min(totalPages, currentPage + 1);
+  const onFirst = currentPage <= 1;
+  const onLast = currentPage >= totalPages;
+  const linkBase =
+    'inline-flex items-center gap-1 rounded-md border border-[var(--shop-border,#e5e5e5)] bg-[var(--shop-card,#ffffff)] px-3 py-2 text-sm font-medium text-[var(--shop-ink,#0a0a0a)] transition hover:bg-[var(--shop-bg-soft,#f4f4f5)]';
+  const disabledStyle = 'pointer-events-none opacity-40';
+  return (
+    <nav
+      aria-label="Pagination"
+      className="mt-8 flex items-center justify-between gap-3 border-t border-[var(--shop-border,#e5e5e5)] pt-6"
+    >
+      <p className="text-xs text-[var(--shop-ink-muted,#71717a)]">
+        แสดง {filteredCount} รายการ · หน้า {currentPage} จาก {totalPages}
+      </p>
+      <div className="flex items-center gap-2">
+        <Link
+          href={buildUrl(undefined, prev)}
+          aria-disabled={onFirst}
+          className={`${linkBase} ${onFirst ? disabledStyle : ''}`}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          ก่อนหน้า
+        </Link>
+        <span className="rounded-md bg-[var(--shop-primary,#0a0a0a)] px-3 py-2 text-sm font-semibold text-[var(--shop-on-primary,#ffffff)] tabular-nums">
+          {currentPage}/{totalPages}
+        </span>
+        <Link
+          href={buildUrl(undefined, next)}
+          aria-disabled={onLast}
+          className={`${linkBase} ${onLast ? disabledStyle : ''}`}
+        >
+          ถัดไป
+          <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
+    </nav>
+  );
+}
+
 export function makeCatalogAdapter(variant: CatalogVariant) {
   return function CatalogAdapter(props: CatalogProps) {
     const Block = variants[variant];
     const productCards = toProductCards(props);
 
     return (
-      <Suspense
-        fallback={
-          <div className="flex h-96 items-center justify-center text-zinc-400">
-            กำลังโหลด...
-          </div>
-        }
-      >
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        <Block productCards={productCards as any} />
-      </Suspense>
+      <div className="space-y-0">
+        <Suspense
+          fallback={
+            <div className="flex h-96 items-center justify-center text-zinc-400">
+              กำลังโหลด...
+            </div>
+          }
+        >
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <Block productCards={productCards as any} />
+        </Suspense>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12">
+          <CatalogPaginationFooter
+            currentPage={props.currentPage}
+            totalPages={props.totalPages}
+            filteredCount={props.filteredCount}
+            buildUrl={props.buildUrl}
+          />
+        </div>
+      </div>
     );
   };
 }

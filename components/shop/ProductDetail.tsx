@@ -377,7 +377,7 @@ export function ProductDetail({ product }: { product: Product }) {
             from the design system. Theme tokens still drive ink/border
             via the wrapping --shop-* CSS vars. */}
         <Accordion
-          multiple
+          type="multiple"
           className="mt-7 border-t"
           style={{ borderColor: "var(--shop-border)" }}
         >

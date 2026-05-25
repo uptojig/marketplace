@@ -41,6 +41,11 @@ import { Homepage as BikiniHomepage } from './pages/Homepage';
 import { Catalog as BikiniCatalog } from './pages/Catalog';
 import { ProductDetail as BikiniProductDetail } from './pages/ProductDetail';
 import { Cart as BikiniCart } from './pages/Cart';
+// Bespoke Cart page (scaffold-CartProps shape) exported under the
+// `<theme>_Cart` snake-case convention so the registry can wire it
+// into the `cart` slot. Lives alongside the original designer `Cart`
+// named export (which BikiniCartAdapter below still consumes).
+export { default as bikini_beach_Cart } from './pages/Cart';
 import { Checkout as BikiniCheckout } from './pages/Checkout';
 import { Lookbook as BikiniLookbook } from './pages/Lookbook';
 import { About as BikiniAbout } from './pages/About';
@@ -57,7 +62,7 @@ function storeUrls(slug: string) {
     home: base,
     shop: `${base}/category`,
     cart: `${base}/cart`,
-    checkout: `${base}/checkout/address`,
+    checkout: `${base}/checkout`,
     products: `${base}/products`,
     lookbook: `${base}/lookbook`,
     terms: '/terms',
@@ -129,14 +134,26 @@ export function BikiniFooterAdapter(props: ScaffoldFooterProps) {
   return (
     <BikiniFooter
       storeName={props.store.name}
-      tagline={props.store.tagline ?? props.store.description ?? undefined}
+      storeLogoUrl={props.store.logoUrl ?? undefined}
+      tagline={props.store.description ?? props.store.tagline ?? undefined}
       navColumns={navColumns}
-      paymentMethods={['VISA', 'MC', 'PROMPTPAY', 'COD']}
+      paymentMethods={['Thai QR PromptPay']}
       socialLinks={socialLinks}
       contact={{
         line: props.store.lineId ?? undefined,
         email: props.store.contactEmail ?? undefined,
         phone: props.store.contactPhone ?? undefined,
+        address:
+          [
+            props.store.addressLine1,
+            props.store.addressLine2,
+            props.store.subdistrict,
+            props.store.district,
+            props.store.province,
+            props.store.postalCode,
+          ]
+            .filter(Boolean)
+            .join(' ') || undefined,
       }}
       bottomLinks={[
         { label: 'Privacy', href: '/privacy' },

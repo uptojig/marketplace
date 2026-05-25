@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { ShoppingCart, FileText, PackageSearch, Package, TrendingDown, ChevronRight, ShieldCheck, Factory, HardHat, Cog, Truck } from 'lucide-react';
 
 interface Product {
@@ -28,7 +27,6 @@ interface HomepageProps {
 
 export function BulkboxHomepage({ store, products, categories }: HomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -41,7 +39,6 @@ export function BulkboxHomepage({ store, products, categories }: HomepageProps) 
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   // Helper to generate fake MOQ tiers based on base price
@@ -133,7 +130,7 @@ export function BulkboxHomepage({ store, products, categories }: HomepageProps) 
 
         {/* B2B Table Layout for Products */}
         <div className="bg-white border border-[#cbd5e1] rounded-lg shadow-sm overflow-hidden">
-          {products.map((product, idx) => {
+          {products.slice(0, 8).map((product, idx) => {
             const tiers = getPricingTiers(product.priceTHB);
             
             return (

@@ -8,6 +8,7 @@ interface PigmentStudioFooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
   };
 }
 
@@ -153,10 +154,16 @@ export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-2">
             <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 group mb-4">
-              <Brush className="w-8 h-8 text-[#facc15] group-hover:-rotate-12 transition-transform duration-300" />
-              <span className="font-[family:var(--font-kanit)] font-bold text-2xl tracking-tight text-[#fff7ed]">
-                {store.name}
-              </span>
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <>
+                  <Brush className="w-8 h-8 text-[#facc15] group-hover:-rotate-12 transition-transform duration-300" />
+                  <span className="font-[family:var(--font-kanit)] font-bold text-2xl tracking-tight text-[#fff7ed]">
+                    {store.name}
+                  </span>
+                </>
+              )}
             </Link>
             <p className="font-[family:var(--font-prompt)] text-[#fed7aa] max-w-md mt-4 text-lg leading-relaxed">
               สีน้ำ พู่กัน และกระดาษวาดภาพ

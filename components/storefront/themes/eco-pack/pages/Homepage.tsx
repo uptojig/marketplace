@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Leaf, ShieldCheck, Truck, Package } from 'lucide-react';
+import { formatTHB } from '@/lib/utils';
 
 interface StoreInfo {
   name: string; // From Prisma - store name
@@ -113,10 +114,10 @@ export function Homepage({ store, featuredProducts, categories, reviews, shopUrl
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-2xl font-bold text-[var(--shop-ink)]">Best Selling Sizes</h2>
-            <a href={shopUrl} className="text-sm font-medium text-[var(--shop-primary)] hover:underline">View all</a>
+            <a href={shopUrl} className="text-sm font-medium text-[var(--shop-primary)] hover:underline">ดูทั้งหมด</a>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
-            {featuredProducts.map((p, i) => (
+            {featuredProducts.slice(0, 8).map((p, i) => (
               <a key={i} href={`${shopUrl}/${p.slug}`} className="group flex flex-col">
                 <div className="aspect-square w-full rounded-lg bg-[var(--shop-bg)] overflow-hidden border border-[var(--shop-border)] mb-4 relative">
                   {p.image ? (
@@ -135,7 +136,7 @@ export function Homepage({ store, featuredProducts, categories, reviews, shopUrl
                 <h3 className="font-medium text-[var(--shop-ink)] mb-1 flex-1">{p.name}</h3>
                 <p className="text-sm text-[var(--shop-ink-muted)] mb-2">{p.dimensions || 'Various sizes'}</p>
                 <div className="font-semibold text-[var(--shop-ink)]">
-                  {p.price ? `$${p.price.toFixed(2)}` : 'From $0.50/ea'}
+                  {p.price ? formatTHB(p.price) : 'เริ่มต้น ฿15/ชิ้น'}
                 </div>
               </a>
             ))}

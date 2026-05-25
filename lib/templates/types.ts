@@ -35,9 +35,21 @@ export type TemplateGroup =
   | 'specialty'
   | 'everyday'
   | 'taobao'
-  | 'packaging';
+  | 'packaging'
+  | 'neon'
+;
 
 export type TemplateId =
+  // Legacy aliases — referenced by `LEGACY_SLUG_TEMPLATE`
+  // (lib/landing/legacy-slug-template.ts) and the template-group map
+  // (lib/templates/template-groups.ts). Kept in the union so the family
+  // dispatcher and legacy-slug fallback both type-check.
+  | 'classic'
+  | 'lookbook'
+  | 'tech-compare'
+  | 'sport-active'
+  | 'live-commerce'
+  | 'wholesale-b2b'
   | 'handmade'
   | 'bikini-beach'
   | 'eco-pack'
@@ -71,7 +83,15 @@ export type TemplateId =
   | 'tinyhand-wooden-toys'
   | 'trailcraft-outdoors'
   | 'wavelength-audio'
-  | 'yumeiro-lip';
+  | 'yumeiro-lip'
+  | 'neon-festival'
+  | 'konvy'
+  | 'omnipack'
+  | 'blackwrapp'
+  | 'gridmodu'
+  | 'motofog'
+  | 'casethep';
+
 
 
 
@@ -183,6 +203,7 @@ export interface TemplatePages {
   lookbook?: ComponentType<LookbookProps>;
   about?: ComponentType<AboutProps>;
   help?: ComponentType<HelpProps>;
+  contact?: ComponentType<ContactProps>;
 }
 
 // ----------------------------------------------------------------------------
@@ -250,6 +271,23 @@ export interface AnnouncementStripProps {
 // ----------------------------------------------------------------------------
 
 /** Bare store identity surfaced on every page (logo + slug + primary color). */
+export interface TemplateStoreSummary {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string | null;
+  tagline?: string | null;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
+  primaryColor?: string | null;
+}
+
+/** Trust / verification flags rendered on store cards and badges. */
+export interface StoreBadges {
+  official?: boolean;
+  b2b?: boolean;
+  verified?: boolean;
+}
 
 /** A storefront product card in its lightest form (catalog tiles, related rails, etc). */
 export interface TemplateProductCard {
@@ -385,6 +423,13 @@ export interface HelpProps {
   schemaPage?: unknown;
   /** Page slug being rendered (e.g. "faq", "shipping"). */
   pageSlug?: string;
+}
+
+/** Contact — store metadata for the contact-us page. Pulls contact +
+ *  address fields so a bespoke `Contact` component can render a form,
+ *  channel cards, and an optional map. */
+export interface ContactProps {
+  store: TemplateStoreSummary;
 }
 
 // ============================================================================

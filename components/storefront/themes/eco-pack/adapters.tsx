@@ -50,7 +50,7 @@ function storeUrls(slug: string) {
     home: base,
     shop: `${base}/category`,
     cart: `${base}/cart`,
-    checkout: `${base}/checkout/address`,
+    checkout: `${base}/checkout`,
     products: `${base}/products`,
   };
 }
@@ -116,8 +116,9 @@ export function EcoPackFooterAdapter(props: ScaffoldFooterProps) {
   return (
     <EcoFooter
       storeName={props.store.name}
+      logoUrl={props.store.logoUrl ?? null}
       navColumns={navColumns}
-      paymentMethods={['VISA', 'Mastercard', 'PromptPay', 'COD']}
+      paymentMethods={['Thai QR PromptPay']}
       socialLinks={socialLinks}
     />
   );
@@ -371,3 +372,10 @@ export function EcoPackHelpAdapter(_props: ScaffoldHelpProps) {
     />
   );
 }
+
+// ── Contact (bespoke standalone page) ──────────────────────────────
+// Re-exported under the registry-naming convention so the per-store
+// /contact route dispatcher (wired separately in lib/templates/registry.ts)
+// can mount it directly. The page receives `{ store }` with the
+// FooterProps-shaped store record.
+export { default as eco_pack_Contact } from './pages/Contact';

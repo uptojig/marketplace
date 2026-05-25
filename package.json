@@ -14,7 +14,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:generate": "prisma generate",
     "shadcn:studio:ecommerce": "node scripts/install-shadcn-studio-ecommerce.mjs",
-    "oauth:add-shop": "node scripts/add-shop-to-google-oauth.mjs"
+    "oauth:add-shop": "node scripts/add-shop-to-google-oauth.mjs",
+    "theme:new": "tsx scripts/theme-new/index.ts",
+    "group:new": "tsx scripts/group-new/index.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -26,6 +28,9 @@
     "@aws-sdk/client-s3": "^3.1045.0",
     "@aws-sdk/s3-request-presigner": "^3.1045.0",
     "@base-ui/react": "^1.4.1",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^3.9.1",
     "@mdx-js/loader": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
@@ -52,6 +57,7 @@
     "better-auth": "^1.6.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.0.4",
     "daisyui": "^5.5.19",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.38.0",

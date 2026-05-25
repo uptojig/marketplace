@@ -38,7 +38,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { formatTHB } from '@/lib/utils';
 import type {
   ProductDetailHeroProduct,
@@ -254,7 +253,6 @@ function InfoColumn({
 }) {
   const router = useRouter();
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [qty, setQty] = useState(1);
   const [variantIdx, setVariantIdx] = useState(0);
   const [added, setAdded] = useState(false);
@@ -289,14 +287,13 @@ function InfoColumn({
       },
       qty,
     );
-    showConfirm(product.title, store.slug);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   };
 
   const handleBuyNow = () => {
     handleAdd();
-    router.push(`/stores/${store.slug}/checkout/address`);
+    router.push(`/stores/${store.slug}/checkout`);
   };
 
   return (
@@ -679,7 +676,7 @@ function FeatureCards() {
         />
         <FeatureCard
           icon={<ShieldCheck className="h-7 w-7" />}
-          title="ของแท้ 100%"
+          title="คัดสรรคุณภาพ"
           subtitle="รับประกันจากร้าน · มีใบกำกับภาษีให้ทุกออเดอร์"
         />
         <FeatureCard

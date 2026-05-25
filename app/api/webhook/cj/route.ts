@@ -133,6 +133,7 @@ export async function POST(req: Request) {
           [OrderStatus.DELIVERED]: 4,
           [OrderStatus.CANCELLED]: 5,
           [OrderStatus.FAILED]: 5,
+          [OrderStatus.RETURNED]: 6,
         };
         for (const o of orders) {
           if (rank[newStatus] > rank[o.status]) {

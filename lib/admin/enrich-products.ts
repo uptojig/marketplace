@@ -90,11 +90,57 @@ function imageCountFor(p: { imageUrl: string | null; galleryUrls: Prisma.JsonVal
  * Read-only summary for a store, used by the admin index column.
  * Returns zero counts (not an error) if the store doesn't exist —
  * the column UI shouldn't crash if a store is mid-delete.
+ *
+ * NOTE: For list views of 200 stores prefer the batch variant below —
+ * calling this once-per-row is an N+1 query (200 stores ≈ 200 row
+ * scans).
  */
 export async function getStoreQualitySnapshot(storeId: string): Promise<QualitySnapshot> {
-  const products = await prisma.product.findMany({
-    where: { storeId, active: true },
+  const snapshots = await getStoresQualitySnapshotBatch([storeId]);
+  return (
+    snapshots[storeId] ?? {
+      total: 0,
+      translated: 0,
+      categorized: 0,
+      lowImage: 0,
+    }
+  );
+}
+
+/**
+ * Batch variant for the /admin/stores list page.
+ *
+ * Pulls every active product for the requested stores in a *single*
+ * SELECT and aggregates per-store in Node. This replaces the
+ * fan-out of N × findMany (which previously scanned N store
+ * product subsets sequentially and made the list page O(N) database
+ * trips). 200 stores collapse to 1 query that returns ≤ ~2000 product
+ * rows total — well within the result set Prisma is happy with.
+ *
+ * Caller passes `storeIds`; result is keyed by storeId. Stores with
+ * zero products are populated with zero counts so the UI doesn't have
+ * to special-case "missing" entries.
+ *
+ * Defensive against per-store JSON malformations: a single bad
+ * `galleryUrls` row can't crash the whole list because we don't
+ * dereference it as a typed array — `imageCountFor` already guards
+ * non-array JSON shapes.
+ */
+export async function getStoresQualitySnapshotBatch(
+  storeIds: string[],
+): Promise<Record<string, QualitySnapshot>> {
+  // Pre-seed every requested storeId so callers iterating
+  // `storeIds.map(id => snapshots[id])` never hit `undefined`.
+  const result: Record<string, QualitySnapshot> = {};
+  for (const id of storeIds) {
+    result[id] = { total: 0, translated: 0, categorized: 0, lowImage: 0 };
+  }
+  if (storeIds.length === 0) return result;
+
+  const rows = await prisma.product.findMany({
+    where: { storeId: { in: storeIds }, active: true },
     select: {
+      storeId: true,
       titleTh: true,
       descriptionTh: true,
       categoryId: true,
@@ -103,20 +149,16 @@ export async function getStoreQualitySnapshot(storeId: string): Promise<QualityS
     },
   });
 
-  let translated = 0;
-  let categorized = 0;
-  let lowImage = 0;
-  for (const p of products) {
-    if (p.titleTh && p.descriptionTh) translated += 1;
-    if (p.categoryId) categorized += 1;
-    if (imageCountFor(p) < MIN_IMAGES) lowImage += 1;
+  for (const p of rows) {
+    const acc = result[p.storeId];
+    if (!acc) continue;
+    acc.total += 1;
+    if (p.titleTh && p.descriptionTh) acc.translated += 1;
+    if (p.categoryId) acc.categorized += 1;
+    if (imageCountFor(p) < MIN_IMAGES) acc.lowImage += 1;
   }
-  return {
-    total: products.length,
-    translated,
-    categorized,
-    lowImage,
-  };
+
+  return result;
 }
 
 interface ChunkInput {

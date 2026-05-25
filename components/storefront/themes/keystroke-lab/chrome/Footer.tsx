@@ -9,9 +9,13 @@ export function KeystrokeLabFooter({ store }: any) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
-            <span className="font-[family:var(--font-prompt)] font-bold text-xl tracking-[0.12em] text-white uppercase mb-4 block">
-              {store.name}
-            </span>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain mb-4" />
+            ) : (
+              <span className="font-[family:var(--font-prompt)] font-bold text-xl tracking-[0.12em] text-white uppercase mb-4 block">
+                {store.name}
+              </span>
+            )}
             <p className="font-[family:var(--font-kanit)] text-sm max-w-sm mb-6 text-[#64748b]">
               คีย์บอร์ดและเมาส์สำหรับสายโปรแกรมเมอร์
             </p>

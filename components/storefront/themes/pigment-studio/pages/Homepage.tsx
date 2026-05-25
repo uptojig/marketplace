@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { Palette, Paintbrush, Droplets, Sparkles, Plus, Star, PawPrint, Heart, Mail } from 'lucide-react';
 
 interface Product {
@@ -29,7 +28,6 @@ interface PigmentStudioHomepageProps {
 
 export function PigmentStudioHomepage({ store, products, categories }: PigmentStudioHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -42,7 +40,6 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const featuredProducts = products.slice(0, 8);

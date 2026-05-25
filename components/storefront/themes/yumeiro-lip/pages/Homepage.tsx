@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { Sparkles, ArrowRight, Heart } from 'lucide-react';
 
 interface Product {
@@ -35,7 +34,6 @@ const lipSwatches = [
 
 export function YumeiroLipHomepage({ store, products, categories }: YumeiroLipHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [selectedSwatch, setSelectedSwatch] = useState<number | null>(null);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
@@ -49,7 +47,6 @@ export function YumeiroLipHomepage({ store, products, categories }: YumeiroLipHo
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   return (
@@ -110,7 +107,7 @@ export function YumeiroLipHomepage({ store, products, categories }: YumeiroLipHo
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-          {products.map((product) => (
+          {products.slice(0, 12).map((product) => (
             <Link
               key={product.id}
               href={`/stores/${store.slug}/products/${product.id}`}
@@ -161,6 +158,17 @@ export function YumeiroLipHomepage({ store, products, categories }: YumeiroLipHo
             </Link>
           ))}
         </div>
+        {products.length > 12 && (
+          <div className="mt-12 flex justify-center">
+            <Link
+              href={`/stores/${store.slug}/shop`}
+              className="inline-flex items-center gap-2 bg-[#ec4899] hover:bg-[#db2777] text-white font-bold px-8 py-3 rounded-full shadow-md transition-colors font-[family:var(--font-kanit)]"
+            >
+              ดูสินค้าทั้งหมด {products.length} รายการ
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* Featured Categories */}

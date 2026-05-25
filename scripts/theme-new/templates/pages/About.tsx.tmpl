@@ -1,0 +1,53 @@
+'use client';
+
+import React from 'react';
+import type { AboutProps } from '@/lib/templates/types';
+
+/**
+ * {{THEME_NAME}} — about (scaffold).
+ */
+export function About({ store }: AboutProps) {
+  return (
+    <div className="bg-[var(--shop-bg)] text-[var(--shop-ink)] font-[family:var(--font-prompt)]">
+      <section className="bg-[var(--shop-bg-soft)] border-b border-[var(--shop-border)] px-4 py-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="font-[family:var(--font-kanit)] text-4xl sm:text-5xl font-black mb-2">
+            เกี่ยวกับเรา
+          </h1>
+          <p className="text-[var(--shop-ink-muted)]">
+            ทำความรู้จัก {store.name}
+          </p>
+        </div>
+      </section>
+
+      <section className="max-w-3xl mx-auto px-4 py-12 space-y-6">
+        {store.description ? (
+          <p className="whitespace-pre-line leading-relaxed">{store.description}</p>
+        ) : (
+          <p className="text-[var(--shop-ink-muted)] italic">
+            เรากำลังเตรียมข้อมูลเกี่ยวกับร้านของเรา กลับมาดูใหม่อีกครั้งเร็วๆ นี้
+          </p>
+        )}
+
+        <div className="grid sm:grid-cols-2 gap-4 pt-6">
+          {[
+            ['คุณภาพ', 'คัดสรรสินค้าด้วยมาตรฐานสูง'],
+            ['บริการ', 'ดูแลลูกค้าด้วยใจทุกขั้นตอน'],
+            ['ความเชื่อใจ', 'รับประกันความพึงพอใจ'],
+            ['ชุมชน', 'เติบโตไปพร้อมลูกค้าของเรา'],
+          ].map(([title, body]) => (
+            <div
+              key={title}
+              className="bg-white border border-[var(--shop-border)] rounded p-4"
+            >
+              <h3 className="font-[family:var(--font-kanit)] font-bold mb-1">
+                {title}
+              </h3>
+              <p className="text-sm text-[var(--shop-ink-muted)]">{body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

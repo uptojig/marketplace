@@ -2,13 +2,17 @@
 import React from 'react';
 import Link from 'next/link';
 
-export function TinyhandFooter({ storeName, storeSlug }: { storeName: string; storeSlug: string }) {
+export function TinyhandFooter({ storeName, storeSlug, logoUrl }: { storeName: string; storeSlug: string; logoUrl?: string | null }) {
   return (
     <footer className="bg-[#3a2e22] text-[#ebe1c8] font-[family:var(--font-prompt)]">
       <div className="container mx-auto px-4 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="font-[family:var(--font-kanit)] text-xl font-bold mb-4 text-[#f7f1e3]">{storeName}</h3>
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} className="h-10 w-auto object-contain mb-4" />
+            ) : (
+              <h3 className="font-[family:var(--font-kanit)] text-xl font-bold mb-4 text-[#f7f1e3]">{storeName}</h3>
+            )}
             <p className="text-sm opacity-90 max-w-sm">
               ของเล่นไม้สำหรับเด็กเล็ก ปลอดสารเคมี
             </p>

@@ -199,7 +199,8 @@ export function TemplatePreviewReal({
       case "lookbook":
         return base;
       case "catalog":
-        // CatalogProps shape
+        // CatalogProps shape — must include buildUrl + buildSortUrl callbacks
+        // (bespoke Catalogs call these to render filter/pagination links)
         return {
           store: mockStore,
           pageProducts: MOCK_PRODUCTS,
@@ -215,9 +216,12 @@ export function TemplatePreviewReal({
           currentPage: 1,
           totalPages: 1,
           filteredCount: MOCK_PRODUCTS.length,
+          buildUrl: () => "#",
+          buildSortUrl: () => "#",
         };
       case "pdp":
-        // ProductDetailProps shape
+        // ProductDetailProps shape — bespoke PDPs destructure `related`
+        // (NOT `relatedProducts`); must provide arrays for variants/images.
         return {
           store: mockStore,
           product: {
@@ -229,12 +233,14 @@ export function TemplatePreviewReal({
             imageUrl: MOCK_PRODUCTS[0].imageUrl,
             images: [MOCK_PRODUCTS[0].imageUrl, MOCK_PRODUCTS[1].imageUrl],
             variants: [
-              { id: "v1", attributes: {}, colorLabel: "ดำ", sizeLabel: "M", materialLabel: null, priceTHB: MOCK_PRODUCTS[0].priceTHB, imageUrl: null },
-              { id: "v2", attributes: {}, colorLabel: "ขาว", sizeLabel: "L", materialLabel: null, priceTHB: MOCK_PRODUCTS[0].priceTHB, imageUrl: null },
+              { id: "v1", attributes: {}, colorLabel: "ดำ", sizeLabel: "M", materialLabel: null, priceTHB: MOCK_PRODUCTS[0].priceTHB, imageUrl: null, inventory: null },
+              { id: "v2", attributes: {}, colorLabel: "ขาว", sizeLabel: "L", materialLabel: null, priceTHB: MOCK_PRODUCTS[0].priceTHB, imageUrl: null, inventory: null },
             ],
+            stockLeft: null,
+            videoUrl: null,
             categoryName: MOCK_PRODUCTS[0].categoryName,
           },
-          relatedProducts: MOCK_PRODUCTS.slice(1, 4),
+          related: MOCK_PRODUCTS.slice(1, 4),
         };
       case "cart":
         return {

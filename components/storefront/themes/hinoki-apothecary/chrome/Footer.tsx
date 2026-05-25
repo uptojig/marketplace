@@ -8,9 +8,13 @@ export function HinokiFooter({ store }: { store: any }) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
           <div className="flex flex-col space-y-6 md:pr-12 border-b md:border-b-0 md:border-r border-[#e6d5b8]/10 pb-12 md:pb-0">
-            <h2 className="text-2xl font-[family:var(--font-prompt)] text-[#f6efe2] font-light tracking-widest uppercase">
-              {store.name}
-            </h2>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+            ) : (
+              <h2 className="text-2xl font-[family:var(--font-prompt)] text-[#f6efe2] font-light tracking-widest uppercase">
+                {store.name}
+              </h2>
+            )}
             <p className="font-[family:var(--font-prompt)] text-sm font-light leading-relaxed opacity-80">
               น้ำหอมและเทียนหอมที่เริ่มจากเรื่องเล่า
               <br />ทุกกลิ่นออกแบบรอบเรื่องสั้น 1 เรื่อง

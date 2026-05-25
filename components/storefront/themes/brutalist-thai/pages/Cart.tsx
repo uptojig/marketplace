@@ -19,20 +19,16 @@ import { Minus, Plus, Trash2, ShoppingCart, ChevronRight, Truck, RotateCcw, Shie
 import { useEffect, useState } from 'react';
 import { useCart } from '@/lib/store/cart';
 import { formatTHB } from '@/lib/utils';
+import type { CartProps } from '@/lib/templates/types';
 
 const FONT_DISPLAY = 'font-[family:var(--font-google-sans)]';
 const FREE_SHIPPING_THRESHOLD = 990;
 const DEFAULT_SHIPPING = 50;
 
-interface StoreLite {
-  id: string;
-  slug: string;
-  name: string;
-  logoUrl: string | null;
-  primaryColor: string | null;
-}
-
-export default function BrutalistCart({ store }: { store: StoreLite }) {
+// Accept the canonical scaffold `CartProps` shape — the component
+// internally reads cart lines via zustand and only needs `store.slug`
+// + identity fields, so the extra `items`/threshold props are ignored.
+export default function BrutalistCart({ store }: CartProps) {
   const allLines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
@@ -253,7 +249,7 @@ export default function BrutalistCart({ store }: { store: StoreLite }) {
                 </div>
 
                 <Link
-                  href={`/stores/${store.slug}/checkout/address`}
+                  href={`/stores/${store.slug}/checkout`}
                   className="w-full inline-flex items-center justify-center gap-2 bg-[#dc2626] text-white border-4 border-black px-8 py-4 font-black uppercase tracking-widest text-sm shadow-[6px_6px_0px_0px_#000000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000000] transition-all"
                 >
                   <ShoppingCart size={18} strokeWidth={3} />

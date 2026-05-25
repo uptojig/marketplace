@@ -13,15 +13,17 @@ export function BulkboxFooter({ store }: FooterProps) {
           <div className="space-y-6">
             <Link href={`/stores/${store.slug}`} className="flex items-center gap-3">
               {store.logoUrl ? (
-                <img src={store.logoUrl} alt={store.name} className="h-12 w-12 object-contain bg-white rounded p-1" />
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
               ) : (
-                <div className="h-12 w-12 bg-[#0284c7] text-white flex items-center justify-center rounded font-bold text-2xl font-[family:var(--font-kanit)]">
-                  {store.name.charAt(0)}
-                </div>
+                <>
+                  <div className="h-12 w-12 bg-[#0284c7] text-white flex items-center justify-center rounded font-bold text-2xl font-[family:var(--font-kanit)]">
+                    {store.name.charAt(0)}
+                  </div>
+                  <span className="font-[family:var(--font-kanit)] font-bold text-xl tracking-tight uppercase">
+                    {store.name}
+                  </span>
+                </>
               )}
-              <span className="font-[family:var(--font-kanit)] font-bold text-xl tracking-tight uppercase">
-                {store.name}
-              </span>
             </Link>
             <p className="text-[#cbd5e1] text-sm leading-relaxed">
               ส่งของอุตสาหกรรม ราคาขายส่ง ขั้นต่ำ 50 ชิ้น<br />

@@ -10,9 +10,13 @@ export function LinenAndLoomFooter({ store }: { store: any }) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-12">
           <div className="md:col-span-2">
             <Link href={`/stores/${store.slug}`} className="inline-block mb-4">
-              <span className="text-xl font-light text-[#0f172a] font-[family:var(--font-kanit)] tracking-widest uppercase">
-                {store.name}
-              </span>
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <span className="text-xl font-light text-[#0f172a] font-[family:var(--font-kanit)] tracking-widest uppercase">
+                  {store.name}
+                </span>
+              )}
             </Link>
             <p className="font-[family:var(--font-prompt)] text-sm max-w-sm leading-relaxed text-[#475569]">
               ผ้าปูที่นอน ผ้าห่ม และผ้าม่านลินินทอด้วยมือ<br/>

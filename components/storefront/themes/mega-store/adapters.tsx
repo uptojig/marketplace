@@ -49,7 +49,7 @@ function storeUrls(slug: string) {
     home: base,
     shop: `${base}/category`,
     cart: `${base}/cart`,
-    checkout: `${base}/checkout/address`,
+    checkout: `${base}/checkout`,
     products: `${base}/products`,
     account: `${base}/account`,
   };
@@ -117,8 +117,9 @@ export function MegaStoreFooterAdapter(props: ScaffoldFooterProps) {
   return (
     <MegaFooter
       storeName={props.store.name}
+      logoUrl={props.store.logoUrl ?? null}
       navColumns={navColumns}
-      paymentMethods={['VISA', 'Mastercard', 'PromptPay', 'TrueMoney', 'COD']}
+      paymentMethods={['Thai QR PromptPay']}
       socialLinks={socialLinks}
     />
   );
@@ -354,10 +355,7 @@ export function MegaStoreCheckoutAdapter(props: ScaffoldCheckoutProps) {
       items={items}
       addresses={[]}
       paymentMethods={[
-        { id: 'card', name: 'Credit Card' },
-        { id: 'promptpay', name: 'PromptPay' },
-        { id: 'truemoney', name: 'TrueMoney' },
-        { id: 'cod', name: 'COD' },
+        { id: 'anypay', name: 'ANYPAY · พร้อมเพย์ / บัตร / TrueMoney' },
       ]}
       shippingFee={50}
       onSubmitOrder={() => {
@@ -391,7 +389,7 @@ export function MegaStoreHelpAdapter(_props: ScaffoldHelpProps) {
     <MegaHelp
       faqs={[
         { q: 'ใช้เวลาส่งกี่วัน?', a: '1-3 วันทำการ ผ่าน Kerry / Flash / EMS หลังชำระเงินแล้ว' },
-        { q: 'ชำระเงินอย่างไรได้บ้าง?', a: 'บัตรเครดิต, PromptPay, TrueMoney, COD รับชำระทุกช่องทาง' },
+        { q: 'ชำระเงินอย่างไรได้บ้าง?', a: 'ANYPAY รองรับบัตรเครดิต/เดบิต, PromptPay, TrueMoney และอื่นๆ — ' },
         { q: 'คืนหรือเปลี่ยนสินค้าได้ไหม?', a: 'ภายใน 15 วัน หากสินค้าชำรุดหรือไม่ตรงคำสั่งซื้อ' },
         { q: 'ติดต่อร้านได้ที่ไหน?', a: 'แชท 24 ชม. ผ่านหน้าศูนย์ช่วยเหลือ หรือโทร Call Center' },
       ]}
@@ -399,3 +397,10 @@ export function MegaStoreHelpAdapter(_props: ScaffoldHelpProps) {
     />
   );
 }
+
+// ── Contact (bespoke standalone page) ──────────────────────────────
+// Re-exported under the registry-naming convention so the per-store
+// /contact route dispatcher (wired separately in lib/templates/registry.ts)
+// can mount it directly. The page receives `{ store }` with the
+// FooterProps-shaped store record.
+export { default as mega_store_Contact } from './pages/Contact';

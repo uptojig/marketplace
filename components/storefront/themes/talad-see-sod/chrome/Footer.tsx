@@ -68,15 +68,15 @@ export function Footer({ store, categories, availableSupportPages = [] }: Footer
         <div
           className={`grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 ${
             supportLinks.length > 0 && hasContact
-              ? 'lg:grid-cols-6'
+              ? 'lg:grid-cols-5'
               : supportLinks.length > 0 || hasContact
-                ? 'lg:grid-cols-5'
-                : 'lg:grid-cols-4'
+                ? 'lg:grid-cols-4'
+                : 'lg:grid-cols-3'
           }`}
         >
 
           {/* Brand & Factory Stamp */}
-          <div className="space-y-4 lg:col-span-2">
+          <div className="space-y-4">
             {store.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -93,7 +93,7 @@ export function Footer({ store, categories, availableSupportPages = [] }: Footer
               {blurb}
             </p>
             <div className="bg-yellow-300 text-[#dc2626] text-[10px] font-[family:var(--font-kanit)] font-black border border-red-500 px-2 py-1 inline-block rotate-[-1deg] shadow-sm">
-              ส่งเร็วพิเศษ · รับประกันของแท้
+              ส่งเร็วพิเศษ · คัดสรรคุณภาพ
             </div>
           </div>
 

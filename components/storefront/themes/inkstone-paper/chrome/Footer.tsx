@@ -12,9 +12,13 @@ export function InkstonePaperFooter({ store }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
           
           <div className="flex flex-col items-center md:items-start space-y-4">
-            <span className="text-2xl font-[family:var(--font-kanit)] font-light tracking-widest text-[#c9974b]">
-              {store.name}
-            </span>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+            ) : (
+              <span className="text-2xl font-[family:var(--font-kanit)] font-light tracking-widest text-[#c9974b]">
+                {store.name}
+              </span>
+            )}
             <p className="text-[#e6dcc4] text-sm font-[family:var(--font-prompt)] font-light max-w-xs leading-relaxed">
               ปากกาหมึกซึม สมุดทำมือ และหมึกเฉพาะรุ่นนำเข้าจากญี่ปุ่น คัดเลือกจากร้านในเกียวโตและโตเกียว
             </p>

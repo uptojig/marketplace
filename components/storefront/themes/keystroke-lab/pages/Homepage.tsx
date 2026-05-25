@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 interface Product {
   id: string;
@@ -55,7 +54,6 @@ function getFakeSpecs(product: Product) {
 
 export function KeystrokeLabHomepage({ store, products, categories }: HomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -68,7 +66,6 @@ export function KeystrokeLabHomepage({ store, products, categories }: HomepagePr
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   return (
@@ -114,7 +111,7 @@ export function KeystrokeLabHomepage({ store, products, categories }: HomepagePr
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
+            {products.slice(0, 9).map((product) => (
               <Link 
                 key={product.id} 
                 href={`/stores/${store.slug}/products/${product.id}`}
@@ -183,9 +180,20 @@ export function KeystrokeLabHomepage({ store, products, categories }: HomepagePr
               </Link>
             ))}
           </div>
+          {products.length > 9 && (
+            <div className="mt-10 flex justify-center">
+              <Link
+                href={`/stores/${store.slug}/shop`}
+                className="inline-flex items-center gap-2 bg-[#22d3ee] hover:bg-[#06b6d4] text-[#0f172a] font-bold uppercase tracking-wider px-8 py-3 transition-colors font-[family:var(--font-prompt)]"
+              >
+                ดูสินค้าทั้งหมด {products.length} รายการ
+                <span>→</span>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
-      
+
       {/* Categories Command Line Style */}
       <section className="py-20 border-t border-[#1e293b] bg-[#020617]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

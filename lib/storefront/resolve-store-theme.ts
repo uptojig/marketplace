@@ -74,6 +74,12 @@ import {
   communityCssVars,
   COMMUNITY_BODY_CLASS,
 } from "@/lib/landing/community";
+import {
+  isNeonStore,
+  neonCssVars,
+  NEON_BODY_CLASS,
+  NEON_TOKENS,
+} from "@/lib/landing/neon";
 import { isEverydayStore } from "@/lib/landing/everyday";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { isCaseStudioStore } from "@/lib/landing/case-studio";
@@ -89,6 +95,7 @@ export type ThemeKey =
   | "taobao"
   | "packaging"
   | "community"
+  | "neon"
   | "pet-house"
   | "case-studio"
   | "default";
@@ -105,6 +112,19 @@ export interface ThemeInput {
    * regression). Only the editor sets this.
    */
   themeAccentOverride?: string | null;
+  /**
+   * Optional secondary accent override (hex). When set together with
+   * `themeAccentOverride`, primary takes the override and accent takes this
+   * secondary. When absent, the existing single-color behavior is preserved
+   * (override paints both --shop-primary and --shop-accent).
+   */
+  themeAccentSecondary?: string | null;
+  /**
+   * Optional CSS gradient override for `--shop-primary-gradient`. Accepts
+   * any valid CSS background value. When provided it ALWAYS wins over the
+   * family-curated gradient (independent of accent overrides).
+   */
+  themePrimaryGradient?: string | null;
 }
 
 export interface ChromeTheme {
@@ -147,6 +167,7 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   else if (isPackagingStore(key)) chromeKey = "packaging";
   else if (isTaobaoStore(key)) chromeKey = "taobao";
   else if (isCommunityStore(key)) chromeKey = "community";
+  else if (isNeonStore(key)) chromeKey = "neon";
 
   let familyClass = "";
   let familyVars: Record<string, string> = {};
@@ -202,17 +223,36 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyClass = COMMUNITY_BODY_CLASS;
       familyVars = communityCssVars();
       break;
+    case "neon":
+      familyClass = NEON_BODY_CLASS;
+      familyVars = neonCssVars();
+      familyAccent = NEON_TOKENS.primary;
+      familyButtonShape = "square";
+      break;
     default:
       break;
   }
 
   // Phase 3 — intentional color override. ONLY when the operator explicitly set
   // themeAccentOverride (NOT the wizard paletteId). Applies to every theme,
-  // including default chrome. Overrides both the CTA primary and the accent.
+  // including default chrome. Overrides the CTA primary; the accent gets the
+  // secondary override when provided, otherwise falls back to the primary
+  // override (preserving the original single-color behavior).
   if (store.themeAccentOverride) {
-    const c = store.themeAccentOverride;
-    familyVars = { ...familyVars, "--shop-primary": c, "--shop-accent": c };
-    familyAccent = c;
+    const primary = store.themeAccentOverride;
+    const accent = store.themeAccentSecondary ?? primary;
+    familyVars = {
+      ...familyVars,
+      "--shop-primary": primary,
+      "--shop-accent": accent,
+    };
+    familyAccent = primary;
+  }
+  if (store.themePrimaryGradient) {
+    familyVars = {
+      ...familyVars,
+      "--shop-primary-gradient": store.themePrimaryGradient,
+    };
   }
 
   return { chromeKey, familyClass, familyVars, familyAccent, familyButtonShape };
@@ -241,6 +281,7 @@ export function resolveContentThemeKey(store: ThemeInput): ThemeKey {
   if (isTaobaoStore(key)) return "taobao";
   if (isPackagingStore(key)) return "packaging";
   if (isCommunityStore(key)) return "community";
+  if (isNeonStore(key)) return "neon";
   return "default";
 }
 

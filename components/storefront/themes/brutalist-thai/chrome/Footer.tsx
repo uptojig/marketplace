@@ -5,6 +5,7 @@ export interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
   };
   categories: string[];
 }
@@ -19,9 +20,13 @@ export function Footer({ store, categories }: FooterProps) {
           
           {/* Brand Info */}
           <div className="md:col-span-1 space-y-4">
-            <span className="font-[family:var(--font-google-sans)] font-black text-xl tracking-tighter uppercase block">
-              {store.name}
-            </span>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+            ) : (
+              <span className="font-[family:var(--font-google-sans)] font-black text-xl tracking-tighter uppercase block">
+                {store.name}
+              </span>
+            )}
             <p className="text-xs font-medium leading-relaxed">
               โรงพิมพ์ระบบอนาล็อกและจัดจำหน่ายโปสเตอร์งานศิลปะสไตล์ Brutalist พิมพ์บนกระดาษอาร์ตหนาพิเศษ 250 แกรม ด้วยหมึกพรีเมียมสีเข้มข้นสูง
             </p>

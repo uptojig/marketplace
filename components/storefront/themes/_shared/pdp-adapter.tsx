@@ -1,22 +1,50 @@
-import React from 'react';
-import type { ProductDetailProps } from '@/lib/templates/types';
-import { PdpClientComponent, type PdpPalette, type OverviewVariant, type ReviewVariant } from './pdp-client';
+/**
+ * Shared PDP adapter — Thai/THB bespoke product detail page.
+ *
+ * IMPORTANT: this module must NOT be `'use client'`. lib/templates/registry.ts
+ * builds its `templates` map at module top-level and CALLS `makePdpAdapter(...)`
+ * there. registry is reachable from server modules (e.g. /api/admin/stores →
+ * lib/store/template-fields → registry), so if the factory lived in a client
+ * module the call resolved to a client-reference proxy and threw
+ * "TypeError: tN is not a function" while collecting page data — breaking every
+ * build (and every storefront route that renders these ~30 themes). The actual
+ * rendering component (which needs useState/useCart) lives in the sibling
+ * `'use client'` module pdp-adapter-view.tsx; this factory just renders it as
+ * JSX, the normal server→client boundary.
+ *
+ * History: this used to wrap shadcn-studio's `product-overview-0X` +
+ * `product-reviews-0X` blocks. Those expected a different data shape than
+ * `ProductDetailProps`, so the block hit `.toFixed` / `.map` on `undefined`
+ * and crashed `/products/<id>` on ~30 themes. The PDP now renders a
+ * self-contained Thai/THB layout from `ProductDetailProps`. Themes that want a
+ * fully bespoke layout (talad-see-sod, brutalist-thai) still register their own
+ * component under `pages.pdp` and are untouched.
+ *
+ * `overview` / `review` params are kept for back-compat with existing imports
+ * (`makePdpAdapter('05', '04', PALETTE)`) but are informational only — the same
+ * component renders for every variant.
+ */
 
-export type { PdpPalette, OverviewVariant, ReviewVariant };
+import type React from 'react';
+import { paletteToCssVars, type BlockPalette } from './palette';
+import type { ProductDetailProps } from '@/lib/templates/types';
+import { PdpAdapterView } from './pdp-adapter-view';
+
+export type PdpPalette = BlockPalette;
+export type OverviewVariant =
+  | '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09';
+export type ReviewVariant = '02' | '03' | '04' | '05';
 
 export function makePdpAdapter(
-  overview: OverviewVariant,
-  review: ReviewVariant,
+  _overview: OverviewVariant,
+  _review: ReviewVariant,
   palette?: PdpPalette,
 ) {
+  const style: React.CSSProperties = {
+    ...(palette ? paletteToCssVars(palette) : {}),
+  };
+
   return function PdpAdapter(props: ProductDetailProps) {
-    return (
-      <PdpClientComponent
-        {...props}
-        overview={overview}
-        review={review}
-        palette={palette}
-      />
-    );
+    return <PdpAdapterView data={props} style={style} />;
   };
 }

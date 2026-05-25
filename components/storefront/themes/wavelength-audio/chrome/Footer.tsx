@@ -9,9 +9,13 @@ export function WavelengthAudioFooter({ store }: { store: any }) {
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between items-start gap-16">
           <div className="max-w-md">
-            <h3 className="font-[family:var(--font-prompt)] text-3xl tracking-[0.16em] uppercase font-bold mb-6">
-              {store.name}
-            </h3>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain mb-6" />
+            ) : (
+              <h3 className="font-[family:var(--font-prompt)] text-3xl tracking-[0.16em] uppercase font-bold mb-6">
+                {store.name}
+              </h3>
+            )}
             <p className="font-[family:var(--font-kanit)] text-[#0a0a0a]/60 text-lg leading-relaxed">
               หูฟัง over-ear รุ่นเดียว ทุกอย่างทำเพื่อเสียง
             </p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -18,6 +18,8 @@ import {
   Calendar,
   Image as ImageIcon,
   Printer,
+  FileUp,
+  RotateCcw,
 } from "lucide-react";
 import {
   Button,
@@ -45,6 +47,7 @@ interface EvidenceItem {
   width: number | null;
   height: number | null;
   url: string;
+  source: string;
   capturedAt: string;
 }
 
@@ -61,6 +64,7 @@ interface VendorDocData {
   kycStatus: string;
   kycSessionId: string | null;
   kycFinalizedAt: string | null;
+  latestActor: { actor: string; event: string; ts: string } | null;
   evidence: EvidenceItem[];
 }
 
@@ -105,11 +109,13 @@ function maskCitizenId(id: string) {
 
 export default function VendorDocumentsPage() {
   const params = useParams();
+  const router = useRouter();
   const vendorId = params.vendorId as string;
 
   const [data, setData] = useState<VendorDocData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [creatingSession, setCreatingSession] = useState(false);
 
   // Lightbox
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
@@ -156,6 +162,27 @@ export default function VendorDocumentsPage() {
     window.print();
   }, []);
 
+  const createNewKycSession = useCallback(async () => {
+    setCreatingSession(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/agents/me/vendors/${vendorId}/kyc/sessions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note: "Created from agent document page" }),
+      });
+      const body = await res.json();
+      if (!res.ok || !body.ok) {
+        throw new Error(body.detail || body.error || "ไม่สามารถสร้าง KYC session ได้");
+      }
+      router.push(`/agent/kyc/${body.session_id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setCreatingSession(false);
+    }
+  }, [router, vendorId]);
+
   if (loading) {
     return <OperatorLoading label="กำลังโหลดเอกสาร..." />;
   }
@@ -177,7 +204,7 @@ export default function VendorDocumentsPage() {
     );
   }
 
-  const { vendor, kycStatus, evidence } = data;
+  const { vendor, kycStatus, evidence, latestActor } = data;
   const dgaData = vendor.dgaData;
 
   return (
@@ -190,6 +217,24 @@ export default function VendorDocumentsPage() {
           actions={
             <>
               <KycBadge status={kycStatus} />
+              {data.kycSessionId && !data.kycFinalizedAt && (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/agent/kyc/${data.kycSessionId}`}>
+                    <FileUp />
+                    แก้ไขของเดิม
+                  </Link>
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={creatingSession}
+                onClick={createNewKycSession}
+              >
+                <RotateCcw />
+                {creatingSession ? "กำลังสร้าง..." : "สร้าง Session ใหม่"}
+              </Button>
               <Button variant="outline" size="sm" onClick={handleExportPdf}>
                 <Printer />
                 Export PDF
@@ -203,6 +248,26 @@ export default function VendorDocumentsPage() {
             </>
           }
         />
+
+        {/* DGA Data Card */}
+        {latestActor && (
+          <OperatorCard title="KYC audit">
+            <div className="grid gap-3 text-sm sm:grid-cols-3">
+              <div>
+                <p className="text-xs font-semibold uppercase text-muted-foreground">Last actor</p>
+                <p className="mt-1 font-mono text-foreground">{latestActor.actor}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase text-muted-foreground">Last event</p>
+                <p className="mt-1 font-mono text-foreground">{latestActor.event}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase text-muted-foreground">Updated</p>
+                <p className="mt-1 text-foreground">{new Date(latestActor.ts).toLocaleString("th-TH")}</p>
+              </div>
+            </div>
+          </OperatorCard>
+        )}
 
         {/* DGA Data Card */}
         {dgaData && Object.keys(dgaData).length > 0 && (
@@ -262,6 +327,7 @@ export default function VendorDocumentsPage() {
                     <p className="mt-0.5 text-[10px] text-muted-foreground">
                       {Math.round(e.bytes / 1024)} KB
                       {e.width && e.height ? ` · ${e.width}×${e.height}` : ""}
+                      {e.source ? ` · ${e.source === "agent_upload" ? "Agent upload" : e.source}` : ""}
                     </p>
                   </div>
                 </button>

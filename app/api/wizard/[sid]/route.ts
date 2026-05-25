@@ -26,8 +26,13 @@ export async function GET(_req: Request, { params }: { params: { sid: string } }
   // If in review state, fetch reference OCR for frontend display
   let identity: any = null;
   if (snapshot.state === "S1_ID_CARD_REVIEW") {
+    // Latest reference OCR: re-uploads create new rows (saveOcrResult uses
+    // create, not upsert), so without an explicit order findFirst returns a
+    // non-deterministic row — which made the review screen flicker between the
+    // correct read and a stale "อ่านไม่ออก" one.
     const ocr = await prisma.wizardOcrResult.findFirst({
       where: { sessionId: params.sid, provider: "iapp_id_ref" },
+      orderBy: { createdAt: "desc" },
     });
     if (ocr && ocr.extracted && typeof ocr.extracted === "object") {
       const extracted = ocr.extracted as any;

@@ -2,11 +2,21 @@
 
 import React from 'react';
 import Link from 'next/link';
-import type { HeaderProps } from '@/lib/templates/types';
 import { Building2, Search, User, Menu, ShoppingCart, FileText } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 
-export function BulkboxHeader({ store, categories }: HeaderProps) {
+/**
+ * Local prop shape — the bulkbox header destructures a nested `store`
+ * + a category list of `{ id, slug, name }` objects, not the flat
+ * `HeaderProps` shape the rest of the template system uses. The adapter
+ * in `adapters.tsx` re-packs the scaffold props into this shape.
+ */
+interface BulkboxHeaderProps {
+  store: { name: string; slug: string; logoUrl?: string | null };
+  categories: { id: string; name: string; slug: string }[];
+}
+
+export function BulkboxHeader({ store, categories }: BulkboxHeaderProps) {
   const items = useCart((s) => s.lines);
   const cartCount = items.filter((i) => i.storeSlug === store.slug).reduce((acc, item) => acc + item.qty, 0);
 
@@ -17,7 +27,7 @@ export function BulkboxHeader({ store, categories }: HeaderProps) {
           <div className="flex items-center">
             <Link href={`/stores/${store.slug}`} className="flex items-center gap-3">
               {store.logoUrl ? (
-                <img src={store.logoUrl} alt={store.name} className="h-10 w-10 object-contain rounded" />
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
               ) : (
                 <div className="h-10 w-10 bg-[#0f172a] text-[#f8fafc] flex items-center justify-center rounded font-bold text-xl font-[family:var(--font-kanit)]">
                   {store.name.charAt(0)}

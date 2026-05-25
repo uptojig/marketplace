@@ -13,7 +13,11 @@ import { CalderaSkinAnnouncementStrip } from './chrome/AnnouncementStrip';
 import { CalderaSkinHomepage } from './pages/Homepage';
 
 export function CalderaSkinHeaderAdapter(props: ScaffoldHeaderProps) {
-  return <CalderaSkinHeader store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }} categories={props.categories ?? []} />;
+  return (
+    <CalderaSkinHeader
+      store={{ name: props.storeName, slug: props.storeSlug, logoUrl: props.storeLogoUrl }}
+    />
+  );
 }
 
 export function CalderaSkinFooterAdapter(props: ScaffoldFooterProps) {
@@ -31,7 +35,7 @@ export function CalderaSkinHomepageAdapter(props: ScaffoldHomepageProps) {
         id: props.store.id,
         name: props.store.name,
         slug: props.store.slug,
-        logoUrl: props.store.logoUrl,
+        logoUrl: props.store.logoUrl ?? null,
       }}
       products={props.products.map((p) => ({
         id: p.id,
@@ -41,7 +45,7 @@ export function CalderaSkinHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={props.categories}
+      categories={(props.categories ?? []).map((name) => ({ id: name, name }))}
     />
   );
 }

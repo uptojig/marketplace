@@ -590,7 +590,7 @@ function MarketplaceChip({
         <span className="block text-[11px] font-medium leading-tight">{label}</span>
         <span className="block text-[9px] opacity-75 leading-tight">{hint}</span>
       </span>
-      {selected && <Checkbox checked readOnly className="mt-0.5 h-3 w-3" />}
+      {selected && <Checkbox checked className="mt-0.5 h-3 w-3" />}
     </button>
   );
 }

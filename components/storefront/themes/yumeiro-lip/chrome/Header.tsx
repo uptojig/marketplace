@@ -27,7 +27,7 @@ export function YumeiroLipHeader({ store, categories }: YumeiroLipHeaderProps) {
           
           <Link href={`/stores/${store.slug}`} className="flex items-center gap-2">
             {store.logoUrl ? (
-              <img src={store.logoUrl} alt={store.name} className="h-8 w-auto object-contain rounded-full" />
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
             ) : (
               <span className="text-2xl font-black text-[#ec4899] tracking-tight">{store.name}</span>
             )}

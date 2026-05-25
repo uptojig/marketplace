@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { Gift, ArrowRight } from 'lucide-react';
 
 interface Product {
@@ -28,7 +27,6 @@ interface HomepageProps {
 
 export function PetitCoteHomepage({ store, products, categories }: HomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -41,7 +39,6 @@ export function PetitCoteHomepage({ store, products, categories }: HomepageProps
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const newArrivals = products.slice(0, 4);

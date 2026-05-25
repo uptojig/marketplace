@@ -6,6 +6,7 @@ interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
   };
 }
 
@@ -15,8 +16,14 @@ export function ReclaimLeatherFooter({ store }: FooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
-            <Link href={`/stores/${store.slug}`} className="inline-block font-[family:var(--font-prompt)] font-bold text-3xl text-[#c9974b] mb-4">
-              {store.name}
+            <Link href={`/stores/${store.slug}`} className="inline-block mb-4">
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <span className="font-[family:var(--font-prompt)] font-bold text-3xl text-[#c9974b]">
+                  {store.name}
+                </span>
+              )}
             </Link>
             <p className="font-[family:var(--font-kanit)] text-[#e6d7b8]/80 text-lg max-w-sm mb-6">
               กระเป๋าและเครื่องหนังจากเศษหนังเหลือใช้

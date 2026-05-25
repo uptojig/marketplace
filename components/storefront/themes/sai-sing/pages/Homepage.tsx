@@ -4,7 +4,6 @@ import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Wrench, Shield, Zap, Sparkles } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 interface Product {
   id: string;
@@ -31,7 +30,6 @@ export function Homepage({ store, products, categories }: HomepageProps) {
   const currentModel = searchParams.get('model') || 'ทุกรุ่น';
 
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   // Filter products based on the selected vehicle model
   const filteredProducts = useMemo(() => {
@@ -58,7 +56,6 @@ export function Homepage({ store, products, categories }: HomepageProps) {
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   // Predefined stats helper for our tachometer block

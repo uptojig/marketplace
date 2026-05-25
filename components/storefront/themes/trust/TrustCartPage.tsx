@@ -435,7 +435,7 @@ export function TrustCartPage({ store }: { store: StoreLite }) {
                 </dl>
 
                 <Link
-                  href={`/stores/${store.slug}/checkout/address`}
+                  href={`/stores/${store.slug}/checkout`}
                   className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-sm text-xs font-semibold uppercase text-white transition hover:opacity-90"
                   style={{
                     background: 'var(--shop-primary)',

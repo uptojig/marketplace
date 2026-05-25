@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 import { Plus, ArrowRight, Droplets, Recycle, Wind, Check } from 'lucide-react';
 import Link from 'next/link';
 
@@ -33,7 +32,6 @@ interface SalukiHomepageProps {
 
 export function SalukiHomepage({ store, products, categories }: SalukiHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,7 +44,6 @@ export function SalukiHomepage({ store, products, categories }: SalukiHomepagePr
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const featuredProducts = products.slice(0, 8);

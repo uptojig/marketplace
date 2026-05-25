@@ -2,7 +2,6 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 interface Product {
   id: string;
@@ -26,7 +25,6 @@ export interface HomepageProps {
 
 export function Homepage({ store, products, categories }: HomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
@@ -40,7 +38,6 @@ export function Homepage({ store, products, categories }: HomepageProps) {
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const filteredProducts = useMemo(() => {

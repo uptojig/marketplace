@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useCart } from '@/lib/store/cart';
-import { useCartConfirmation } from '@/lib/store/cartConfirm';
 
 interface Product {
   id: string;
@@ -26,7 +26,6 @@ interface HinokiHomepageProps {
 
 export function HinokiHomepage({ store, products, categories }: HinokiHomepageProps) {
   const add = useCart((s) => s.add);
-  const showConfirm = useCartConfirmation((s) => s.show);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,7 +38,6 @@ export function HinokiHomepage({ store, products, categories }: HinokiHomepagePr
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl || undefined,
     });
-    showConfirm(product.title, store.slug);
   };
 
   const stories = [
@@ -85,7 +83,7 @@ export function HinokiHomepage({ store, products, categories }: HinokiHomepagePr
       {/* Storytelling Products */}
       <section className="py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-32">
-          {products.map((product, index) => {
+          {products.slice(0, 6).map((product, index) => {
             const isEven = index % 2 === 0;
             const story = stories[index % stories.length];
             
@@ -152,6 +150,16 @@ export function HinokiHomepage({ store, products, categories }: HinokiHomepagePr
             );
           })}
         </div>
+        {products.length > 6 && (
+          <div className="mt-24 flex justify-center">
+            <Link
+              href={`/stores/${store.slug}/shop`}
+              className="border-b-2 border-[#a87a4b] text-[#3f2e1e] hover:text-[#a87a4b] transition-colors tracking-widest text-sm uppercase pb-1"
+            >
+              ดูสินค้าทั้งหมด {products.length} รายการ
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* Epilogue / Manifesto */}

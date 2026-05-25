@@ -42,10 +42,10 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
               <img
                 src={storeLogoUrl}
                 alt={storeName}
-                className="h-9 w-auto object-contain rounded-full"
+                className="h-10 w-auto object-contain"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-[#5b4636] flex items-center justify-center text-[#f5efe6] font-[family:var(--font-kanit)] font-bold text-base">
+              <div className="w-10 h-10 rounded-lg bg-[#5b4636] flex items-center justify-center text-[#f5efe6] font-[family:var(--font-kanit)] font-bold text-base">
                 ลี
               </div>
             )}

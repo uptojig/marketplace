@@ -43,6 +43,14 @@ interface CartState {
    *  applies + records the discount. */
   couponCodesByStore: Record<string, string[]>;
 
+  /** UI-only: whether the global slide-out cart drawer is open. Set to
+   *  true automatically by `add()` so every "add to cart" interaction
+   *  surfaces the drawer (the project rule is "drawer for everything,
+   *  no popup"). NOT persisted — closed on page reload. */
+  drawerOpen: boolean;
+  openDrawer: () => void;
+  closeDrawer: () => void;
+
   add: (line: Omit<CartLineDisplay, "qty">, qty?: number) => void;
   setQty: (productId: string, qty: number, storeSlug?: string) => void;
   remove: (productId: string, storeSlug?: string) => void;
@@ -76,6 +84,9 @@ export const useCart = create<CartState>()(
     (set, get) => ({
       lines: [],
       couponCodesByStore: {},
+      drawerOpen: false,
+      openDrawer: () => set({ drawerOpen: true }),
+      closeDrawer: () => set({ drawerOpen: false }),
       add: (line, qty = 1) => {
         // Dedupe by (productId, storeSlug) — same product carried by two
         // different stores must show up as separate lines.
@@ -93,6 +104,10 @@ export const useCart = create<CartState>()(
         } else {
           set({ lines: [...get().lines, { ...line, qty }] });
         }
+        // (Auto-opening the drawer on every add caused theme-wide
+        // breakage — hydration mismatch on /checkout, conflicts with
+        // theme-local cart UIs. Reverted to silent add; buyers navigate
+        // to /cart explicitly via the header icon.)
       },
       setQty: (productId, qty, storeSlug) => {
         // Match (productId, storeSlug) when slug provided so per-store
@@ -170,6 +185,14 @@ export const useCart = create<CartState>()(
       subtotalTHB: () => get().lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0),
       count: () => get().lines.reduce((acc, l) => acc + l.qty, 0),
     }),
-    { name: "marketplace-cart" },
+    {
+      name: "marketplace-cart",
+      // `drawerOpen` is a transient UI flag — re-opening on every reload
+      // would be annoying. Persist only the real cart data.
+      partialize: (s) => ({
+        lines: s.lines,
+        couponCodesByStore: s.couponCodesByStore,
+      }),
+    },
   ),
 );

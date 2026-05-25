@@ -40,8 +40,11 @@ export async function GET() {
           orderBy: { createdAt: "desc" },
           take: 1,
           select: {
+            id: true,
             state: true,
             updatedAt: true,
+            expiresAt: true,
+            terminalAt: true,
           },
         },
       },
@@ -58,8 +61,11 @@ export async function GET() {
         createdAt: v.createdAt,
         role: v.role,
         stores: v.store ? [v.store] : [],
+        kycSessionId: latestKyc ? latestKyc.id : null,
         kycStatus: latestKyc ? latestKyc.state : "NOT_STARTED",
         kycUpdatedAt: latestKyc ? latestKyc.updatedAt : null,
+        kycExpiresAt: latestKyc ? latestKyc.expiresAt : null,
+        kycTerminalAt: latestKyc ? latestKyc.terminalAt : null,
       };
     });
 

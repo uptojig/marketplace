@@ -326,7 +326,7 @@ export function FashionBeautyCartPage({ store }: { store: StoreLite }) {
                 </dl>
 
                 <Link
-                  href={`/stores/${store.slug}/checkout/address`}
+                  href={`/stores/${store.slug}/checkout`}
                   className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                   style={{ background: 'var(--shop-primary)' }}
                 >

@@ -4,9 +4,18 @@ import React from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Menu, Search, User } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
-import type { HeaderProps } from '@/lib/templates/types';
 
-export function TrailcraftHeader({ store, categories }: HeaderProps) {
+/**
+ * Local prop shape — uses a nested `store` object + category objects
+ * with `{ id, slug, name }`, not the flat scaffold `HeaderProps` shape.
+ * The adapter in `adapters.tsx` re-packs the scaffold props into this.
+ */
+interface TrailcraftHeaderProps {
+  store: { name: string; slug: string; logoUrl?: string | null };
+  categories: { id: string; name: string; slug: string }[];
+}
+
+export function TrailcraftHeader({ store, categories }: TrailcraftHeaderProps) {
   const cartItems = useCart((s) => s.lines);
   const storeCartItems = cartItems.filter((i) => i.storeSlug === store.slug);
   const cartCount = storeCartItems.reduce((acc, item) => acc + item.qty, 0);
@@ -26,7 +35,7 @@ export function TrailcraftHeader({ store, categories }: HeaderProps) {
           <div className="flex-shrink-0 flex items-center">
             <Link href={`/stores/${store.slug}`} className="flex items-center gap-3">
               {store.logoUrl ? (
-                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto rounded-md shadow-sm border border-[#84cc16]/30" />
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
               ) : (
                 <div className="h-10 w-10 bg-[#365314] text-[#facc15] flex items-center justify-center rounded-md font-[family:var(--font-kanit)] font-bold text-xl shadow-sm">
                   T
