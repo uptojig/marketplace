@@ -84,6 +84,8 @@ export function PromptViewer({
       title: productTitle,
       priceTHB,
       imageUrl: productImage ?? undefined,
+      productType: "DIGITAL",
+      digitalKind: "PROMPT",
     });
   };
 

@@ -193,12 +193,26 @@ export function CartDrawer({ storeSlug, freeShippingThreshold = 990 }: Props) {
                     )}
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
-                    <p
-                      className="text-sm font-[family:var(--font-prompt)] font-semibold line-clamp-2 leading-tight"
-                      style={{ color: 'var(--shop-ink, #0a0a0a)' }}
-                    >
-                      {line.title}
-                    </p>
+                    <div className="flex items-start gap-1.5 flex-wrap">
+                      <p
+                        className="text-sm font-[family:var(--font-prompt)] font-semibold line-clamp-2 leading-tight"
+                        style={{ color: 'var(--shop-ink, #0a0a0a)' }}
+                      >
+                        {line.title}
+                      </p>
+                      {line.productType === 'DIGITAL' && (
+                        <span
+                          className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-[family:var(--font-prompt)] font-bold uppercase tracking-wider shrink-0"
+                          style={{
+                            background: 'var(--shop-primary, #0a0a0a)',
+                            color: '#fff',
+                          }}
+                          title="สินค้าดิจิทัล — ไม่มีการจัดส่ง"
+                        >
+                          💾 Digital
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-end justify-between">
                       <div
                         className="inline-flex items-center rounded-full border overflow-hidden"
