@@ -381,6 +381,14 @@ export const TEMPLATES: Template[] = [
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: {},
   },
+  {
+    id: "casetify-clone",
+    name: "Casetify Clone",
+    description: "เคสมือถือสไตล์ CASETiFY · ขาว/ดำ · แอกเซนต์แดง · marquee + การ์ดเคส",
+    group: "specialty",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { stickyCTA: "buy-now" },
+  },
 ];
 
 // ─── Palettes ──────────────────────────────────────────────────────────────

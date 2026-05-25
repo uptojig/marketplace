@@ -90,7 +90,8 @@ export type TemplateId =
   | 'blackwrapp'
   | 'gridmodu'
   | 'motofog'
-  | 'casethep';
+  | 'casethep'
+  | 'casetify-clone';
 
 
 

@@ -406,6 +406,14 @@ import {
   motofog_Checkout,
   motofog_Contact,
 } from '@/components/storefront/themes/motofog/adapters';
+
+import {
+  CasetifyCloneHeaderAdapter,
+  CasetifyCloneFooterAdapter,
+  CasetifyCloneStripAdapter,
+  CasetifyCloneHomepageAdapter,
+} from '@/components/storefront/themes/casetify-clone/adapters';
+
 export const templates: Record<TemplateId, Template> = {
   handmade: {
     id: 'handmade',
@@ -1369,6 +1377,28 @@ export const templates: Record<TemplateId, Template> = {
       about: MotofogAboutAdapter,
       help: MotofogHelpAdapter,
       contact: motofog_Contact,
+    },
+  },
+
+  'casetify-clone': {
+    id: 'casetify-clone',
+    name: 'Casetify Clone',
+    description: 'เคสมือถือสไตล์ CASETiFY — ขาว/ดำ พร้อมแอกเซนต์แดง',
+    group: 'specialty',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: CasetifyCloneHeaderAdapter,
+      Footer: CasetifyCloneFooterAdapter,
+      AnnouncementStrip: CasetifyCloneStripAdapter,
+    },
+    pages: {
+      home: CasetifyCloneHomepageAdapter,
+      catalog: makeCatalogAdapter('05'),
+      pdp: makePdpAdapter('03', '04'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter(),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 };
