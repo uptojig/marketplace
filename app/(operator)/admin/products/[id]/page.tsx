@@ -33,6 +33,10 @@ export default async function AdminProductEditPage({
       supplier: true,
       externalProductId: true,
       createdAt: true,
+      productType: true,
+      digitalKind: true,
+      promptText: true,
+      promptSample: true,
       store: { select: { id: true, name: true, slug: true } },
     },
   });
@@ -83,6 +87,10 @@ export default async function AdminProductEditPage({
           imageUrl: product.imageUrl ?? "",
           categoryName: product.categoryName ?? "",
           active: product.active,
+          productType: product.productType,
+          digitalKind: product.digitalKind,
+          promptText: product.promptText ?? "",
+          promptSample: product.promptSample ?? "",
         }}
       />
 

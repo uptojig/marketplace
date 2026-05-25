@@ -83,6 +83,7 @@ model User {
   couponUsages   CouponUsage[]
   paymentIntents PaymentIntent[]
   kycSessions    WizardSession[]
+  digitalUnlocks DigitalUnlock[]
 
   // Agent referral fields
   agentId        String?         @map("agent_id")
@@ -92,6 +93,33 @@ model User {
 }
 
 // --- Marketplace ---
+
+/// Whether a product ships physically (CJ Dropshipping pipeline) or
+/// is delivered digitally (file download or unlock-and-copy prompt).
+/// Existing rows default to PHYSICAL so the migration is additive.
+enum ProductType {
+  PHYSICAL
+  DIGITAL
+}
+
+/// Subtype of a digital product. Drives the UI on PDP (preview style),
+/// checkout (skip shipping for all-digital carts), and delivery
+/// pipeline (email signed-URL for files vs. unlock-to-copy for prompts).
+enum DigitalKind {
+  /// PDF / EPUB book — preview = TOC + first chapter
+  EBOOK
+  /// XLSX / CSV / Google Sheets template — preview = screenshot
+  EXCEL
+  /// AI / EPS / SVG / PSD vector asset — preview = watermarked thumbnail
+  VECTOR
+  /// Plain-text prompt (for ChatGPT / Midjourney etc.) — preview = first
+  /// N lines, full text unlocked + copy-to-clipboard after purchase
+  PROMPT
+  /// Multi-file bundle (.zip) — preview = file list manifest
+  ARCHIVE
+  /// Anything else (audio, video, font, ...) — generic download
+  OTHER
+}
 
 enum Supplier {
   CJ
@@ -374,15 +402,84 @@ model Product {
   moderatedById     String?
   createdAt         DateTime @default(now())
 
-  store    Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  category Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  items    OrderItem[]
-  variants ProductVariant[]
+  // ── Digital product fields (Phase 1 — physical-CJ pipeline is untouched) ──
+  /// PHYSICAL (default — ships via CJ) vs DIGITAL (file or prompt unlock).
+  productType  ProductType  @default(PHYSICAL)
+  /// Only set when productType=DIGITAL — drives the PDP preview style
+  /// and the post-paid delivery pipeline.
+  digitalKind  DigitalKind?
+  /// For PROMPT digital products: the full text revealed AFTER purchase.
+  /// Buyers see this in `/account/downloads/[id]` with a one-click
+  /// copy-to-clipboard button. Stored as plain text — operator
+  /// responsibility to manage the value.
+  promptText   String?
+  /// Public sample shown on the PDP without purchase (first N lines or
+  /// the marketing teaser). Always safe to show; never the full prompt.
+  promptSample String?
+
+  store         Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category      Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+  variants      ProductVariant[]
+  digitalAssets DigitalAsset[]
+  unlocks       DigitalUnlock[]
 
   @@index([storeId, active])
   @@index([supplier, externalProductId])
   @@index([moderationStatus])
   @@index([categoryId])
+  @@index([productType])
+}
+
+/// File asset attached to a digital product (PDF/XLSX/AI/ZIP/...).
+/// One Product can have many assets — e.g. an ebook with a sample PDF
+/// (`isPreview = true`) plus the full PDF (`isPreview = false`).
+model DigitalAsset {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fileName   String
+  fileFormat String   // "xlsx" | "ai" | "pdf" | "zip" | "txt" | ...
+  fileSizeMB Float
+  /// Object-storage key (R2 / DO Spaces). Combine with bucket base URL
+  /// to produce a signed URL at download time — never store full URLs.
+  storageKey String
+  /// True when the asset is a freely downloadable sample/preview
+  /// (visible without purchase). False = locked behind DigitalUnlock.
+  isPreview  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([productId])
+}
+
+/// Per-buyer unlock record. Created when an OrderItem for a digital
+/// product is paid (post-payment webhook). Gates access to:
+///   - PROMPT.promptText (shown + copy button)
+///   - DigitalAsset signed download URLs
+/// One row per OrderItem so refunds can revoke a specific unlock
+/// without affecting the buyer's other purchases.
+model DigitalUnlock {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItemId   String    @unique
+  orderItem     OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  /// Buyer-facing license key (UUID-ish). Useful for vector / commercial
+  /// licenses + as a tamper-evident watermark token.
+  licenseKey    String    @unique @default(cuid())
+  /// Counter for rate-limiting (e.g. cap at 10 downloads / 24h).
+  downloadCount Int       @default(0)
+  /// Null = unlimited. Set for time-limited rentals.
+  expiresAt     DateTime?
+  /// Soft-revoke after refund / chargeback. Revoked unlocks stop
+  /// serving signed URLs and hide promptText in /account/downloads.
+  revokedAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([userId])
+  @@index([productId])
 }
 
 /// Vendor-defined product grouping with a slug (used in storefront URLs)
@@ -613,6 +710,9 @@ model OrderItem {
   product Product         @relation(fields: [productId], references: [id])
   variant ProductVariant? @relation(fields: [variantId], references: [id])
   store   Store           @relation(fields: [storeId], references: [id])
+  /// Optional unlock row — only created for DIGITAL products after the
+  /// parent Order is paid. Null on physical-only lines.
+  unlock  DigitalUnlock?
 
   @@index([orderId])
   @@index([storeId])

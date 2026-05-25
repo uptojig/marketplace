@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { placeExternalOrder } from "./automate";
 import { getNotifier } from "@/lib/notify";
 import { sendOrderPaidEmail } from "@/lib/transactional-email";
+import { createDigitalUnlocksForOrder } from "@/lib/digital/create-unlocks";
 
 export interface MarkPaidInput {
   orderId: string;
@@ -36,6 +37,27 @@ export async function markOrderPaid(input: MarkPaidInput): Promise<{ applied: bo
 
   const notifier = getNotifier();
   await notifier.info("order.paid", { orderId: input.orderId, transactionId: input.transactionId });
+
+  // Digital fulfillment — create one DigitalUnlock per DIGITAL line item
+  // so /account/downloads + PromptViewer can serve the unlocked content.
+  // Idempotent: orderItemId is @unique so a webhook replay is a no-op.
+  // Failures here never roll back PAID — buyer can still re-fetch via
+  // the support flow if the unlock didn't create for any reason.
+  try {
+    const { created, alreadyExisted } = await createDigitalUnlocksForOrder(input.orderId);
+    if (created + alreadyExisted > 0) {
+      await notifier.info("order.digital.unlocks_created", {
+        orderId: input.orderId,
+        created,
+        alreadyExisted,
+      });
+    }
+  } catch (err) {
+    await notifier.error("order.digital.unlock_failed", {
+      orderId: input.orderId,
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
 
   // Synchronous fan-out for MVP. Failures inside placeExternalOrder are caught and notified
   // — they do not roll back the PAID state because the customer's money has already moved.
