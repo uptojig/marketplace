@@ -18,6 +18,14 @@ const schema = z.object({
     .optional(),
   categoryName: z.string().max(100).optional().or(z.literal("")),
   active: z.boolean().optional(),
+  // ── Digital product fields (Phase 1) ──
+  productType: z.enum(["PHYSICAL", "DIGITAL"]).optional(),
+  digitalKind: z
+    .enum(["EBOOK", "EXCEL", "VECTOR", "PROMPT", "ARCHIVE", "OTHER"])
+    .nullable()
+    .optional(),
+  promptText: z.string().max(50000).optional().or(z.literal("")),
+  promptSample: z.string().max(5000).optional().or(z.literal("")),
 });
 
 async function isAdmin() {
@@ -56,6 +64,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (d.imageUrl !== undefined) data.imageUrl = d.imageUrl || null;
   if (d.categoryName !== undefined) data.categoryName = d.categoryName || null;
   if (d.active !== undefined) data.active = d.active;
+  if (d.productType !== undefined) data.productType = d.productType;
+  if (d.digitalKind !== undefined) data.digitalKind = d.digitalKind;
+  if (d.promptText !== undefined) data.promptText = d.promptText || null;
+  if (d.promptSample !== undefined) data.promptSample = d.promptSample || null;
 
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });

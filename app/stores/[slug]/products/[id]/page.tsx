@@ -92,6 +92,29 @@ export default async function ShopProductPage({
   });
   if (!product || !product.active) notFound();
 
+  // ── Digital PROMPT product — render unlock-to-copy viewer instead of
+  // the physical PDP. Earlier-return so the full theme/family hero
+  // pipeline below stays untouched for physical CJ products.
+  if (product.productType === "DIGITAL" && product.digitalKind === "PROMPT") {
+    const { default: PromptProductPage } = await import(
+      "@/components/storefront/digital/PromptProductPage"
+    );
+    return (
+      <PromptProductPage
+        product={{
+          id: product.id,
+          title: product.titleTh ?? product.title,
+          description: product.descriptionTh ?? product.description,
+          imageUrl: product.imageUrl,
+          priceTHB: Number(product.priceTHB),
+          promptText: product.promptText,
+          promptSample: product.promptSample,
+        }}
+        store={{ slug: product.store.slug, name: product.store.name }}
+      />
+    );
+  }
+
   const gallery = (Array.isArray(product.galleryUrls) ? (product.galleryUrls as string[]) : []).filter(Boolean);
   // Importers + the legacy form sometimes save the main imageUrl into
   // galleryUrls too, which then renders the cover photo twice in the

@@ -14,6 +14,9 @@ import {
   Checkbox,
 } from "@/components/operator/operator-primitives";
 
+type ProductType = "PHYSICAL" | "DIGITAL";
+type DigitalKind = "EBOOK" | "EXCEL" | "VECTOR" | "PROMPT" | "ARCHIVE" | "OTHER";
+
 type FormValues = {
   title: string;
   titleTh: string;
@@ -24,6 +27,13 @@ type FormValues = {
   imageUrl: string;
   categoryName: string;
   active: boolean;
+  // ── Digital product fields ──
+  productType: ProductType;
+  digitalKind: DigitalKind | null;
+  /** Full prompt text — only shown to buyers with an active unlock. */
+  promptText: string;
+  /** Public teaser — visible on PDP without purchase. */
+  promptSample: string;
 };
 
 export function ProductEditForm({
@@ -176,6 +186,89 @@ export function ProductEditForm({
               className="rounded border object-cover"
               unoptimized
             />
+          )}
+        </div>
+      </OperatorCard>
+
+      <OperatorCard title="ประเภทสินค้า">
+        <div className="space-y-4">
+          <OperatorField label="ประเภท">
+            <div className="flex gap-2">
+              {(["PHYSICAL", "DIGITAL"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => update("productType", t)}
+                  className={`flex-1 rounded-md border px-4 py-2 text-sm transition-colors ${
+                    form.productType === t
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border hover:bg-muted"
+                  }`}
+                >
+                  {t === "PHYSICAL" ? "🚚 Physical (ส่งของจริง)" : "💾 Digital (ไฟล์/ปลดล็อก)"}
+                </button>
+              ))}
+            </div>
+          </OperatorField>
+
+          {form.productType === "DIGITAL" && (
+            <>
+              <OperatorField label="ชนิดสินค้าดิจิทัล" required>
+                <select
+                  value={form.digitalKind ?? ""}
+                  onChange={(e) =>
+                    update("digitalKind", (e.target.value || null) as DigitalKind | null)
+                  }
+                  required
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">— เลือกชนิด —</option>
+                  <option value="PROMPT">PROMPT (ข้อความปลดล็อก คัดลอกได้)</option>
+                  <option value="EBOOK">EBOOK (PDF/EPUB)</option>
+                  <option value="EXCEL">EXCEL (XLSX/CSV)</option>
+                  <option value="VECTOR">VECTOR (AI/SVG/EPS)</option>
+                  <option value="ARCHIVE">ARCHIVE (ZIP bundle)</option>
+                  <option value="OTHER">OTHER (อื่นๆ)</option>
+                </select>
+              </OperatorField>
+
+              {form.digitalKind === "PROMPT" && (
+                <>
+                  <OperatorField
+                    label="ตัวอย่าง Prompt (สาธารณะ)"
+                    hint="ลูกค้าทุกคนเห็นก่อนซื้อ — ใส่เฉพาะส่วนน้ำจิ้ม"
+                  >
+                    <Textarea
+                      value={form.promptSample}
+                      onChange={(e) => update("promptSample", e.target.value)}
+                      rows={4}
+                      placeholder="เช่น 'You are a senior copywriter who...'  (5-10 บรรทัด)"
+                    />
+                  </OperatorField>
+                  <OperatorField
+                    label="Prompt เต็ม (ปลดล็อกหลังซื้อ)"
+                    hint="เนื้อหาที่ผู้ซื้อได้คัดลอก — เก็บใน DB ตรง ๆ ผู้ซื้อกดปุ่ม 'คัดลอก' ใน /account/downloads"
+                    required
+                  >
+                    <Textarea
+                      value={form.promptText}
+                      onChange={(e) => update("promptText", e.target.value)}
+                      rows={10}
+                      required
+                      className="font-mono text-xs"
+                      placeholder="ใส่ prompt ฉบับเต็มที่นี่..."
+                    />
+                  </OperatorField>
+                </>
+              )}
+
+              {form.digitalKind && form.digitalKind !== "PROMPT" && (
+                <OperatorCallout tone="info">
+                  อัปโหลดไฟล์ {form.digitalKind} จะมาใน Phase 2 — สำหรับตอนนี้ใช้
+                  PROMPT type เพื่อเปิดทดสอบระบบปลดล็อก
+                </OperatorCallout>
+              )}
+            </>
           )}
         </div>
       </OperatorCard>
