@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Plus, X, Check, ShieldCheck } from "lucide-react";
-import { useCart } from "@/lib/store/cart";
+import { useCart, isAllDigitalForStore } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckoutCart } from "@/components/shop/CheckoutCart";
@@ -35,6 +35,16 @@ export default function CheckoutAddressClient({
   const allLines = useCart((s) => s.lines);
   const lines = allLines.filter((l) => l.storeSlug === params.slug);
   const subtotal = lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0);
+  // All-digital orders skip the entire shipping address step — there's
+  // nothing to ship. We push the buyer straight to /confirm and tag
+  // sessionStorage so the confirm step knows to omit shipping.
+  const allDigital = isAllDigitalForStore(allLines, params.slug);
+  useEffect(() => {
+    if (lines.length === 0 || !allDigital) return;
+    sessionStorage.setItem("checkout.allDigital", "1");
+    sessionStorage.removeItem("checkout.addressId");
+    router.replace(`/stores/${params.slug}/checkout/confirm`);
+  }, [allDigital, lines.length, params.slug, router]);
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);

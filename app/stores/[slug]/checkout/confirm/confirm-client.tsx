@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShoppingCart, Truck, CreditCard, Check, ShieldCheck } from "lucide-react";
-import { useCart } from "@/lib/store/cart";
+import { useCart, isAllDigitalForStore } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
 import { CheckoutCart } from "@/components/shop/CheckoutCart";
 import { formatTHB } from "@/lib/utils";
@@ -46,6 +46,8 @@ export default function CheckoutConfirmClient({
   const lines = allLines.filter((l) => l.storeSlug === params.slug);
   const subtotal = lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0);
   const clearCart = () => clearStore(params.slug);
+  // All-digital path: no address, no shipping cost, no shipping picker.
+  const allDigital = isAllDigitalForStore(allLines, params.slug);
 
   const [address, setAddress] = useState<Address | null>(null);
   const [shipping, setShipping] = useState(SHIPPING_OPTIONS[0]);
@@ -53,9 +55,16 @@ export default function CheckoutConfirmClient({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<{ orderId?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Guest contact for all-digital orders (we still need a name + an
+  // email to deliver the unlock notification).
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
 
   useEffect(() => {
     void (async () => {
+      // Digital-only orders skip the entire address lookup. We resolve
+      // identity via session or via the inline guestContact form below.
+      if (allDigital) return;
       // Phase 1C: scope by storeSlug so the confirm step looks up the
       // selected address within THIS store's address book. Otherwise
       // a buyer with the same id at another store could shadow the
@@ -96,12 +105,19 @@ export default function CheckoutConfirmClient({
       }
       setAddress(found);
     })();
-  }, [router, params.slug]);
+  }, [router, params.slug, allDigital]);
 
-  const total = subtotal + shipping.priceTHB;
+  const total = allDigital ? subtotal : subtotal + shipping.priceTHB;
 
   async function placeOrder() {
-    if (!address) return;
+    // Physical orders need a selected address; digital orders need
+    // at minimum a name + email (so the unlock-ready email reaches
+    // someone). The server re-validates both.
+    if (!allDigital && !address) return;
+    if (allDigital && (!guestName.trim() || !guestEmail.trim())) {
+      setError("กรุณากรอกชื่อและอีเมลเพื่อรับลิงก์สินค้าดิจิทัล");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -111,18 +127,27 @@ export default function CheckoutConfirmClient({
         body: JSON.stringify({
           storeSlug: params.slug,
           items: lines.map((l) => ({ productId: l.productId, qty: l.qty })),
-          address: {
-            recipientName: address.recipientName,
-            phone: address.phone,
-            line1: address.line1,
-            line2: address.line2 ?? "",
-            subdistrict: address.subdistrict ?? "",
-            district: address.district ?? "",
-            province: address.province,
-            postalCode: address.postalCode,
-            country: address.country,
-          },
-          shipping: { method: shipping.id, priceTHB: shipping.priceTHB },
+          ...(allDigital
+            ? {
+                guestContact: {
+                  name: guestName.trim(),
+                  email: guestEmail.trim(),
+                },
+              }
+            : {
+                address: {
+                  recipientName: address!.recipientName,
+                  phone: address!.phone,
+                  line1: address!.line1,
+                  line2: address!.line2 ?? "",
+                  subdistrict: address!.subdistrict ?? "",
+                  district: address!.district ?? "",
+                  province: address!.province,
+                  postalCode: address!.postalCode,
+                  country: address!.country,
+                },
+                shipping: { method: shipping.id, priceTHB: shipping.priceTHB },
+              }),
           payment: { method: payment.id },
         }),
       });
@@ -243,58 +268,92 @@ export default function CheckoutConfirmClient({
           </div>
         </div>
 
-        {/* Address summary */}
-        <div className="rounded-2xl border bg-white p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="font-semibold">{address?.recipientName ?? "—"}</div>
-              {address && (
-                <div className="mt-1 text-sm text-muted-foreground">
-                  {[address.line1, address.line2, address.subdistrict, address.district].filter(Boolean).join(" ")}
-                  <br />
-                  {address.province} {address.postalCode} {address.country}
-                  <br />
-                  โทร {address.phone}
-                </div>
-              )}
+        {allDigital ? (
+          /* Digital-only order: no shipping, no address. We still need
+           * the buyer's name + email to send the unlock-ready notice. */
+          <div className="rounded-2xl border bg-white p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+              <h3 className="font-semibold">ข้อมูลผู้สั่งซื้อ (สำหรับส่งลิงก์ดาวน์โหลด)</h3>
             </div>
-            <Link href={`/stores/${params.slug}/checkout/address`} className="text-sm font-medium hover:underline" style={{ color: "var(--shop-primary, #2563eb)" }}>
-              เปลี่ยน
-            </Link>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input
+                type="text"
+                placeholder="ชื่อ-นามสกุล"
+                required
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm"
+              />
+              <input
+                type="email"
+                placeholder="อีเมล"
+                required
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm"
+              />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              สินค้าดิจิทัลทั้งหมด — ไม่มีค่าจัดส่ง ลิงก์ดาวน์โหลดจะส่งไปที่อีเมลที่ระบุ
+            </p>
           </div>
-        </div>
-
-        {/* Shipping */}
-        <div className="rounded-2xl border bg-white p-4">
-          <div className="mb-2 flex items-center gap-2">
-            <Truck className="h-5 w-5 text-muted-foreground" />
-            <h3 className="font-semibold">จัดส่งโดย</h3>
-          </div>
-          <div className="space-y-2">
-            {SHIPPING_OPTIONS.map((opt) => (
-              <label
-                key={opt.id}
-                className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 transition ${
-                  shipping.id === opt.id ? "border-[var(--shop-primary)] ring-2 ring-[var(--shop-primary)]/20" : ""
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="shipping"
-                    checked={shipping.id === opt.id}
-                    onChange={() => setShipping(opt)}
-                  />
-                  <div>
-                    <div className="text-sm font-medium">{opt.name}</div>
-                    <div className="text-xs text-muted-foreground">{opt.eta}</div>
-                  </div>
+        ) : (
+          <>
+            {/* Address summary */}
+            <div className="rounded-2xl border bg-white p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="font-semibold">{address?.recipientName ?? "—"}</div>
+                  {address && (
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {[address.line1, address.line2, address.subdistrict, address.district].filter(Boolean).join(" ")}
+                      <br />
+                      {address.province} {address.postalCode} {address.country}
+                      <br />
+                      โทร {address.phone}
+                    </div>
+                  )}
                 </div>
-                <span className="text-sm font-semibold">{formatTHB(opt.priceTHB)}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+                <Link href={`/stores/${params.slug}/checkout/address`} className="text-sm font-medium hover:underline" style={{ color: "var(--shop-primary, #2563eb)" }}>
+                  เปลี่ยน
+                </Link>
+              </div>
+            </div>
+
+            {/* Shipping */}
+            <div className="rounded-2xl border bg-white p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Truck className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold">จัดส่งโดย</h3>
+              </div>
+              <div className="space-y-2">
+                {SHIPPING_OPTIONS.map((opt) => (
+                  <label
+                    key={opt.id}
+                    className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 transition ${
+                      shipping.id === opt.id ? "border-[var(--shop-primary)] ring-2 ring-[var(--shop-primary)]/20" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="shipping"
+                        checked={shipping.id === opt.id}
+                        onChange={() => setShipping(opt)}
+                      />
+                      <div>
+                        <div className="text-sm font-medium">{opt.name}</div>
+                        <div className="text-xs text-muted-foreground">{opt.eta}</div>
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold">{formatTHB(opt.priceTHB)}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Payment */}
         <div className="rounded-2xl border bg-white p-4">
@@ -328,10 +387,17 @@ export default function CheckoutConfirmClient({
             <span>ราคาสินค้า</span>
             <span>{formatTHB(subtotal)}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span>ค่าจัดส่ง ({shipping.name})</span>
-            <span>{formatTHB(shipping.priceTHB)}</span>
-          </div>
+          {allDigital ? (
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>สินค้าดิจิทัล — ไม่มีค่าจัดส่ง</span>
+              <span>—</span>
+            </div>
+          ) : (
+            <div className="flex justify-between text-sm">
+              <span>ค่าจัดส่ง ({shipping.name})</span>
+              <span>{formatTHB(shipping.priceTHB)}</span>
+            </div>
+          )}
           <hr className="my-3" />
           <div className="flex items-center justify-between">
             <span className="text-base font-semibold" style={{ color: "var(--shop-primary)" }}>ยอดรวม</span>
@@ -343,7 +409,11 @@ export default function CheckoutConfirmClient({
 
         <Button
           onClick={placeOrder}
-          disabled={submitting || !address}
+          disabled={
+            submitting
+            || (!allDigital && !address)
+            || (allDigital && (!guestName.trim() || !guestEmail.trim()))
+          }
           className="w-full py-6 text-base font-semibold text-white hover:opacity-90"
           style={{ backgroundColor: "var(--shop-primary, #dc2626)" }}
         >

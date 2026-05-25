@@ -448,13 +448,24 @@ export function StoreCartClient({
                     <div className="flex-1 ml-4 sm:ml-6 flex flex-col justify-between">
                       <div className="flex justify-between gap-3">
                         <div className="min-w-0">
-                          <Link
-                            href={`/stores/${store.slug}/products/${l.productId}`}
-                            className="text-sm sm:text-base font-medium line-clamp-2 hover:underline"
-                            style={{ color: "var(--shop-ink)" }}
-                          >
-                            {l.title}
-                          </Link>
+                          <div className="flex items-start gap-1.5 flex-wrap">
+                            <Link
+                              href={`/stores/${store.slug}/products/${l.productId}`}
+                              className="text-sm sm:text-base font-medium line-clamp-2 hover:underline"
+                              style={{ color: "var(--shop-ink)" }}
+                            >
+                              {l.title}
+                            </Link>
+                            {l.productType === "DIGITAL" && (
+                              <span
+                                className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0"
+                                style={{ background: "var(--shop-primary, #0a0a0a)", color: "#fff" }}
+                                title="สินค้าดิจิทัล — ไม่มีการจัดส่ง"
+                              >
+                                💾 Digital
+                              </span>
+                            )}
+                          </div>
                           {isElectronicsTech && (
                             <p
                               data-tech-mono="true"
