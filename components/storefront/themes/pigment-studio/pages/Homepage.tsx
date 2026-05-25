@@ -342,7 +342,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
               <div className="flex justify-between items-end mb-12 gap-6">
                 <div className="relative inline-block">
                   <h2 className="text-3xl md:text-4xl font-bold font-[family:var(--font-prompt)] text-[#7c2d12] relative z-10">
-                    คอลเลกชันสีน้ำยอดฮิต
+                    สินค้าทั้งหมด
                   </h2>
                   <div className="absolute -bottom-1 left-0 w-full h-3 bg-[#fde8c8] rounded-full -z-10 opacity-70"></div>
                 </div>
@@ -650,7 +650,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
               สินค้ามาใหม่
             </div>
             <h2 className="text-4xl md:text-5xl font-bold font-[family:var(--font-kanit)] text-[#7c2d12]">
-              อัปเดตสีสันใหม่ๆ
+              {isZugarbox ? "สินค้ามาใหม่" : "อัปเดตสีสันใหม่ๆ"}
             </h2>
           </div>
 
@@ -782,30 +782,11 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
               {/* Content */}
               <div className="relative z-10">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-[family:var(--font-prompt)] text-[#4a2511] mb-4 leading-tight">
-                  ข่าวสาร Workshop และของน่ารักสุดคิ้วท์เข้าใหม่
+                  ✨ เติมความน่ารักให้ทุกวันของคุณ ✨
                 </h2>
-                <p className="font-[family:var(--font-prompt)] text-[#5c3e2b] text-base md:text-lg mb-8 max-w-2xl mx-auto leading-relaxed font-light">
-                  รับข่าวสารใหม่จากสินค้าสุดคิ้วท์ และโปรโมชั่นพิเศษสำหรับสมาชิกผู้น่ารัก
+                <p className="font-[family:var(--font-prompt)] text-[#5c3e2b] text-base md:text-lg max-w-2xl mx-auto leading-relaxed font-light">
+                  ขอบคุณที่แวะมาเยี่ยมชม Zugarbox ขอให้วันนี้เป็นวันที่สดใสและเต็มไปด้วยรอยยิ้มนะคะ
                 </p>
-                <form className="flex flex-col sm:flex-row gap-3.5 max-w-lg mx-auto" onSubmit={(e) => e.preventDefault()}>
-                  {/* Custom Mail Input field */}
-                  <div className="relative flex-1">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8c6d58] opacity-75" />
-                    <input
-                      type="email"
-                      placeholder="อีเมลของคุณ"
-                      className="w-full pl-12 pr-6 py-4 rounded-full font-[family:var(--font-prompt)] text-[#4a2511] bg-white/50 backdrop-blur-sm border border-[#e67e22]/20 focus:outline-none focus:ring-4 focus:ring-[#ffd1b3]/50 focus:border-[#e67e22] placeholder-[#8c6d58]/60 transition-all duration-300 shadow-sm"
-                    />
-                  </div>
-                  {/* Styled Brown pill button with interactive paw print */}
-                  <button
-                    type="submit"
-                    className="group/btn px-8 py-4 bg-[#4a2511] hover:bg-[#321508] text-white rounded-full font-[family:var(--font-prompt)] font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2.5 whitespace-nowrap hover:-translate-y-0.5 transform active:scale-[0.97]"
-                  >
-                    <span>ติดตามข่าวสาร</span>
-                    <PawPrint className="w-4 h-4 fill-current text-white transition-transform duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:rotate-12" />
-                  </button>
-                </form>
               </div>
             </div>
           </div>

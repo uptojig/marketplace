@@ -34,38 +34,9 @@ export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
               <p className="font-[family:var(--font-prompt)] text-white font-bold text-lg leading-relaxed mb-4">
                 ของใช้น่ารัก & ของแต่งบ้าน
               </p>
-              <div className="font-[family:var(--font-prompt)] text-[#fed7aa]/80 space-y-1 text-sm md:text-base leading-relaxed">
+            <div className="font-[family:var(--font-prompt)] text-[#fed7aa]/80 space-y-1 text-sm md:text-base leading-relaxed">
                 <p>แหล่งรวมของแต่งบ้านและของใช้สุดน่ารักสไตล์มินิมอลและโฮมมี่</p>
                 <p>ที่จะช่วยแต่งแต้มความอบอุ่นและสร้างรอยยิ้มในทุกมุมห้องของคุณ</p>
-              </div>
-              
-              <div className="flex space-x-4 mt-6">
-                <a
-                  href="https://instagram.com/zugarbox"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full flex items-center justify-center bg-[#8f3f1e] hover:bg-[#b45309] text-white transition-all shadow-sm transform hover:scale-105"
-                >
-                  <Instagram className="w-5 h-5" />
-                </a>
-                <a
-                  href="https://facebook.com/zugarbox"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full flex items-center justify-center bg-white text-[#782e11] hover:bg-[#fff7ed] transition-all shadow-sm transform hover:scale-105"
-                >
-                  <Facebook className="w-5 h-5 fill-current" />
-                </a>
-                <a
-                  href="https://x.com/zugarbox"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1e1e1e] hover:bg-black text-white transition-all shadow-sm transform hover:scale-105"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </a>
               </div>
             </div>
 
@@ -92,11 +63,6 @@ export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
                 <li>
                   <Link href={`/stores/${store.slug}/shipping`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                     ราคาค่าจัดส่ง
-                  </Link>
-                </li>
-                <li>
-                  <Link href={`/stores/${store.slug}/workshop`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
-                    กิจกรรมดีๆ
                   </Link>
                 </li>
               </ul>
@@ -135,9 +101,6 @@ export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
             <p className="font-[family:var(--font-prompt)] text-sm text-[#fed7aa]/60">
               สงวนลิขสิทธิ์ &copy; 2026 {store.name}. All Rights Reserved.
             </p>
-            <div className="mt-4 md:mt-0 font-[family:var(--font-prompt)] text-sm text-[#fed7aa]/60">
-              สร้างด้วย 💖 เพื่อคนรักศิลปะ
-            </div>
           </div>
         </div>
       </footer>
