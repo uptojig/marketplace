@@ -421,6 +421,15 @@ import {
   CaseinwHomepageAdapter,
 } from '@/components/storefront/themes/caseinw/adapters';
 
+import {
+  SheetlabFormulaHeaderAdapter,
+  SheetlabFormulaFooterAdapter,
+  SheetlabFormulaStripAdapter,
+  SheetlabFormulaHomepageAdapter,
+  sheetlab_formula_Catalog,
+  sheetlab_formula_ProductDetail,
+} from '@/components/storefront/themes/sheetlab-formula/adapters';
+
 export const templates: Record<TemplateId, Template> = {
   handmade: {
     id: 'handmade',
@@ -1424,6 +1433,28 @@ export const templates: Record<TemplateId, Template> = {
       home: CaseinwHomepageAdapter,
       catalog: makeCatalogAdapter('05'),
       pdp: makePdpAdapter('03', '04'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter(),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
+    },
+  },
+
+  'sheetlab-formula': {
+    id: 'sheetlab-formula',
+    name: 'Sheetlab Formula',
+    description: 'ขายสูตร Excel · spreadsheet grid · digital-first · ดาวน์โหลดทันที',
+    group: 'specialty',
+    behavior: { bottomNav: 'hidden', stickyCTA: 'add-to-cart' },
+    chrome: {
+      Header: SheetlabFormulaHeaderAdapter,
+      Footer: SheetlabFormulaFooterAdapter,
+      AnnouncementStrip: SheetlabFormulaStripAdapter,
+    },
+    pages: {
+      home: SheetlabFormulaHomepageAdapter,
+      catalog: sheetlab_formula_Catalog,
+      pdp: sheetlab_formula_ProductDetail,
       cart: makeThaiCartAdapter(),
       checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),

@@ -92,7 +92,8 @@ export type TemplateId =
   | 'motofog'
   | 'casethep'
   | 'casetify-clone'
-  | 'caseinw';
+  | 'caseinw'
+  | 'sheetlab-formula';
 
 
 
