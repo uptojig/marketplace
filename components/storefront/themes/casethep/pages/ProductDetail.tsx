@@ -55,41 +55,34 @@ interface ProductDetailProps {
   related: ProductCard[];
 }
 
-const DEVICE_FALLBACK = [
-  'iPhone 15 Pro Max',
-  'iPhone 15 Pro',
-  'iPhone 15',
-  'iPhone 14 Pro',
-  'iPhone 14',
-  'Samsung S24',
-];
 
-const DECORATIVE_SWATCHES: Array<{ name: string; hex: string }> = [
-  { name: 'Coral Pink', hex: '#FF8597' },
-  { name: 'Cream', hex: '#F4ECDC' },
-  { name: 'Sage Green', hex: '#A8C5A2' },
-  { name: 'Sky Blue', hex: '#A7C8E5' },
-  { name: 'Lavender', hex: '#C6B4D8' },
-  { name: 'Midnight', hex: '#22232A' },
-];
 
 export default function ProductDetail({ store, product, related }: ProductDetailProps) {
   const router = useRouter();
   const add = useCart((s) => s.add);
 
   const gallery = useMemo(() => {
-    const all = [product.imageUrl, ...product.images].filter((u): u is string => !!u);
+    const variantImages = product.variants.map((v) => v.imageUrl).filter((u): u is string => !!u);
+    const all = [product.imageUrl, ...product.images, ...variantImages].filter((u): u is string => !!u);
     return Array.from(new Set(all));
-  }, [product.imageUrl, product.images]);
+  }, [product.imageUrl, product.images, product.variants]);
 
   const [activeImage, setActiveImage] = useState(0);
   const [qty, setQty] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState<string | null>(
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
     product.variants[0]?.id ?? null,
   );
-  const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
 
-  const variant = product.variants.find((v) => v.id === selectedVariant) ?? null;
+  const setSelectedVariant = (id: string) => {
+    setSelectedVariantId(id);
+    const v = product.variants.find((x) => x.id === id);
+    if (v?.imageUrl) {
+      const idx = gallery.indexOf(v.imageUrl);
+      if (idx !== -1) setActiveImage(idx);
+    }
+  };
+
+  const variant = product.variants.find((v) => v.id === selectedVariantId) ?? null;
   const effectivePrice = variant?.priceTHB ?? product.priceTHB;
   const hasDiscount =
     product.originalPriceTHB && product.originalPriceTHB > effectivePrice;
@@ -98,14 +91,6 @@ export default function ProductDetail({ store, product, related }: ProductDetail
         ((product.originalPriceTHB! - effectivePrice) / product.originalPriceTHB!) * 100,
       )
     : 0;
-
-  // Group variants by attribute type so we can render dedicated rows.
-  const colorVariants = product.variants.filter(
-    (v) => v.colorLabel || v.attributes?.color,
-  );
-  const otherVariants = product.variants.filter(
-    (v) => !(v.colorLabel || v.attributes?.color),
-  );
 
   const handleAdd = () => {
     add(
@@ -239,102 +224,28 @@ export default function ProductDetail({ store, product, related }: ProductDetail
             )}
           </div>
 
-          {/* Color swatches — real variant colors when present, else decorative */}
-          <div className="space-y-2">
-            <p className="text-sm font-medium">
-              สี {variant?.colorLabel ? <span className="text-[color:var(--shop-ink-muted,#6B7280)] font-normal">— {variant.colorLabel}</span> : null}
-            </p>
-            <div className="flex flex-wrap gap-2.5">
-              {colorVariants.length > 0
-                ? colorVariants.map((v) => {
-                    const active = selectedVariant === v.id;
-                    const hex = v.attributes?.color || '#E5E7EB';
-                    return (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setSelectedVariant(v.id)}
-                        aria-label={v.colorLabel ?? 'สี'}
-                        title={v.colorLabel ?? ''}
-                        className={`w-9 h-9 rounded-full border transition-all ${
-                          active
-                            ? 'ring-2 ring-offset-2'
-                            : 'hover:scale-110'
-                        }`}
-                        style={{
-                          background: hex,
-                          borderColor: 'rgba(0,0,0,0.08)',
-                          boxShadow: active
-                            ? `0 0 0 2px var(--shop-primary, #FF5A6A)`
-                            : undefined,
-                        }}
-                      />
-                    );
-                  })
-                : DECORATIVE_SWATCHES.map((c) => (
-                    <button
-                      type="button"
-                      key={c.name}
-                      aria-label={c.name}
-                      title={c.name}
-                      className="w-9 h-9 rounded-full border hover:scale-110 transition-transform"
-                      style={{ background: c.hex, borderColor: 'rgba(0,0,0,0.08)' }}
-                    />
-                  ))}
-            </div>
-          </div>
-
-          {/* Device picker */}
-          <div className="space-y-2">
-            <p className="text-sm font-medium">เลือกรุ่นโทรศัพท์</p>
-            <div className="flex flex-wrap gap-2">
-              {DEVICE_FALLBACK.map((d) => {
-                const active = selectedDevice === d;
-                return (
-                  <button
-                    type="button"
-                    key={d}
-                    onClick={() => setSelectedDevice(d)}
-                    className={`inline-flex items-center rounded-full px-3.5 h-9 text-xs font-medium transition-colors border ${
-                      active
-                        ? 'text-white border-transparent'
-                        : 'border-[color:var(--shop-ink,#1A1A1F)]/10 hover:border-[color:var(--shop-primary,#FF5A6A)] hover:text-[color:var(--shop-primary,#FF5A6A)]'
-                    }`}
-                    style={
-                      active
-                        ? { background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))' }
-                        : undefined
-                    }
-                  >
-                    {d}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Other variants (size / material) */}
-          {otherVariants.length > 0 && (
+          {/* Variants */}
+          {product.variants.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium">ตัวเลือก</p>
+              <p className="text-sm font-medium">
+                ตัวเลือก {variant && <span className="text-[color:var(--shop-ink-muted,#6B7280)] font-normal">— {Object.values(variant.attributes).join(' · ')}</span>}
+              </p>
               <div className="flex flex-wrap gap-2">
-                {otherVariants.map((v) => {
-                  const active = selectedVariant === v.id;
-                  const label =
-                    v.sizeLabel ||
-                    v.materialLabel ||
-                    Object.values(v.attributes).join(' · ') ||
-                    'ตัวเลือก';
+                {product.variants.map((v) => {
+                  const active = selectedVariantId === v.id;
+                  const label = Object.values(v.attributes).join(' · ') || 'ตัวเลือก';
+                  const inStock = v.inventory == null || v.inventory > 0;
                   return (
                     <button
                       key={v.id}
                       type="button"
-                      onClick={() => setSelectedVariant(v.id)}
+                      onClick={() => inStock && setSelectedVariant(v.id)}
+                      disabled={!inStock}
                       className={`inline-flex items-center rounded-full px-4 h-10 text-sm font-medium transition-colors border ${
                         active
                           ? 'text-white border-transparent'
                           : 'border-[color:var(--shop-ink,#1A1A1F)]/10 hover:border-[color:var(--shop-primary,#FF5A6A)]'
-                      }`}
+                      } ${!inStock ? 'opacity-50 cursor-not-allowed line-through' : ''}`}
                       style={
                         active
                           ? { background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))' }

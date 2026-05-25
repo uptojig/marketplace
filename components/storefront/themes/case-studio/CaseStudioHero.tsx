@@ -20,7 +20,7 @@
  */
 
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Bolt, Paintbrush } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Bolt } from 'lucide-react';
 
 interface Props {
   storeSlug: string;
@@ -116,8 +116,8 @@ export function CaseStudioHero({ storeSlug }: Props) {
               เลือกซื้อเลย
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href={`/stores/${storeSlug}/category?sort=newest`}
+            <a
+              href="#brand-selector"
               className="inline-flex items-center gap-2 transition hover:bg-gray-50"
               style={{
                 background: '#FFFFFF',
@@ -130,7 +130,7 @@ export function CaseStudioHero({ storeSlug }: Props) {
               }}
             >
               เลือกตามรุ่น
-            </Link>
+            </a>
           </div>
           <div className="flex flex-wrap gap-7 items-center">
             <div
@@ -146,13 +146,6 @@ export function CaseStudioHero({ storeSlug }: Props) {
             >
               <Bolt className="h-[18px] w-[18px]" style={{ color: '#FF3366' }} />
               MagSafe
-            </div>
-            <div
-              className="inline-flex items-center gap-2"
-              style={{ fontSize: '12px', fontWeight: 500, color: '#0A0A0F' }}
-            >
-              <Paintbrush className="h-[18px] w-[18px]" style={{ color: '#FF3366' }} />
-              Custom Design
             </div>
           </div>
         </div>

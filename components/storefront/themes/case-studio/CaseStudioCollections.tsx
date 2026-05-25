@@ -1,67 +1,39 @@
 /**
  * CaseStudioCollections — 5-card asymmetric collection grid.
  *
- * Server component. STATIC placeholder set — no `Collection` model
- * exists yet, so this is a visual scaffold that links each card to
- * `/stores/<slug>/category?cat=<collection-slug>`. Once a real
- * Collection schema lands these should swap to DB-driven cards with
- * cover image + curated product references.
- *
- * Grid layout (matches design source):
- *   - 1.5fr / 1fr / 1fr columns × 2 rows
- *   - Featured "Y2K REVIVAL" card spans both rows in column 1
- *   - 4 smaller cards fill columns 2-3 in a 2×2 sub-grid
- *
- * Visual identity per card is a saturated 135° gradient overlaid
- * with a soft dark gradient (40% → 70% opacity) so the white text
- * stays readable. Each card has a kicker, name, and arrow CTA.
- *
- * Mobile fallback: collapses to a single column of full-width cards.
+ * Server component. Fetches 5 real products from the database and
+ * displays them. The first product is featured (spanning 2 rows),
+ * and the remaining 4 populate the smaller grid.
+ * Links direct the user to the actual product pages.
  */
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { prisma } from '@/lib/prisma';
 
 interface Props {
   storeSlug: string;
 }
 
-const FEATURED = {
-  slug: 'y2k-revival',
-  kicker: '★ Featured Drop',
-  name: 'Y2K REVIVAL',
-  desc: 'เคสสไตล์ 2000s — กระจกฟอยล์ holographic + lettering bold ที่ปลุก nostalgia ให้กลับมาอีกครั้ง',
-  gradient: 'linear-gradient(135deg, #FF3366 0%, #FF8A5C 100%)',
-};
+export async function CaseStudioCollections({ storeSlug }: Props) {
+  // Fetch the top 5 newest active products for this store
+  const products = await prisma.product.findMany({
+    where: { 
+      store: { slug: storeSlug },
+      active: true 
+    },
+    take: 5,
+    orderBy: { createdAt: 'desc' },
+  });
 
-const SECONDARY = [
-  {
-    slug: 'mono-series',
-    kicker: 'Minimal',
-    name: 'Mono Series',
-    gradient: 'linear-gradient(135deg, #6366F1 0%, #A855F7 100%)',
-  },
-  {
-    slug: 'urban-drop',
-    kicker: 'Streetwear',
-    name: 'Urban Drop',
-    gradient: 'linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)',
-  },
-  {
-    slug: 'pop-edition',
-    kicker: 'Anime',
-    name: 'Pop Edition',
-    gradient: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
-  },
-  {
-    slug: 'sage-set',
-    kicker: 'Earth Tone',
-    name: 'Sage Set',
-    gradient: 'linear-gradient(135deg, #10B981 0%, #14B8A6 100%)',
-  },
-];
+  if (!products || products.length === 0) {
+    return null; // Return nothing if no products exist
+  }
 
-export function CaseStudioCollections({ storeSlug }: Props) {
+  const featuredProduct = products[0];
+  const secondaryProducts = products.slice(1, 5);
+
+
   return (
     <section className="px-4 sm:px-6 py-20" style={{ background: '#F5F5F7' }}>
       <div className="mx-auto" style={{ maxWidth: '1280px' }}>
@@ -76,7 +48,7 @@ export function CaseStudioCollections({ storeSlug }: Props) {
                 color: '#FF3366',
               }}
             >
-              Curated Drops
+              คอลเลกชันมาใหม่
             </p>
             <h2
               style={{
@@ -86,7 +58,7 @@ export function CaseStudioCollections({ storeSlug }: Props) {
                 color: '#0A0A0F',
               }}
             >
-              Shop the Collections
+              สินค้าแนะนำ
             </h2>
           </div>
           <Link
@@ -111,74 +83,17 @@ export function CaseStudioCollections({ storeSlug }: Props) {
           }}
         >
           <div className="cs-coll-grid">
-            <Link
-              href={`/stores/${storeSlug}/category?cat=${encodeURIComponent(FEATURED.slug)}`}
-              className="cs-coll-card cs-coll-featured relative overflow-hidden flex flex-col justify-end transition hover:scale-[1.01]"
-              style={{
-                borderRadius: '14px',
-                padding: '32px',
-                color: '#FFFFFF',
-                background: FEATURED.gradient,
-              }}
-            >
-              <span
-                aria-hidden
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%)',
-                }}
-              />
-              <div className="relative">
-                <div
-                  className="font-semibold uppercase mb-1.5"
-                  style={{
-                    fontSize: '10px',
-                    letterSpacing: '2px',
-                    opacity: 0.9,
-                  }}
-                >
-                  {FEATURED.kicker}
-                </div>
-                <div
-                  style={{
-                    fontSize: '42px',
-                    fontWeight: 800,
-                    letterSpacing: '-0.5px',
-                    marginBottom: '8px',
-                  }}
-                >
-                  {FEATURED.name}
-                </div>
-                <div
-                  style={{
-                    fontSize: '13px',
-                    opacity: 0.9,
-                    marginBottom: '12px',
-                    maxWidth: '280px',
-                  }}
-                >
-                  {FEATURED.desc}
-                </div>
-                <div
-                  className="inline-flex items-center gap-1.5 font-bold uppercase"
-                  style={{ fontSize: '12px', letterSpacing: '0.5px' }}
-                >
-                  Shop Now <ArrowRight className="h-3.5 w-3.5" />
-                </div>
-              </div>
-            </Link>
-
-            {SECONDARY.map((c) => (
+            {featuredProduct && (
               <Link
-                key={c.slug}
-                href={`/stores/${storeSlug}/category?cat=${encodeURIComponent(c.slug)}`}
-                className="cs-coll-card relative overflow-hidden flex flex-col justify-end transition hover:scale-[1.01]"
+                href={`/stores/${storeSlug}/product/${featuredProduct.id}`}
+                className="cs-coll-card cs-coll-featured relative overflow-hidden flex flex-col justify-end transition hover:scale-[1.01]"
                 style={{
                   borderRadius: '14px',
                   padding: '32px',
                   color: '#FFFFFF',
-                  background: c.gradient,
+                  backgroundImage: featuredProduct.imageUrl ? `url("${featuredProduct.imageUrl}")` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
                 }}
               >
                 <span
@@ -186,7 +101,62 @@ export function CaseStudioCollections({ storeSlug }: Props) {
                   className="absolute inset-0 pointer-events-none"
                   style={{
                     background:
-                      'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%)',
+                      'linear-gradient(180deg, transparent 20%, rgba(0,0,0,0.8) 100%)',
+                  }}
+                />
+                <div className="relative">
+                  <div
+                    className="font-semibold uppercase mb-1.5"
+                    style={{
+                      fontSize: '10px',
+                      letterSpacing: '2px',
+                      opacity: 0.9,
+                      color: '#FF3366'
+                    }}
+                  >
+                    ★ {featuredProduct.categoryName || 'Featured'}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '28px',
+                      fontWeight: 800,
+                      letterSpacing: '-0.5px',
+                      marginBottom: '12px',
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {featuredProduct.title}
+                  </div>
+                  <div
+                    className="inline-flex items-center gap-1.5 font-bold uppercase"
+                    style={{ fontSize: '12px', letterSpacing: '0.5px' }}
+                  >
+                    Shop Now <ArrowRight className="h-3.5 w-3.5" />
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            {secondaryProducts.map((p: any) => (
+              <Link
+                key={p.id}
+                href={`/stores/${storeSlug}/product/${p.id}`}
+                className="cs-coll-card relative overflow-hidden flex flex-col justify-end transition hover:scale-[1.01]"
+                style={{
+                  borderRadius: '14px',
+                  padding: '24px',
+                  color: '#FFFFFF',
+                  backgroundImage: p.imageUrl ? `url("${p.imageUrl}")` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                <span
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      'linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.8) 100%)',
                   }}
                 />
                 <div className="relative">
@@ -194,21 +164,26 @@ export function CaseStudioCollections({ storeSlug }: Props) {
                     className="font-semibold uppercase mb-1.5"
                     style={{ fontSize: '10px', letterSpacing: '2px', opacity: 0.9 }}
                   >
-                    {c.kicker}
+                    {p.categoryName || 'Product'}
                   </div>
                   <div
                     style={{
-                      fontSize: '26px',
+                      fontSize: '18px',
                       fontWeight: 800,
                       letterSpacing: '-0.5px',
                       marginBottom: '8px',
+                      lineHeight: 1.2,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
                     }}
                   >
-                    {c.name}
+                    {p.title}
                   </div>
                   <div
                     className="inline-flex items-center gap-1.5 font-bold uppercase"
-                    style={{ fontSize: '12px', letterSpacing: '0.5px' }}
+                    style={{ fontSize: '11px', letterSpacing: '0.5px' }}
                   >
                     Shop <ArrowRight className="h-3.5 w-3.5" />
                   </div>
@@ -219,21 +194,13 @@ export function CaseStudioCollections({ storeSlug }: Props) {
         </div>
       </div>
 
-      {/*
-        Scoped CSS for the asymmetric grid. Tailwind can't express the
-        "featured card spans 2 rows in col-1" shape without a custom
-        utility, and inline-style media queries don't work — so we
-        ship a tiny scoped block. Mobile collapses to a single-col
-        stack; sm flips to 2-col (featured stacked above), lg jumps
-        to the full 3-col mockup layout.
-      */}
       <style>{`
         .cs-coll-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        .cs-coll-featured { min-height: 260px; }
+        .cs-coll-featured { min-height: 300px; }
         .cs-coll-card { min-height: 200px; }
         @media (min-width: 640px) {
           .cs-coll-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-          .cs-coll-featured { grid-column: 1 / 3; grid-row: 1 / 2; min-height: 280px; }
+          .cs-coll-featured { grid-column: 1 / 3; grid-row: 1 / 2; min-height: 300px; }
         }
         @media (min-width: 1024px) {
           .cs-coll-grid { grid-template-columns: 1.5fr 1fr 1fr; grid-template-rows: 1fr 1fr; height: 540px; }

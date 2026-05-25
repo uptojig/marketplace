@@ -53,19 +53,21 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories = [] }: 
               className="h-10 w-auto object-contain"
             />
           ) : (
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-semibold"
-              style={{
-                background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))',
-              }}
-              aria-hidden
-            >
-              {storeName.slice(0, 1).toUpperCase()}
-            </div>
+            <>
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-semibold"
+                style={{
+                  background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))',
+                }}
+                aria-hidden
+              >
+                {storeName.slice(0, 1).toUpperCase()}
+              </div>
+              <span className="font-[family:var(--font-kanit)] text-lg sm:text-xl font-semibold tracking-tight text-[color:var(--shop-ink,#1A1A1F)] truncate max-w-[10rem] sm:max-w-[14rem]">
+                {storeName}
+              </span>
+            </>
           )}
-          <span className="font-[family:var(--font-kanit)] text-lg sm:text-xl font-semibold tracking-tight text-[color:var(--shop-ink,#1A1A1F)] truncate max-w-[10rem] sm:max-w-[14rem]">
-            {storeName}
-          </span>
         </Link>
 
         {/* Desktop nav */}

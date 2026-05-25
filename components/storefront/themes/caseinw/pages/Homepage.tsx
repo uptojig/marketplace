@@ -39,7 +39,9 @@ const TICKER_TEXT =
 
 const STICKERS = ['🌈', '⚡', '★', '✺', '💜', '🍋'];
 
-const TRUST_ITEMS: { icon: React.ComponentType<{ size?: number; className?: string }>; label: string; sub: string }[] = [
+import { LucideIcon } from 'lucide-react';
+
+const TRUST_ITEMS: { icon: LucideIcon; label: string; sub: string }[] = [
   { icon: Truck, label: 'ส่งฟรี', sub: 'ออเดอร์ ฿590+' },
   { icon: RotateCcw, label: 'เปลี่ยน-คืน', sub: 'ภายใน 30 วัน' },
   { icon: ShieldCheck, label: 'Military Grade', sub: 'กันตก 3 เมตร' },

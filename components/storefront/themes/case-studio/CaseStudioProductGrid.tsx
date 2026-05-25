@@ -99,7 +99,7 @@ export async function CaseStudioProductGrid({ storeId, storeSlug, variant }: Pro
   });
 
   const kicker = isNewArrivals ? '★ Just Dropped' : '★★★★★ Bestsellers';
-  const heading = isNewArrivals ? 'New Arrivals' : 'ขายดีที่สุด';
+  const heading = isNewArrivals ? 'สินค้าใหม่ล่าสุด' : 'ขายดีที่สุด';
   // Section padding: top-aligned for New Arrivals (sits under the
   // category grid), normal for Bestsellers (sits after the features
   // bar). New Arrivals has no top padding because the cat grid ends
@@ -110,7 +110,7 @@ export async function CaseStudioProductGrid({ storeId, storeSlug, variant }: Pro
 
   return (
     <section
-      className="px-4 sm:px-6 pb-20"
+      className="px-4 sm:px-6 pt-20 pb-20"
       style={sectionStyle}
     >
       <div className="mx-auto" style={{ maxWidth: '1280px' }}>

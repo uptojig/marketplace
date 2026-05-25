@@ -39,7 +39,7 @@ import { CaseStudioHero } from './CaseStudioHero';
 import { CaseStudioModelSelector } from './CaseStudioModelSelector';
 import { CaseStudioCategoryGrid } from './CaseStudioCategoryGrid';
 import { CaseStudioProductGrid } from './CaseStudioProductGrid';
-import { CaseStudioCollections } from './CaseStudioCollections';
+
 import { CaseStudioFeaturesBar } from './CaseStudioFeaturesBar';
 import { CaseStudioCustomPromo } from './CaseStudioCustomPromo';
 import { CaseStudioInstagramGrid } from './CaseStudioInstagramGrid';
@@ -64,7 +64,7 @@ export async function CaseStudioHomepage({ store }: Props) {
         storeSlug={store.slug}
         variant="new-arrivals"
       />
-      <CaseStudioCollections storeSlug={store.slug} />
+
       <CaseStudioFeaturesBar />
       <CaseStudioProductGrid
         storeId={store.id}
