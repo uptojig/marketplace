@@ -5,6 +5,7 @@ export interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
   };
   categories: string[];
 }
@@ -26,9 +27,13 @@ export function Footer({ store, categories }: FooterProps) {
           {/* Brand column */}
           <div className="md:col-span-5 space-y-5">
             <a href={urls.home}>
-              <span className="font-[family:var(--font-kanit)] font-black text-lg uppercase tracking-[0.2em] text-[#e8e2d4]">
-                {store.name}
-              </span>
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <span className="font-[family:var(--font-kanit)] font-black text-lg uppercase tracking-[0.2em] text-[#e8e2d4]">
+                  {store.name}
+                </span>
+              )}
             </a>
             <p className="font-[family:var(--font-prompt)] text-xs leading-relaxed text-[#e8e2d4]/50 max-w-sm">
               ผ้าเนื้อหนา ตัดเรียบ ใส่ได้ทุกวัน — คอลเลกชันเสื้อผ้าสตรีทแวร์ไทย

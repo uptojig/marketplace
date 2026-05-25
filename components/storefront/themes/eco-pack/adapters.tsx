@@ -116,8 +116,9 @@ export function EcoPackFooterAdapter(props: ScaffoldFooterProps) {
   return (
     <EcoFooter
       storeName={props.store.name}
+      logoUrl={props.store.logoUrl ?? null}
       navColumns={navColumns}
-      paymentMethods={['VISA', 'Mastercard', 'PromptPay', 'COD']}
+      paymentMethods={['Thai QR PromptPay']}
       socialLinks={socialLinks}
     />
   );

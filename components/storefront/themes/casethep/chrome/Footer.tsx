@@ -138,19 +138,21 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: F
           <Link href={`/stores/${store.slug}`} className="flex items-center gap-2.5">
             {store.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={store.logoUrl} alt={store.name} className="h-9 w-9 rounded-full object-cover" />
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
             ) : (
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold"
-                style={{ background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))' }}
-                aria-hidden
-              >
-                {store.name.slice(0, 1).toUpperCase()}
-              </div>
+              <>
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-semibold"
+                  style={{ background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))' }}
+                  aria-hidden
+                >
+                  {store.name.slice(0, 1).toUpperCase()}
+                </div>
+                <span className="font-[family:var(--font-kanit)] text-xl font-semibold tracking-tight">
+                  {store.name}
+                </span>
+              </>
             )}
-            <span className="font-[family:var(--font-kanit)] text-xl font-semibold tracking-tight">
-              {store.name}
-            </span>
           </Link>
           <p className="text-sm text-[color:var(--shop-ink-muted,#6B7280)] leading-relaxed">{tagline}</p>
           <div className="flex gap-2">

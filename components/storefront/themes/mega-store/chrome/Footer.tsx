@@ -3,12 +3,13 @@ import { ShieldCheck, Truck, Clock, Headphones } from 'lucide-react';
 
 export interface FooterProps {
   storeName: string; // Store name
+  logoUrl?: string | null;
   navColumns: { title: string; links: { label: string; url: string }[] }[]; // Footer navigation columns
   paymentMethods: string[]; // List of payment method names or image URLs
   socialLinks: { platform: string; url: string }[]; // Social media links
 }
 
-export function Footer({ storeName, navColumns, paymentMethods, socialLinks }: FooterProps) {
+export function Footer({ storeName, logoUrl, navColumns, paymentMethods, socialLinks }: FooterProps) {
   const guarantees = [
     { icon: <ShieldCheck size={32} />, title: "ช้อปปิ้งปลอดภัย", desc: "รับประกันสินค้าแท้ 100%" },
     { icon: <Truck size={32} />, title: "จัดส่งรวดเร็ว", desc: "ส่งตรงถึงมือคุณทั่วประเทศ" },
@@ -41,7 +42,11 @@ export function Footer({ storeName, navColumns, paymentMethods, socialLinks }: F
           
           {/* Brand Col */}
           <div className="col-span-2 lg:col-span-1">
-            <h3 className="font-extrabold text-2xl text-[var(--shop-primary)] tracking-tight mb-4">{storeName}</h3>
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} className="h-10 w-auto object-contain mb-4" />
+            ) : (
+              <h3 className="font-extrabold text-2xl text-[var(--shop-primary)] tracking-tight mb-4">{storeName}</h3>
+            )}
             <p className="text-xs text-[var(--shop-ink-muted)] mb-6 leading-relaxed max-w-xs">
               ศูนย์รวมสินค้าออนไลน์ที่ใหญ่ที่สุด ช้อปสนุก ถูกใจ มั่นใจได้ทุกการสั่งซื้อ พร้อมโปรโมชั่นพิเศษมากมายทุกวัน
             </p>

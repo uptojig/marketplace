@@ -48,11 +48,11 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories = [] }: 
               <img
                 src={storeLogoUrl}
                 alt={storeName}
-                className="h-9 sm:h-10 w-auto object-contain rounded-full"
+                className="h-9 sm:h-10 w-auto object-contain"
               />
             ) : (
               <span
-                className="h-10 w-10 rounded-full grid place-items-center font-[family:var(--font-kanit)] font-semibold text-white text-lg"
+                className="h-10 w-10 rounded-lg grid place-items-center font-[family:var(--font-kanit)] font-semibold text-white text-lg"
                 style={{ background: 'var(--shop-primary-gradient, var(--shop-primary))' }}
               >
                 {initial}

@@ -27,7 +27,7 @@ export function BulkboxHeader({ store, categories }: BulkboxHeaderProps) {
           <div className="flex items-center">
             <Link href={`/stores/${store.slug}`} className="flex items-center gap-3">
               {store.logoUrl ? (
-                <img src={store.logoUrl} alt={store.name} className="h-10 w-10 object-contain rounded" />
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
               ) : (
                 <div className="h-10 w-10 bg-[#0f172a] text-[#f8fafc] flex items-center justify-center rounded font-bold text-xl font-[family:var(--font-kanit)]">
                   {store.name.charAt(0)}

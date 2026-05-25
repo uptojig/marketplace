@@ -221,7 +221,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
                 </span>
               </div>
               <div className="pt-3 px-1 pb-1">
-                <p className="font-[family:var(--font-prompt)] font-bold text-sm line-clamp-2">
+                <p className="font-[family:var(--font-prompt)] font-bold text-sm truncate whitespace-nowrap">
                   {allCatMix[0].title}
                 </p>
                 <div className="mt-1.5 flex items-baseline gap-2">
@@ -346,7 +346,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
                   </div>
                   <div className="p-2.5 space-y-1.5">
                     <p
-                      className="text-xs font-[family:var(--font-prompt)] font-semibold line-clamp-2 leading-snug"
+                      className="text-xs font-[family:var(--font-prompt)] font-semibold truncate whitespace-nowrap leading-snug"
                       style={{ color: 'var(--shop-ink)' }}
                     >
                       {p.title}
@@ -465,7 +465,7 @@ export function Homepage({ store, products, categories }: HomepageProps) {
                     className="block"
                   >
                     <p
-                      className="text-xs font-[family:var(--font-prompt)] font-semibold leading-snug line-clamp-2"
+                      className="text-xs font-[family:var(--font-prompt)] font-semibold leading-snug truncate whitespace-nowrap"
                       style={{ color: 'var(--shop-ink)' }}
                     >
                       {p.title}

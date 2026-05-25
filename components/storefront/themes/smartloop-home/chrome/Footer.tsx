@@ -4,16 +4,23 @@ import { Cpu, Mail, Phone, MapPin } from 'lucide-react';
 
 interface FooterProps {
   storeName: string;
+  logoUrl?: string | null;
 }
 
-export function SmartloopHomeFooter({ storeName }: FooterProps) {
+export function SmartloopHomeFooter({ storeName, logoUrl }: FooterProps) {
   return (
     <footer className="bg-[#064e3b] text-white font-[family:var(--font-prompt)] pt-12 pb-6 border-t-4 border-[#34d399]">
       <div className="max-w-[1400px] mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
         <div>
           <div className="flex items-center gap-2 mb-4 font-[family:var(--font-kanit)]">
-            <Cpu className="w-6 h-6 text-[#34d399]" />
-            <span className="text-xl font-bold uppercase">{storeName}</span>
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} className="h-10 w-auto object-contain" />
+            ) : (
+              <>
+                <Cpu className="w-6 h-6 text-[#34d399]" />
+                <span className="text-xl font-bold uppercase">{storeName}</span>
+              </>
+            )}
           </div>
           <p className="text-sm text-[#dcfce7] mb-6 font-[family:var(--font-kanit)]">
             อุปกรณ์สมาร์ทโฮม ครบทุกระบบในที่เดียว<br/>

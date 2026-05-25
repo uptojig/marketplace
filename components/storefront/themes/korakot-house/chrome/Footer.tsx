@@ -7,6 +7,7 @@ interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
   };
 }
 
@@ -16,9 +17,13 @@ export function KorakotHouseFooter({ store }: FooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">
-            <h3 className="font-[family:var(--font-kanit)] text-2xl font-semibold tracking-wider text-[#d7a86e] mb-4 uppercase">
-              {store.name}
-            </h3>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain mb-4" />
+            ) : (
+              <h3 className="font-[family:var(--font-kanit)] text-2xl font-semibold tracking-wider text-[#d7a86e] mb-4 uppercase">
+                {store.name}
+              </h3>
+            )}
             <p className="text-[#e8d5b7] max-w-md leading-relaxed text-sm">
               เฟอร์นิเจอร์ไม้สักมิดเซนจูรี ผลิตในจังหวัดน่าน <br />
               ทุกชิ้นผลิตด้วยความใส่ใจและเคารพในธรรมชาติ ใช้วัสดุจากสวนป่าที่ได้รับการรับรอง FSC 

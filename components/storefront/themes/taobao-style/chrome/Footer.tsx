@@ -217,7 +217,7 @@ export function Footer({ store, categories }: FooterProps) {
           <p>
             © {year} {store.name} · ทุกการสั่งซื้อปลอดภัย รับประกันคืนเงิน
           </p>
-          <PaymentLogos compact />
+          <PaymentLogos compact only={['promptpay']} />
 
         </div>
       </div>

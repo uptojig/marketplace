@@ -137,7 +137,7 @@ export function BikiniFooterAdapter(props: ScaffoldFooterProps) {
       storeLogoUrl={props.store.logoUrl ?? undefined}
       tagline={props.store.description ?? props.store.tagline ?? undefined}
       navColumns={navColumns}
-      paymentMethods={['VISA', 'MC', 'JCB', 'PROMPTPAY']}
+      paymentMethods={['Thai QR PromptPay']}
       socialLinks={socialLinks}
       contact={{
         line: props.store.lineId ?? undefined,

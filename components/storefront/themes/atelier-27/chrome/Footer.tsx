@@ -5,6 +5,7 @@ export interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
     facebookUrl?: string | null;
     instagramUrl?: string | null;
     twitterUrl?: string | null;
@@ -31,9 +32,13 @@ export function Footer({ store, categories }: FooterProps) {
 
           {/* Brand column */}
           <div className="md:col-span-5 space-y-6">
-            <span className="font-[family:var(--font-kanit)] font-light text-2xl tracking-[0.35em] uppercase text-[#fafaf9]">
-              Atelier 27
-            </span>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+            ) : (
+              <span className="font-[family:var(--font-kanit)] font-light text-2xl tracking-[0.35em] uppercase text-[#fafaf9]">
+                Atelier 27
+              </span>
+            )}
             <p className="font-[family:var(--font-prompt)] text-sm leading-relaxed text-[#78716c] max-w-sm">
               สูทตัดเฉพาะบุคคล สั่งจองล่วงหน้า 14 วัน
             </p>

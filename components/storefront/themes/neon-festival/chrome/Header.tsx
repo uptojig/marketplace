@@ -37,7 +37,7 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories = [] }: 
               <img
                 src={storeLogoUrl}
                 alt={storeName}
-                className="h-10 w-auto border-4 border-black"
+                className="h-10 w-auto object-contain"
               />
             ) : (
               <div className="w-10 h-10 bg-black flex items-center justify-center shrink-0">

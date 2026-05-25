@@ -67,13 +67,15 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: F
           >
             {store.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto border-4 border-white bg-white" />
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
             ) : (
-              <div className="w-10 h-10 bg-white flex items-center justify-center border-4 border-white shrink-0">
-                <div className="w-5 h-5 bg-pink-500 rotate-45" />
-              </div>
+              <>
+                <div className="w-10 h-10 bg-white flex items-center justify-center border-4 border-white shrink-0">
+                  <div className="w-5 h-5 bg-pink-500 rotate-45" />
+                </div>
+                <span className="truncate">{store.name}</span>
+              </>
             )}
-            <span className="truncate">{store.name}</span>
           </Link>
           <p className="text-sm font-bold text-slate-400 uppercase tracking-widest leading-loose">
             {tagline}

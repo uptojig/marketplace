@@ -19,7 +19,7 @@ export function KeystrokeLabHeader({ store, categories }: any) {
             </button>
             <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 group">
               {store.logoUrl ? (
-                <img src={store.logoUrl} alt={store.name} className="h-8 w-8 object-contain rounded-md" />
+                <img src={store.logoUrl} alt={store.name} className="h-8 w-auto object-contain" />
               ) : (
                 <div className="w-8 h-8 bg-[#0f172a] rounded-md border border-[#22d3ee]/30 flex items-center justify-center text-[#22d3ee] font-bold">
                   {store.name.charAt(0)}

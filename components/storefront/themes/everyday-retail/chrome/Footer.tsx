@@ -6,6 +6,7 @@ export interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
     facebookUrl?: string | null;
     instagramUrl?: string | null;
     twitterUrl?: string | null;
@@ -27,9 +28,13 @@ export function Footer({ store, categories = [], accent }: FooterProps) {
       <div className="mx-auto max-w-7xl px-4">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider opacity-60">
-              {store.name}
-            </h3>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain mb-3" />
+            ) : (
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider opacity-60">
+                {store.name}
+              </h3>
+            )}
             <p className="text-sm opacity-50">
               ร้านค้าออนไลน์บน Basketplace
             </p>

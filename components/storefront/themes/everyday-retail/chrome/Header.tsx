@@ -24,10 +24,10 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories = [], ac
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
         <Link href={`/stores/${storeSlug}`} className="flex items-center gap-2">
           {storeLogoUrl ? (
-            <img src={storeLogoUrl} alt={storeName} className="h-8 w-8 rounded-full object-cover" />
+            <img src={storeLogoUrl} alt={storeName} className="h-10 w-auto object-contain" />
           ) : (
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold text-white"
               style={{ background: accent || '#ef4444' }}
             >
               {storeName.charAt(0)}

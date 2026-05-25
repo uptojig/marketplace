@@ -8,6 +8,7 @@ interface SirinFooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
   };
 }
 
@@ -17,9 +18,13 @@ export function SirinFooter({ store }: SirinFooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
           <div className="col-span-1 md:col-span-2">
-            <h3 className="font-[family:var(--font-kanit)] font-extrabold text-2xl text-[#be185d] uppercase tracking-widest mb-4">
-              {store.name}
-            </h3>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain mb-4" />
+            ) : (
+              <h3 className="font-[family:var(--font-kanit)] font-extrabold text-2xl text-[#be185d] uppercase tracking-widest mb-4">
+                {store.name}
+              </h3>
+            )}
             <p className="font-[family:var(--font-prompt)] text-sm leading-relaxed max-w-sm opacity-80">
               เดรส กระโปรง และเสื้อแขนพอง สำหรับสาวออฟฟิศ
             </p>

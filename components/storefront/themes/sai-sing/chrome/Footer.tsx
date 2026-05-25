@@ -5,6 +5,7 @@ export interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
     facebookUrl?: string | null;
     instagramUrl?: string | null;
     twitterUrl?: string | null;
@@ -23,9 +24,13 @@ export function Footer({ store, categories, accent }: FooterProps) {
           
           {/* Brand Info */}
           <div className="md:col-span-1">
-            <span className="font-sans font-extrabold text-xl tracking-tighter text-[#fafafa] uppercase">
-              {store.name}
-            </span>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+            ) : (
+              <span className="font-sans font-extrabold text-xl tracking-tighter text-[#fafafa] uppercase">
+                {store.name}
+              </span>
+            )}
             <p className="mt-4 text-xs leading-relaxed text-[#525252]">
               สำนักแต่งและจำหน่ายอะไหล่ซิ่งเกรดพรีเมียม สไตล์ Street Racer มั่นใจในคุณภาพ บริการติดตั้งระดับมืออาชีพ
             </p>

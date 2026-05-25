@@ -7,6 +7,7 @@ interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
   };
 }
 
@@ -20,10 +21,16 @@ export function GlowLampCoFooter({ store }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-12">
           <div className="space-y-4">
             <Link href={`/stores/${store.slug}`} className="flex items-center gap-3 group inline-flex">
-              <div className="w-8 h-8 bg-[#f59e0b] rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.4)] group-hover:shadow-[0_0_20px_rgba(245,158,11,0.7)] transition-all">
-                <Lightbulb className="w-5 h-5 text-[#0f172a]" />
-              </div>
-              <span className="text-xl font-bold tracking-wider text-[#f8fafc] font-[family:var(--font-kanit)]">{store.name}</span>
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <>
+                  <div className="w-8 h-8 bg-[#f59e0b] rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.4)] group-hover:shadow-[0_0_20px_rgba(245,158,11,0.7)] transition-all">
+                    <Lightbulb className="w-5 h-5 text-[#0f172a]" />
+                  </div>
+                  <span className="text-xl font-bold tracking-wider text-[#f8fafc] font-[family:var(--font-kanit)]">{store.name}</span>
+                </>
+              )}
             </Link>
             <p className="text-sm opacity-80 mt-4 leading-relaxed max-w-xs">
               โคมไฟตั้งโต๊ะและโคมเพดาน ดีไซน์ตามแสง <br/>แสงที่ดี เริ่มที่หลอดที่ใช่

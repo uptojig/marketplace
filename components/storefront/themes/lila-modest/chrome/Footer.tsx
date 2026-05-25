@@ -5,6 +5,7 @@ export interface FooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
     facebookUrl?: string | null;
     instagramUrl?: string | null;
     lineId?: string | null;
@@ -33,9 +34,13 @@ export function Footer({ store, categories }: FooterProps) {
 
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <span className="font-[family:var(--font-kanit)] font-semibold text-xl text-[#f5efe6] tracking-tight">
-              {store.name}
-            </span>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+            ) : (
+              <span className="font-[family:var(--font-kanit)] font-semibold text-xl text-[#f5efe6] tracking-tight">
+                {store.name}
+              </span>
+            )}
             <p className="mt-3 text-xs leading-relaxed text-[#9b8b73] max-w-xs">
               ผ้าคลุมไหล่และเดรสยาว สำหรับผู้หญิงที่ชอบใส่สบาย — ออกแบบและผลิตในประเทศไทย ด้วยผ้าที่ระบายอากาศดี
             </p>

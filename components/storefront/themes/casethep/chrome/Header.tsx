@@ -50,11 +50,11 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories = [] }: 
             <img
               src={storeLogoUrl}
               alt={storeName}
-              className="h-8 w-8 object-cover rounded-full"
+              className="h-10 w-auto object-contain"
             />
           ) : (
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-semibold"
               style={{
                 background: 'var(--shop-primary-gradient, var(--shop-primary, #FF5A6A))',
               }}

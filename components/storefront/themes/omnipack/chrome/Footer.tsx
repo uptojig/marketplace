@@ -91,25 +91,27 @@ export function OmnipackFooter(props: FooterProps) {
               <img
                 src={store.logoUrl}
                 alt={store.name}
-                className="h-10 w-10 object-contain rounded-md"
+                className="h-10 w-auto object-contain"
               />
             ) : (
-              <div
-                className="h-10 w-10 rounded-md flex items-center justify-center text-white"
-                style={{
-                  background:
-                    'var(--shop-primary-gradient, var(--shop-primary))',
-                }}
-              >
-                <PackageOpen className="w-5 h-5" />
-              </div>
+              <>
+                <div
+                  className="h-10 w-10 rounded-md flex items-center justify-center text-white"
+                  style={{
+                    background:
+                      'var(--shop-primary-gradient, var(--shop-primary))',
+                  }}
+                >
+                  <PackageOpen className="w-5 h-5" />
+                </div>
+                <span
+                  className="font-[family:var(--font-kanit)] font-medium text-xl"
+                  style={{ color: 'var(--shop-ink)' }}
+                >
+                  {store.name}
+                </span>
+              </>
             )}
-            <span
-              className="font-[family:var(--font-kanit)] font-medium text-xl"
-              style={{ color: 'var(--shop-ink)' }}
-            >
-              {store.name}
-            </span>
           </Link>
           {store.tagline && (
             <p

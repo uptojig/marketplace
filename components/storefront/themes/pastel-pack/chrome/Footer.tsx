@@ -7,18 +7,25 @@ import { PackageOpen, Instagram, Facebook, MessageCircle } from 'lucide-react';
 interface PastelPackFooterProps {
   storeName: string;
   storeSlug: string;
+  logoUrl?: string | null;
 }
 
-export function PastelPackFooter({ storeName, storeSlug }: PastelPackFooterProps) {
+export function PastelPackFooter({ storeName, storeSlug, logoUrl }: PastelPackFooterProps) {
   return (
     <footer className="bg-[var(--shop-ink)] text-[var(--shop-bg-soft)] py-16 border-t-[12px] border-[var(--shop-primary)]">
       <div className="container mx-auto px-4 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12 font-[family:var(--font-prompt)]">
         <div className="col-span-1 md:col-span-2">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-[var(--shop-primary)] text-[var(--shop-accent)] rounded-xl flex items-center justify-center">
-              <PackageOpen className="w-6 h-6" />
-            </div>
-            <h3 className="text-3xl font-black text-[var(--shop-accent)] font-[family:var(--font-kanit)]">{storeName}</h3>
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} className="h-10 w-auto object-contain" />
+            ) : (
+              <>
+                <div className="w-12 h-12 bg-[var(--shop-primary)] text-[var(--shop-accent)] rounded-xl flex items-center justify-center">
+                  <PackageOpen className="w-6 h-6" />
+                </div>
+                <h3 className="text-3xl font-black text-[var(--shop-accent)] font-[family:var(--font-kanit)]">{storeName}</h3>
+              </>
+            )}
           </div>
           <p className="text-[var(--shop-bg)] mb-8 text-lg max-w-md font-light">
             บรรจุภัณฑ์รักษ์โลกสำหรับร้านคราฟต์

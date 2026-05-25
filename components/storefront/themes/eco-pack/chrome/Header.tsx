@@ -26,7 +26,7 @@ export function Header({ logoUrl, storeName, navItems, cartCount, onSearch, onSi
             </button>
             <a href={homeUrl} className="flex items-center gap-2">
               {logoUrl ? (
-                <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" />
+                <img src={logoUrl} alt={storeName} className="h-10 w-auto object-contain" />
               ) : (
                 <div className="w-8 h-8 rounded bg-[var(--shop-primary)] flex items-center justify-center text-white font-bold">
                   {storeName.charAt(0)}

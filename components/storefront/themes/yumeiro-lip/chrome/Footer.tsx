@@ -4,6 +4,7 @@ import React from 'react';
 interface YumeiroLipFooterProps {
   store: {
     name: string;
+    logoUrl?: string | null;
   };
 }
 
@@ -12,7 +13,11 @@ export function YumeiroLipFooter({ store }: YumeiroLipFooterProps) {
     <footer className="bg-[#fbcfe8] text-[#831843] py-12 px-4 font-[family:var(--font-kanit)] mt-16">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
-          <h3 className="text-xl font-bold text-[#ec4899] mb-4 font-[family:var(--font-prompt)]">{store.name}</h3>
+          {store.logoUrl ? (
+            <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain mb-4" />
+          ) : (
+            <h3 className="text-xl font-bold text-[#ec4899] mb-4 font-[family:var(--font-prompt)]">{store.name}</h3>
+          )}
           <p className="opacity-80">ลิปและบลัชเชอร์ K-beauty ตัวเดียวจบ</p>
         </div>
         <div>

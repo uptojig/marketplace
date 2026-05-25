@@ -35,7 +35,7 @@ export function TrailcraftHeader({ store, categories }: TrailcraftHeaderProps) {
           <div className="flex-shrink-0 flex items-center">
             <Link href={`/stores/${store.slug}`} className="flex items-center gap-3">
               {store.logoUrl ? (
-                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto rounded-md shadow-sm border border-[#84cc16]/30" />
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
               ) : (
                 <div className="h-10 w-10 bg-[#365314] text-[#facc15] flex items-center justify-center rounded-md font-[family:var(--font-kanit)] font-bold text-xl shadow-sm">
                   T

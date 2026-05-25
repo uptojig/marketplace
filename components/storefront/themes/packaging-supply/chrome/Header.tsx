@@ -68,7 +68,7 @@ export function Header({
                 <img
                   src={storeLogoUrl}
                   alt={storeName}
-                  className="h-10 w-10 object-contain rounded-lg"
+                  className="h-10 w-auto object-contain"
                 />
               ) : (
                 <div className="h-10 w-10 rounded-lg bg-[var(--shop-primary)] flex items-center justify-center text-white shadow-sm">

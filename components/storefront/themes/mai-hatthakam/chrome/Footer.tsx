@@ -8,6 +8,7 @@ interface MaiHatthakamFooterProps {
   store: {
     name: string;
     slug: string;
+    logoUrl?: string | null;
   };
 }
 
@@ -20,9 +21,13 @@ export function MaiHatthakamFooter({ store }: MaiHatthakamFooterProps) {
           {/* Brand Info */}
           <div className="md:col-span-5 lg:col-span-4">
             <Link href={`/stores/${store.slug}`} className="inline-block mb-6">
-              <span className="text-2xl font-bold text-[#fef9f1] tracking-wider font-[family:var(--font-prompt)] uppercase">
-                {store.name}
-              </span>
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <span className="text-2xl font-bold text-[#fef9f1] tracking-wider font-[family:var(--font-prompt)] uppercase">
+                  {store.name}
+                </span>
+              )}
             </Link>
             <p className="text-[#fde8c8]/80 text-sm leading-relaxed font-[family:var(--font-kanit)] mb-6 max-w-sm">
               เซรามิกทำมือจากเตาดินเผาที่เชียงราย ทุกใบปั้นด้วยความตั้งใจ ส่งต่อร่องรอยของศิลปินผ่านงานฝีมือที่ใช้ได้จริงในชีวิตประจำวัน

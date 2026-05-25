@@ -74,14 +74,20 @@ export function Footer({
         {/* Brand block */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <span
-              className="inline-block h-4 w-1"
-              style={{ background: 'var(--shop-accent, #00BFFF)' }}
-              aria-hidden
-            />
-            <h3 className="font-[family:var(--font-kanit)] font-semibold uppercase tracking-wider text-base text-white">
-              {store.name}
-            </h3>
+            {store.logoUrl ? (
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+            ) : (
+              <>
+                <span
+                  className="inline-block h-4 w-1"
+                  style={{ background: 'var(--shop-accent, #00BFFF)' }}
+                  aria-hidden
+                />
+                <h3 className="font-[family:var(--font-kanit)] font-semibold uppercase tracking-wider text-base text-white">
+                  {store.name}
+                </h3>
+              </>
+            )}
           </div>
           <p className="text-[10px] tracking-[0.2em] uppercase text-[#6B7280] font-[family:var(--font-kanit)] font-semibold mb-3">
             MOTO · PARTS · TUNING

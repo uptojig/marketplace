@@ -8,6 +8,7 @@ export interface FooterProps {
     id?: string;
     name: string;
     slug: string;
+    logoUrl?: string | null;
     description?: string | null;
     tagline?: string | null;
     contactEmail?: string | null;
@@ -68,19 +69,25 @@ export function Footer({ store, categories }: FooterProps) {
               href={urls.home}
               className="inline-flex items-center gap-2 group"
             >
-              <span
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full font-[family:var(--font-kanit)] font-medium text-sm"
-                style={{
-                  background: 'var(--shop-primary-gradient, var(--shop-primary))',
-                  color: '#0A0A0A',
-                  boxShadow: '0 0 18px var(--shop-primary, #00FF88)40',
-                }}
-              >
-                {store.name.charAt(0).toUpperCase()}
-              </span>
-              <span className="font-[family:var(--font-kanit)] font-medium text-lg tracking-[0.15em] text-white">
-                {store.name}
-              </span>
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <>
+                  <span
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full font-[family:var(--font-kanit)] font-medium text-sm"
+                    style={{
+                      background: 'var(--shop-primary-gradient, var(--shop-primary))',
+                      color: '#0A0A0A',
+                      boxShadow: '0 0 18px var(--shop-primary, #00FF88)40',
+                    }}
+                  >
+                    {store.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="font-[family:var(--font-kanit)] font-medium text-lg tracking-[0.15em] text-white">
+                    {store.name}
+                  </span>
+                </>
+              )}
             </Link>
             {store.tagline ? (
               <p className="text-xs leading-relaxed text-white/55 max-w-sm">

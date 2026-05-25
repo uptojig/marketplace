@@ -58,8 +58,7 @@ export function MotoFogHeader(props: HeaderProps) {
               <img
                 src={storeLogoUrl}
                 alt={storeName}
-                className="h-10 w-10 object-cover rounded-md"
-                style={{ border: '1px solid var(--shop-border, #2B3540)' }}
+                className="h-10 w-auto object-contain"
               />
             ) : (
               <div

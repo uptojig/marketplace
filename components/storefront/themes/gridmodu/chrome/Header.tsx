@@ -45,7 +45,7 @@ export function Header({
               <img
                 src={storeLogoUrl}
                 alt={storeName}
-                className="h-9 w-9 rounded-sm object-cover border border-[#1F1F23]"
+                className="h-9 w-auto object-contain"
               />
             ) : (
               <span

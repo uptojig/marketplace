@@ -16,6 +16,7 @@ import {
 export interface PackagingSupplyFooterProps {
   storeName: string;
   storeSlug: string;
+  logoUrl?: string | null;
   description?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
@@ -39,6 +40,7 @@ export interface PackagingSupplyFooterProps {
 export function Footer({
   storeName,
   storeSlug,
+  logoUrl,
   description,
   contactEmail,
   contactPhone,
@@ -77,12 +79,18 @@ export function Footer({
           {/* Brand column */}
           <div className="space-y-4 lg:col-span-1">
             <Link href={`/stores/${storeSlug}`} className="flex items-center gap-2.5">
-              <div className="h-11 w-11 rounded-lg bg-[var(--shop-primary)] flex items-center justify-center text-white shadow-sm">
-                <Package size={22} strokeWidth={2.5} />
-              </div>
-              <span className="font-[family:var(--font-kanit)] font-extrabold text-xl tracking-tight">
-                {storeName}
-              </span>
+              {logoUrl ? (
+                <img src={logoUrl} alt={storeName} className="h-10 w-auto object-contain" />
+              ) : (
+                <>
+                  <div className="h-11 w-11 rounded-lg bg-[var(--shop-primary)] flex items-center justify-center text-white shadow-sm">
+                    <Package size={22} strokeWidth={2.5} />
+                  </div>
+                  <span className="font-[family:var(--font-kanit)] font-extrabold text-xl tracking-tight">
+                    {storeName}
+                  </span>
+                </>
+              )}
             </Link>
             <p className="text-sm leading-relaxed text-[var(--shop-ink-muted)]">
               {description ||

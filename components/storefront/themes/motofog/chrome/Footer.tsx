@@ -55,21 +55,27 @@ export function MotoFogFooter({ store }: FooterProps) {
           {/* Brand block */}
           <div className="md:col-span-5 space-y-5">
             <Link href={`/stores/${store.slug}`} className="inline-flex items-center gap-3">
-              <div
-                className="h-12 w-12 flex items-center justify-center rounded-md"
-                style={{
-                  background:
-                    'var(--shop-primary-gradient, var(--shop-primary, #FF6B35))',
-                }}
-              >
-                <Flag className="h-6 w-6 text-black" />
-              </div>
-              <span
-                className="font-[family:var(--font-kanit)] italic font-black text-2xl uppercase tracking-tight"
-                style={{ color: 'var(--shop-ink, #F5F7FA)' }}
-              >
-                {store.name}
-              </span>
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <>
+                  <div
+                    className="h-12 w-12 flex items-center justify-center rounded-md"
+                    style={{
+                      background:
+                        'var(--shop-primary-gradient, var(--shop-primary, #FF6B35))',
+                    }}
+                  >
+                    <Flag className="h-6 w-6 text-black" />
+                  </div>
+                  <span
+                    className="font-[family:var(--font-kanit)] italic font-black text-2xl uppercase tracking-tight"
+                    style={{ color: 'var(--shop-ink, #F5F7FA)' }}
+                  >
+                    {store.name}
+                  </span>
+                </>
+              )}
             </Link>
             {store.tagline ? (
               <p

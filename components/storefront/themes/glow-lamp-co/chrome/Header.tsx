@@ -28,7 +28,7 @@ export function GlowLampCoHeader({ store }: HeaderProps) {
           </button>
           <Link href={`/stores/${store.slug}`} className="flex items-center gap-3 group">
             {store.logoUrl ? (
-              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto rounded" />
+              <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
             ) : (
               <div className="w-10 h-10 bg-[#f59e0b] rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.5)] group-hover:shadow-[0_0_25px_rgba(245,158,11,0.8)] transition-all">
                 <Lightbulb className="w-6 h-6 text-[#0f172a]" />

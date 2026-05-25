@@ -29,7 +29,7 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories }: Heade
               <img
                 src={storeLogoUrl}
                 alt={storeName}
-                className="h-6 w-auto brightness-0 invert"
+                className="h-8 w-auto brightness-0 invert"
               />
             ) : null}
             <span className="font-[family:var(--font-kanit)] font-black text-sm uppercase tracking-[0.2em] text-[#e8e2d4]">

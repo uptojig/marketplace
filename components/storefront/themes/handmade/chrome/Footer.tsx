@@ -36,6 +36,7 @@ export interface HandmadeFooterProps {
     id?: string;
     name: string;
     slug: string;
+    logoUrl?: string | null;
     description?: string | null;
     tagline?: string | null;
     contactEmail?: string | null;
@@ -97,13 +98,19 @@ export function Footer({ store, categories, accent }: HandmadeFooterProps) {
           {/* Brand */}
           <div>
             <Link href={base} className="inline-flex items-center gap-2 mb-4">
-              <Hand className="h-5 w-5" style={{ color: accentColor }} aria-hidden="true" />
-              <span
-                className="text-xl tracking-wide font-[family:var(--font-specialty-display,var(--font-prompt))]"
-                style={{ fontWeight: 500 }}
-              >
-                {store.name}
-              </span>
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <>
+                  <Hand className="h-5 w-5" style={{ color: accentColor }} aria-hidden="true" />
+                  <span
+                    className="text-xl tracking-wide font-[family:var(--font-specialty-display,var(--font-prompt))]"
+                    style={{ fontWeight: 500 }}
+                  >
+                    {store.name}
+                  </span>
+                </>
+              )}
             </Link>
             <p
               className="text-sm leading-relaxed mb-5 max-w-xs"

@@ -126,7 +126,7 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: P
                 <img
                   src={store.logoUrl}
                   alt={store.name}
-                  className="h-11 w-auto object-contain rounded-full"
+                  className="h-10 w-auto object-contain"
                 />
               ) : (
                 <span
@@ -302,7 +302,7 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: P
             © {year} {store.name} · ทุกการสั่งซื้อปลอดภัย รับประกันคืนเงิน 7 วัน
           </p>
           <div className="flex items-center gap-2 flex-wrap">
-            {['VISA', 'Master', 'JCB', 'PromptPay', 'TrueMoney', 'ANYPAY'].map((m) => (
+            {['Thai QR PromptPay'].map((m) => (
               <span
                 key={m}
                 className="px-2.5 py-1 text-[10px] font-medium uppercase rounded-full bg-white border border-[var(--shop-border)]"

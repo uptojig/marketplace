@@ -117,8 +117,9 @@ export function MegaStoreFooterAdapter(props: ScaffoldFooterProps) {
   return (
     <MegaFooter
       storeName={props.store.name}
+      logoUrl={props.store.logoUrl ?? null}
       navColumns={navColumns}
-      paymentMethods={['VISA', 'Mastercard', 'JCB', 'PromptPay', 'TrueMoney']}
+      paymentMethods={['Thai QR PromptPay']}
       socialLinks={socialLinks}
     />
   );

@@ -11,10 +11,16 @@ export function CalderaSkinFooter({ store }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-8">
           <div className="md:col-span-1">
             <Link href={`/stores/${store.slug}`} className="flex items-center gap-2 mb-4">
-              <FlaskConical className="w-6 h-6 text-[#9cd6df]" />
-              <span className="font-[family:var(--font-kanit)] font-medium text-xl tracking-tight uppercase">
-                {store.name}
-              </span>
+              {store.logoUrl ? (
+                <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
+              ) : (
+                <>
+                  <FlaskConical className="w-6 h-6 text-[#9cd6df]" />
+                  <span className="font-[family:var(--font-kanit)] font-medium text-xl tracking-tight uppercase">
+                    {store.name}
+                  </span>
+                </>
+              )}
             </Link>
             <p className="font-[family:var(--font-prompt)] text-sm text-[#9cd6df]/80 uppercase tracking-widest leading-relaxed">
               สกินแคร์สูตรเฉพาะ พัฒนาในห้องแล็บไทย

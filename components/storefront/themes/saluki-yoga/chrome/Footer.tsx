@@ -7,10 +7,11 @@ import { Facebook, Instagram, Twitter, MapPin, Mail, Phone } from 'lucide-react'
 interface SalukiFooterProps {
   storeSlug: string;
   storeName: string;
+  logoUrl?: string | null;
   tagline?: string;
 }
 
-export function SalukiFooter({ storeSlug, storeName, tagline }: SalukiFooterProps) {
+export function SalukiFooter({ storeSlug, storeName, logoUrl, tagline }: SalukiFooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -18,9 +19,13 @@ export function SalukiFooter({ storeSlug, storeName, tagline }: SalukiFooterProp
       <div className="container mx-auto px-4 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           <div>
-            <h3 className="text-2xl font-medium text-white mb-6 tracking-wider">
-              {storeName}
-            </h3>
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} className="h-10 w-auto object-contain mb-6" />
+            ) : (
+              <h3 className="text-2xl font-medium text-white mb-6 tracking-wider">
+                {storeName}
+              </h3>
+            )}
             <p className="text-[#a7f3d0] mb-6 leading-relaxed">
               {tagline || "เสื้อผ้าโยคะและพีลาทิส ผลิตจากผ้ารีไซเคิล"}
             </p>
