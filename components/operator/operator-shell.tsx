@@ -26,6 +26,7 @@ import {
   Menu,
   X,
   Wallet,
+  Star,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   PlusSquare,
   Palette,
   Wallet,
+  Star,
 };
 
 export interface OperatorNavItem {

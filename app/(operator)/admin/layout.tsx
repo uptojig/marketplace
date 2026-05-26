@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/provisioning", label: "Provisioning", icon: "Server", group: "จัดการ Marketplace" },
   { href: "/admin/kyc", label: "KYC", icon: "ShieldCheck", group: "ตรวจสอบและอนุมัติ" },
   { href: "/admin/agents", label: "ตัวแทน (Agents)", icon: "Award", group: "ตรวจสอบและอนุมัติ" },
+  { href: "/admin/reviews", label: "รีวิว", icon: "Star", group: "ตรวจสอบและอนุมัติ" },
   { href: "/admin/users", label: "ผู้ใช้", icon: "Users", group: "ผู้ใช้และระบบ" },
   { href: "/admin/orders", label: "คำสั่งซื้อ", icon: "ShoppingCart", group: "จัดการ Marketplace" },
   { href: "/admin/credit-topups", label: "เติมเครดิต", icon: "Wallet", group: "จัดการ Marketplace" },
