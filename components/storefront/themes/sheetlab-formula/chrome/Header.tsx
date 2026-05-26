@@ -11,10 +11,11 @@
  * repacks the scaffold flat-prop `HeaderProps` into this shape.
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Menu, Search, FileSpreadsheet, Wallet } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
+import { formatTHB } from '@/lib/utils';
 
 interface SheetlabFormulaHeaderProps {
   store: {
@@ -36,6 +37,30 @@ export function SheetlabFormulaHeader({
 
   const homeUrl = `/stores/${store.slug}`;
   const catalogUrl = `/stores/${store.slug}/category`;
+
+  // Buyer's per-store credit balance. null = still loading or guest
+  // (401 from /api/credit/balance). When loaded, the header pill
+  // becomes "เครดิต ฿X" instead of the generic "เติมเครดิต" CTA.
+  const [creditBalanceTHB, setCreditBalanceTHB] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/credit/balance?storeSlug=${encodeURIComponent(store.slug)}`)
+      .then(async (res) => {
+        if (cancelled) return;
+        if (!res.ok) {
+          setCreditBalanceTHB(null);
+          return;
+        }
+        const data = (await res.json()) as { balanceTHB: number };
+        setCreditBalanceTHB(data.balanceTHB);
+      })
+      .catch(() => {
+        if (!cancelled) setCreditBalanceTHB(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [store.slug]);
 
   // Top 4 categories surface as quick links on desktop. Anything
   // beyond that funnels through the full Catalog page.
@@ -108,12 +133,26 @@ export function SheetlabFormulaHeader({
           <div className="flex items-center gap-1 sm:gap-2">
             <Link
               href={`/stores/${store.slug}/account/credit`}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
-              style={{ background: '#107C41' }}
-              aria-label="เติมเครดิตในร้าน"
+              className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-opacity hover:opacity-90 ${
+                creditBalanceTHB && creditBalanceTHB > 0
+                  ? 'bg-[#ECFDF5] text-[#107C41] border border-[#107C41]'
+                  : 'text-white'
+              }`}
+              style={
+                creditBalanceTHB && creditBalanceTHB > 0
+                  ? undefined
+                  : { background: '#107C41' }
+              }
+              aria-label={
+                creditBalanceTHB && creditBalanceTHB > 0
+                  ? `ยอดเครดิต ${formatTHB(creditBalanceTHB)}`
+                  : 'เติมเครดิตในร้าน'
+              }
             >
               <Wallet className="w-4 h-4" />
-              เติมเครดิต
+              {creditBalanceTHB !== null && creditBalanceTHB > 0
+                ? `เครดิต ${formatTHB(creditBalanceTHB)}`
+                : 'เติมเครดิต'}
             </Link>
             <button
               type="button"
