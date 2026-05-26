@@ -13,7 +13,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Menu, Search, FileSpreadsheet } from 'lucide-react';
+import { ShoppingCart, Menu, Search, FileSpreadsheet, Wallet } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 
 interface SheetlabFormulaHeaderProps {
@@ -104,8 +104,17 @@ export function SheetlabFormulaHeader({
             ))}
           </nav>
 
-          {/* Right: search + cart */}
+          {/* Right: top-up CTA + search + cart */}
           <div className="flex items-center gap-1 sm:gap-2">
+            <Link
+              href={`/stores/${store.slug}/account/credit`}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+              style={{ background: '#107C41' }}
+              aria-label="เติมเครดิตในร้าน"
+            >
+              <Wallet className="w-4 h-4" />
+              เติมเครดิต
+            </Link>
             <button
               type="button"
               aria-label="ค้นหา"
