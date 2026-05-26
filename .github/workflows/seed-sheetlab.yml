@@ -1,0 +1,45 @@
+name: One-shot seed — sheetlab-formula store
+
+# Manual-only workflow. Runs the sheetlab-formula sample-store seed
+# inside a Node container on the production droplet, using the
+# control-plane container's env file (so DATABASE_URL points at the
+# real Postgres). Re-running is safe — the seed is idempotent (upserts
+# the store and re-uses existing product rows).
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DROPLET_SSH_KEY }}
+
+      - name: Run seed on droplet
+        run: |
+          mkdir -p ~/.ssh
+          # Same SSH flags as deploy.yml — accept-new + keep-alive so
+          # the npm install inside the container can't kill the channel.
+          ssh -o StrictHostKeyChecking=accept-new \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              -o ConnectTimeout=30 \
+              -o ServerAliveInterval=60 \
+              -o ServerAliveCountMax=10 \
+              -o TCPKeepAlive=yes \
+              root@${{ secrets.DROPLET_IP }} \
+              'set -euo pipefail
+               cd /opt/marketplace
+               git fetch origin feat/multi-tenant-provisioning
+               git reset --hard origin/feat/multi-tenant-provisioning
+               git log -1 --oneline scripts/seed-sheetlab-formula-store.ts || true
+               docker run --rm \
+                 --env-file /etc/marketplace/control.env \
+                 --network=host \
+                 -v /opt/marketplace:/app \
+                 -w /app \
+                 node:20-bookworm-slim \
+                 sh -c "corepack enable && corepack prepare pnpm@9.0.0 --activate && pnpm install --no-frozen-lockfile --prefer-offline --silent && pnpm tsx scripts/seed-sheetlab-formula-store.ts"'
