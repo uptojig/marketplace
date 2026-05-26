@@ -158,7 +158,20 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   };
 
   let chromeKey: ThemeKey = "default";
-  if (isFashionBeautyStore(key)) chromeKey = "fashion-beauty";
+  // Templates that ship their own bespoke chrome (Header/Footer/Strip)
+  // AND their own bespoke palette via `primaryColor` opt out of the
+  // family cascade — otherwise `theme-specialty` (gold/cream) would
+  // overpaint `--shop-bg` and `--shop-primary` even when the template
+  // explicitly set Excel-green. The store still belongs to the
+  // `specialty` group for wizard purposes; this only suppresses the
+  // chrome-level repaint.
+  const OPT_OUT_FAMILY_CHROME: ReadonlySet<string> = new Set([
+    "sheetlab-formula",
+  ]);
+  const optedOut = OPT_OUT_FAMILY_CHROME.has(key.templateId ?? "");
+  if (optedOut) {
+    chromeKey = "default";
+  } else if (isFashionBeautyStore(key)) chromeKey = "fashion-beauty";
   else if (isTrustStore(key)) chromeKey = "trust";
   else if (isBusinessModelStore(key)) chromeKey = "business-model";
   else if (isLifestyleStore(key)) chromeKey = "lifestyle";

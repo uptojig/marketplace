@@ -125,7 +125,9 @@ export interface ThaiCartConfig {
   emptyStateCta?: string;
   /** Primary checkout CTA label. Default: "ดำเนินการชำระเงิน". */
   checkoutCtaLabel?: string;
-  /** Trust strip override. Defaults: ส่งฟรี ฿990+ · คืนได้ 7 วัน · COD ได้. */
+  /** Trust strip override. Defaults: ส่งฟรี ฿990+ · คืนได้ 7 วัน · ปลอดภัย.
+   *  Project rule: NO COD on this platform (CJ dropshipping constraint
+   *  + AnyPay is the only payment rail). Removed from defaults. */
   trustStrip?: { icon?: 'truck' | 'rotate' | 'banknote'; label: string }[];
   /** Show the bottom trust strip. Default true. */
   showTrustStrip?: boolean;
@@ -177,7 +179,7 @@ export function makeThaiCartAdapter(config: ThaiCartConfig = {}) {
     config.trustStrip ?? [
       { icon: 'truck', label: `ส่งฟรี ฿${threshold.toLocaleString()}+` },
       { icon: 'rotate', label: 'คืนได้ 7 วัน' },
-      { icon: 'banknote', label: 'COD ได้' },
+      { icon: 'banknote', label: 'ชำระผ่าน AnyPay' },
     ]
   ).map((item) => ({ icon: item.icon ?? 'truck', label: item.label }));
 
