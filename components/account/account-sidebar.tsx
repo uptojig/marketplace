@@ -51,7 +51,7 @@ const NAV_GROUPS: NavGroupDef[] = [
   {
     label: 'ทำงานร่วมกับร้าน',
     items: [
-      { icon: Heart, label: 'รายการโปรด', to: '/favorites', soon: true },
+      { icon: Heart, label: 'รายการโปรด', to: '/wishlist' },
       { icon: Star, label: 'รีวิวของฉัน', to: '/reviews', soon: true },
       { icon: Ticket, label: 'คูปองของฉัน', to: '/coupons' },
     ],

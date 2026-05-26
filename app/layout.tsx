@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import {
   DM_Sans,
   Noto_Sans_Thai,
@@ -19,6 +20,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { AddToCartModal } from "@/components/shop/AddToCartModal";
 import { Toaster } from "@/components/ui/toaster";
+import CookieConsent from "@/components/marketplace/cookie-consent";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -202,6 +204,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AddToCartModal />
           <Toaster />
         </Providers>
+        <Suspense fallback={null}>
+          <CookieConsent />
+        </Suspense>
       </body>
     </html>
   );
