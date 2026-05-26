@@ -48,7 +48,13 @@ export default async function DownloadsPage({
     redirect(`/signin?callbackUrl=/stores/${params.slug}/account/downloads`);
   }
 
-  const unlocks = await listUserUnlocks(user.id);
+  const rawUnlocks = await listUserUnlocks(user.id);
+  // Defensive filter: drop unlocks whose product row has been deleted
+  // out from under us (e.g. seed cleanup, vendor hard-delete). The
+  // include's `product` is typed as required but Prisma will return
+  // null if the FK target is gone, which would crash the render below
+  // when we read `unlock.product.digitalKind`.
+  const unlocks = rawUnlocks.filter((u) => u.product != null);
   // Optionally narrow to the current store only — buyer might own
   // unlocks across multiple stores. For now show ALL so the buyer
   // has one canonical library page (linked from each store's header).

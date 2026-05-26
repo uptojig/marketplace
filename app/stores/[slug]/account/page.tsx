@@ -102,14 +102,22 @@ export default async function AccountDashboard({
       where: { slug },
       select: { id: true, templateId: true, landingThemeVariant: true },
     }),
-    prisma.wishlistItem.count({ where: { userId } }),
-    prisma.digitalUnlock.count({
-      where: {
-        userId,
-        revokedAt: null,
-        product: { store: { slug } },
-      },
-    }),
+    // Defensive .catch(() => 0): if a brand-new migration hasn't been
+    // applied yet on production (e.g. the WishlistItem table is missing
+    // on this droplet's DB) Prisma throws P2021, which would otherwise
+    // reject the whole Promise.all and crash the entire account page
+    // render with a generic "Application error" digest. Degrading to 0
+    // hides the stat card but keeps the dashboard usable.
+    prisma.wishlistItem.count({ where: { userId } }).catch(() => 0),
+    prisma.digitalUnlock
+      .count({
+        where: {
+          userId,
+          revokedAt: null,
+          product: { store: { slug } },
+        },
+      })
+      .catch(() => 0),
   ]);
 
   // Per-store credit balance for the wallet stat card.

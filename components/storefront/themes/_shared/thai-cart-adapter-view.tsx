@@ -447,22 +447,24 @@ export function ThaiCartAdapterView({ store, config }: ThaiCartAdapterViewProps)
                     </div>
                   )}
 
-                  <div
-                    className="flex items-center justify-between text-sm pt-3 border-t"
-                    style={{ borderColor: palette.border }}
-                  >
-                    <dt style={{ color: palette.inkMuted }}>ค่าจัดส่ง</dt>
-                    <dd
-                      className="font-medium"
-                      style={{
-                        color: shipping === 0 ? palette.primary : palette.ink,
-                      }}
+                  {!allDigital && (
+                    <div
+                      className="flex items-center justify-between text-sm pt-3 border-t"
+                      style={{ borderColor: palette.border }}
                     >
-                      {shipping === 0 ? 'ส่งฟรี' : formatTHB(shipping)}
-                    </dd>
-                  </div>
+                      <dt style={{ color: palette.inkMuted }}>ค่าจัดส่ง</dt>
+                      <dd
+                        className="font-medium"
+                        style={{
+                          color: shipping === 0 ? palette.primary : palette.ink,
+                        }}
+                      >
+                        {shipping === 0 ? 'ส่งฟรี' : formatTHB(shipping)}
+                      </dd>
+                    </div>
+                  )}
 
-                  {remainingForFree > 0 && (
+                  {!allDigital && remainingForFree > 0 && (
                     <div className="space-y-1.5">
                       <p className="text-xs" style={{ color: palette.inkMuted }}>
                         ซื้ออีก{' '}

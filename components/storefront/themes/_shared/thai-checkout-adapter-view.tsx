@@ -144,6 +144,40 @@ export function ThaiCheckoutAdapterView({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // Authoritative DIGITAL detection — mirrors the cart adapter. Legacy
+  // cart lines (added before the productType field shipped) lack the
+  // flag locally; we fetch a `{id → productType}` map from the server
+  // so allDigital reflects truth even for old carts and the themed
+  // checkout never accidentally surfaces a shipping/address step.
+  const [serverTypes, setServerTypes] = useState<
+    Record<string, "PHYSICAL" | "DIGITAL">
+  >({});
+  useEffect(() => {
+    if (lines.length === 0) return;
+    const ids = lines.map((l) => l.productId).join(",");
+    fetch(`/api/checkout/product-types?ids=${encodeURIComponent(ids)}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data: { products?: { id: string; productType: "PHYSICAL" | "DIGITAL" }[] }) => {
+        const map: Record<string, "PHYSICAL" | "DIGITAL"> = {};
+        for (const p of data.products ?? []) {
+          map[p.id] = p.productType;
+        }
+        setServerTypes(map);
+      })
+      .catch(() => {
+        // Network/API failure — fall back to local-only detection.
+        // Better to show shipping than to silently skip it.
+      });
+  }, [lines]);
+
+  const allDigital = useMemo(() => {
+    if (lines.length === 0) return false;
+    return lines.every(
+      (l) =>
+        serverTypes[l.productId] === "DIGITAL" || l.productType === "DIGITAL",
+    );
+  }, [lines, serverTypes]);
+
   /* Step model — 1: cart review, 2: address, 3: payment, 4: confirm */
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [address, setAddress] = useState<AddressForm>(EMPTY_ADDRESS);
@@ -153,16 +187,61 @@ export function ThaiCheckoutAdapterView({
   const [error, setError] = useState<string | null>(null);
   const [orderRef, setOrderRef] = useState<string | null>(null);
 
+  // Live per-store credit balance + auth state. Drives CREDIT availability
+  // in the payment picker: guests never see it; signed-in users with
+  // balance < total see it disabled. Fetched on mount + refreshed when
+  // total changes (e.g. coupon applied). Endpoint returns 401 for guests.
+  const [creditBalanceTHB, setCreditBalanceTHB] = useState<number | null>(null);
+  const [isGuest, setIsGuest] = useState<boolean>(true);
+  useEffect(() => {
+    if (!store.slug) return;
+    fetch(`/api/credit/balance?storeSlug=${encodeURIComponent(store.slug)}`)
+      .then((r) => {
+        if (r.status === 401) {
+          setIsGuest(true);
+          setCreditBalanceTHB(null);
+          return null;
+        }
+        setIsGuest(false);
+        return r.ok ? r.json() : Promise.reject(r.status);
+      })
+      .then((data: { balanceTHB?: number } | null) => {
+        if (data && typeof data.balanceTHB === "number") {
+          setCreditBalanceTHB(data.balanceTHB);
+        }
+      })
+      .catch(() => {
+        // Treat as unauthenticated; CREDIT will be disabled.
+      });
+  }, [store.slug]);
+
   // All-digital orders skip steps 2 (address) and 3 (shipping picker).
   // The trust strip's free-shipping pill and the totals' "ค่าจัดส่ง"
   // row also hide when there is no parcel.
-  const allDigital = isAllDigitalForStore(allLines, store.slug);
   const effectiveShipping = allDigital
     ? 0
     : subtotal >= threshold
       ? 0
       : shipping.priceTHB;
   const total = subtotal + effectiveShipping;
+
+  // If the resolved allDigital flag flips after server data lands, the
+  // user may already be on the address/payment step from a stale render.
+  // Kick them back to step 4 (confirm) so they never see shipping UI for
+  // a digital order. Only fires while in steps 2 or 3 to avoid loops.
+  useEffect(() => {
+    if (allDigital && (step === 2 || step === 3)) {
+      setStep(4);
+    }
+  }, [allDigital, step]);
+
+  const creditAvailable = !isGuest && creditBalanceTHB !== null;
+  const creditEnough = creditAvailable && (creditBalanceTHB ?? 0) >= total;
+  // Map a UI option id onto the /api/checkout enum. Anything not
+  // explicitly CREDIT routes through ANYPAY — same default the API
+  // itself uses, so we stay consistent across themes.
+  const apiPaymentMethod: "ANYPAY" | "CREDIT" =
+    payment.id === "CREDIT" && creditEnough ? "CREDIT" : "ANYPAY";
 
   function updateField<K extends keyof AddressForm>(key: K) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -232,9 +311,12 @@ export function ThaiCheckoutAdapterView({
                   postalCode: address.postalCode,
                   country: address.country || 'TH',
                 },
-                shipping: { method: shipping.id, priceTHB: effectiveShipping },
               }),
-          payment: { method: payment.id },
+          // Top-level enum the API consumes. Earlier versions of this
+          // adapter sent `payment: { method }` nested, which the zod
+          // schema silently dropped — so CREDIT selections were
+          // executed as ANYPAY and the wallet was never debited.
+          paymentMethod: apiPaymentMethod,
         }),
       });
       if (!res.ok) {
@@ -430,6 +512,11 @@ export function ThaiCheckoutAdapterView({
                 payment={payment}
                 setPayment={setPayment}
                 highlightFree={highlightFreeFlag && subtotal >= threshold}
+                allDigital={allDigital}
+                creditBalanceTHB={creditBalanceTHB}
+                isGuest={isGuest}
+                total={total}
+                storeSlug={store.slug}
                 onBack={() => setStep(2)}
                 onNext={nextFromPayment}
               />
@@ -799,6 +886,11 @@ function PaymentStep({
   payment,
   setPayment,
   highlightFree,
+  allDigital,
+  creditBalanceTHB,
+  isGuest,
+  total,
+  storeSlug,
   onBack,
   onNext,
 }: {
@@ -810,89 +902,100 @@ function PaymentStep({
   payment: PaymentOption;
   setPayment: (p: PaymentOption) => void;
   highlightFree: boolean;
+  /** When true, the shipping picker is hidden entirely. Mirrors the
+   *  step-skipping logic on the page above. */
+  allDigital: boolean;
+  /** Live per-store balance; null = guest or fetch failed. Used to
+   *  enable/disable the CREDIT option. */
+  creditBalanceTHB: number | null;
+  isGuest: boolean;
+  total: number;
+  storeSlug: string;
   onBack: () => void;
   onNext: () => void;
 }) {
   return (
     <div className="space-y-4">
-      <Card
-        className="rounded-2xl p-6 shadow-none"
-        style={{ background: palette.surface, borderColor: palette.border }}
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-full"
-            style={{
-              background: `color-mix(in srgb, ${palette.primary} 14%, transparent)`,
-              color: palette.primary,
-            }}
-          >
-            <Truck className="h-5 w-5" />
+      {!allDigital && (
+        <Card
+          className="rounded-2xl p-6 shadow-none"
+          style={{ background: palette.surface, borderColor: palette.border }}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-full"
+              style={{
+                background: `color-mix(in srgb, ${palette.primary} 14%, transparent)`,
+                color: palette.primary,
+              }}
+            >
+              <Truck className="h-5 w-5" />
+            </div>
+            <h2
+              className="text-base font-semibold"
+              style={{ color: palette.ink }}
+            >
+              วิธีจัดส่ง
+            </h2>
           </div>
-          <h2
-            className="text-base font-semibold"
-            style={{ color: palette.ink }}
-          >
-            วิธีจัดส่ง
-          </h2>
-        </div>
 
-        <div className="space-y-2">
-          {shippingOptions.map((opt) => {
-            const selected = shipping.id === opt.id;
-            return (
-              <label
-                key={opt.id}
-                className="flex cursor-pointer items-center justify-between rounded-lg border p-3 transition"
-                style={{
-                  borderColor: selected ? palette.primary : palette.border,
-                  background: selected
-                    ? `color-mix(in srgb, ${palette.primary} 6%, transparent)`
-                    : 'transparent',
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="shipping"
-                    checked={selected}
-                    onChange={() => setShipping(opt)}
-                  />
-                  <div>
-                    <div
-                      className="text-sm font-medium"
-                      style={{ color: palette.ink }}
-                    >
-                      {opt.name}
-                    </div>
-                    {opt.eta && (
-                      <div
-                        className="text-xs"
-                        style={{ color: palette.inkMuted }}
-                      >
-                        {opt.eta}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <span
-                  className="text-sm font-semibold"
+          <div className="space-y-2">
+            {shippingOptions.map((opt) => {
+              const selected = shipping.id === opt.id;
+              return (
+                <label
+                  key={opt.id}
+                  className="flex cursor-pointer items-center justify-between rounded-lg border p-3 transition"
                   style={{
-                    color:
-                      selected && highlightFree
-                        ? palette.primary
-                        : palette.ink,
+                    borderColor: selected ? palette.primary : palette.border,
+                    background: selected
+                      ? `color-mix(in srgb, ${palette.primary} 6%, transparent)`
+                      : 'transparent',
                   }}
                 >
-                  {selected && highlightFree
-                    ? 'ส่งฟรี'
-                    : formatTHB(opt.priceTHB)}
-                </span>
-              </label>
-            );
-          })}
-        </div>
-      </Card>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="shipping"
+                      checked={selected}
+                      onChange={() => setShipping(opt)}
+                    />
+                    <div>
+                      <div
+                        className="text-sm font-medium"
+                        style={{ color: palette.ink }}
+                      >
+                        {opt.name}
+                      </div>
+                      {opt.eta && (
+                        <div
+                          className="text-xs"
+                          style={{ color: palette.inkMuted }}
+                        >
+                          {opt.eta}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <span
+                    className="text-sm font-semibold"
+                    style={{
+                      color:
+                        selected && highlightFree
+                          ? palette.primary
+                          : palette.ink,
+                    }}
+                  >
+                    {selected && highlightFree
+                      ? 'ส่งฟรี'
+                      : formatTHB(opt.priceTHB)}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       <Card
         className="rounded-2xl p-6 shadow-none"
@@ -919,28 +1022,72 @@ function PaymentStep({
         <div className="space-y-2">
           {paymentOptions.map((opt) => {
             const selected = payment.id === opt.id;
+            const isCredit = opt.id === 'CREDIT';
+            // CREDIT is disabled for guests and for signed-in users
+            // whose balance can't cover the order. Show a reason hint
+            // and (for signed-in shorts) a link to top up.
+            const creditShort =
+              isCredit && !isGuest && creditBalanceTHB !== null && creditBalanceTHB < total;
+            const disabled = isCredit && (isGuest || creditShort);
             return (
               <label
                 key={opt.id}
-                className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition"
+                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${
+                  disabled ? 'opacity-60 cursor-not-allowed' : ''
+                }`}
                 style={{
-                  borderColor: selected ? palette.primary : palette.border,
-                  background: selected
-                    ? `color-mix(in srgb, ${palette.primary} 6%, transparent)`
-                    : 'transparent',
+                  borderColor: selected && !disabled ? palette.primary : palette.border,
+                  background:
+                    selected && !disabled
+                      ? `color-mix(in srgb, ${palette.primary} 6%, transparent)`
+                      : 'transparent',
                 }}
               >
                 <input
                   type="radio"
                   name="payment"
                   checked={selected}
-                  onChange={() => setPayment(opt)}
+                  disabled={disabled}
+                  onChange={() => !disabled && setPayment(opt)}
+                  className="mt-1"
                 />
-                <div
-                  className="text-sm font-medium"
-                  style={{ color: palette.ink }}
-                >
-                  {opt.name}
+                <div className="flex-1">
+                  <div
+                    className="text-sm font-medium"
+                    style={{ color: palette.ink }}
+                  >
+                    {opt.name}
+                  </div>
+                  {isCredit && !isGuest && creditBalanceTHB !== null && (
+                    <div
+                      className="text-xs mt-0.5"
+                      style={{
+                        color: creditShort ? '#b91c1c' : palette.inkMuted,
+                      }}
+                    >
+                      ยอดเครดิตคงเหลือ {formatTHB(creditBalanceTHB)}
+                      {creditShort && (
+                        <>
+                          {' · '}
+                          <Link
+                            href={`/stores/${storeSlug}/account/credit/topup`}
+                            className="underline"
+                            style={{ color: palette.primary }}
+                          >
+                            เติมเครดิต
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  {isCredit && isGuest && (
+                    <div
+                      className="text-xs mt-0.5"
+                      style={{ color: palette.inkMuted }}
+                    >
+                      เข้าสู่ระบบเพื่อใช้เครดิต
+                    </div>
+                  )}
                 </div>
               </label>
             );
