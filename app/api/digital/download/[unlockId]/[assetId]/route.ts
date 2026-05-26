@@ -111,7 +111,7 @@ export async function GET(
   // Generate presigned URL + bump counter atomically-ish (counter is
   // not security-critical so a race here just means a 21st download
   // slips through; the next call hits the cap).
-  const url = await presignDownload({
+  const presignedUrl = await presignDownload({
     key: asset.storageKey,
     expiresIn: PRESIGN_TTL_SECONDS,
   });
@@ -122,5 +122,5 @@ export async function GET(
   // 302 to the presigned URL so the browser triggers its own download
   // dialog (with the original fileName from the Spaces Content-
   // Disposition, if set) instead of streaming through Next.js.
-  return NextResponse.redirect(url, { status: 302 });
+  return NextResponse.redirect(presignedUrl, { status: 302 });
 }
