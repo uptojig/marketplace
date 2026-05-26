@@ -10,6 +10,7 @@
  * keep the bare cuid; top-ups carry the prefix so we can route without
  * a join.
  */
+import { randomBytes } from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createPayment } from "@/lib/anypay/client";
@@ -20,10 +21,18 @@ export interface CreateTopupInput {
   storeSlug: string;
   amountTHB: number;
   customerEmail?: string;
+  /** Chargeback-defense evidence captured at intent creation time. */
+  ipAddress?: string;
+  userAgent?: string;
+  /** Version of the Terms of Service the buyer just accepted. The
+   *  client MUST pass this — POST /api/credit/topup rejects requests
+   *  without it. */
+  tosVersion: string;
 }
 
 export interface CreateTopupResult {
   topupId: string;
+  referenceNumber: string;
   paymentUrl: string;
 }
 
@@ -31,6 +40,24 @@ export interface CreateTopupResult {
  *  the `topup:` prefix to decide whether the incoming PAID is for a
  *  CreditTopup or an Order. Public so the webhook can re-derive. */
 export const TOPUP_ORDER_ID_PREFIX = "topup:";
+
+/** Human-readable reference number for receipts + chargeback packs.
+ *  Format: TOP-YYYYMMDD-XXXXXX (6-char base32 suffix). Unique-ish on
+ *  its own; the DB @unique index is the real guarantee. */
+function newReferenceNumber(): string {
+  const now = new Date();
+  const y = now.getUTCFullYear();
+  const m = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(now.getUTCDate()).padStart(2, "0");
+  // Crockford base32 alphabet — no ambiguous chars (no 0/O, 1/I/L).
+  const alphabet = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
+  const bytes = randomBytes(6);
+  let suffix = "";
+  for (let i = 0; i < 6; i++) {
+    suffix += alphabet[bytes[i]! % alphabet.length];
+  }
+  return `TOP-${y}${m}${d}-${suffix}`;
+}
 
 /**
  * Creates a CreditTopup row + AnyPay intent. Returns the paymentUrl
@@ -50,8 +77,13 @@ export async function createTopupIntent(
       userId: input.userId,
       storeId: input.storeId,
       amountTHB: new Prisma.Decimal(input.amountTHB),
+      referenceNumber: newReferenceNumber(),
+      ipAddress: input.ipAddress ?? null,
+      userAgent: input.userAgent ?? null,
+      tosVersion: input.tosVersion,
+      tosAcceptedAt: new Date(),
     },
-    select: { id: true },
+    select: { id: true, referenceNumber: true },
   });
 
   const payment = await createPayment({
@@ -72,7 +104,11 @@ export async function createTopupIntent(
     },
   });
 
-  return { topupId: topup.id, paymentUrl: payment.paymentUrl };
+  return {
+    topupId: topup.id,
+    referenceNumber: topup.referenceNumber!,
+    paymentUrl: payment.paymentUrl,
+  };
 }
 
 export interface MarkTopupPaidInput {
@@ -88,6 +124,22 @@ export interface MarkTopupPaidInput {
  * never leaves balance and ledger out of sync.
  */
 export async function markTopupPaid(
+  input: MarkTopupPaidInput,
+): Promise<{ applied: boolean }> {
+  const result = await applyTopupPaid(input);
+  if (result.applied) {
+    // Fire-and-forget receipt email. Failures get logged inside the
+    // hook; we never throw out of markTopupPaid because the balance
+    // is already credited and the webhook ack matters more.
+    const { sendCreditTopupReceiptEmail } = await import(
+      "@/lib/transactional-email"
+    );
+    await sendCreditTopupReceiptEmail({ topupId: input.topupId });
+  }
+  return { applied: result.applied };
+}
+
+async function applyTopupPaid(
   input: MarkTopupPaidInput,
 ): Promise<{ applied: boolean }> {
   return prisma.$transaction(async (tx) => {

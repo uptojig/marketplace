@@ -48,6 +48,21 @@ export async function GET(req: Request) {
     listLedger({ userId: user.id, storeId: store.id, limit: 50 }),
   ]);
 
+  // Pull topup reference numbers in one shot so the UI can deep-link
+  // to /receipts/<ref> without making N round-trips.
+  const topupIds = ledger
+    .map((e) => e.topupId)
+    .filter((id): id is string => Boolean(id));
+  const topups = topupIds.length
+    ? await prisma.creditTopup.findMany({
+        where: { id: { in: topupIds } },
+        select: { id: true, referenceNumber: true },
+      })
+    : [];
+  const refByTopupId = new Map(
+    topups.map((t) => [t.id, t.referenceNumber] as const),
+  );
+
   return NextResponse.json({
     store: { slug: store.slug, name: store.name },
     balanceTHB,
@@ -58,6 +73,7 @@ export async function GET(req: Request) {
       balanceAfterTHB: Number(e.balanceAfter),
       orderId: e.orderId,
       topupId: e.topupId,
+      topupRef: e.topupId ? (refByTopupId.get(e.topupId) ?? null) : null,
       note: e.note,
       createdAt: e.createdAt,
     })),

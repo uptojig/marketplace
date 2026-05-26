@@ -27,6 +27,9 @@ export type { SendDigitalUnlockReadyInput } from "./hooks/send-digital-unlock-re
 export { sendGiftUnlockReadyEmails } from "./hooks/send-gift-unlock-ready";
 export type { SendGiftUnlockReadyInput } from "./hooks/send-gift-unlock-ready";
 
+export { sendCreditTopupReceiptEmail } from "./hooks/send-credit-topup-receipt";
+export type { SendCreditTopupReceiptInput } from "./hooks/send-credit-topup-receipt";
+
 // Low-level primitives.
 export { sendEmail } from "./send";
 export type { SendEmailOptions, SendEmailResult } from "./send";

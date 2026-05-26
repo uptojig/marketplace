@@ -342,6 +342,11 @@ enum CreditTopupStatus {
 /// across tables is impossible.
 model CreditTopup {
   id                  String            @id @default(cuid())
+  /// Human-readable reference number stamped at creation time.
+  /// Format: TOP-YYYYMMDD-XXXXXX (XXXXXX is a base32 random suffix).
+  /// Used in receipts + chargeback evidence packs so a buyer doesn't
+  /// have to share an opaque cuid with the issuer.
+  referenceNumber     String?           @unique
   userId              String
   storeId             String
   amountTHB           Decimal           @db.Decimal(12, 2)
@@ -354,11 +359,28 @@ model CreditTopup {
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 
+  /// ── Chargeback / fraud-defense evidence ────────────────────────
+  /// Captured at intent creation time. NULL on older rows that
+  /// pre-date this evidence pack.
+  ipAddress           String?
+  /// User-Agent header — full string (truncated to 1k by zod). Helps
+  /// reconstruct what device the buyer used.
+  userAgent           String?
+  /// Version slug of the Terms of Service the buyer accepted. We
+  /// version the ToS doc (e.g. "credit-2026-05-26"); a chargeback
+  /// claiming "I didn't agree" can be cross-referenced to the exact
+  /// content the buyer saw.
+  tosVersion          String?
+  /// Timestamp the buyer ticked the ToS checkbox before submitting.
+  /// Required on POST /api/credit/topup — non-null here proves intent.
+  tosAcceptedAt       DateTime?
+
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@index([storeId])
+  @@index([referenceNumber])
 }
 
 // ── Editable storefront content (per-store) ────────────────────────────────

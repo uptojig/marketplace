@@ -511,57 +511,68 @@ export function StoreCartClient({
                             so the custom +/- buttons aren't visually
                             doubled. Per-store cart isolation: scope the
                             mutation to (productId, store.slug). */}
-                        <div
-                          className="inline-flex h-9 items-center overflow-hidden rounded-md border"
-                          style={{ borderColor: "var(--shop-border)" }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setQty(l.productId, l.qty - 1, store.slug)
-                            }
-                            disabled={l.qty <= 1}
-                            aria-label="ลด"
-                            className="inline-flex h-9 w-9 items-center justify-center text-sm disabled:opacity-40"
-                            style={{ color: "var(--shop-ink)" }}
+                        {l.productType === "DIGITAL" ? (
+                          <span
+                            className="text-xs font-[family:var(--font-prompt)]"
+                            style={{ color: "var(--shop-ink-muted)" }}
                           >
-                            <Minus className="h-3.5 w-3.5" />
-                          </button>
-                          <input
-                            type="number"
-                            inputMode="numeric"
-                            min={1}
-                            value={l.qty}
-                            onChange={(e) =>
-                              setQty(
-                                l.productId,
-                                Math.max(
-                                  1,
-                                  parseInt(e.target.value, 10) || 1,
-                                ),
-                                store.slug,
-                              )
-                            }
-                            className="h-9 w-12 bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                            style={{
-                              color: "var(--shop-ink)",
-                              borderLeft: "1px solid var(--shop-border)",
-                              borderRight: "1px solid var(--shop-border)",
-                            }}
-                            aria-label={`จำนวน ${l.title}`}
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setQty(l.productId, l.qty + 1, store.slug)
-                            }
-                            aria-label="เพิ่ม"
-                            className="inline-flex h-9 w-9 items-center justify-center text-sm"
-                            style={{ color: "var(--shop-ink)" }}
+                            {l.qty === 1
+                              ? "1 ชิ้น"
+                              : `${l.qty} ชิ้น (ดิจิทัล)`}
+                          </span>
+                        ) : (
+                          <div
+                            className="inline-flex h-9 items-center overflow-hidden rounded-md border"
+                            style={{ borderColor: "var(--shop-border)" }}
                           >
-                            <Plus className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setQty(l.productId, l.qty - 1, store.slug)
+                              }
+                              disabled={l.qty <= 1}
+                              aria-label="ลด"
+                              className="inline-flex h-9 w-9 items-center justify-center text-sm disabled:opacity-40"
+                              style={{ color: "var(--shop-ink)" }}
+                            >
+                              <Minus className="h-3.5 w-3.5" />
+                            </button>
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              min={1}
+                              value={l.qty}
+                              onChange={(e) =>
+                                setQty(
+                                  l.productId,
+                                  Math.max(
+                                    1,
+                                    parseInt(e.target.value, 10) || 1,
+                                  ),
+                                  store.slug,
+                                )
+                              }
+                              className="h-9 w-12 bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                              style={{
+                                color: "var(--shop-ink)",
+                                borderLeft: "1px solid var(--shop-border)",
+                                borderRight: "1px solid var(--shop-border)",
+                              }}
+                              aria-label={`จำนวน ${l.title}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setQty(l.productId, l.qty + 1, store.slug)
+                              }
+                              aria-label="เพิ่ม"
+                              className="inline-flex h-9 w-9 items-center justify-center text-sm"
+                              style={{ color: "var(--shop-ink)" }}
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        )}
 
                         {/* Remove */}
                         <button
