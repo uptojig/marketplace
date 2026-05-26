@@ -67,10 +67,10 @@ function GeneratingVariant({
   status: LandingStatusSnapshot | null;
   storeId: string;
 }) {
-  // Detect stuck runs — Vercel Hobby maxDuration is 60s; if the
-  // run has been "generating" longer than 5min it's almost
-  // certainly killed mid-flight. Surface a stale warning so the
-  // admin doesn't wait forever.
+  // Detect stuck runs — if the run has been "generating" longer than
+  // 5min it almost certainly got killed mid-flight (request timeout,
+  // process restart). Surface a stale warning so the admin doesn't
+  // wait forever.
   const startedMs = status?.startedAt
     ? Date.now() - new Date(status.startedAt).getTime()
     : 0;
@@ -91,12 +91,12 @@ function GeneratingVariant({
       <div className="flex-1">
         <p className="font-semibold">
           {isStale
-            ? "การออกแบบดูเหมือนค้าง — น่าจะ Vercel timeout"
+            ? "การออกแบบดูเหมือนค้าง — น่าจะ request timeout"
             : "เป็ดกำลังออกแบบหน้าเว็บ..."}
         </p>
         <p className="mt-0.5 text-xs">
           {isStale
-            ? "Agent run ใช้เวลานานกว่าที่ Vercel function อนุญาต (Hobby plan = 60s, Pro = 300s) — กด \"ลบ landing page\" ด้านล่างเพื่อ reset แล้วลองใหม่"
+            ? "Agent run ใช้เวลานานเกินกว่าที่ฟังก์ชันฝั่งเราอนุญาต — กด \"ลบ landing page\" ด้านล่างเพื่อ reset แล้วลองใหม่"
             : "ใช้เวลา 30 วินาที – 3 นาที (ขึ้นกับจำนวนสินค้า) — รอสักครู่ แล้วระบบจะอัปเดตให้เอง"}
         </p>
         {status?.startedAt && (
@@ -129,7 +129,7 @@ function FailedVariant({
         </p>
         <p className="mt-1 text-[11px] text-red-700/80">
           กด &ldquo;Regenerate&rdquo; เพื่อลองใหม่ — หรือถ้า agent บน
-          Anthropic ทำงานเสร็จแล้วแต่ Vercel ตายก่อน save:
+          Anthropic ทำงานเสร็จแล้วแต่ฟังก์ชันฝั่งเรา timeout ก่อน save:
         </p>
         <RecoverFromSession storeId={storeId} />
       </div>

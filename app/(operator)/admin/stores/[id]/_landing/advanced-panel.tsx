@@ -126,7 +126,7 @@ export function AdvancedPanel({
                 Recover schema จาก Anthropic session
               </p>
               <p className="mt-0.5 text-[11px] text-stone-500">
-                ใช้กรณี agent บน Anthropic ทำงานเสร็จแล้วแต่ Vercel ตายก่อน save —
+                ใช้กรณี agent บน Anthropic ทำงานเสร็จแล้วแต่ฟังก์ชันฝั่งเรา timeout ก่อน save —
                 หรือต้องการสลับไปใช้ design ที่ iterate ใน Console
               </p>
               <RecoverFromSession storeId={storeId} />

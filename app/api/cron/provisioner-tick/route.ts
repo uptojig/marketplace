@@ -1,7 +1,7 @@
 // GET /api/cron/provisioner-tick
 //
-// Triggered every minute by an external scheduler (Vercel cron, GitHub
-// Actions, or DO scheduled function). Drains queued provisioning jobs.
+// Triggered every minute by an external scheduler (GitHub Actions or
+// DO scheduled function). Drains queued provisioning jobs.
 //
 // Auth: shared secret via bearer token. Set CRON_SECRET in env, then
 // configure the scheduler with `Authorization: Bearer $CRON_SECRET`.
@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import { drainQueue } from "@/lib/provisioner/orchestrator";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60; // Vercel: extend timeout to 60s
+export const maxDuration = 60;
 
 export async function GET(req: Request) {
   const cronSecret = process.env.CRON_SECRET;

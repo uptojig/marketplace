@@ -225,7 +225,7 @@ function readIds(): { agentId: string; environmentId: string } {
  * Apply a captured schema (from agent.custom_tool_use input) to the
  * store's DB row. Extracted so the same logic runs from both the
  * live session loop in runLandingAgentManaged AND the
- * recoverLandingFromSession path (post-Vercel-timeout recovery).
+ * recoverLandingFromSession path (post-timeout recovery).
  *
  * In compliance mode we MERGE into the existing schema — preserving
  * globalHeader/globalFooter/metadata + already-generated marketing
@@ -350,10 +350,10 @@ function extractSchemaMetadata(schema: Record<string, unknown>): {
  * and apply whatever schema the agent emitted to the store.
  *
  * Why this exists:
- *   The agent's full schema generation can take 5-8 minutes, but
- *   Vercel kills functions at 60s (Hobby) or 300s (Pro). When that
- *   happens runLandingAgentManaged dies before saving — yet the
- *   Anthropic-side session keeps running and DOES emit the schema.
+ *   The agent's full schema generation can take 5-8 minutes, which can
+ *   exceed our request / function timeout. When that happens
+ *   runLandingAgentManaged dies before saving — yet the Anthropic-side
+ *   session keeps running and DOES emit the schema.
  *   Operators paste the session_id from Anthropic Console here, and
  *   this function retrieves the schema from that session and saves
  *   it as if generation had completed normally.

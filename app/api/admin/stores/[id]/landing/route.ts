@@ -154,8 +154,8 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   try {
     // Clear EVERY landing field — including the lifecycle status
     // ones. Without this, a generation that was killed mid-flight
-    // (Vercel function reclaimed before runLandingAgent's final DB
-    // write) leaves landingStatus="generating" forever and the admin
+    // (serverless invocation reclaimed before runLandingAgent's final
+    // DB write) leaves landingStatus="generating" forever and the admin
     // UI shows the spinner indefinitely. DELETE is the recovery
     // path; it must reset the row to a fully clean state.
     await prisma.store.update({

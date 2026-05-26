@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 
 /**
  * Inline form for pulling a finished schema out of an Anthropic
- * managed-agent session whose generation outlived the Vercel function
- * that started it. Operator gets the session id from
+ * managed-agent session whose generation outlived the request that
+ * started it. Operator gets the session id from
  * https://platform.claude.com/workspaces/default/sessions/<sessionId>
  * (the URL of any open session in their workspace).
  */

@@ -35,8 +35,8 @@ async function requireAdmin() {
  * POST /api/admin/stores/<id>/generate-landing
  *
  * Streams progress as NDJSON while the agent runs. This keeps the
- * Vercel function alive (streaming responses aren't subject to the
- * 60s Hobby timeout as long as data is being sent).
+ * serverless invocation alive (streaming responses aren't subject to
+ * idle-timeout as long as data is being sent).
  */
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   if (!(await requireAdmin())) {

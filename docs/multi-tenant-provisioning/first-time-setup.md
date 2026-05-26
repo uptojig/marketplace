@@ -109,21 +109,7 @@ Two endpoints need to fire on a schedule:
 
 Both require `Authorization: Bearer $CRON_SECRET`.
 
-### Option A — Vercel cron
-
-`vercel.json`:
-```json
-{
-  "crons": [
-    { "path": "/api/cron/provisioner-tick",   "schedule": "* * * * *" },
-    { "path": "/api/cron/provisioner-health", "schedule": "*/5 * * * *" }
-  ]
-}
-```
-Vercel automatically sends the cron secret as a query parameter — adjust
-the route's auth check or set `CRON_SECRET` to the value Vercel injects.
-
-### Option B — DO Functions / GitHub Actions
+### Scheduling — DO Functions / GitHub Actions / system cron
 
 Any HTTP scheduler works. With GitHub Actions:
 ```yaml

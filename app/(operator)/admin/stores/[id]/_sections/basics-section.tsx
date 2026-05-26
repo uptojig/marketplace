@@ -165,7 +165,7 @@ export function BasicsSection({ store }: { store: BasicsStore }) {
                 </FormControl>
                 <FormDescription>
                   ถ้าตั้งไว้ ลูกค้าเข้าผ่านโดเมนนี้แทน /stores/[slug]
-                  (ต้องชี้ DNS มาที่ Vercel แยก)
+                  (ต้องชี้ DNS A record มาที่ droplet IP)
                 </FormDescription>
                 <FormMessage />
               </FormItem>

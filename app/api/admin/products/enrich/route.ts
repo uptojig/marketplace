@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cjAdapter } from "@/lib/suppliers/cj/adapter";
 
-export const maxDuration = 60; // Vercel: allow up to 60s for batch
+export const maxDuration = 60; // allow up to 60s for batch enrich
 
 const schema = z.object({
   productId: z.string().optional(),

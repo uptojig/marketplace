@@ -43,6 +43,6 @@ console.log(`  agent_id        = ${agentId}`);
 console.log(`  environment_id  = ${session.environment_id ?? "(missing)"}`);
 console.log(`  title           = ${session.title ?? "(none)"}`);
 console.log("");
-console.log("→ Vercel env vars to set:");
+console.log("→ Env vars to set (droplet .env / GitHub Actions secrets):");
 console.log(`    ANTHROPIC_AGENT_ID=${agentId}`);
 console.log(`    ANTHROPIC_ENVIRONMENT_ID=${session.environment_id}`);

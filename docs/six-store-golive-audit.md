@@ -274,7 +274,7 @@ All 6 owner rows should have `role='VENDOR'`. If any are still `CUSTOMER`, promo
 | `ANYPAY_RETURN_URL` | intent return_url | unset |
 | `ANYPAY_WEBHOOK_URL` | intent webhook_url | unset |
 
-**Key rotation policy** is not documented. Add a runbook: rotate every 90 days, after any reported leak, when an admin offboards. Store keys in the password manager + Vercel project env / per-droplet env (cloud-init template at `lib/provisioner/cloud-init.ts`).
+**Key rotation policy** is not documented. Add a runbook: rotate every 90 days, after any reported leak, when an admin offboards. Store keys in the password manager + per-droplet env (cloud-init template at `lib/provisioner/cloud-init.ts`).
 
 ### `[ ]` Resend live key + verified sender domain
 
@@ -330,7 +330,7 @@ This is non-blocking from a "can a buyer place an order" standpoint but blocking
 **No analytics wiring of any kind.** `grep -rn "Sentry|sentry|posthog|plausible|gtag|GA_TRACKING|Analytics"` across `app`, `lib`, `components` returns zero results. `package.json` has no analytics SDK.
 
 **Recommendation:**
-- Add **Plausible** (privacy-friendly, no consent banner needed) or **Vercel Analytics** as a single `<Script>` in `app/layout.tsx` for the central marketplace, AND in `app/stores/[slug]/layout.tsx` for each storefront (custom domain support: Plausible accepts CNAME aliases).
+- Add **Plausible** (privacy-friendly, no consent banner needed) as a single `<Script>` in `app/layout.tsx` for the central marketplace, AND in `app/stores/[slug]/layout.tsx` for each storefront (custom domain support: Plausible accepts CNAME aliases).
 - Add **Conversion tracking**: at minimum `addToCart`, `beginCheckout`, `purchase` events. These hook off existing client components (`AddToCartModal`, checkout pages) — small contained PR.
 - **Defer**: full funnel analytics, attribution, A/B testing, server-side events. Not blocking.
 
@@ -339,7 +339,7 @@ This is non-blocking from a "can a buyer place an order" standpoint but blocking
 **No Sentry / equivalent.** `grep -rn "Sentry|sentry"` returns zero across the repo. The current error visibility is:
 - `console.log` / `console.warn` / `console.error` calls scattered throughout (~hundreds).
 - `getNotifier()` returns the `consoleNotifier` no-op (`lib/notify/index.ts:6`). The Notifier interface is `info | warn | error` and has stubs for `line / email / discord` per the comment, but none implemented.
-- Vercel's built-in log retention (default 1 day on hobby, 7 days on pro).
+- Whatever the droplet's journald / PM2 / Docker logs retain locally (no central log shipping in place).
 
 **Gap is significant for "durable for real customers long-term".**
 

@@ -30,7 +30,7 @@ const testimonials: TestimonialItem[] = [
   {
     name: 'Alex Chen',
     role: 'Frontend Developer',
-    company: 'Vercel',
+    company: 'Acme Co.',
     avatar: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-4.png?width=40&height=40&format=auto',
     rating: 4,
     content:

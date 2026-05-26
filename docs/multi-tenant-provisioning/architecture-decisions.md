@@ -95,9 +95,8 @@ timeouts; query monitoring at the DB layer.
 - **BullMQ + Redis.** Adds Redis dependency, more moving parts.
   ProvisioningJob already gives us at-least-once durability via
   Postgres rows.
-- **Always-on worker process.** Needs a process supervisor, doesn't fit
-  Vercel's stateless model if we want to deploy the control plane there.
-  Cron + status-based polling on Postgres is enough for our throughput
+- **Always-on worker process.** Needs a process supervisor; cron +
+  status-based polling on Postgres is enough for our throughput
   (worst case: ~5 new shops per day, ~200 health checks per cycle).
 
 **Trade-off.** Up to 60 s latency between job-enqueue and first attempt.
