@@ -52,6 +52,14 @@ jobs:
             rm -rf "$WORKDIR"
             mkdir -p "$WORKDIR"
 
+            # Ensure unzip is available (Debian base droplet ships
+            # without it by default).
+            if ! command -v unzip >/dev/null 2>&1; then
+              echo "→ Installing unzip"
+              DEBIAN_FRONTEND=noninteractive apt-get update -qq
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq unzip
+            fi
+
             echo "→ Fetching zip from $ZIP_URL"
             curl -fSL --max-time 600 -o "$WORKDIR/covers.zip" "$ZIP_URL"
 
