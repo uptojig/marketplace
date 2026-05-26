@@ -53,7 +53,7 @@ const agent = await client.beta.agents.create({
 console.log("✓ Agent:", agent.id, "(version", agent.version + ")");
 
 console.log("\n────────────────────────────────────────────────");
-console.log("Add to your .env.local AND Vercel env vars:");
+console.log("Add to your .env.local AND droplet env / CI secrets:");
 console.log("────────────────────────────────────────────────");
 console.log(`MANAGED_ENV_ID=${environment.id}`);
 console.log(`MANAGED_AGENT_ID=${agent.id}`);

@@ -56,7 +56,7 @@ async function main() {
   const expected = "agent_011Cad9Q8wyJdeXwucADnh8t";
   const match = agents.find((a) => a.id === expected);
   if (match) {
-    console.log("✓ Marketplace landing-builder found. Set on Vercel:");
+    console.log("✓ Marketplace landing-builder found. Set in droplet env / CI secrets:");
     console.log(`    ANTHROPIC_AGENT_ID=${match.id}`);
     console.log(`    ANTHROPIC_ENVIRONMENT_ID=${match.environment_id}`);
   } else {

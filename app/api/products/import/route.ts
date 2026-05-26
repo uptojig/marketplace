@@ -183,8 +183,8 @@ export async function POST(req: Request) {
   // English `title` only (suppliers don't ship localized copy that we
   // trust as marketing-quality). `translateProductTitlesForStore` skips
   // rows that already have titleTh, so re-importing the same product
-  // doesn't burn extra Claude calls. waitUntil keeps the Vercel
-  // function alive past the response so the translate batches finish
+  // doesn't burn extra Claude calls. waitUntil keeps the serverless
+  // invocation alive past the response so the translate batches finish
   // even though the operator's HTTP response already returned.
   waitUntil(
     translateProductTitlesForStore(storeId).catch((err) => {

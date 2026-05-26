@@ -1,12 +1,12 @@
 /**
- * Recover a landing-page generation that timed out on Vercel but
+ * Recover a landing-page generation that timed out locally but
  * succeeded on Anthropic's side.
  *
- * The full v12 schema generation runs 5-8 minutes on Anthropic but
- * Vercel kills functions at 60s (Hobby) / 300s (Pro). When the local
- * function dies, the Anthropic session keeps running and DOES emit
- * the schema — operators just need a way to pull it down after the
- * fact. They paste the session_id from
+ * The full v12 schema generation runs 5-8 minutes on Anthropic, which
+ * can exceed our request timeout. When the local request dies, the
+ * Anthropic session keeps running and DOES emit the schema — operators
+ * just need a way to pull it down after the fact. They paste the
+ * session_id from
  * https://platform.claude.com/workspaces/default/sessions/<sessionId>
  * here, and we replay the save+sync logic that runLandingAgentManaged
  * would have run on a successful synchronous completion.

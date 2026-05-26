@@ -3,8 +3,7 @@
  * Install every Shadcn Studio e-commerce block (https://shadcnstudio.com/blocks#ecommerce)
  * into this repo via the @ss-blocks registry declared in components.json.
  *
- * Prereq: SHADCN_STUDIO_EMAIL and SHADCN_STUDIO_LICENSE_KEY must be in .env.local
- * (run `vercel env pull .env.local` to copy from Vercel).
+ * Prereq: SHADCN_STUDIO_EMAIL and SHADCN_STUDIO_LICENSE_KEY must be in .env.local.
  *
  * Usage:
  *   node scripts/install-shadcn-studio-ecommerce.mjs              # try every variant
@@ -57,7 +56,7 @@ if (existsSync(envLocal)) {
 }
 if (!process.env.SHADCN_STUDIO_EMAIL || !process.env.SHADCN_STUDIO_LICENSE_KEY) {
   console.error("Missing SHADCN_STUDIO_EMAIL / SHADCN_STUDIO_LICENSE_KEY.");
-  console.error("Run: vercel env pull .env.local");
+  console.error("Set them in .env.local before running.");
   process.exit(1);
 }
 

@@ -5,7 +5,7 @@
  * Usage:
  *   node scripts/reset-store-landing.mjs <storeId>
  *
- * Use-case: Vercel function timed out mid-generation, leaving
+ * Use-case: the generation request timed out mid-flight, leaving
  * landingStatus="generating" with no agent to write the final state.
  * Admin UI then shows the spinner indefinitely. This clears every
  * landing field (blocks, status, error, brief, started_at,

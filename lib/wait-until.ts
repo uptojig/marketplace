@@ -1,13 +1,11 @@
-// Drop-in replacement for `waitUntil` from `@vercel/functions`.
+// Lightweight `waitUntil(promise)` for fire-and-forget background work
+// (analytics, cache fills, translation back-fills) that should outlive
+// the HTTP response.
 //
-// On Vercel, `waitUntil` keeps the serverless invocation alive until the
-// passed promise resolves so background work (analytics, cache fills,
-// translation back-fills) finishes even after the HTTP response is sent.
-//
-// On a long-lived Node server (DO droplet, this repo's deployment target)
-// the process doesn't exit between requests — passing a promise here is
-// enough to keep it running. We attach a defensive `.catch` so unhandled
-// rejections don't crash the process.
+// On a long-lived Node server (DigitalOcean droplet — this repo's
+// deployment target) the process doesn't exit between requests, so
+// just attaching a defensive `.catch` so unhandled rejections don't
+// crash the process is enough.
 export function waitUntil(promise: Promise<unknown>): void {
   promise.catch((err) => {
     console.error("[waitUntil] unhandled rejection:", err);

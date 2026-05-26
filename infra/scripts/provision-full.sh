@@ -9,7 +9,7 @@
 #   1. Generates Nginx config (dedicated IP)
 #   2. Sets up email forwarding (ImprovMX)
 #   3. Registers domain in domain-registry.json
-#   4. Prints Vercel + DNS setup instructions
+#   4. Prints DNS setup instructions
 # =============================================================================
 
 set -euo pipefail
@@ -47,19 +47,17 @@ echo "✅ Provisioning complete for ${DOMAIN}"
 echo ""
 echo "📋 Next steps:"
 echo ""
-echo "   1. Vercel: Add domain '${DOMAIN}' in Vercel Dashboard → Domains"
+echo "   1. DNS: Point ${DOMAIN} to the droplet"
+echo "      Add A record → ${DEDICATED_IP}"
 echo ""
-echo "   2. DNS: Point ${DOMAIN} to Vercel"
-echo "      Option A: Set nameservers to ns1.vercel-dns.com / ns2.vercel-dns.com"
-echo "      Option B: Add A record → 76.76.21.21"
-echo ""
-echo "   3. DNS: Add MX records for email"
+echo "   2. DNS: Add MX records for email"
 echo "      MX  @  mx1.improvmx.com  (priority 10)"
 echo "      MX  @  mx2.improvmx.com  (priority 20)"
 echo "      TXT @  v=spf1 include:spf.improvmx.com ~all"
 echo ""
-echo "   4. DB: Create store with customDomain"
+echo "   3. DB: Create store with customDomain"
 echo "      UPDATE \"Store\" SET \"customDomain\" = '${DOMAIN}' WHERE slug = 'xxx';"
+echo ""
 echo ""
 echo "🔗 URLs:"
 echo "   Website:  https://${DOMAIN}"
