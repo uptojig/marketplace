@@ -356,13 +356,10 @@ import {
   OmnipackFooterAdapter,
   OmnipackStripAdapter,
   OmnipackHomepageAdapter,
-  OmnipackAboutAdapter,
-  OmnipackHelpAdapter,
-  omnipack_Catalog,
-  omnipack_ProductDetail,
-  omnipack_Cart,
-  omnipack_Checkout,
-  omnipack_Contact,
+  OmnipackCatalogAdapter,
+  OmnipackProductDetailAdapter,
+  OmnipackCartAdapter,
+  OmnipackCheckoutAdapter,
 } from '@/components/storefront/themes/omnipack/adapters';
 
 import {
@@ -370,13 +367,10 @@ import {
   BlackwrappFooterAdapter,
   BlackwrappStripAdapter,
   BlackwrappHomepageAdapter,
-  BlackwrappAboutAdapter,
-  BlackwrappHelpAdapter,
   blackwrapp_Catalog,
   blackwrapp_ProductDetail,
   blackwrapp_Cart,
   blackwrapp_Checkout,
-  blackwrapp_Contact,
 } from '@/components/storefront/themes/blackwrapp/adapters';
 
 import {
@@ -394,17 +388,14 @@ import {
 } from '@/components/storefront/themes/gridmodu/adapters';
 
 import {
-  MotofogHeaderAdapter,
-  MotofogFooterAdapter,
-  MotofogStripAdapter,
-  MotofogHomepageAdapter,
-  MotofogAboutAdapter,
-  MotofogHelpAdapter,
+  MotoFogHeaderAdapter,
+  MotoFogFooterAdapter,
+  MotoFogStripAdapter,
+  MotoFogHomepageAdapter,
   motofog_Catalog,
   motofog_ProductDetail,
   motofog_Cart,
   motofog_Checkout,
-  motofog_Contact,
 } from '@/components/storefront/themes/motofog/adapters';
 
 import {
@@ -1317,13 +1308,10 @@ export const templates: Record<TemplateId, Template> = {
     },
     pages: {
       home: OmnipackHomepageAdapter,
-      catalog: omnipack_Catalog,
-      pdp: omnipack_ProductDetail,
-      cart: omnipack_Cart,
-      checkout: omnipack_Checkout,
-      about: OmnipackAboutAdapter,
-      help: OmnipackHelpAdapter,
-      contact: omnipack_Contact,
+      catalog: OmnipackCatalogAdapter,
+      pdp: OmnipackProductDetailAdapter,
+      cart: OmnipackCartAdapter,
+      checkout: OmnipackCheckoutAdapter,
     },
   },
 
@@ -1344,9 +1332,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: blackwrapp_ProductDetail,
       cart: blackwrapp_Cart,
       checkout: blackwrapp_Checkout,
-      about: BlackwrappAboutAdapter,
-      help: BlackwrappHelpAdapter,
-      contact: blackwrapp_Contact,
     },
   },
 
@@ -1380,19 +1365,16 @@ export const templates: Record<TemplateId, Template> = {
     group: 'lifestyle',
     behavior: { bottomNav: 'visible' },
     chrome: {
-      Header: MotofogHeaderAdapter,
-      Footer: MotofogFooterAdapter,
-      AnnouncementStrip: MotofogStripAdapter,
+      Header: MotoFogHeaderAdapter,
+      Footer: MotoFogFooterAdapter,
+      AnnouncementStrip: MotoFogStripAdapter,
     },
     pages: {
-      home: MotofogHomepageAdapter,
+      home: MotoFogHomepageAdapter,
       catalog: motofog_Catalog,
       pdp: motofog_ProductDetail,
       cart: motofog_Cart,
       checkout: motofog_Checkout,
-      about: MotofogAboutAdapter,
-      help: MotofogHelpAdapter,
-      contact: motofog_Contact,
     },
   },
 

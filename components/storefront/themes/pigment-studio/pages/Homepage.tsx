@@ -77,13 +77,13 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                 
                 <div className="flex flex-wrap items-center gap-4 pt-2">
                   <Link 
-                    href={`/stores/${store.slug}/products`}
+                    href={`/stores/${store.slug}/category`}
                     className="inline-flex items-center justify-center px-10 py-4 bg-[#e67e22] hover:bg-[#d35400] text-white font-bold text-lg rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 transform"
                   >
                     ช้อปความน่ารัก
                   </Link>
                   <Link 
-                    href={`/stores/${store.slug}/products`}
+                    href={`/stores/${store.slug}/category`}
                     className="inline-flex items-center justify-center px-10 py-4 bg-white hover:bg-[#fef5e7]/30 border border-[#5c3e2b]/20 hover:border-[#5c3e2b]/50 text-[#5c3e2b] font-bold text-lg rounded-full shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 transform"
                   >
                     ดูคอลเลกชันใหม่
@@ -183,7 +183,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Link
-                    href={`/stores/${store.slug}/products`}
+                    href={`/stores/${store.slug}/category`}
                     className="inline-flex items-center justify-center px-8 py-4 bg-[#f97316] text-white rounded-full font-[family:var(--font-prompt)] font-medium text-lg hover:bg-[#ea580c] hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] transition-all duration-300 group"
                   >
                     <Palette className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
@@ -347,7 +347,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                   <div className="absolute -bottom-1 left-0 w-full h-3 bg-[#fde8c8] rounded-full -z-10 opacity-70"></div>
                 </div>
                 <Link
-                  href={`/stores/${store.slug}/products`}
+                  href={`/stores/${store.slug}/category`}
                   className="font-[family:var(--font-prompt)] text-[#8c6d58] hover:text-[#e67e22] text-sm font-semibold flex items-center gap-1.5 transition-colors group"
                 >
                   ดูทั้งหมด
@@ -465,7 +465,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                   <div className="absolute -bottom-2 left-0 w-full h-4 bg-[#facc15]/40 rounded-full -rotate-1 z-0"></div>
                 </div>
                 <Link
-                  href={`/stores/${store.slug}/products`}
+                  href={`/stores/${store.slug}/category`}
                   className="group font-[family:var(--font-prompt)] text-[#f97316] font-medium flex items-center gap-2 hover:text-[#ea580c] transition-colors"
                 >
                   ดูสีทั้งหมด
@@ -570,7 +570,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                   ].map((category, index) => (
                     <Link
                       key={`${category.slug}-${index}`}
-                      href={`/stores/${store.slug}/products?category=${encodeURIComponent(category.name)}`}
+                      href={`/stores/${store.slug}/category?cat=${encodeURIComponent(category.name)}`}
                       className="px-5 py-2 bg-white/10 hover:bg-white/20 text-[#fed7aa] rounded-full font-[family:var(--font-prompt)] text-sm font-medium transition-all border border-white/10"
                     >
                       {category.name}
@@ -708,7 +708,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
           
           <div className="mt-16 text-center">
             <Link
-              href={`/stores/${store.slug}/products`}
+              href={`/stores/${store.slug}/category`}
               className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#f97316] rounded-full font-[family:var(--font-prompt)] font-medium text-lg border-2 border-[#f97316] hover:bg-[#f97316] hover:text-white transition-all duration-300"
             >
               ดูสินค้ามาใหม่ทั้งหมด
