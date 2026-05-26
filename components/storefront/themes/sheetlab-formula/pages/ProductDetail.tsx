@@ -29,6 +29,7 @@ import {
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
 import { formatTHB } from '@/lib/utils';
+import { WishlistHeart } from '@/components/storefront/WishlistHeart';
 
 const FEATURE_BULLETS = [
   'ไฟล์ .xlsx พร้อมใช้งานทันที',
@@ -439,20 +440,26 @@ export default function SheetlabFormulaProductDetail({
                 </div>
               ) : null}
 
-              <button
-                type="button"
-                onClick={handleAdd}
-                disabled={mode === 'gift' && giftInvalid}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-md text-white text-sm font-semibold shadow-sm hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: '#107C41' }}
-              >
-                {mode === 'gift' ? (
-                  <Gift className="w-4 h-4" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-                {buyLabel}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleAdd}
+                  disabled={mode === 'gift' && giftInvalid}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-md text-white text-sm font-semibold shadow-sm hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: '#107C41' }}
+                >
+                  {mode === 'gift' ? (
+                    <Gift className="w-4 h-4" />
+                  ) : (
+                    <Download className="w-4 h-4" />
+                  )}
+                  {buyLabel}
+                </button>
+                <WishlistHeart
+                  productId={product.id}
+                  className="inline-flex items-center justify-center px-4 py-3.5 rounded-md border text-sm hover:bg-zinc-50"
+                />
+              </div>
               {justAdded ? (
                 <p
                   className="mt-2 text-xs font-medium text-[#107C41]"

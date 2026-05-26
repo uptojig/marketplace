@@ -87,6 +87,7 @@ model User {
   creditBalances CreditBalance[]
   creditTopups   CreditTopup[]
   reviews        Review[]
+  wishlistItems  WishlistItem[]
 
   // Agent referral fields
   agentId        String?         @map("agent_id")
@@ -555,6 +556,7 @@ model Product {
   digitalAssets DigitalAsset[]
   unlocks       DigitalUnlock[]
   reviews       Review[]
+  wishlistItems WishlistItem[]
 
   @@index([storeId, active])
   @@index([supplier, externalProductId])
@@ -602,6 +604,32 @@ model Review {
   @@unique([userId, productId])
   @@index([productId, hidden, createdAt])
   @@index([storeId, hidden])
+}
+
+/// Saved-for-later product (a.k.a. "wishlist" / "favorites").
+///
+/// One row per (userId, productId) — the user either has it saved or
+/// they don't. Snapshot of `priceTHBAtSave` captures the price when
+/// they added it; a future cron can compare current price and email
+/// the user when their saved item goes on sale.
+model WishlistItem {
+  id              String   @id @default(cuid())
+  userId          String
+  productId       String
+  /// Price snapshot at the moment the user added the item — used by
+  /// the "your saved item is on sale!" notifier to detect drops.
+  priceTHBAtSave  Decimal  @db.Decimal(12, 2)
+  /// Operator-facing optional note (free-form; reserved for future
+  /// "remind me on date" feature). Null today.
+  note            String?
+  createdAt       DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId, createdAt])
+  @@index([productId])
 }
 
 /// File asset attached to a digital product (PDF/XLSX/AI/ZIP/...).
