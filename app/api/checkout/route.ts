@@ -15,6 +15,20 @@ const checkoutSchema = z.object({
       z.object({
         productId: z.string().min(1),
         qty: z.number().int().positive(),
+        /** Gift recipients for DIGITAL products. When present, qty
+         *  must equal recipients.length — createOrderFromCart enforces
+         *  this server-side. Max 20 per line to prevent spam. */
+        giftRecipients: z
+          .array(
+            z.object({
+              email: z.string().email(),
+              name: z.string().min(1).max(120),
+              message: z.string().max(500).optional(),
+            }),
+          )
+          .min(1)
+          .max(20)
+          .optional(),
       }),
     )
     .min(1),

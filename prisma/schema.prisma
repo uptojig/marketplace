@@ -567,11 +567,14 @@ model DigitalAsset {
 /// without affecting the buyer's other purchases.
 model DigitalUnlock {
   id            String    @id @default(cuid())
+  /// For SELF unlocks this is the buyer. For GIFT unlocks this is the
+  /// GIFTER — the recipient identity lives in recipientEmail (they
+  /// don't need a User row to access via the magic-link route).
   userId        String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId     String
   product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  orderItemId   String    @unique
+  orderItemId   String
   orderItem     OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
   /// Buyer-facing license key (UUID-ish). Useful for vector / commercial
   /// licenses + as a tamper-evident watermark token.
@@ -585,8 +588,22 @@ model DigitalUnlock {
   revokedAt     DateTime?
   createdAt     DateTime  @default(now())
 
+  /// ── Gift-mode fields ──────────────────────────────────────────────
+  /// Populated when this unlock belongs to a gift recipient (not the
+  /// buyer). Recipients access via /unlock/<accessToken>; no signup
+  /// required.
+  recipientEmail String?
+  recipientName  String?
+  giftMessage    String?
+  /// Guest-access token — unique, opaque cuid. Set for gift unlocks so
+  /// the recipient can hit /unlock/<token> directly from the email.
+  /// NULL for buyer-self unlocks (those go through session auth).
+  accessToken    String? @unique
+
   @@index([userId])
   @@index([productId])
+  @@index([orderItemId])
+  @@index([recipientEmail])
 }
 
 /// Vendor-defined product grouping with a slug (used in storefront URLs)
@@ -817,9 +834,17 @@ model OrderItem {
   product Product         @relation(fields: [productId], references: [id])
   variant ProductVariant? @relation(fields: [variantId], references: [id])
   store   Store           @relation(fields: [storeId], references: [id])
-  /// Optional unlock row — only created for DIGITAL products after the
-  /// parent Order is paid. Null on physical-only lines.
-  unlock  DigitalUnlock?
+  /// Unlock rows — created post-PAID for DIGITAL products. One per
+  /// recipient (≥ 1). For self-purchases the array has exactly one
+  /// row; for gifts it has one row per recipient in giftRecipientsJson.
+  unlocks DigitalUnlock[]
+
+  /// When set, this OrderItem was a gift purchase. The array carries
+  /// one entry per recipient — each entry creates one DigitalUnlock
+  /// post-paid (see lib/digital/create-unlocks). Only valid for
+  /// DIGITAL products; ignored on physical lines. Snapshot — we never
+  /// mutate this after the order is placed.
+  giftRecipientsJson Json?
 
   @@index([orderId])
   @@index([storeId])

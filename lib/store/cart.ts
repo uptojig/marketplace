@@ -21,6 +21,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export interface GiftRecipient {
+  email: string;
+  name: string;
+  /** Optional personal message — sent in the gift-unlock email. */
+  message?: string;
+}
+
 export interface CartLineDisplay {
   productId: string;
   title: string;
@@ -42,6 +49,12 @@ export interface CartLineDisplay {
     | "VECTOR"
     | "ARCHIVE"
     | "OTHER";
+  /** When set, this line is a GIFT purchase. Only meaningful for
+   *  DIGITAL items. `qty` MUST equal `giftRecipients.length` — one
+   *  unlock is created per recipient post-PAID. UI dedup logic should
+   *  treat a gift line as a fresh line on every add (don't merge into
+   *  an existing self-purchase line). */
+  giftRecipients?: GiftRecipient[];
 }
 
 interface CartState {
@@ -101,15 +114,26 @@ export const useCart = create<CartState>()(
       openDrawer: () => set({ drawerOpen: true }),
       closeDrawer: () => set({ drawerOpen: false }),
       add: (line, qty = 1) => {
-        // Dedupe by (productId, storeSlug) — same product carried by two
-        // different stores must show up as separate lines.
-        const existing = get().lines.find(
-          (l) => l.productId === line.productId && l.storeSlug === line.storeSlug,
-        );
+        // Gift purchases bypass the dedupe — each gift order is a
+        // distinct intent (the recipients differ) and merging it into
+        // an existing self-purchase line would conflate the qty with
+        // the recipient list. Self-purchase lines still dedupe by
+        // (productId, storeSlug) the way they always did.
+        const incomingIsGift = !!line.giftRecipients?.length;
+        const existing = incomingIsGift
+          ? undefined
+          : get().lines.find(
+              (l) =>
+                l.productId === line.productId
+                && l.storeSlug === line.storeSlug
+                && !l.giftRecipients?.length,
+            );
         if (existing) {
           set({
             lines: get().lines.map((l) =>
-              l.productId === line.productId && l.storeSlug === line.storeSlug
+              l.productId === line.productId
+              && l.storeSlug === line.storeSlug
+              && !l.giftRecipients?.length
                 ? { ...l, qty: l.qty + qty }
                 : l,
             ),

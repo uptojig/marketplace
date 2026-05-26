@@ -1,19 +1,17 @@
 /**
- * GET /api/digital/download/[unlockId]/[assetId]
+ * GET /api/digital/download/[unlockId]/[assetId]?token=<accessToken>
  *
- * Buyer-facing signed-URL gateway.
+ * Buyer-facing signed-URL gateway. Two auth paths:
  *
- * Flow:
- *   1. Verify the requesting user owns the DigitalUnlock (joins through
- *      orderItem → order.userId).
- *   2. Verify the requested asset belongs to the unlock's product.
- *   3. Refuse if the unlock is revoked / expired.
- *   4. Generate a short-lived (10 min) presigned Spaces URL.
- *   5. Increment downloadCount (soft rate-limit / analytics).
- *   6. 302-redirect the browser to the presigned URL.
+ *   1. Session auth (no ?token=) — buyer's own self-purchase. Looks up
+ *      the unlock by id, requires session.user.email to match unlock.userId.
+ *   2. Token auth (?token=<accessToken>) — gift recipient. The unlock
+ *      must have a non-null accessToken matching the query param. No
+ *      session required; recipients access via the magic-link URL from
+ *      the gift email.
  *
- * The buyer NEVER sees the raw storageKey — only the temporary URL.
- * If they share the URL it dies in 10 min.
+ * Both paths share the revoked / expired / rate-limit gates and the
+ * same 302-to-presigned-URL pattern.
  */
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -33,7 +31,7 @@ const PRESIGN_TTL_SECONDS = 10 * 60;
 const DAILY_DOWNLOAD_LIMIT = 20;
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { unlockId: string; assetId: string } },
 ) {
   if (!isSpacesConfigured()) {
@@ -43,18 +41,8 @@ export async function GET(
     );
   }
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Sign in required" }, { status: 401 });
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    select: { id: true },
-  });
-  if (!user) {
-    return NextResponse.json({ error: "Account not found" }, { status: 401 });
-  }
+  const url = new URL(req.url);
+  const tokenParam = url.searchParams.get("token");
 
   const unlock = await prisma.digitalUnlock.findUnique({
     where: { id: params.unlockId },
@@ -65,9 +53,33 @@ export async function GET(
       revokedAt: true,
       expiresAt: true,
       downloadCount: true,
+      accessToken: true,
     },
   });
-  if (!unlock || unlock.userId !== user.id) {
+  if (!unlock) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Auth — either a matching accessToken (gift recipient) OR a session
+  // whose user.id matches unlock.userId (buyer self-purchase).
+  let authed = false;
+  if (tokenParam && unlock.accessToken && tokenParam === unlock.accessToken) {
+    authed = true;
+  } else {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Sign in required" }, { status: 401 });
+    }
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+    if (!user) {
+      return NextResponse.json({ error: "Account not found" }, { status: 401 });
+    }
+    if (unlock.userId === user.id) authed = true;
+  }
+  if (!authed) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (unlock.revokedAt) {
