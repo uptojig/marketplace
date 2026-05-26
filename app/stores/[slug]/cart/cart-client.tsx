@@ -118,10 +118,51 @@ export function StoreCartClient({
   const subtotal = lines.reduce((n, l) => n + l.priceTHB * l.qty, 0);
   const itemCount = lines.reduce((n, l) => n + l.qty, 0);
 
+  // Authoritative productType lookup — legacy cart lines (added before
+  // the productType field shipped) lack the flag in localStorage. Pull
+  // the truth from /api/checkout/product-types so we can hide qty +
+  // shipping for all-digital carts even when the local flag is stale.
+  const [serverTypes, setServerTypes] = useState<
+    Record<string, "PHYSICAL" | "DIGITAL">
+  >({});
+  useEffect(() => {
+    if (lines.length === 0) return;
+    const ids = lines.map((l) => l.productId);
+    let cancelled = false;
+    fetch(`/api/checkout/product-types?ids=${encodeURIComponent(ids.join(","))}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const map: Record<string, "PHYSICAL" | "DIGITAL"> = {};
+        for (const p of data.products ?? []) {
+          map[p.id] = p.productType;
+        }
+        setServerTypes(map);
+      })
+      .catch(() => {
+        /* fall back to local cart-line flag */
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lines.map((l) => l.productId).join(",")]);
+
+  // Per-line is-digital test prefers the server map, falls back to the
+  // local cart-line flag for freshly-added items.
+  function lineIsDigital(productId: string, localFlag?: string): boolean {
+    return (
+      serverTypes[productId] === "DIGITAL"
+      || localFlag === "DIGITAL"
+    );
+  }
+
   // All-digital carts ship nothing — no shipping fee, no free-shipping
   // progress bar. The "ซื้ออีก ฿X จะได้ส่งฟรี" nudge would be confusing
   // for a buyer of pure software.
-  const allDigital = isAllDigitalForStore(allLines, store.slug);
+  const allDigital =
+    lines.length > 0
+    && lines.every((l) => lineIsDigital(l.productId, l.productType));
   // Shipping calc — free above threshold; flat fee otherwise. Forced
   // to 0 for all-digital carts regardless of subtotal.
   const shipping = allDigital
@@ -464,7 +505,7 @@ export function StoreCartClient({
                             >
                               {l.title}
                             </Link>
-                            {l.productType === "DIGITAL" && (
+                            {lineIsDigital(l.productId, l.productType) && (
                               <span
                                 className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0"
                                 style={{ background: "var(--shop-primary, #0a0a0a)", color: "#fff" }}
