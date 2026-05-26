@@ -26,7 +26,7 @@ import {
   Truck,
 } from 'lucide-react';
 
-import { useCart } from '@/lib/store/cart';
+import { useCart, isAllDigitalForStore } from '@/lib/store/cart';
 import { formatTHB } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -153,7 +153,15 @@ export function ThaiCheckoutAdapterView({
   const [error, setError] = useState<string | null>(null);
   const [orderRef, setOrderRef] = useState<string | null>(null);
 
-  const effectiveShipping = subtotal >= threshold ? 0 : shipping.priceTHB;
+  // All-digital orders skip steps 2 (address) and 3 (shipping picker).
+  // The trust strip's free-shipping pill and the totals' "ค่าจัดส่ง"
+  // row also hide when there is no parcel.
+  const allDigital = isAllDigitalForStore(allLines, store.slug);
+  const effectiveShipping = allDigital
+    ? 0
+    : subtotal >= threshold
+      ? 0
+      : shipping.priceTHB;
   const total = subtotal + effectiveShipping;
 
   function updateField<K extends keyof AddressForm>(key: K) {
@@ -163,7 +171,9 @@ export function ThaiCheckoutAdapterView({
 
   function nextFromCart() {
     if (lines.length === 0) return;
-    setStep(2);
+    // All-digital orders skip address (step 2) AND shipping picker
+    // (step 3) — jump straight to confirm.
+    setStep(allDigital ? 4 : 2);
   }
 
   function nextFromAddress() {
@@ -200,18 +210,30 @@ export function ThaiCheckoutAdapterView({
         body: JSON.stringify({
           storeSlug: store.slug,
           items: lines.map((l) => ({ productId: l.productId, qty: l.qty })),
-          address: {
-            recipientName: address.recipientName,
-            phone: address.phone,
-            line1: address.line1,
-            line2: address.line2,
-            subdistrict: address.subdistrict,
-            district: address.district,
-            province: address.province,
-            postalCode: address.postalCode,
-            country: address.country || 'TH',
-          },
-          shipping: { method: shipping.id, priceTHB: effectiveShipping },
+          // All-digital orders ship nothing; the API rejects the
+          // address field as the signal to skip shipping. For physical
+          // orders we still snapshot the buyer's address.
+          ...(allDigital
+            ? {
+                guestContact: {
+                  name: address.recipientName || 'Customer',
+                  email: undefined,
+                },
+              }
+            : {
+                address: {
+                  recipientName: address.recipientName,
+                  phone: address.phone,
+                  line1: address.line1,
+                  line2: address.line2,
+                  subdistrict: address.subdistrict,
+                  district: address.district,
+                  province: address.province,
+                  postalCode: address.postalCode,
+                  country: address.country || 'TH',
+                },
+                shipping: { method: shipping.id, priceTHB: effectiveShipping },
+              }),
           payment: { method: payment.id },
         }),
       });
@@ -402,7 +424,8 @@ export function ThaiCheckoutAdapterView({
                 submitting={submitting}
                 submitLabel={submitLabel}
                 error={error}
-                onBack={() => setStep(3)}
+                allDigital={allDigital}
+                onBack={() => setStep(allDigital ? 1 : 3)}
                 onSubmit={placeOrder}
                 onEditAddress={() => setStep(2)}
                 onEditShipping={() => setStep(3)}
@@ -938,6 +961,7 @@ function ConfirmStep({
   onSubmit,
   onEditAddress,
   onEditShipping,
+  allDigital = false,
 }: {
   palette: ResolvedPalette;
   address: AddressForm;
@@ -953,83 +977,90 @@ function ConfirmStep({
   onSubmit: () => void;
   onEditAddress: () => void;
   onEditShipping: () => void;
+  /** When true, hide all shipping/address related rows — the cart is
+   *  digital-only and no parcel is going out. */
+  allDigital?: boolean;
 }) {
   return (
     <div className="space-y-4">
-      <Card
-        className="rounded-2xl p-6 shadow-none"
-        style={{ background: palette.surface, borderColor: palette.border }}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p
-              className="text-xs uppercase tracking-wider mb-1"
-              style={{ color: palette.inkMuted }}
+      {!allDigital && (
+        <Card
+          className="rounded-2xl p-6 shadow-none"
+          style={{ background: palette.surface, borderColor: palette.border }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p
+                className="text-xs uppercase tracking-wider mb-1"
+                style={{ color: palette.inkMuted }}
+              >
+                ที่อยู่จัดส่ง
+              </p>
+              <p
+                className="text-sm font-semibold"
+                style={{ color: palette.ink }}
+              >
+                {address.recipientName || '—'}
+              </p>
+              <p className="mt-1 text-sm" style={{ color: palette.inkMuted }}>
+                {[address.line1, address.line2, address.subdistrict, address.district]
+                  .filter(Boolean)
+                  .join(' ')}
+                <br />
+                {address.province} {address.postalCode} {address.country}
+                <br />
+                <span className="text-xs">โทร {address.phone}</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onEditAddress}
+              className="text-sm font-medium hover:underline"
+              style={{ color: palette.primary }}
             >
-              ที่อยู่จัดส่ง
-            </p>
-            <p
-              className="text-sm font-semibold"
-              style={{ color: palette.ink }}
-            >
-              {address.recipientName || '—'}
-            </p>
-            <p className="mt-1 text-sm" style={{ color: palette.inkMuted }}>
-              {[address.line1, address.line2, address.subdistrict, address.district]
-                .filter(Boolean)
-                .join(' ')}
-              <br />
-              {address.province} {address.postalCode} {address.country}
-              <br />
-              <span className="text-xs">โทร {address.phone}</span>
-            </p>
+              เปลี่ยน
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onEditAddress}
-            className="text-sm font-medium hover:underline"
-            style={{ color: palette.primary }}
-          >
-            เปลี่ยน
-          </button>
-        </div>
-      </Card>
+        </Card>
+      )}
 
-      <Card
-        className="rounded-2xl p-6 shadow-none"
-        style={{ background: palette.surface, borderColor: palette.border }}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p
-              className="text-xs uppercase tracking-wider mb-1"
-              style={{ color: palette.inkMuted }}
+      {!allDigital && (
+        <Card
+          className="rounded-2xl p-6 shadow-none"
+          style={{ background: palette.surface, borderColor: palette.border }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p
+                className="text-xs uppercase tracking-wider mb-1"
+                style={{ color: palette.inkMuted }}
+              >
+                จัดส่ง &amp; ชำระเงิน
+              </p>
+              <p
+                className="text-sm font-semibold"
+                style={{ color: palette.ink }}
+              >
+                {shipping.name} · {payment.name}
+              </p>
+              <p className="mt-1 text-sm" style={{ color: palette.inkMuted }}>
+                ค่าจัดส่ง:{' '}
+                <span style={{ color: palette.ink }}>
+                  {effectiveShipping === 0 ? 'ส่งฟรี' : formatTHB(effectiveShipping)}
+                </span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onEditShipping}
+              className="text-sm font-medium hover:underline"
+              style={{ color: palette.primary }}
             >
-              จัดส่ง &amp; ชำระเงิน
-            </p>
-            <p
-              className="text-sm font-semibold"
-              style={{ color: palette.ink }}
-            >
-              {shipping.name} · {payment.name}
-            </p>
-            <p className="mt-1 text-sm" style={{ color: palette.inkMuted }}>
-              ค่าจัดส่ง:{' '}
-              <span style={{ color: palette.ink }}>
-                {effectiveShipping === 0 ? 'ส่งฟรี' : formatTHB(effectiveShipping)}
-              </span>
-            </p>
+              เปลี่ยน
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onEditShipping}
-            className="text-sm font-medium hover:underline"
-            style={{ color: palette.primary }}
-          >
-            เปลี่ยน
-          </button>
-        </div>
-      </Card>
+        </Card>
+      )}
 
       <Card
         className="rounded-2xl p-6 shadow-none"
@@ -1040,14 +1071,16 @@ function ConfirmStep({
             <dt style={{ color: palette.inkMuted }}>ราคาสินค้า</dt>
             <dd style={{ color: palette.ink }}>{formatTHB(subtotal)}</dd>
           </div>
-          <div className="flex items-center justify-between">
-            <dt style={{ color: palette.inkMuted }}>
-              ค่าจัดส่ง ({shipping.name})
-            </dt>
-            <dd style={{ color: palette.ink }}>
-              {effectiveShipping === 0 ? 'ส่งฟรี' : formatTHB(effectiveShipping)}
-            </dd>
-          </div>
+          {!allDigital && (
+            <div className="flex items-center justify-between">
+              <dt style={{ color: palette.inkMuted }}>
+                ค่าจัดส่ง ({shipping.name})
+              </dt>
+              <dd style={{ color: palette.ink }}>
+                {effectiveShipping === 0 ? 'ส่งฟรี' : formatTHB(effectiveShipping)}
+              </dd>
+            </div>
+          )}
           <div
             className="flex items-center justify-between pt-3 mt-1 border-t"
             style={{ borderColor: palette.border }}

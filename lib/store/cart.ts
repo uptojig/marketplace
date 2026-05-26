@@ -129,6 +129,13 @@ export const useCart = create<CartState>()(
                 && !l.giftRecipients?.length,
             );
         if (existing) {
+          // DIGITAL self-purchase lines are licensed per-buyer; one is
+          // the max. A second "Add to cart" is a no-op, not +1. Physical
+          // lines still increment. Gift mode is unaffected (it's always
+          // a fresh line — see incomingIsGift dedupe bypass above).
+          const isDigitalSelf =
+            line.productType === "DIGITAL" && !incomingIsGift;
+          if (isDigitalSelf) return;
           set({
             lines: get().lines.map((l) =>
               l.productId === line.productId
@@ -139,7 +146,13 @@ export const useCart = create<CartState>()(
             ),
           });
         } else {
-          set({ lines: [...get().lines, { ...line, qty }] });
+          // First-time add for DIGITAL self-purchase: clamp qty to 1
+          // so even a programmatic caller passing >1 ends up with 1.
+          const clampedQty =
+            line.productType === "DIGITAL" && !incomingIsGift
+              ? 1
+              : qty;
+          set({ lines: [...get().lines, { ...line, qty: clampedQty }] });
         }
         // (Auto-opening the drawer on every add caused theme-wide
         // breakage — hydration mismatch on /checkout, conflicts with
