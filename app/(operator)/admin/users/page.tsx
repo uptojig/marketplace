@@ -46,6 +46,51 @@ export default async function AdminUsersPage({
     take: 200,
   });
 
+  // Resolve the "ร้าน" column for CUSTOMER rows by walking
+  // Order → storeId. Vendors already have an owned `store`; customers
+  // get the (potentially multiple) stores they've purchased from.
+  //
+  // Done as two batched queries instead of per-row to avoid an N+1:
+  //   1. groupBy (userId, storeId) over all order rows for this page's users
+  //   2. one store lookup keyed by the distinct storeIds we found
+  const userIds = rows.map((r) => r.id);
+  const purchaseStoresByUser = new Map<string, { slug: string; name: string }[]>();
+
+  if (userIds.length > 0) {
+    const orderGroups = await prisma.order.groupBy({
+      by: ["userId", "storeId"],
+      where: {
+        userId: { in: userIds },
+        storeId: { not: null },
+      },
+    });
+
+    const storeIds = Array.from(
+      new Set(
+        orderGroups
+          .map((g) => g.storeId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    );
+
+    const stores = storeIds.length
+      ? await prisma.store.findMany({
+          where: { id: { in: storeIds } },
+          select: { id: true, slug: true, name: true },
+        })
+      : [];
+    const storeById = new Map(stores.map((s) => [s.id, s]));
+
+    for (const g of orderGroups) {
+      if (!g.storeId) continue;
+      const store = storeById.get(g.storeId);
+      if (!store) continue;
+      const list = purchaseStoresByUser.get(g.userId) ?? [];
+      list.push({ slug: store.slug, name: store.name });
+      purchaseStoresByUser.set(g.userId, list);
+    }
+  }
+
   const initialUsers: AdminUserRow[] = rows.map((u) => ({
     id: u.id,
     email: u.email,
@@ -56,6 +101,7 @@ export default async function AdminUsersPage({
     // simple and the client formats with toLocaleDateString.
     createdAt: u.createdAt.toISOString(),
     store: u.store,
+    purchaseStores: purchaseStoresByUser.get(u.id) ?? [],
     orderCount: u._count.orders,
   }));
 

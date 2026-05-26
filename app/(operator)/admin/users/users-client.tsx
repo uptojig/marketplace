@@ -47,6 +47,13 @@ export type AdminUserRow = {
   role: Role;
   createdAt: string; // ISO string (server serializes Date)
   store: { slug: string; name: string } | null;
+  /**
+   * Stores the user has bought from, derived from Order.storeId.
+   * Populated for customers (and any non-vendor users with order
+   * history). Empty list means "no purchases yet". Vendors typically
+   * have an owned `store` set, which takes display precedence.
+   */
+  purchaseStores: { slug: string; name: string }[];
   orderCount: number;
 };
 
@@ -227,6 +234,21 @@ export function AdminUsersClient({
                     <TableCell className="text-xs">
                       {u.store ? (
                         <span className="font-medium text-foreground">{u.store.name}</span>
+                      ) : u.purchaseStores.length > 0 ? (
+                        <span
+                          className="font-medium text-foreground"
+                          title={u.purchaseStores.map((s) => s.name).join(", ")}
+                        >
+                          {u.purchaseStores
+                            .slice(0, 2)
+                            .map((s) => s.name)
+                            .join(", ")}
+                          {u.purchaseStores.length > 2 && (
+                            <span className="ml-1 font-normal text-muted-foreground">
+                              +{u.purchaseStores.length - 2} more
+                            </span>
+                          )}
+                        </span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
@@ -270,6 +292,7 @@ export function AdminUsersClient({
               {
                 ...user,
                 store: null,
+                purchaseStores: [],
                 orderCount: 0,
                 createdAt: user.createdAt,
               },
