@@ -34,7 +34,7 @@ import {
   Banknote,
   ShieldCheck,
 } from "lucide-react";
-import { useCart } from "@/lib/store/cart";
+import { useCart, isAllDigitalForStore } from "@/lib/store/cart";
 import { formatTHB } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -118,13 +118,21 @@ export function StoreCartClient({
   const subtotal = lines.reduce((n, l) => n + l.priceTHB * l.qty, 0);
   const itemCount = lines.reduce((n, l) => n + l.qty, 0);
 
-  // Shipping calc — free above threshold; flat fee otherwise
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : DEFAULT_SHIPPING;
+  // All-digital carts ship nothing — no shipping fee, no free-shipping
+  // progress bar. The "ซื้ออีก ฿X จะได้ส่งฟรี" nudge would be confusing
+  // for a buyer of pure software.
+  const allDigital = isAllDigitalForStore(allLines, store.slug);
+  // Shipping calc — free above threshold; flat fee otherwise. Forced
+  // to 0 for all-digital carts regardless of subtotal.
+  const shipping = allDigital
+    ? 0
+    : subtotal >= FREE_SHIPPING_THRESHOLD
+      ? 0
+      : DEFAULT_SHIPPING;
   const total = subtotal + shipping;
-  const remainingForFreeShipping = Math.max(
-    0,
-    FREE_SHIPPING_THRESHOLD - subtotal,
-  );
+  const remainingForFreeShipping = allDigital
+    ? 0
+    : Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 
   if (!mounted) {
     return <div className="container mx-auto max-w-7xl px-4 py-8 min-h-[60vh]" />;
@@ -773,48 +781,50 @@ export function StoreCartClient({
                     </dd>
                   </div>
 
-                  <div
-                    className="flex items-center justify-between text-sm pt-3 border-t"
-                    style={{ borderColor: "var(--shop-border)" }}
-                  >
-                    <dt
-                      data-tech-mono={isElectronicsTech ? "true" : undefined}
-                      style={{
-                        color: "var(--shop-ink-muted)",
-                        ...(isElectronicsTech
-                          ? {
-                              fontFamily: TECH_MONO_FONT,
-                              letterSpacing: "0.08em",
-                              fontWeight: 500,
-                              fontSize: "12px",
-                              textTransform: "uppercase",
-                            }
-                          : {}),
-                      }}
+                  {!allDigital && (
+                    <div
+                      className="flex items-center justify-between text-sm pt-3 border-t"
+                      style={{ borderColor: "var(--shop-border)" }}
                     >
-                      {isElectronicsTech ? "Shipping" : "ค่าจัดส่ง"}
-                    </dt>
-                    <dd
-                      data-tech-mono={isElectronicsTech ? "true" : undefined}
-                      className="font-medium"
-                      style={{
-                        color:
-                          shipping === 0
-                            ? "var(--shop-primary)"
-                            : "var(--shop-ink)",
-                        ...(isElectronicsTech
-                          ? {
-                              fontFamily: TECH_MONO_FONT,
-                              fontWeight: 600,
-                            }
-                          : {}),
-                      }}
-                    >
-                      {shipping === 0 ? "ส่งฟรี" : formatTHB(shipping)}
-                    </dd>
-                  </div>
+                      <dt
+                        data-tech-mono={isElectronicsTech ? "true" : undefined}
+                        style={{
+                          color: "var(--shop-ink-muted)",
+                          ...(isElectronicsTech
+                            ? {
+                                fontFamily: TECH_MONO_FONT,
+                                letterSpacing: "0.08em",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                                textTransform: "uppercase",
+                              }
+                            : {}),
+                        }}
+                      >
+                        {isElectronicsTech ? "Shipping" : "ค่าจัดส่ง"}
+                      </dt>
+                      <dd
+                        data-tech-mono={isElectronicsTech ? "true" : undefined}
+                        className="font-medium"
+                        style={{
+                          color:
+                            shipping === 0
+                              ? "var(--shop-primary)"
+                              : "var(--shop-ink)",
+                          ...(isElectronicsTech
+                            ? {
+                                fontFamily: TECH_MONO_FONT,
+                                fontWeight: 600,
+                              }
+                            : {}),
+                        }}
+                      >
+                        {shipping === 0 ? "ส่งฟรี" : formatTHB(shipping)}
+                      </dd>
+                    </div>
+                  )}
 
-                  {remainingForFreeShipping > 0 && (
+                  {!allDigital && remainingForFreeShipping > 0 && (
                     <div className="space-y-1.5">
                       <p
                         className="text-xs"

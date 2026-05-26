@@ -37,13 +37,31 @@ export async function createDemoOrderFromDeposit(
     };
   }
 
-  // Get or create the demo user
+  // Use the customer info from the webhook to build/find a User row.
+  // For chargeback evidence the tester wants a real-looking buyer
+  // identity (name + email + phone) attached to each demo order — not
+  // a single shared `demo-quickpay@marketplace.local` bucket. Falls
+  // back to that legacy bucket when the webhook didn't carry contact.
+  const buyerEmail =
+    (customer_email && String(customer_email).trim())
+    || "demo-quickpay@marketplace.local";
+  const buyerName =
+    (customer_name && String(customer_name).trim())
+    || "QuickPay Demo User";
+  const buyerPhone = webhookBody.customer_phone
+    ? String(webhookBody.customer_phone).trim()
+    : null;
+
   const demoUser = await prisma.user.upsert({
-    where: { email: "demo-quickpay@marketplace.local" },
-    update: {},
+    where: { email: buyerEmail },
+    update: {
+      name: buyerName,
+      ...(buyerPhone ? { phone: buyerPhone } : {}),
+    },
     create: {
-      email: "demo-quickpay@marketplace.local",
-      name: "QuickPay Demo User",
+      email: buyerEmail,
+      name: buyerName,
+      ...(buyerPhone ? { phone: buyerPhone } : {}),
     },
   });
 
@@ -126,9 +144,15 @@ export async function createDemoOrderFromDeposit(
 export async function listDemoOrders(options?: { limit?: number; domain?: string }) {
   const limit = options?.limit ?? 50;
 
+  // Demo orders are identified by the address payload's _metadata.isDemoOrder
+  // flag (set in createDemoOrderFromDeposit) — NOT by buyer email anymore,
+  // since each test can now register a unique customer name + email.
   const orders = await prisma.order.findMany({
     where: {
-      user: { email: "demo-quickpay@marketplace.local" },
+      shippingAddressJson: {
+        path: ["_metadata", "isDemoOrder"],
+        equals: true,
+      },
       payment: { provider: PaymentProvider.ANYPAY },
     },
     orderBy: { createdAt: "desc" },
