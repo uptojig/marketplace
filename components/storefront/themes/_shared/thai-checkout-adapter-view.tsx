@@ -419,6 +419,10 @@ export function ThaiCheckoutAdapterView({
               shipping={effectiveShipping}
               total={total}
               threshold={threshold}
+              // On step 1 the main cart panel already lists every item
+              // with image + qty controls — don't repeat them in the
+              // sticky aside, just show the totals.
+              showLineItems={step !== 1}
             />
           </aside>
         </div>
@@ -1115,6 +1119,7 @@ function OrderSummaryCard({
   shipping,
   total,
   threshold,
+  showLineItems = true,
 }: {
   palette: ResolvedPalette;
   lines: ReturnType<typeof useCart.getState>['lines'];
@@ -1122,6 +1127,10 @@ function OrderSummaryCard({
   shipping: number;
   total: number;
   threshold: number;
+  /** Hide the item list on the cart-review step (step 1) since the
+   *  main panel already shows the items in full. Keep showing on
+   *  steps 2-4 where the buyer needs the at-a-glance reference. */
+  showLineItems?: boolean;
 }) {
   const remaining = Math.max(0, threshold - subtotal);
   return (
@@ -1136,49 +1145,51 @@ function OrderSummaryCard({
         สรุปคำสั่งซื้อ
       </h3>
 
-      <ul
-        className="border-t divide-y mb-4"
-        style={{ borderColor: palette.border }}
-      >
-        {lines.map((l) => (
-          <li key={l.productId} className="flex items-center gap-3 py-3">
-            <div
-              className="shrink-0 h-12 w-12 rounded overflow-hidden"
-              style={{ background: palette.background }}
-            >
-              {l.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={l.imageUrl}
-                  alt={l.title}
-                  className="h-full w-full object-contain"
-                  referrerPolicy="no-referrer"
-                />
-              ) : null}
-            </div>
-            <div className="flex-1 min-w-0">
+      {showLineItems ? (
+        <ul
+          className="border-t divide-y mb-4"
+          style={{ borderColor: palette.border }}
+        >
+          {lines.map((l) => (
+            <li key={l.productId} className="flex items-center gap-3 py-3">
+              <div
+                className="shrink-0 h-12 w-12 rounded overflow-hidden"
+                style={{ background: palette.background }}
+              >
+                {l.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={l.imageUrl}
+                    alt={l.title}
+                    className="h-full w-full object-contain"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : null}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p
+                  className="text-xs font-medium line-clamp-1"
+                  style={{ color: palette.ink }}
+                >
+                  {l.title}
+                </p>
+                <p
+                  className="text-[11px]"
+                  style={{ color: palette.inkMuted }}
+                >
+                  × {l.qty}
+                </p>
+              </div>
               <p
-                className="text-xs font-medium line-clamp-1"
+                className="text-xs whitespace-nowrap"
                 style={{ color: palette.ink }}
               >
-                {l.title}
+                {formatTHB(l.priceTHB * l.qty)}
               </p>
-              <p
-                className="text-[11px]"
-                style={{ color: palette.inkMuted }}
-              >
-                × {l.qty}
-              </p>
-            </div>
-            <p
-              className="text-xs whitespace-nowrap"
-              style={{ color: palette.ink }}
-            >
-              {formatTHB(l.priceTHB * l.qty)}
-            </p>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       <dl className="space-y-2 text-sm">
         <div className="flex items-center justify-between">

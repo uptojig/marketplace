@@ -12,10 +12,22 @@ export async function createPayment(input: CreatePaymentInput): Promise<CreatePa
 }
 
 async function createMockPayment(input: CreatePaymentInput): Promise<CreatePaymentResult> {
+  // Forward the return_url to the mock gate so it can route the buyer
+  // back to the same destination AnyPay's hosted page would —
+  // /checkout/success for orders, /account/credit for topups.
+  const returnPath = input.returnPath
+    ?? (input.storeSlug
+      ? `/stores/${input.storeSlug}/checkout/success?orderId=${input.orderId}`
+      : `/order-success?orderId=${input.orderId}`);
+
   const res = await fetch(`${BASE_URL}/api/mock/anypay/checkout`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ order_id: input.orderId, amount: input.amountTHB }),
+    body: JSON.stringify({
+      order_id: input.orderId,
+      amount: input.amountTHB,
+      return_url: `${BASE_URL}${returnPath}`,
+    }),
     cache: "no-store",
   });
   if (!res.ok) {
