@@ -68,6 +68,37 @@ export async function createDemoOrderFromDeposit(
   const amountDecimal = new Prisma.Decimal(amount);
   const now = new Date();
 
+  // Resolve the target store from the incoming domain. Tries an exact
+  // customDomain match first (production setup); falls back to parsing
+  // the first segment as a store slug (e.g. "sheetlab-th.basketplace.co"
+  // → "sheetlab-th"). The order needs at least one OrderItem with a
+  // storeId to show up in that store's order history; without this
+  // demo orders were orphan rows that never appeared in
+  // /admin/stores/[id]/orders.
+  let targetStore = await prisma.store.findFirst({
+    where: { customDomain: domain },
+    select: { id: true },
+  });
+  if (!targetStore) {
+    const slugCandidate = domain.split(".")[0];
+    if (slugCandidate) {
+      targetStore = await prisma.store.findUnique({
+        where: { slug: slugCandidate },
+        select: { id: true },
+      });
+    }
+  }
+  // Pick any active product to peg the OrderItem to. If the store has
+  // no products yet we fall back to creating an orderless row (legacy
+  // behavior) so the test still works for empty stores.
+  const demoProduct = targetStore
+    ? await prisma.product.findFirst({
+        where: { storeId: targetStore.id, active: true },
+        select: { id: true, supplier: true },
+        orderBy: { createdAt: "asc" },
+      })
+    : null;
+
   // Create the demo order with payment in a transaction
   const order = await prisma.$transaction(async (tx) => {
     const created = await tx.order.create({
@@ -77,6 +108,21 @@ export async function createDemoOrderFromDeposit(
         subtotalTHB: amountDecimal,
         shippingTHB: new Prisma.Decimal(0),
         totalTHB: amountDecimal,
+        ...(demoProduct && targetStore
+          ? {
+              items: {
+                create: [
+                  {
+                    productId: demoProduct.id,
+                    storeId: targetStore.id,
+                    qty: 1,
+                    unitPriceTHB: amountDecimal,
+                    supplier: demoProduct.supplier,
+                  },
+                ],
+              },
+            }
+          : {}),
         shippingAddressJson: {
           type: "DEMO_ORDER",
           recipientName: customer_name ?? "QuickPay Demo",
