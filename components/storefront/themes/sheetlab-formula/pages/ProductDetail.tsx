@@ -11,8 +11,9 @@
  * Consumes the canonical `ProductDetailProps` contract directly.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import {
   ChevronRight,
   FileSpreadsheet,
@@ -21,6 +22,9 @@ import {
   Plus,
   X,
   Gift,
+  Star,
+  Pencil,
+  Loader2,
 } from 'lucide-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
@@ -552,7 +556,463 @@ export default function SheetlabFormulaProductDetail({
             </div>
           </section>
         ) : null}
+
+        {/* ─── Reviews ─── */}
+        <ReviewsSection productId={product.id} />
       </div>
     </div>
   );
+}
+
+/* ────────────────────────────────────────────────────────────────
+ *  Reviews — fetched client-side from /api/products/[id]/reviews.
+ *  Renders header (avg + count), distribution bars, write form
+ *  (auth-gated), and the most recent 20 reviews. Excel-green primary.
+ * ──────────────────────────────────────────────────────────────── */
+
+type ReviewItem = {
+  id: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+  verifiedPurchase: boolean;
+  author: { name: string };
+};
+
+type ReviewStats = {
+  averageRating: number;
+  count: number;
+  buckets: Record<'1' | '2' | '3' | '4' | '5', number>;
+};
+
+type ReviewsResponse = { reviews: ReviewItem[]; stats: ReviewStats };
+
+const BODY_MAX = 2000;
+const TITLE_MAX = 120;
+const EXCEL_GREEN = '#107C41';
+
+function ReviewsSection({ productId }: { productId: string }) {
+  const { data: session, status: sessionStatus } = useSession();
+  const isSignedIn = Boolean(session?.user?.email);
+
+  const [data, setData] = useState<ReviewsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const callbackUrl = useMemo(() => {
+    if (typeof window === 'undefined') return '/';
+    return window.location.pathname + window.location.search;
+  }, []);
+
+  const fetchReviews = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/products/${productId}/reviews`, {
+        cache: 'no-store',
+      });
+      if (!res.ok) {
+        setLoadError('โหลดรีวิวไม่สำเร็จ');
+        return;
+      }
+      const json = (await res.json()) as ReviewsResponse;
+      setData(json);
+      setLoadError(null);
+    } catch {
+      setLoadError('โหลดรีวิวไม่สำเร็จ');
+    } finally {
+      setLoading(false);
+    }
+  }, [productId]);
+
+  useEffect(() => {
+    void fetchReviews();
+  }, [fetchReviews]);
+
+  const resetForm = () => {
+    setRating(5);
+    setHoverRating(0);
+    setTitle('');
+    setBody('');
+    setSubmitError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitError(null);
+    if (!body.trim()) {
+      setSubmitError('กรุณากรอกเนื้อหารีวิว');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/products/${productId}/reviews`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          rating,
+          title: title.trim() || undefined,
+          body: body.trim(),
+        }),
+      });
+      if (res.status === 401) {
+        setSubmitError('กรุณาเข้าสู่ระบบ');
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        setSubmitError(err?.error ?? 'ส่งรีวิวไม่สำเร็จ');
+        return;
+      }
+      resetForm();
+      setFormOpen(false);
+      await fetchReviews();
+    } catch {
+      setSubmitError('ส่งรีวิวไม่สำเร็จ — กรุณาลองใหม่');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const stats = data?.stats;
+  const reviews = data?.reviews ?? [];
+  const avgDisplay =
+    stats && stats.count > 0
+      ? (Math.round(stats.averageRating * 10) / 10).toFixed(1)
+      : '0.0';
+  const totalCount = stats?.count ?? 0;
+  const maxBucket = stats
+    ? Math.max(
+        stats.buckets['1'],
+        stats.buckets['2'],
+        stats.buckets['3'],
+        stats.buckets['4'],
+        stats.buckets['5'],
+        1,
+      )
+    : 1;
+
+  return (
+    <section
+      className="mt-16 pt-10 border-t border-[#E5E7EB]"
+      aria-labelledby="reviews-heading"
+    >
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
+        <div>
+          <h2
+            id="reviews-heading"
+            className="text-xl sm:text-2xl font-[family:var(--font-kanit)] font-semibold text-[#1F2937] tracking-tight"
+          >
+            รีวิวจากผู้ใช้งาน
+          </h2>
+          {totalCount > 0 ? (
+            <div className="mt-1 flex items-center gap-2 text-sm text-[#4B5563]">
+              <span
+                className="inline-flex items-center gap-1 font-semibold"
+                style={{ color: EXCEL_GREEN }}
+              >
+                <Star
+                  className="w-4 h-4 fill-current"
+                  style={{ color: EXCEL_GREEN }}
+                  aria-hidden="true"
+                />
+                {avgDisplay} / 5
+              </span>
+              <span className="text-[#6B7280]">
+                (จาก {totalCount.toLocaleString('th-TH')} รีวิว)
+              </span>
+            </div>
+          ) : null}
+        </div>
+
+        {!formOpen && isSignedIn ? (
+          <button
+            type="button"
+            onClick={() => setFormOpen(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-opacity"
+            style={{ background: EXCEL_GREEN }}
+          >
+            <Pencil className="w-4 h-4" aria-hidden="true" />
+            เขียนรีวิว
+          </button>
+        ) : null}
+      </div>
+
+      {/* Distribution bars */}
+      {totalCount > 0 ? (
+        <div className="mb-8 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+          <div className="space-y-1.5">
+            {([5, 4, 3, 2, 1] as const).map((star) => {
+              const c = stats!.buckets[String(star) as '1' | '2' | '3' | '4' | '5'];
+              const pct = Math.round((c / maxBucket) * 100);
+              return (
+                <div key={star} className="flex items-center gap-3 text-xs">
+                  <span className="w-8 inline-flex items-center gap-0.5 text-[#374151] font-medium">
+                    {star}
+                    <Star
+                      className="w-3 h-3 fill-current"
+                      style={{ color: EXCEL_GREEN }}
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <div className="flex-1 h-2.5 rounded-full bg-[#F3F4F6] overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${pct}%`, background: EXCEL_GREEN }}
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <span className="w-10 text-right text-[#6B7280] tabular-nums">
+                    {c.toLocaleString('th-TH')}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Write form OR sign-in nudge */}
+      {sessionStatus !== 'loading' ? (
+        isSignedIn ? (
+          formOpen ? (
+            <form
+              onSubmit={handleSubmit}
+              className="mb-8 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5"
+            >
+              <h3 className="text-sm font-semibold font-[family:var(--font-kanit)] text-[#1F2937] mb-3">
+                เขียนรีวิวของคุณ
+              </h3>
+
+              {/* Star picker */}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-[#374151] mb-1.5">
+                  ให้คะแนน
+                </label>
+                <div
+                  className="flex items-center gap-1"
+                  role="radiogroup"
+                  aria-label="ให้คะแนน 1 ถึง 5 ดาว"
+                >
+                  {[1, 2, 3, 4, 5].map((n) => {
+                    const active = (hoverRating || rating) >= n;
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        role="radio"
+                        aria-checked={rating === n}
+                        aria-label={`${n} ดาว`}
+                        onClick={() => setRating(n)}
+                        onMouseEnter={() => setHoverRating(n)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="p-0.5 rounded transition-transform hover:scale-110"
+                      >
+                        <Star
+                          className="w-7 h-7"
+                          style={{
+                            color: EXCEL_GREEN,
+                            fill: active ? EXCEL_GREEN : 'transparent',
+                          }}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    );
+                  })}
+                  <span className="ml-2 text-sm font-semibold text-[#374151]">
+                    {rating}/5
+                  </span>
+                </div>
+              </div>
+
+              {/* Title */}
+              <div className="mb-3">
+                <label
+                  htmlFor="review-title"
+                  className="block text-xs font-semibold text-[#374151] mb-1.5"
+                >
+                  หัวข้อ (ไม่บังคับ)
+                </label>
+                <input
+                  id="review-title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value.slice(0, TITLE_MAX))}
+                  maxLength={TITLE_MAX}
+                  placeholder="เช่น สูตรใช้งานง่ายมาก"
+                  className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#1F2937] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#107C41] focus:ring-1 focus:ring-[#107C41]"
+                />
+                <div className="mt-1 text-right text-[10px] text-[#9CA3AF]">
+                  {title.length}/{TITLE_MAX}
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="mb-3">
+                <label
+                  htmlFor="review-body"
+                  className="block text-xs font-semibold text-[#374151] mb-1.5"
+                >
+                  รายละเอียด <span className="text-[#DC2626]">*</span>
+                </label>
+                <textarea
+                  id="review-body"
+                  required
+                  value={body}
+                  onChange={(e) => setBody(e.target.value.slice(0, BODY_MAX))}
+                  maxLength={BODY_MAX}
+                  rows={5}
+                  placeholder="เล่าประสบการณ์การใช้งานสูตรนี้..."
+                  className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#1F2937] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#107C41] focus:ring-1 focus:ring-[#107C41] resize-y"
+                />
+                <div className="mt-1 text-right text-[10px] text-[#9CA3AF]">
+                  {body.length}/{BODY_MAX}
+                </div>
+              </div>
+
+              {submitError ? (
+                <p
+                  className="mb-3 text-xs font-medium text-[#DC2626]"
+                  role="alert"
+                >
+                  {submitError}
+                </p>
+              ) : null}
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="submit"
+                  disabled={submitting || !body.trim()}
+                  className="inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-md text-sm font-semibold text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-95 transition-opacity"
+                  style={{ background: EXCEL_GREEN }}
+                >
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                  ) : null}
+                  ส่งรีวิว
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormOpen(false);
+                    resetForm();
+                  }}
+                  className="px-4 py-2 rounded-md text-sm font-medium text-[#374151] border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] transition-colors"
+                >
+                  ยกเลิก
+                </button>
+              </div>
+            </form>
+          ) : null
+        ) : (
+          <div className="mb-8 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-4 text-sm text-[#374151]">
+            <Link
+              href={`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              className="font-semibold hover:underline"
+              style={{ color: EXCEL_GREEN }}
+            >
+              กรุณาเข้าสู่ระบบเพื่อเขียนรีวิว
+            </Link>
+          </div>
+        )
+      ) : null}
+
+      {/* List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-10 text-sm text-[#6B7280]">
+          <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
+          กำลังโหลดรีวิว...
+        </div>
+      ) : loadError ? (
+        <p className="py-6 text-center text-sm text-[#DC2626]">{loadError}</p>
+      ) : reviews.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-[#E5E7EB] bg-white p-8 text-center">
+          <p className="text-sm text-[#4B5563]">
+            ยังไม่มีรีวิว — เป็นคนแรกที่รีวิวสินค้านี้!
+          </p>
+          {isSignedIn && !formOpen ? (
+            <button
+              type="button"
+              onClick={() => setFormOpen(true)}
+              className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-semibold text-white shadow-sm hover:opacity-95 transition-opacity"
+              style={{ background: EXCEL_GREEN }}
+            >
+              <Pencil className="w-4 h-4" aria-hidden="true" />
+              เขียนรีวิว
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        <ul className="space-y-4">
+          {reviews.map((r) => (
+            <li
+              key={r.id}
+              className="rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5"
+            >
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <div
+                  className="inline-flex items-center gap-0.5"
+                  aria-label={`${r.rating} ดาวจาก 5`}
+                >
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star
+                      key={n}
+                      className="w-4 h-4"
+                      style={{
+                        color: EXCEL_GREEN,
+                        fill: n <= r.rating ? EXCEL_GREEN : 'transparent',
+                      }}
+                      aria-hidden="true"
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-medium text-[#1F2937]">
+                  {r.author.name}
+                </span>
+                {r.verifiedPurchase ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#F0FDF4] text-[#107C41] border border-[#D1FAE5]">
+                    <Check className="w-3 h-3" aria-hidden="true" />
+                    ซื้อจริง
+                  </span>
+                ) : null}
+                <span className="text-xs text-[#9CA3AF] ml-auto">
+                  {formatThaiDate(r.createdAt)}
+                </span>
+              </div>
+              {r.title ? (
+                <p className="text-sm font-semibold text-[#1F2937] mb-1">
+                  {r.title}
+                </p>
+              ) : null}
+              <p className="text-sm text-[#4B5563] whitespace-pre-line leading-relaxed">
+                {r.body}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** Format ISO date string → Thai short form, e.g. "27 พ.ค. 2569". */
+function formatThaiDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('th-TH', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return iso;
+  }
 }

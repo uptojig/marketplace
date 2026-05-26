@@ -86,6 +86,7 @@ model User {
   digitalUnlocks DigitalUnlock[]
   creditBalances CreditBalance[]
   creditTopups   CreditTopup[]
+  reviews        Review[]
 
   // Agent referral fields
   agentId        String?         @map("agent_id")
@@ -254,6 +255,7 @@ model Store {
   landingContent       StoreLandingContent?
   creditBalances       CreditBalance[]
   creditTopups         CreditTopup[]
+  reviews              Review[]
 
   @@index([approvalStatus])
 }
@@ -552,12 +554,54 @@ model Product {
   variants      ProductVariant[]
   digitalAssets DigitalAsset[]
   unlocks       DigitalUnlock[]
+  reviews       Review[]
 
   @@index([storeId, active])
   @@index([supplier, externalProductId])
   @@index([moderationStatus])
   @@index([categoryId])
   @@index([productType])
+}
+
+/// Customer product review with star rating + free-text comment.
+///
+/// "Verified Purchase" is computed at read time (NOT stored): a review
+/// is verified if the same userId has at least one DigitalUnlock for
+/// the productId OR a paid OrderItem for it. Reviewers don't have to
+/// buy first — anonymous-feeling reviews still show, but unverified
+/// ones lack the trust badge.
+///
+/// One review per (userId, productId) pair. Editing returns the same
+/// row via upsert; the moderation flag is reset to PENDING when the
+/// reviewer edits an APPROVED review (operator re-reviews).
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  storeId     String
+  /// 1-5 stars, integer. Enforced at the application layer (Zod).
+  rating      Int
+  /// Optional one-line headline ("ใช้งานง่ายมาก!"). Max 120 chars.
+  title       String?
+  /// Free-form review body. Max 2000 chars enforced by Zod.
+  body        String
+  /// Soft-moderation flag. Operator can hide spam/abusive reviews
+  /// from the storefront without deleting the row (preserves audit
+  /// trail; reviewer can edit + re-submit).
+  hidden      Boolean  @default(false)
+  hiddenById  String?
+  hiddenAt    DateTime?
+  hiddenNote  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId, hidden, createdAt])
+  @@index([storeId, hidden])
 }
 
 /// File asset attached to a digital product (PDF/XLSX/AI/ZIP/...).
