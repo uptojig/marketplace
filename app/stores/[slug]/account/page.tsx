@@ -75,7 +75,15 @@ export default async function AccountDashboard({
 
   const base = `/stores/${slug}/account`;
 
-  const [user, recentOrdersRaw, activeOrders, addressCount, store] = await Promise.all([
+  const [
+    user,
+    recentOrdersRaw,
+    activeOrders,
+    addressCount,
+    store,
+    wishlistCount,
+    downloadCount,
+  ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { name: true, email: true, image: true, createdAt: true },
@@ -92,9 +100,26 @@ export default async function AccountDashboard({
     prisma.address.count({ where: { userId, store: { slug } } }),
     prisma.store.findUnique({
       where: { slug },
-      select: { templateId: true, landingThemeVariant: true },
+      select: { id: true, templateId: true, landingThemeVariant: true },
+    }),
+    prisma.wishlistItem.count({ where: { userId } }),
+    prisma.digitalUnlock.count({
+      where: {
+        userId,
+        revokedAt: null,
+        product: { store: { slug } },
+      },
     }),
   ]);
+
+  // Per-store credit balance for the wallet stat card.
+  const creditBalance = store
+    ? await prisma.creditBalance.findUnique({
+        where: { userId_storeId: { userId, storeId: store.id } },
+        select: { balanceTHB: true },
+      })
+    : null;
+  const creditBalanceTHB = creditBalance ? Number(creditBalance.balanceTHB) : 0;
 
   const isFB = store
     ? isFashionBeautyStore({
@@ -544,22 +569,10 @@ export default async function AccountDashboard({
             />
             <StatCard
               icon={Wallet}
-              label={
-                isTrust
-                  ? "Wallet balance"
-                  : isLifestyle
-                    ? "Wallet"
-                    : isElectronicsTech
-                      ? "Wallet"
-                      : isSpecialty
-                        ? "Wallet balance"
-                        : "ยอด Anypay"
-              }
-              value="฿0"
-              /* Wallet view doesn't exist yet (Phase 1D) — bounce back
-                 to the account home rather than 404. */
-              href={`${base}`}
-              muted
+              label="เครดิตในร้าน"
+              value={`฿${creditBalanceTHB.toLocaleString("th-TH")}`}
+              href={`${base}/credit`}
+              muted={creditBalanceTHB === 0}
               isTrust={isTrust}
               isLifestyle={isLifestyle}
               isElectronicsTech={isElectronicsTech}
@@ -578,11 +591,9 @@ export default async function AccountDashboard({
                         ? "Favorites"
                         : "รายการโปรด"
               }
-              value="0"
-              /* No per-account favorites view yet — point at the
-                 existing per-store wishlist page. */
-              href={`/stores/${slug}/wishlist`}
-              muted
+              value={wishlistCount.toString()}
+              href={`${base}/wishlist`}
+              muted={wishlistCount === 0}
               isTrust={isTrust}
               isLifestyle={isLifestyle}
               isElectronicsTech={isElectronicsTech}
@@ -591,6 +602,39 @@ export default async function AccountDashboard({
           </>
         )}
       </div>
+
+      {/* Digital library CTA — appears whenever the buyer has at least
+          one un-revoked DigitalUnlock at this store. Surfaces the
+          /account/downloads page that's otherwise only linked from
+          the footer + email. */}
+      {downloadCount > 0 && (
+        <Card className="p-5 flex items-center justify-between gap-4 flex-wrap"
+              style={{
+                background: 'color-mix(in srgb, var(--shop-primary, #107C41) 8%, white)',
+                borderColor: 'color-mix(in srgb, var(--shop-primary, #107C41) 30%, transparent)',
+              }}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className="h-12 w-12 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: 'var(--shop-primary, #107C41)', color: 'white' }}
+            >
+              <Package className="h-6 w-6" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold" style={{ color: 'var(--shop-ink)' }}>
+                คลังสินค้าดิจิทัลของคุณ
+              </p>
+              <p className="text-xs" style={{ color: 'var(--shop-ink-muted)' }}>
+                คุณมี {downloadCount} ไฟล์ — กดเพื่อเปิดดู / ดาวน์โหลด
+              </p>
+            </div>
+          </div>
+          <Button asChild>
+            <Link href={`${base}/downloads`}>เปิดคลัง</Link>
+          </Button>
+        </Card>
+      )}
 
       <section>
         <div className="mb-3 flex items-baseline justify-between">

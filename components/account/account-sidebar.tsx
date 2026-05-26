@@ -10,6 +10,7 @@ import { usePathname } from 'next/navigation';
 import {
   Bell,
   CreditCard,
+  Download,
   Heart,
   MapPin,
   Package,
@@ -37,15 +38,18 @@ interface NavGroupDef {
 const NAV_GROUPS: NavGroupDef[] = [
   {
     label: 'คำสั่งซื้อ',
-    items: [{ icon: Package, label: 'คำสั่งซื้อของฉัน', to: '/orders' }],
+    items: [
+      { icon: Package, label: 'คำสั่งซื้อของฉัน', to: '/orders' },
+      { icon: Download, label: 'คลังสินค้าดิจิทัล', to: '/downloads' },
+    ],
   },
   {
     label: 'ข้อมูลของฉัน',
     items: [
       { icon: User, label: 'โปรไฟล์', to: '/profile' },
       { icon: MapPin, label: 'ที่อยู่', to: '/addresses' },
+      { icon: Wallet, label: 'เครดิตในร้าน', to: '/credit' },
       { icon: CreditCard, label: 'วิธีชำระเงิน', to: '/payment-methods', soon: true },
-      { icon: Wallet, label: 'Anypay Wallet', to: '/wallet', soon: true },
     ],
   },
   {
