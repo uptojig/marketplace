@@ -77,20 +77,15 @@ export function EmailLayout({
           <Section style={footerStyle}>
             <Text style={footerTextStyle}>
               {footerNote ??
-                `คุณได้รับอีเมลนี้เนื่องจากคุณได้สั่งซื้อสินค้าที่ ${storeName} บน basketplace.co`}
+                `คุณได้รับอีเมลนี้เนื่องจากคุณได้สั่งซื้อสินค้าที่ ${storeName}`}
             </Text>
-            <Text style={footerTextStyle}>
-              <Link
-                href={unsubscribeUrl ?? "https://basketplace.co/unsubscribe"}
-                style={footerLinkStyle}
-              >
-                ยกเลิกการรับอีเมล
-              </Link>
-              {" · "}
-              <Link href="https://basketplace.co" style={footerLinkStyle}>
-                basketplace.co
-              </Link>
-            </Text>
+            {unsubscribeUrl ? (
+              <Text style={footerTextStyle}>
+                <Link href={unsubscribeUrl} style={footerLinkStyle}>
+                  ยกเลิกการรับอีเมล
+                </Link>
+              </Text>
+            ) : null}
           </Section>
         </Container>
       </Body>
