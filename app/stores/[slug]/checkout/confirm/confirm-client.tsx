@@ -52,13 +52,44 @@ export default function CheckoutConfirmClient({
   const [address, setAddress] = useState<Address | null>(null);
   const [shipping, setShipping] = useState(SHIPPING_OPTIONS[0]);
   const [payment, setPayment] = useState(PAYMENT_OPTIONS[0]); // only ANYPAY now
+  /** Selected payment method. CREDIT requires signed-in user + enough
+   *  per-store balance — we fetch the balance below and disable the
+   *  CREDIT option when it's < total. */
+  const [paymentMethod, setPaymentMethod] = useState<"ANYPAY" | "CREDIT">("ANYPAY");
+  const [creditBalanceTHB, setCreditBalanceTHB] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState<{ orderId?: string } | null>(null);
+  const [submitted, setSubmitted] = useState<{
+    orderId?: string;
+    paid?: boolean;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Guest contact for all-digital orders (we still need a name + an
   // email to deliver the unlock notification).
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
+
+  // Pull the buyer's per-store credit balance once on mount. Guests
+  // (no session) get 401 — we treat that as "no balance" and disable
+  // the CREDIT option silently.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/credit/balance?storeSlug=${encodeURIComponent(params.slug)}`)
+      .then(async (res) => {
+        if (cancelled) return;
+        if (!res.ok) {
+          setCreditBalanceTHB(0);
+          return;
+        }
+        const data = (await res.json()) as { balanceTHB: number };
+        setCreditBalanceTHB(data.balanceTHB);
+      })
+      .catch(() => {
+        if (!cancelled) setCreditBalanceTHB(0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.slug]);
 
   useEffect(() => {
     void (async () => {
@@ -149,19 +180,28 @@ export default function CheckoutConfirmClient({
                 shipping: { method: shipping.id, priceTHB: shipping.priceTHB },
               }),
           payment: { method: payment.id },
+          paymentMethod,
         }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(data.error ?? `Checkout failed (${res.status})`);
       }
-      const data = (await res.json()) as { orderId?: string; paymentUrl?: string };
+      const data = (await res.json()) as {
+        orderId?: string;
+        paymentUrl?: string;
+        paid?: boolean;
+      };
       clearCart();
+      // For CREDIT path the order is already PAID — refresh balance
+      // state so the buyer sees the new (lower) number if they come
+      // back to this page.
+      if (data.paid) setCreditBalanceTHB((b) => (b ?? 0) - total);
       // Per operator request: do NOT auto-redirect to the payment gate
       // after order creation. Buyer pays later via the orderRef from
       // their email / account orders page; the gate URL stays available
       // server-side so we can resurface it if needed.
-      setSubmitted({ orderId: data.orderId });
+      setSubmitted({ orderId: data.orderId, paid: data.paid });
     } catch (err) {
       setError(err instanceof Error ? err.message : "ไม่สามารถสร้างออเดอร์ได้");
       setSubmitting(false);
@@ -176,11 +216,12 @@ export default function CheckoutConfirmClient({
             <Check className="h-8 w-8" />
           </div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--shop-ink)' }}>
-            สั่งซื้อสำเร็จ
+            {submitted.paid ? "ชำระสำเร็จ" : "สั่งซื้อสำเร็จ"}
           </h1>
           <p className="mt-2 text-sm" style={{ color: 'var(--shop-ink-muted)' }}>
-            ออเดอร์ของคุณถูกบันทึกแล้ว ระบบจะส่งรายละเอียดการชำระเงินไปทางอีเมล
-            หรือเข้าสู่ระบบเพื่อชำระเงินภายหลังในหน้าคำสั่งซื้อของคุณ
+            {submitted.paid
+              ? "ตัดเครดิตเรียบร้อยแล้ว ระบบจะส่งอีเมลยืนยันและลิงก์ดาวน์โหลด (ถ้ามี) ทางอีเมล"
+              : "ออเดอร์ของคุณถูกบันทึกแล้ว ระบบจะส่งรายละเอียดการชำระเงินไปทางอีเมล หรือเข้าสู่ระบบเพื่อชำระเงินภายหลังในหน้าคำสั่งซื้อของคุณ"}
           </p>
           {submitted.orderId && (
             <p className="mt-3 text-xs font-mono" style={{ color: 'var(--shop-ink-muted)' }}>
@@ -362,22 +403,81 @@ export default function CheckoutConfirmClient({
             <h3 className="font-semibold">ชำระเงินด้วย</h3>
           </div>
           <div className="space-y-2">
-            {PAYMENT_OPTIONS.map((opt) => (
-              <label
-                key={opt.id}
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${
-                  payment.id === opt.id ? "border-primary ring-2 ring-primary/20" : ""
-                }`}
-              >
+            {/* ANYPAY — always available */}
+            <label
+              className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-3 transition ${
+                paymentMethod === "ANYPAY" ? "border-primary ring-2 ring-primary/20" : ""
+              }`}
+            >
+              <div className="flex items-center gap-3">
                 <input
                   type="radio"
-                  name="payment"
-                  checked={payment.id === opt.id}
-                  onChange={() => setPayment(opt)}
+                  name="paymentMethod"
+                  checked={paymentMethod === "ANYPAY"}
+                  onChange={() => setPaymentMethod("ANYPAY")}
                 />
-                <div className="text-sm font-medium">{opt.name}</div>
-              </label>
-            ))}
+                <div className="text-sm font-medium">ชำระผ่าน AnyPay</div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                PromptPay · บัตรเครดิต · BNPL
+              </div>
+            </label>
+
+            {/* CREDIT — disabled when balance insufficient or guest. */}
+            {(() => {
+              const enough =
+                creditBalanceTHB !== null && creditBalanceTHB >= total;
+              const disabled = !enough;
+              return (
+                <label
+                  className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-3 transition ${
+                    paymentMethod === "CREDIT" && !disabled
+                      ? "border-primary ring-2 ring-primary/20"
+                      : ""
+                  } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+                  onClick={(e) => {
+                    if (disabled) e.preventDefault();
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={paymentMethod === "CREDIT"}
+                      disabled={disabled}
+                      onChange={() => setPaymentMethod("CREDIT")}
+                    />
+                    <div className="text-sm font-medium">
+                      ชำระด้วยเครดิตในร้าน
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground text-right">
+                    {creditBalanceTHB === null ? (
+                      "กำลังโหลด..."
+                    ) : enough ? (
+                      <>เครดิต {formatTHB(creditBalanceTHB)} ✓</>
+                    ) : creditBalanceTHB === 0 ? (
+                      <Link
+                        href={`/stores/${params.slug}/account/credit`}
+                        className="underline hover:text-foreground"
+                      >
+                        เติมเครดิต →
+                      </Link>
+                    ) : (
+                      <>
+                        มี {formatTHB(creditBalanceTHB)} ·{" "}
+                        <Link
+                          href={`/stores/${params.slug}/account/credit`}
+                          className="underline hover:text-foreground"
+                        >
+                          เติม
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </label>
+              );
+            })()}
           </div>
         </div>
 

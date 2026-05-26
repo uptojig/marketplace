@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { verifySignature } from "@/lib/anypay/signature";
 import { isMockMode } from "@/lib/anypay/client";
 import { markOrderPaid } from "@/lib/orders/markPaid";
+import { markTopupPaid, TOPUP_ORDER_ID_PREFIX } from "@/lib/credit/topup";
 import type { AnyPayWebhookBody } from "@/lib/anypay/types";
 
 export async function POST(req: Request) {
@@ -57,14 +58,29 @@ export async function POST(req: Request) {
 
   try {
     if (body.status === "PAID" && body.order_id && body.transaction_id) {
-      const result = await markOrderPaid({
-        orderId: body.order_id,
-        transactionId: body.transaction_id,
-        rawPayload: body,
-      });
+      // Dispatch on the order_id prefix. AnyPay echoes back the merchant
+      // reference we sent; bare cuids are Order ids, "topup:<id>" routes
+      // to the credit-wallet fulfillment path instead.
+      const isTopup = body.order_id.startsWith(TOPUP_ORDER_ID_PREFIX);
+      const result = isTopup
+        ? await markTopupPaid({
+            topupId: body.order_id.slice(TOPUP_ORDER_ID_PREFIX.length),
+            transactionId: body.transaction_id,
+            rawPayload: body,
+          })
+        : await markOrderPaid({
+            orderId: body.order_id,
+            transactionId: body.transaction_id,
+            rawPayload: body,
+          });
       await prisma.webhookLog.update({
         where: { id: log.id },
-        data: { processed: true, processingError: result.applied ? null : "Already paid (idempotent)" },
+        data: {
+          processed: true,
+          processingError: result.applied
+            ? null
+            : `Already ${isTopup ? "topped up" : "paid"} (idempotent)`,
+        },
       });
     } else {
       await prisma.webhookLog.update({

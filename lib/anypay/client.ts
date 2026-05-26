@@ -35,9 +35,10 @@ async function createLivePayment(input: CreatePaymentInput): Promise<CreatePayme
   const apiKey = required("ANYPAY_API_KEY");
   const secret = required("ANYPAY_SECRET");
 
-  const returnPath = input.storeSlug
-    ? `/stores/${input.storeSlug}/checkout/success?orderId=${input.orderId}`
-    : `/order-success?orderId=${input.orderId}`;
+  const returnPath = input.returnPath
+    ?? (input.storeSlug
+      ? `/stores/${input.storeSlug}/checkout/success?orderId=${input.orderId}`
+      : `/order-success?orderId=${input.orderId}`);
 
   const body = {
     merchant_id: merchantId,

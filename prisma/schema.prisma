@@ -84,6 +84,8 @@ model User {
   paymentIntents PaymentIntent[]
   kycSessions    WizardSession[]
   digitalUnlocks DigitalUnlock[]
+  creditBalances CreditBalance[]
+  creditTopups   CreditTopup[]
 
   // Agent referral fields
   agentId        String?         @map("agent_id")
@@ -250,8 +252,113 @@ model Store {
   deployment           ShopDeployment?
   contactMessages      ContactMessage[]
   landingContent       StoreLandingContent?
+  creditBalances       CreditBalance[]
+  creditTopups         CreditTopup[]
 
   @@index([approvalStatus])
+}
+
+// ── Credit wallet (per-user × per-store) ──────────────────────────────────
+// Buyers top up THB credit at a specific store, then spend it on that
+// store's products. Cross-store spending is intentionally disallowed
+// (Store row owns the wallet — refunds, abuse, and operator visibility
+// stay scoped to one store). Top-ups go through the same AnyPay flow as
+// orders; the webhook routes credit_topup intents through a separate
+// fulfillment path (lib/credit/topup.ts) so they don't accidentally
+// mark a non-existent Order row PAID.
+
+model CreditBalance {
+  id         String   @id @default(cuid())
+  userId     String
+  storeId    String
+  /// Always >= 0. Server-side checkout decrements atomically via
+  /// `updateMany` with a `balanceTHB: { gte: total }` filter, so two
+  /// concurrent spends can't drive the balance negative.
+  balanceTHB Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store  Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  ledger CreditLedger[]
+
+  @@unique([userId, storeId])
+  @@index([storeId])
+}
+
+enum CreditTxType {
+  /// AnyPay payment confirmed → balance credited.
+  TOPUP
+  /// Order paid using credit balance.
+  SPEND
+  /// Order refunded back to credit (Phase D — not yet wired).
+  REFUND
+  /// Manual admin adjustment (e.g., goodwill credit, error correction).
+  ADJUST
+}
+
+/// Append-only ledger. Every balance change has exactly one row.
+/// `balanceAfter` captures the post-tx balance so auditors can replay
+/// the timeline without re-summing every prior row.
+model CreditLedger {
+  id           String       @id @default(cuid())
+  balanceId    String
+  type         CreditTxType
+  /// Signed THB — positive when balance goes up (TOPUP/REFUND/ADJUST+),
+  /// negative for SPEND or ADJUST-.
+  amountTHB    Decimal      @db.Decimal(12, 2)
+  balanceAfter Decimal      @db.Decimal(12, 2)
+  /// For SPEND / REFUND — the Order this entry settles. NULL for TOPUP / ADJUST.
+  orderId      String?
+  /// For TOPUP — the CreditTopup row that funded this entry. NULL otherwise.
+  topupId      String?
+  /// Free-form note. Operators see this in the admin ledger view.
+  note         String?
+  createdAt    DateTime     @default(now())
+
+  balance CreditBalance @relation(fields: [balanceId], references: [id], onDelete: Cascade)
+
+  @@index([balanceId, createdAt])
+  @@index([orderId])
+  @@index([topupId])
+}
+
+enum CreditTopupStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+/// One row per top-up attempt. Independent of Order (top-ups aren't
+/// orders) but rides the same AnyPay rail — we create an intent here,
+/// stash the gateway transaction id, and the AnyPay webhook flips
+/// status=PAID + writes the matching CreditLedger TOPUP entry.
+///
+/// Webhook routing: when the webhook arrives, we look up by
+/// anypayTransactionId on BOTH Payment and CreditTopup. Whichever
+/// table matches dictates the downstream fulfillment path. The
+/// transaction ids are universe-unique within AnyPay, so collision
+/// across tables is impossible.
+model CreditTopup {
+  id                  String            @id @default(cuid())
+  userId              String
+  storeId             String
+  amountTHB           Decimal           @db.Decimal(12, 2)
+  status              CreditTopupStatus @default(PENDING)
+  anypayTransactionId String?           @unique
+  paymentUrl          String?
+  paidAt              DateTime?
+  rawCreateResponse   Json?
+  rawWebhookPayload   Json?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([storeId])
 }
 
 // ── Editable storefront content (per-store) ────────────────────────────────
@@ -721,6 +828,9 @@ model OrderItem {
 enum PaymentProvider {
   ANYPAY
   MOCK
+  /// Settled by burning the buyer's per-store credit balance. No
+  /// gateway round-trip — the Payment row exists for audit only.
+  CREDIT
 }
 
 // Legacy 3-state for the original Payment model. PaymentIntent uses

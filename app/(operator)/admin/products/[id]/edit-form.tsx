@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
+import { Trash2, Upload } from "lucide-react";
 import {
   OperatorCard,
   OperatorCallout,
@@ -53,7 +53,34 @@ export function ProductEditForm({
   const [form, setForm] = useState<FormValues>(defaultValues);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    setToast(null);
+    try {
+      const body = new FormData();
+      body.append("productId", productId);
+      body.append("file", file);
+      const res = await fetch("/api/admin/products/image-upload", {
+        method: "POST",
+        body,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) {
+        setToast({ type: "err", msg: data?.error ?? "อัปโหลดภาพไม่สำเร็จ" });
+        return;
+      }
+      update("imageUrl", data.url);
+      setToast({ type: "ok", msg: "อัปโหลดภาพแล้ว — กด \"บันทึก\" เพื่อยืนยัน" });
+    } finally {
+      setUploadingImage(false);
+      e.target.value = "";
+    }
+  }
 
   function update<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -175,7 +202,23 @@ export function ProductEditForm({
 
       <OperatorCard title="รูปภาพหลัก">
         <div className="space-y-4">
-          <OperatorField label="URL รูปภาพ">
+          <OperatorField
+            label="อัปโหลดภาพใหม่"
+            hint="JPG / PNG / WebP / GIF / AVIF — สูงสุด 10 MB"
+          >
+            <label className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm cursor-pointer hover:bg-muted w-fit">
+              <Upload className="h-4 w-4" />
+              {uploadingImage ? "กำลังอัปโหลด..." : "เลือกไฟล์"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                className="hidden"
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+              />
+            </label>
+          </OperatorField>
+          <OperatorField label="หรือวาง URL รูปภาพโดยตรง">
             <Input
               value={form.imageUrl}
               onChange={(e) => update("imageUrl", e.target.value)}
