@@ -38,13 +38,50 @@ export default function CheckoutAddressClient({
   // All-digital orders skip the entire shipping address step — there's
   // nothing to ship. We push the buyer straight to /confirm and tag
   // sessionStorage so the confirm step knows to omit shipping.
-  const allDigital = isAllDigitalForStore(allLines, params.slug);
+  //
+  // Trust order:
+  //   1. Local cart-line flag (`isAllDigitalForStore`) — fast path,
+  //      works for freshly-added items.
+  //   2. Server lookup (`/api/checkout/product-types`) — authoritative
+  //      fallback for legacy cart lines that pre-date the
+  //      `productType` field. Without this fallback, an old cart
+  //      stranded a buyer on the shipping form even for digital-only
+  //      orders.
+  const localAllDigital = isAllDigitalForStore(allLines, params.slug);
   useEffect(() => {
-    if (lines.length === 0 || !allDigital) return;
-    sessionStorage.setItem("checkout.allDigital", "1");
-    sessionStorage.removeItem("checkout.addressId");
-    router.replace(`/stores/${params.slug}/checkout/confirm`);
-  }, [allDigital, lines.length, params.slug, router]);
+    if (lines.length === 0) return;
+    let cancelled = false;
+    void (async () => {
+      let allDigital = localAllDigital;
+      if (!allDigital) {
+        const ids = lines.map((l) => l.productId);
+        try {
+          const res = await fetch(
+            `/api/checkout/product-types?ids=${encodeURIComponent(ids.join(","))}`,
+          );
+          if (res.ok) {
+            const data = (await res.json()) as {
+              products: { id: string; productType: "PHYSICAL" | "DIGITAL" }[];
+            };
+            allDigital =
+              data.products.length === ids.length
+              && data.products.every((p) => p.productType === "DIGITAL");
+          }
+        } catch {
+          // Network failure — fall back to local flag (false here), so
+          // worst case the buyer sees the shipping form. Acceptable
+          // degradation.
+        }
+      }
+      if (cancelled || !allDigital) return;
+      sessionStorage.setItem("checkout.allDigital", "1");
+      sessionStorage.removeItem("checkout.addressId");
+      router.replace(`/stores/${params.slug}/checkout/confirm`);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [localAllDigital, lines, params.slug, router]);
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
