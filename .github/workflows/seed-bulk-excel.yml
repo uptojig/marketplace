@@ -1,0 +1,90 @@
+name: One-shot bulk seed — 69 Excel template products
+
+# Downloads a zip of cover images from a public URL, extracts on the
+# droplet, then runs the bulk-seed script inside a Node container that
+# already has DATABASE_URL + SPACES_* from /etc/marketplace/control.env.
+#
+# Idempotent on externalProductId so re-running updates rows rather
+# than creating duplicates. Images upload to Spaces with a fixedKey so
+# the same key is reused on re-run.
+#
+# How to get a zip URL:
+#   1. Drag-drop the zip into a comment on any GitHub issue/PR in this
+#      repo — GitHub serves it from a public githubusercontent.com URL.
+#   2. Or upload to any public host (Dropbox direct link, transfer.sh,
+#      DigitalOcean Spaces, etc.).
+
+on:
+  workflow_dispatch:
+    inputs:
+      zip_url:
+        description: "Public URL to the zip of cover images (.jpeg)"
+        required: true
+        type: string
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DROPLET_SSH_KEY }}
+
+      - name: Run bulk seed on droplet
+        env:
+          ZIP_URL: ${{ inputs.zip_url }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh -o StrictHostKeyChecking=accept-new \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              -o ConnectTimeout=30 \
+              -o ServerAliveInterval=60 \
+              -o ServerAliveCountMax=10 \
+              -o TCPKeepAlive=yes \
+              "root@${{ secrets.DROPLET_IP }}" \
+              "ZIP_URL='${ZIP_URL}' bash -s" <<'REMOTE'
+            set -euo pipefail
+
+            # Fresh workspace each run so we never re-use stale images.
+            WORKDIR=/tmp/bulk-excel-seed
+            rm -rf "$WORKDIR"
+            mkdir -p "$WORKDIR"
+
+            echo "→ Fetching zip from $ZIP_URL"
+            curl -fSL --max-time 600 -o "$WORKDIR/covers.zip" "$ZIP_URL"
+
+            echo "→ Extracting"
+            unzip -q "$WORKDIR/covers.zip" -d "$WORKDIR/extracted"
+
+            # Find the directory that actually contains the JPEGs (the
+            # zip may have a wrapping folder).
+            IMG_DIR=$(find "$WORKDIR/extracted" -type d -exec sh -c 'ls "$1" 2>/dev/null | grep -qE "\\.jpe?g$|\\.png$" && echo "$1"' _ {} \; | head -1)
+            if [ -z "$IMG_DIR" ]; then
+              echo "ERROR: no image files found in zip"
+              exit 1
+            fi
+            echo "→ Image dir: $IMG_DIR ($(ls "$IMG_DIR" | wc -l) files)"
+
+            cd /opt/marketplace
+            git fetch origin feat/multi-tenant-provisioning
+            git reset --hard origin/feat/multi-tenant-provisioning
+
+            echo "→ Running seed script inside node:20 container"
+            docker run --rm \
+              --env-file /etc/marketplace/control.env \
+              --network=host \
+              -v /opt/marketplace:/app \
+              -v "$IMG_DIR":/images:ro \
+              -w /app \
+              node:20-bookworm-slim \
+              sh -c "corepack enable \
+                && corepack prepare pnpm@9.0.0 --activate \
+                && pnpm install --no-frozen-lockfile --prefer-offline --silent \
+                && pnpm tsx scripts/seed-bulk-excel-templates.ts /images"
+
+            # Cleanup
+            rm -rf "$WORKDIR"
+            echo "→ Done"
+          REMOTE
