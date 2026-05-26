@@ -128,8 +128,68 @@ export function ThaiCartAdapterView({ store, config }: ThaiCartAdapterViewProps)
   );
   const subtotal = lines.reduce((acc, l) => acc + l.priceTHB * l.qty, 0);
   const itemCount = lines.reduce((acc, l) => acc + l.qty, 0);
-  const shipping = subtotal >= threshold ? 0 : flatShipping;
-  const remainingForFree = Math.max(0, threshold - subtotal);
+
+  // Authoritative DIGITAL detection — legacy cart lines (added before
+  // the productType field shipped) lack the flag locally. Pull the
+  // truth from /api/checkout/product-types so all-digital carts
+  // (especially the sheetlab storefront) never surface a "ค่าจัดส่ง"
+  // or "ซื้ออีก ฿X จะได้ส่งฟรี" nudge.
+  const [serverTypes, setServerTypes] = useState<
+    Record<string, "PHYSICAL" | "DIGITAL">
+  >({});
+  useEffect(() => {
+    if (lines.length === 0) return;
+    const ids = lines.map((l) => l.productId);
+    let cancelled = false;
+    fetch(`/api/checkout/product-types?ids=${encodeURIComponent(ids.join(","))}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const map: Record<string, "PHYSICAL" | "DIGITAL"> = {};
+        for (const p of data.products ?? []) {
+          map[p.id] = p.productType;
+        }
+        setServerTypes(map);
+      })
+      .catch(() => {
+        /* fall back to local flag */
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lines.map((l) => l.productId).join(",")]);
+
+  function lineIsDigital(productId: string, localFlag?: string): boolean {
+    return serverTypes[productId] === "DIGITAL" || localFlag === "DIGITAL";
+  }
+  const allDigital =
+    lines.length > 0
+    && lines.every((l) => lineIsDigital(l.productId, l.productType));
+
+  // Clamp DIGITAL lines to qty=1 once the server map confirms.
+  useEffect(() => {
+    if (Object.keys(serverTypes).length === 0) return;
+    for (const l of lines) {
+      if (
+        l.qty > 1
+        && (serverTypes[l.productId] === "DIGITAL"
+          || l.productType === "DIGITAL")
+      ) {
+        setQty(l.productId, 1, store.slug);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverTypes]);
+
+  const shipping = allDigital
+    ? 0
+    : subtotal >= threshold
+      ? 0
+      : flatShipping;
+  const remainingForFree = allDigital
+    ? 0
+    : Math.max(0, threshold - subtotal);
 
   /* Coupon state — purely client-side, hint via /api/coupons/validate */
   const [couponCode, setCouponCode] = useState('');

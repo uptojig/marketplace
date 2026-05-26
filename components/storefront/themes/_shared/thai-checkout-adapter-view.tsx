@@ -241,8 +241,31 @@ export function ThaiCheckoutAdapterView({
         const data = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(data.error ?? `Checkout failed (${res.status})`);
       }
-      const data = (await res.json()) as { orderId?: string; orderRef?: string };
+      const data = (await res.json()) as {
+        orderId?: string;
+        orderRef?: string;
+        paymentUrl?: string;
+        paid?: boolean;
+      };
       clearStore(store.slug);
+
+      // Post-PAID redirect rules (mirrors confirm-client.tsx):
+      //   1. CREDIT + all-digital → /account/downloads
+      //   2. CREDIT + physical    → /account/orders
+      //   3. ANYPAY               → paymentUrl (gateway redirect)
+      if (data.paid && allDigital) {
+        window.location.href = `/stores/${store.slug}/account/downloads`;
+        return;
+      }
+      if (data.paid) {
+        window.location.href = `/stores/${store.slug}/account/orders`;
+        return;
+      }
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+        return;
+      }
+      // Defensive fallback — no paid / no payment URL came back.
       setOrderRef(data.orderRef ?? data.orderId ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'ไม่สามารถสร้างออเดอร์ได้');
