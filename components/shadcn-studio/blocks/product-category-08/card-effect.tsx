@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { Plus } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -128,29 +129,63 @@ const ProductCard3D = ({ item }: { item: ProductCard[number] }) => {
     }
   }, [])
 
+  const hash = item.title.length;
+  const badgeType = hash % 3 === 0 ? 'NEW' : hash % 3 === 1 ? 'SALE' : null;
+
   return (
-    <Card
+    <div
       ref={cardRef}
       className={cn(
-        'transition-border relative w-full rounded-xl border-2 border-transparent pt-57 duration-300',
+        'group relative bg-white rounded-[2rem] p-4 shadow-sm hover:shadow-xl transition-all duration-300 border border-[#fed7aa]/50 w-full',
         item.mainClass
       )}
     >
-      <CardContent className='space-y-6 text-sm'>
-        <div ref={imageWrapperRef} className='absolute -top-20 left-1/2 size-70 -translate-x-1/2'>
-          <img src={item.img} alt={item.title} className='max-h-70 w-full object-contain' />
-        </div>
-        <div className='flex flex-col items-center gap-6 text-center'>
-          <div className='space-y-2'>
-            <Badge className={item.badgeClass}>{item.discount}% Off</Badge>
-            <h3 className='text-3xl font-semibold'>{item.title}</h3>
+      <a href={item.productLink} className="absolute inset-0 z-10" aria-label={`View ${item.title}`} />
+      
+      <div ref={imageWrapperRef} className="relative aspect-square w-full overflow-hidden bg-[#fff7ed] rounded-2xl mb-4 p-4">
+        <div className="absolute inset-0 bg-white shadow-inner m-4 rounded-xl border border-[#fed7aa]/30"></div>
+        
+        <div className="relative w-full h-full flex items-center justify-center p-2 z-10">
+          <div className="w-[85%] h-[85%] relative">
+            <img
+              src={item.img}
+              alt={item.title}
+              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+            />
           </div>
-          <Button size='lg' asChild className={item.buttonClass}>
-            <a href={item.productLink}>Shop Now</a>
-          </Button>
         </div>
-      </CardContent>
-    </Card>
+        
+        {badgeType === 'NEW' && (
+          <div className="absolute top-4 right-4 bg-[#facc15] text-[#7c2d12] font-[family:var(--font-prompt)] font-bold text-xs px-3 py-1 rounded-full z-20 shadow-sm transform rotate-12">
+            NEW
+          </div>
+        )}
+        {badgeType === 'SALE' && (
+          <div className="absolute top-4 right-4 bg-[#f97316] text-white font-[family:var(--font-prompt)] font-bold text-xs px-3 py-1 rounded-full z-20 shadow-sm transform rotate-12">
+            ลดราคา
+          </div>
+        )}
+      </div>
+
+      <div className="text-center px-2 z-20 relative pointer-events-none">
+        <p className="font-[family:var(--font-prompt)] text-xs text-[#f97316] mb-1 font-medium uppercase tracking-wider">
+          {item.badge || 'สินค้าน่ารัก'}
+        </p>
+        <h3 className="text-lg font-[family:var(--font-kanit)] font-bold text-[#7c2d12] mb-2 line-clamp-1 group-hover:text-[#f97316] transition-colors" title={item.title}>
+          {item.title}
+        </h3>
+        <div className="flex justify-center items-center gap-2 font-[family:var(--font-prompt)] mb-4">
+          <span className="text-[#7c2d12] font-bold">{item.misc}</span>
+        </div>
+        
+        <button
+          className="w-full py-3 bg-[#fff7ed] text-[#f97316] rounded-xl font-[family:var(--font-prompt)] font-medium group-hover:bg-[#f97316] group-hover:text-white transition-colors duration-300 border border-[#fed7aa] flex items-center justify-center gap-2 relative z-20 pointer-events-auto"
+        >
+          <Plus className="w-4 h-4" />
+          หยิบใส่ตะกร้า
+        </button>
+      </div>
+    </div>
   )
 }
 

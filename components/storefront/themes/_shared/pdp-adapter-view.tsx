@@ -378,7 +378,7 @@ export function PdpAdapterView({
               <Badge
                 icon={<Wallet className="h-4 w-4" />}
                 title="ชำระปลอดภัย"
-                body="SSL · บัตร · ผ่อน 0%"
+                body="ได้รับมาตรฐานสากล"
               />
             </div>
           </div>

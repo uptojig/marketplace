@@ -159,9 +159,9 @@ export function lifestylePolicyHeading(
 ): { eyebrow: string; title: string } {
   switch (pageSlug) {
     case 'shipping':
-      return { eyebrow: 'Good to know', title: 'How we ship' };
+      return { eyebrow: 'Good to know', title: 'ข้อมูลการจัดส่ง' };
     case 'returns':
-      return { eyebrow: 'Good to know', title: 'Returns made easy' };
+      return { eyebrow: 'Good to know', title: 'การคืนสินค้าง่ายนิดเดียว' };
     case 'faq':
       return { eyebrow: 'Curious?', title: 'Common questions' };
     case 'privacy':

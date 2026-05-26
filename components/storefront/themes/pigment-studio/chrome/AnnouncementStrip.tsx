@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Palette } from 'lucide-react';
+import { PawPrint } from 'lucide-react';
 
 export function PigmentStudioAnnouncementStrip() {
   return (
@@ -13,13 +13,13 @@ export function PigmentStudioAnnouncementStrip() {
       </div>
       
       <div className="hidden md:flex justify-center items-center gap-2 relative z-10 font-medium tracking-wide">
-        <Palette className="w-4 h-4 text-[#facc15]" />
-        Workshop วาดสีน้ำ ฟรี! ทุกวันเสาร์แรกของเดือนที่กรุงเทพ
-        <Palette className="w-4 h-4 text-[#facc15]" />
+        <PawPrint className="w-4 h-4 text-[#facc15]" />
+        เอาใจทาสแมวและสายคราฟต์ ช้อปของใช้น่ารักๆ ได้แล้ววันนี้
+        <PawPrint className="w-4 h-4 text-[#facc15]" />
       </div>
       <div className="flex md:hidden justify-center items-center gap-2 relative z-10 font-medium">
-        <Palette className="w-4 h-4 text-[#facc15]" />
-        Workshop ฟรี เสาร์แรก
+        <PawPrint className="w-4 h-4 text-[#facc15]" />
+        ของใช้น่ารักๆ เพื่อทาสแมว
       </div>
     </div>
   );

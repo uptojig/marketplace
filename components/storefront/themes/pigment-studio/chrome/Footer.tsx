@@ -2,14 +2,25 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Brush, Instagram, Twitter, Facebook, Paintbrush } from 'lucide-react';
+import { Brush, Instagram, Twitter, Facebook, Paintbrush, Phone, Mail, MapPin } from 'lucide-react';
 
 interface PigmentStudioFooterProps {
   store: {
     name: string;
     slug: string;
     logoUrl?: string | null;
+    contactPhone?: string | null;
+    contactEmail?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    subdistrict?: string | null;
+    district?: string | null;
+    province?: string | null;
+    postalCode?: string | null;
   };
+  categories?: string[];
+  accent?: string;
+  availableSupportPages?: string[];
 }
 
 export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
@@ -51,36 +62,13 @@ export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/stores/${store.slug}/category?sort=new`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
+                  <Link href={`/stores/${store.slug}#new-arrivals`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                     คอลเลกชันใหม่
-                  </Link>
-                </li>
-                <li>
-                  <Link href={`/stores/${store.slug}/blog`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
-                    คอมมูนิตี้ของเรา
                   </Link>
                 </li>
                 <li>
                   <Link href={`/stores/${store.slug}/shipping`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                     ราคาค่าจัดส่ง
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-[family:var(--font-kanit)] font-bold text-lg mb-6 text-[#facc15] flex items-center gap-2">
-                <Paintbrush className="w-4 h-4" /> ช่วยเหลือ
-              </h3>
-              <ul className="space-y-3 font-[family:var(--font-prompt)]">
-                <li>
-                  <Link href={`/stores/${store.slug}/contact`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
-                    ติดต่อเรา
-                  </Link>
-                </li>
-                <li>
-                  <Link href={`/stores/${store.slug}/help/order-guide`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
-                    ติดตามสถานะ
                   </Link>
                 </li>
                 <li>
@@ -89,10 +77,42 @@ export function PigmentStudioFooter({ store }: PigmentStudioFooterProps) {
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/stores/${store.slug}/faq`} className="text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all font-semibold">
+                  <Link href={`/stores/${store.slug}/faq`} className="text-[#fed7aa] hover:text-white hover:underline decoration-[#f97316] decoration-2 underline-offset-4 transition-all">
                     คำถามที่พบบ่อย
                   </Link>
                 </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-[family:var(--font-kanit)] font-bold text-lg mb-6 text-[#facc15] flex items-center gap-2">
+                <Paintbrush className="w-4 h-4" /> ติดต่อเรา
+              </h3>
+              <ul className="space-y-4 font-[family:var(--font-prompt)] text-sm md:text-base text-[#fed7aa]">
+                {store.contactPhone && (
+                  <li className="flex items-start gap-3">
+                    <Phone className="w-5 h-5 text-[#facc15] shrink-0 mt-0.5" />
+                    <span>{store.contactPhone}</span>
+                  </li>
+                )}
+                {store.contactEmail && (
+                  <li className="flex items-start gap-3">
+                    <Mail className="w-5 h-5 text-[#facc15] shrink-0 mt-0.5" />
+                    <span>{store.contactEmail}</span>
+                  </li>
+                )}
+                {(store.addressLine1 || store.province) && (
+                  <li className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-[#facc15] shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">
+                      {store.addressLine1} {store.addressLine2}
+                      {store.subdistrict || store.district ? <br /> : null}
+                      {store.subdistrict} {store.district}
+                      {(store.province || store.postalCode) ? <br /> : null}
+                      {store.province} {store.postalCode}
+                    </span>
+                  </li>
+                )}
               </ul>
             </div>
           </div>

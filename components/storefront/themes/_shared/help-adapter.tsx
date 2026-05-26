@@ -66,7 +66,7 @@ const DEFAULT_FAQS: FAQ[] = [
   {
     question: 'ติดต่อร้านได้ทางช่องทางไหนบ้าง?',
     answer:
-      'ลูกค้าสามารถติดต่อทีมงานได้ผ่านช่องทางที่ระบุไว้ในหน้าติดต่อเรา ทั้งทางอีเมล โทรศัพท์ Line และ Messenger ทีมงานพร้อมตอบกลับภายใน 24 ชั่วโมงในวันทำการ',
+      'ลูกค้าสามารถติดต่อทีมงานได้ผ่านช่องทางที่ระบุไว้ในหน้าติดต่อเรา ทั้งทางอีเมลและโทรศัพท์ ทีมงานพร้อมตอบกลับภายใน 24 ชั่วโมงในวันทำการ',
   },
   {
     question: 'สินค้ามีรับประกันคุณภาพหรือไม่?',
@@ -147,115 +147,6 @@ export function makeHelpAdapter() {
                   </AccordionItem>
                 ))}
               </Accordion>
-            </div>
-          </div>
-        </section>
-
-        {/* Contact CTA */}
-        <section className="px-4 pb-20">
-          <div className="mx-auto max-w-3xl">
-            <div
-              className="rounded-2xl p-8 sm:p-10"
-              style={{
-                backgroundColor: 'var(--shop-card, #ffffff)',
-                border: '1px solid var(--shop-border, #e4e4e7)',
-              }}
-            >
-              <div className="mb-6 text-center">
-                <h2
-                  className="mb-3 text-2xl font-semibold sm:text-3xl"
-                  style={{ color: 'var(--shop-ink)' }}
-                >
-                  ยังไม่ได้คำตอบที่ต้องการ?
-                </h2>
-                <p
-                  className="text-base"
-                  style={{ color: 'var(--shop-ink-muted, #71717a)' }}
-                >
-                  ทีมงานของเราพร้อมช่วยเหลือคุณ
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <Link
-                  href={`/stores/${store.slug}/contact`}
-                  className="flex flex-col items-center gap-2 rounded-xl p-5 text-center transition-colors hover:opacity-90"
-                  style={{
-                    backgroundColor: 'var(--shop-bg, #f4f4f5)',
-                    border: '1px solid var(--shop-border, #e4e4e7)',
-                  }}
-                >
-                  <MessageCircle
-                    className="h-6 w-6"
-                    style={{ color: 'var(--shop-primary)' }}
-                  />
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: 'var(--shop-ink)' }}
-                  >
-                    ติดต่อเรา
-                  </span>
-                </Link>
-
-                <Link
-                  href={`/stores/${store.slug}/faq`}
-                  className="flex flex-col items-center gap-2 rounded-xl p-5 text-center transition-colors hover:opacity-90"
-                  style={{
-                    backgroundColor: 'var(--shop-bg, #f4f4f5)',
-                    border: '1px solid var(--shop-border, #e4e4e7)',
-                  }}
-                >
-                  <HelpCircle
-                    className="h-6 w-6"
-                    style={{ color: 'var(--shop-accent)' }}
-                  />
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: 'var(--shop-ink)' }}
-                  >
-                    คำถามทั้งหมด
-                  </span>
-                </Link>
-
-                <Link
-                  href={`/stores/${store.slug}/category`}
-                  className="flex flex-col items-center gap-2 rounded-xl p-5 text-center transition-colors hover:opacity-90"
-                  style={{
-                    backgroundColor: 'var(--shop-bg, #f4f4f5)',
-                    border: '1px solid var(--shop-border, #e4e4e7)',
-                  }}
-                >
-                  <ArrowRight
-                    className="h-6 w-6"
-                    style={{ color: 'var(--shop-primary)' }}
-                  />
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: 'var(--shop-ink)' }}
-                  >
-                    เลือกซื้อสินค้า
-                  </span>
-                </Link>
-              </div>
-
-              {/* Quick contact methods if store exposes them */}
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
-                <a
-                  href="mailto:support@basketplace.co"
-                  className="inline-flex items-center gap-2 hover:underline"
-                  style={{ color: 'var(--shop-ink-muted, #71717a)' }}
-                >
-                  <Mail className="h-4 w-4" />
-                  <span>อีเมล</span>
-                </a>
-                <span
-                  className="inline-flex items-center gap-2"
-                  style={{ color: 'var(--shop-ink-muted, #71717a)' }}
-                >
-                  <Phone className="h-4 w-4" />
-                  <span>ตอบกลับภายใน 24 ชั่วโมง</span>
-                </span>
-              </div>
             </div>
           </div>
         </section>

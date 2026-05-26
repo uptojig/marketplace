@@ -49,6 +49,10 @@ import {
   SpecialtyPolicyShell,
   specialtyPolicyHeading,
 } from "@/components/storefront/themes/specialty/SpecialtyPolicyShell";
+import {
+  PigmentStudioPolicyShell,
+  pigmentStudioPolicyHeading,
+} from "@/components/storefront/themes/pigment-studio/chrome/PolicyShell";
 
 interface SchemaPageProps {
   storeSlug: string;
@@ -115,6 +119,14 @@ function wrapInFamilyShell(
       <ElectronicsTechPolicyShell slug={store.slug} title={h.title} eyebrow={h.eyebrow}>
         {inner}
       </ElectronicsTechPolicyShell>
+    );
+  }
+  if (familyKey.templateId === 'pigment-studio') {
+    const h = pigmentStudioPolicyHeading(pageSlug, fallbackTitle);
+    return (
+      <PigmentStudioPolicyShell slug={store.slug} title={h.title} eyebrow={h.eyebrow}>
+        {inner}
+      </PigmentStudioPolicyShell>
     );
   }
   if (isSpecialtyStore(familyKey)) {

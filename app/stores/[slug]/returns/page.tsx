@@ -60,8 +60,6 @@ const fallbackBody = (
     <h2 className={SECTION_TITLE}>ระยะเวลาคืนเงิน</h2>
     <ul className={LIST}>
       <li>ตรวจสอบคำขอ: 1–3 วันทำการ</li>
-      <li>คืนผ่านบัตรเครดิต: 7–14 วันทำการ (ขึ้นกับธนาคารผู้ออกบัตร)</li>
-      <li>คืนผ่านบัญชีธนาคาร / PromptPay: 3–7 วันทำการ</li>
     </ul>
 
     <p

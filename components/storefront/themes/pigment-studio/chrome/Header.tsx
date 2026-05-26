@@ -73,6 +73,13 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
 
             {/* Middle: Category Links (centered and prevented from overlapping) */}
             <div className="hidden md:flex items-center justify-center flex-1 space-x-6 lg:space-x-8 px-4">
+              <Link
+                href={`/stores/${store.slug}/category`}
+                className="font-[family:var(--font-prompt)] text-[#5c3826] hover:text-[#e67e22] font-semibold transition-colors relative group whitespace-nowrap text-sm lg:text-base"
+              >
+                สินค้าทั้งหมด
+                <span className="absolute -bottom-1.5 left-0 w-0 h-[3px] bg-[#f3a36c] rounded-full transition-all group-hover:w-full"></span>
+              </Link>
               {normalizedCategories.slice(0, 5).map((category, index) => (
                 <Link
                   key={`${category.id}-${category.slug}-${index}`}
@@ -88,9 +95,17 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
 
             {/* Right side: Search & Cart icons */}
             <div className="flex items-center space-x-2">
-              <button className="p-2 text-[#5c3826] hover:bg-[#fdf4eb] hover:text-[#e67e22] rounded-xl transition-colors hidden sm:block">
-                <Search className="w-6 h-6" />
-              </button>
+              <form action={`/stores/${store.slug}/category`} className="relative hidden sm:flex items-center group">
+                <input 
+                  type="text" 
+                  name="q" 
+                  placeholder="ค้นหาสินค้า..." 
+                  className="w-0 opacity-0 group-hover:w-48 group-hover:opacity-100 group-focus-within:w-48 group-focus-within:opacity-100 transition-all duration-300 bg-[#fdf4eb] border-none outline-none rounded-full px-4 py-2 text-[#5c3826] font-[family:var(--font-prompt)] text-sm absolute right-10 focus:ring-2 focus:ring-[#facc15]"
+                />
+                <button type="submit" className="p-2 text-[#5c3826] hover:bg-[#fdf4eb] hover:text-[#e67e22] rounded-xl transition-colors z-10 relative">
+                  <Search className="w-6 h-6" />
+                </button>
+              </form>
               <Link
                 href={`/stores/${store.slug}/cart`}
                 className="p-2 text-[#5c3826] hover:bg-[#fdf4eb] hover:text-[#e67e22] rounded-xl transition-colors relative group"
@@ -110,7 +125,22 @@ export function PigmentStudioHeader({ store, categories }: PigmentStudioHeaderPr
         {/* Mobile menu sidebar */}
         {isMenuOpen && (
           <div className="md:hidden bg-[#fffaf4] border-t-2 border-dashed border-[#fed7aa] absolute w-full left-0 shadow-lg">
-            <div className="px-4 pt-2 pb-6 space-y-2">
+            <div className="px-4 pt-4 pb-6 space-y-2">
+              <form action={`/stores/${store.slug}/category`} className="px-4 mb-4">
+                <div className="relative">
+                  <input type="text" name="q" placeholder="ค้นหาสินค้า..." className="w-full bg-[#fdf4eb] rounded-xl px-4 py-3 text-[#5c3826] outline-none border border-[#fed7aa] focus:ring-2 focus:ring-[#facc15]" />
+                  <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-[#e67e22] p-2">
+                    <Search className="w-5 h-5" />
+                  </button>
+                </div>
+              </form>
+              <Link
+                href={`/stores/${store.slug}/category`}
+                className="block px-4 py-3 font-[family:var(--font-prompt)] text-[#5c3826] font-bold hover:bg-[#fdf4eb] hover:text-[#e67e22] rounded-xl transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                สินค้าทั้งหมด
+              </Link>
               {normalizedCategories.map((category, index) => (
                 <Link
                   key={`${category.id}-${category.slug}-${index}`}

@@ -82,12 +82,16 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
                   >
                     ช้อปความน่ารัก
                   </Link>
-                  <Link 
-                    href={`/stores/${store.slug}/category`}
-                    className="inline-flex items-center justify-center px-10 py-4 bg-white hover:bg-[#fef5e7]/30 border border-[#5c3e2b]/20 hover:border-[#5c3e2b]/50 text-[#5c3e2b] font-bold text-lg rounded-full shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 transform"
+                  <a 
+                    href="#new-arrivals"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById('new-arrivals')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="inline-flex items-center justify-center px-10 py-4 bg-white hover:bg-[#fef5e7]/30 border border-[#5c3e2b]/20 hover:border-[#5c3e2b]/50 text-[#5c3e2b] font-bold text-lg rounded-full shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 transform cursor-pointer"
                   >
                     ดูคอลเลกชันใหม่
-                  </Link>
+                  </a>
                 </div>
                 
                 <div className="flex items-center gap-4 pt-6">
@@ -546,58 +550,58 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
 
       {/* Category Banner */}
       {isZugarbox ? (
-        <section className="py-16 px-4 bg-[#4a2511] relative overflow-hidden">
-          {/* Background decorative glows */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#e67e22] rounded-full blur-3xl opacity-15 transform translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#ffb252] rounded-full blur-3xl opacity-10 transform -translate-x-1/2 translate-y-1/2"></div>
-          
-          <div className="max-w-7xl mx-auto relative z-10">
-            <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="max-w-xl text-center md:text-left">
-                <h2 className="text-3xl md:text-4xl font-bold font-[family:var(--font-prompt)] text-white mb-4 leading-tight">
-                  สำรวจคอลเลกชันเครื่องครัวและของใช้ในบ้านสุดพิเศษ
-                </h2>
-                <p className="font-[family:var(--font-prompt)] text-[#fed7aa] text-base mb-8 leading-relaxed font-light">
-                  ค้นพบเครื่องใช้และของตกแต่งที่ออกแบบมาเพื่อเติมเต็มความสุขในทุกมุมบ้าน ตั้งแต่แก้วกาแฟลายการ์ตูนไปจนถึงเครื่องเขียนดีไซน์เฉพาะตัว
-                </p>
-                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                  {[
-                    { name: 'แก้วกาแฟ', slug: 'แก้วกาแฟ' },
-                    { name: 'เครื่องเขียน', slug: 'เครื่องเขียน' },
-                    { name: 'ของตกแต่งบ้าน', slug: 'ของตกแต่งบ้าน' },
-                    { name: 'เบาะและหมอน', slug: 'เบาะและหมอน' },
-                    { name: 'ของสะสม', slug: 'ของสะสม' }
-                  ].map((category, index) => (
-                    <Link
-                      key={`${category.slug}-${index}`}
-                      href={`/stores/${store.slug}/category?cat=${encodeURIComponent(category.name)}`}
-                      className="px-5 py-2 bg-white/10 hover:bg-white/20 text-[#fed7aa] rounded-full font-[family:var(--font-prompt)] text-sm font-medium transition-all border border-white/10"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
+        <section className="py-10 lg:py-12 px-4 bg-[#4a2511] border-y border-[#3a1a07]/50 shadow-[inset_0_4px_20px_rgba(0,0,0,0.1)]">
+          <div className="max-w-7xl mx-auto px-2 lg:px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               
-              <div className="w-full md:w-1/3 flex justify-center">
-                <div className="relative w-48 h-48">
-                  {/* Glowing Cat Bubble */}
-                  <div className="absolute inset-0 bg-[#e67e22] rounded-full blur-xl opacity-40 animate-pulse"></div>
-                  <div className="absolute inset-2 border-2 border-[#facc15]/30 rounded-full"></div>
-                  <div className="absolute inset-4 bg-gradient-to-br from-[#ff9f43] to-[#e67e22] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(230,126,34,0.6)]">
-                    <svg viewBox="0 0 100 100" className="w-24 h-24 text-white" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M35 75 Q35 50 40 45 L35 25 L45 35 Q50 30 55 35 L65 25 L60 45 Q65 50 65 75 Z" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M45 48 C45 48 48 44 50 44 C52 44 55 48 55 48" stroke="white" strokeWidth="2" />
-                      <circle cx="45" cy="42" r="1.5" fill="white" />
-                      <circle cx="55" cy="42" r="1.5" fill="white" />
-                      <path d="M50 48 L50 54 Q48 56 46 54 M50 54 Q52 56 54 54" stroke="white" strokeWidth="1.5" />
-                      <path d="M65 65 Q78 65 75 50" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-                      <path d="M42 75 C42 71 47 71 47 75" stroke="white" strokeWidth="2" />
-                      <path d="M58 75 C58 71 53 71 53 75" stroke="white" strokeWidth="2" />
-                    </svg>
-                  </div>
+              <div className="flex items-center gap-4 group">
+                <div className="flex-shrink-0 w-12 h-12 bg-[#7c2d12]/80 rounded-xl flex items-center justify-center border border-[#e67e22]/20 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                  <Heart className="w-5 h-5 text-[#ffb252]" />
+                </div>
+                <div>
+                  <h3 className="font-bold font-[family:var(--font-prompt)] text-white text-sm md:text-base">ดีไซน์เฉพาะตัว</h3>
+                  <p className="text-[#fed7aa]/90 text-xs font-[family:var(--font-prompt)] leading-snug mt-1">
+                    งานคราฟต์สุดคิ้วท์ คัดสรรมาเพื่อเติมความสดใสให้มุมโปรดของคุณ
+                  </p>
                 </div>
               </div>
+
+              <div className="flex items-center gap-4 group">
+                <div className="flex-shrink-0 w-12 h-12 bg-[#7c2d12]/80 rounded-xl flex items-center justify-center border border-[#e67e22]/20 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                  <PawPrint className="w-5 h-5 text-[#ffb252]" />
+                </div>
+                <div>
+                  <h3 className="font-bold font-[family:var(--font-prompt)] text-white text-sm md:text-base">เพื่อคนรักสัตว์</h3>
+                  <p className="text-[#fed7aa]/90 text-xs font-[family:var(--font-prompt)] leading-snug mt-1">
+                    ของใช้ลายน้องแมวเหมียวสุดอบอุ่นที่ทาสแมวต้องละลาย
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 group">
+                <div className="flex-shrink-0 w-12 h-12 bg-[#7c2d12]/80 rounded-xl flex items-center justify-center border border-[#e67e22]/20 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                  <svg className="w-5 h-5 text-[#ffb252]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                </div>
+                <div>
+                  <h3 className="font-bold font-[family:var(--font-prompt)] text-white text-sm md:text-base">ส่งไว แพ็คอย่างดี</h3>
+                  <p className="text-[#fed7aa]/90 text-xs font-[family:var(--font-prompt)] leading-snug mt-1">
+                    จัดส่งรวดเร็ว ห่อกันกระแทกอย่างทะนุถนอมปลอดภัยทุกชิ้น
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 group">
+                <div className="flex-shrink-0 w-12 h-12 bg-[#7c2d12]/80 rounded-xl flex items-center justify-center border border-[#e67e22]/20 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                  <svg className="w-5 h-5 text-[#ffb252]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </div>
+                <div>
+                  <h3 className="font-bold font-[family:var(--font-prompt)] text-white text-sm md:text-base">รับประกันความพอใจ</h3>
+                  <p className="text-[#fed7aa]/90 text-xs font-[family:var(--font-prompt)] leading-snug mt-1">
+                    สินค้ามีปัญหาเปลี่ยนคืนได้ภายใน 14 วัน พร้อมดูแลด้วยใจ
+                  </p>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
@@ -642,7 +646,7 @@ export function PigmentStudioHomepage({ store, products, categories }: PigmentSt
       )}
 
       {/* New Arrivals */}
-      <section className="py-24 px-4 bg-[#fff7ed]">
+      <section id="new-arrivals" className="py-24 px-4 bg-[#fff7ed]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#facc15]/20 text-[#7c2d12] font-[family:var(--font-prompt)] font-medium text-sm mb-4 border border-[#facc15]/30">

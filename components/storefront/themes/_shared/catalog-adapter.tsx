@@ -110,7 +110,7 @@ export function makeCatalogAdapter(variant: CatalogVariant) {
           }
         >
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <Block productCards={productCards as any} />
+          <Block productCards={productCards as any} selectedCats={props.selectedCats} storeSlug={props.store.slug} />
         </Suspense>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12">
           <CatalogPaginationFooter
