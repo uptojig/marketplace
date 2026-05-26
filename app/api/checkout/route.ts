@@ -201,12 +201,30 @@ export async function POST(req: Request) {
     }
 
     // ── Default ANYPAY path ──
+    // If every line in the order is DIGITAL, the AnyPay return_url
+    // sends the buyer straight to /account/downloads after PAID
+    // (instead of /checkout/success) — digital buyers expect immediate
+    // file access, not an order-status page. Physical orders keep the
+    // /checkout/success default.
+    const orderItems = await prisma.orderItem.findMany({
+      where: { orderId: order.id },
+      select: { product: { select: { productType: true } } },
+    });
+    const allItemsDigital =
+      orderItems.length > 0
+      && orderItems.every((i) => i.product?.productType === "DIGITAL");
+
     const payment = await createPayment({
       orderId: order.id,
       amountTHB: Number(order.totalTHB),
       customerEmail: session?.user?.email ?? undefined,
       description: `Marketplace order ${order.id}`,
       storeSlug: parsed.data.storeSlug,
+      ...(allItemsDigital && parsed.data.storeSlug
+        ? {
+            returnPath: `/stores/${parsed.data.storeSlug}/account/downloads?orderId=${order.id}`,
+          }
+        : {}),
     });
 
     await prisma.payment.update({

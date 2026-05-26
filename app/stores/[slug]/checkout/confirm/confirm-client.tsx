@@ -197,10 +197,29 @@ export default function CheckoutConfirmClient({
       // state so the buyer sees the new (lower) number if they come
       // back to this page.
       if (data.paid) setCreditBalanceTHB((b) => (b ?? 0) - total);
-      // Per operator request: do NOT auto-redirect to the payment gate
-      // after order creation. Buyer pays later via the orderRef from
-      // their email / account orders page; the gate URL stays available
-      // server-side so we can resurface it if needed.
+
+      // Redirect rules:
+      //   1. CREDIT + all-digital → straight to /account/downloads
+      //      (order is already PAID + unlocks created server-side).
+      //   2. CREDIT + physical → orders page (no parcel yet; show order).
+      //   3. ANYPAY → the payment gate URL (mock or real). Real AnyPay
+      //      will redirect back to /checkout/success on PAID; mock gate
+      //      auto-PAIDs after 3s + redirects to its returnUrl.
+      if (data.paid && allDigital) {
+        window.location.href = `/stores/${params.slug}/account/downloads`;
+        return;
+      }
+      if (data.paid) {
+        window.location.href = `/stores/${params.slug}/account/orders`;
+        return;
+      }
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+        return;
+      }
+      // Defensive fallback — show the static success page only when
+      // neither paid nor a payment URL came back (shouldn't happen,
+      // but better than a blank screen).
       setSubmitted({ orderId: data.orderId, paid: data.paid });
     } catch (err) {
       setError(err instanceof Error ? err.message : "ไม่สามารถสร้างออเดอร์ได้");
