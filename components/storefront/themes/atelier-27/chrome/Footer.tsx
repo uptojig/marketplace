@@ -6,9 +6,17 @@ export interface FooterProps {
     name: string;
     slug: string;
     logoUrl?: string | null;
+    description?: string | null;
+    tagline?: string | null;
     facebookUrl?: string | null;
     instagramUrl?: string | null;
     twitterUrl?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    subdistrict?: string | null;
+    district?: string | null;
+    province?: string | null;
+    postalCode?: string | null;
   };
   categories: string[];
   accent?: string;
@@ -36,16 +44,28 @@ export function Footer({ store, categories }: FooterProps) {
               <img src={store.logoUrl} alt={store.name} className="h-10 w-auto object-contain" />
             ) : (
               <span className="font-[family:var(--font-kanit)] font-light text-2xl tracking-[0.35em] uppercase text-[#fafaf9]">
-                Atelier 27
+                {store.name}
               </span>
             )}
             <p className="font-[family:var(--font-prompt)] text-sm leading-relaxed text-[#78716c] max-w-sm">
-              สูทตัดเฉพาะบุคคล สั่งจองล่วงหน้า 14 วัน
+              {store.description ?? store.tagline ?? 'Tailoring · Atelier'}
             </p>
-            <p className="font-[family:var(--font-prompt)] text-xs leading-relaxed text-[#57534e]">
-              สุขุมวิท 27 กรุงเทพมหานคร<br />
-              เปิดเฉพาะนัดล่วงหน้า
-            </p>
+            {(() => {
+              const parts = [
+                store.addressLine1,
+                store.addressLine2,
+                store.subdistrict,
+                store.district,
+                store.province,
+                store.postalCode,
+              ].filter((p): p is string => Boolean(p && p.trim()));
+              if (parts.length === 0) return null;
+              return (
+                <p className="font-[family:var(--font-prompt)] text-xs leading-relaxed text-[#57534e]">
+                  {parts.join(' ')}
+                </p>
+              );
+            })()}
           </div>
 
           {/* Categories */}
@@ -114,11 +134,6 @@ export function Footer({ store, categories }: FooterProps) {
                   Facebook
                 </a>
               )}
-              {!store.instagramUrl && !store.facebookUrl && (
-                <span className="font-[family:var(--font-prompt)] text-xs tracking-wide text-[#57534e]">
-                  @atelier27bkk
-                </span>
-              )}
             </div>
           </div>
 
@@ -132,7 +147,7 @@ export function Footer({ store, categories }: FooterProps) {
             © {currentYear} {store.name}
           </p>
           <p className="font-[family:var(--font-prompt)] text-[10px] tracking-[0.15em] text-[#44403c]">
-            Bespoke Tailoring · Bangkok
+            {store.tagline ?? store.description ?? 'Tailoring · Atelier'}
           </p>
         </div>
       </div>

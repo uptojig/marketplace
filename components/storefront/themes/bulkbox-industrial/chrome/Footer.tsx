@@ -26,8 +26,7 @@ export function BulkboxFooter({ store }: FooterProps) {
               )}
             </Link>
             <p className="text-[#cbd5e1] text-sm leading-relaxed">
-              ส่งของอุตสาหกรรม ราคาขายส่ง ขั้นต่ำ 50 ชิ้น<br />
-              ผู้นำเข้าและจัดจำหน่ายอะไหล่อุตสาหกรรมโดยตรงสู่โรงงาน
+              {store.description ?? store.tagline ?? 'สินค้าอุตสาหกรรม ขายส่งทั่วประเทศ'}
             </p>
             <div className="flex gap-4">
               <span className="flex items-center gap-2 text-xs font-semibold bg-[#1e293b] px-3 py-1.5 rounded text-[#0284c7] border border-[#334155]">
@@ -62,18 +61,35 @@ export function BulkboxFooter({ store }: FooterProps) {
           <div>
             <h3 className="font-[family:var(--font-kanit)] font-bold text-lg mb-6 uppercase text-[#e2e8f0]">ติดต่อฝ่ายขาย</h3>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3 text-[#cbd5e1] text-sm">
-                <MapPin className="w-5 h-5 text-[#0284c7] shrink-0" />
-                <span>123 เขตอุตสาหกรรม ถนนบางนา-ตราด กม.18 ตำบลบางโฉลง อำเภอบางพลี สมุทรปราการ 10540</span>
-              </li>
-              <li className="flex items-center gap-3 text-[#cbd5e1] text-sm">
-                <Phone className="w-5 h-5 text-[#0284c7] shrink-0" />
-                <span>02-XXX-XXXX (ฝ่ายขาย B2B)</span>
-              </li>
-              <li className="flex items-center gap-3 text-[#cbd5e1] text-sm">
-                <Mail className="w-5 h-5 text-[#0284c7] shrink-0" />
-                <span>sales@{store.slug}.co.th</span>
-              </li>
+              {(() => {
+                const parts = [
+                  store.addressLine1,
+                  store.addressLine2,
+                  store.subdistrict,
+                  store.district,
+                  store.province,
+                  store.postalCode,
+                ].filter((p): p is string => Boolean(p && p.trim()));
+                if (parts.length === 0) return null;
+                return (
+                  <li className="flex items-start gap-3 text-[#cbd5e1] text-sm">
+                    <MapPin className="w-5 h-5 text-[#0284c7] shrink-0" />
+                    <span>{parts.join(' ')}</span>
+                  </li>
+                );
+              })()}
+              {store.contactPhone && (
+                <li className="flex items-center gap-3 text-[#cbd5e1] text-sm">
+                  <Phone className="w-5 h-5 text-[#0284c7] shrink-0" />
+                  <a href={`tel:${store.contactPhone}`} className="hover:text-white transition-colors">{store.contactPhone}</a>
+                </li>
+              )}
+              {store.contactEmail && (
+                <li className="flex items-center gap-3 text-[#cbd5e1] text-sm">
+                  <Mail className="w-5 h-5 text-[#0284c7] shrink-0" />
+                  <a href={`mailto:${store.contactEmail}`} className="hover:text-white transition-colors break-all">{store.contactEmail}</a>
+                </li>
+              )}
             </ul>
           </div>
         </div>

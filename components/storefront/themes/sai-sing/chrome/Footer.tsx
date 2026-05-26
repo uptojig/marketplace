@@ -6,22 +6,53 @@ export interface FooterProps {
     name: string;
     slug: string;
     logoUrl?: string | null;
+    description?: string | null;
+    tagline?: string | null;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
     facebookUrl?: string | null;
     instagramUrl?: string | null;
     twitterUrl?: string | null;
+    lineId?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    subdistrict?: string | null;
+    district?: string | null;
+    province?: string | null;
+    postalCode?: string | null;
   };
   categories: string[];
   accent?: string;
 }
 
+const DEFAULT_BRAND_COPY =
+  'สินค้าคุณภาพ คัดสรรอย่างพิถีพิถัน พร้อมบริการที่ใส่ใจทุกขั้นตอน';
+
 export function Footer({ store, categories, accent }: FooterProps) {
   const currentYear = new Date().getFullYear();
-  
+  const brandCopy =
+    store.description?.trim() ||
+    store.tagline?.trim() ||
+    DEFAULT_BRAND_COPY;
+
+  const addressParts = [
+    store.addressLine1,
+    store.addressLine2,
+    store.subdistrict,
+    store.district,
+    store.province,
+    store.postalCode,
+  ].filter((p): p is string => Boolean(p && p.trim()));
+  const hasAddress = addressParts.length > 0;
+
+  const hasAnyContact =
+    hasAddress || Boolean(store.contactEmail) || Boolean(store.contactPhone) || Boolean(store.lineId);
+
   return (
     <footer className="bg-[#050505] text-[#737373] border-t border-[#1f1f1f] py-12 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          
+
           {/* Brand Info */}
           <div className="md:col-span-1">
             {store.logoUrl ? (
@@ -32,7 +63,7 @@ export function Footer({ store, categories, accent }: FooterProps) {
               </span>
             )}
             <p className="mt-4 text-xs leading-relaxed text-[#525252]">
-              สำนักแต่งและจำหน่ายอะไหล่ซิ่งเกรดพรีเมียม สไตล์ Street Racer มั่นใจในคุณภาพ บริการติดตั้งระดับมืออาชีพ
+              {brandCopy}
             </p>
             <div className="mt-4 flex gap-4">
               {store.facebookUrl && (
@@ -71,7 +102,7 @@ export function Footer({ store, categories, accent }: FooterProps) {
             <ul className="space-y-2 text-xs">
               <li>
                 <a href={`/stores/${store.slug}/about`} className="hover:text-[#facc15] transition-colors">
-                  เกี่ยวกับเรา (18 ปีในลาดพร้าว)
+                  เกี่ยวกับเรา
                 </a>
               </li>
               <li>
@@ -83,13 +114,25 @@ export function Footer({ store, categories, accent }: FooterProps) {
           </div>
 
           {/* Contact info */}
-          <div>
-            <h4 className="text-xs uppercase tracking-widest text-[#fafafa] font-bold mb-4">ติดต่อเรา</h4>
-            <p className="text-xs leading-relaxed text-[#525252]">
-              ลาดพร้าว กรุงเทพมหานคร<br />
-              เปิดให้บริการทุกวัน 09:00 - 20:00 น.
-            </p>
-          </div>
+          {hasAnyContact && (
+            <div>
+              <h4 className="text-xs uppercase tracking-widest text-[#fafafa] font-bold mb-4">ติดต่อเรา</h4>
+              <ul className="space-y-2 text-xs leading-relaxed text-[#525252]">
+                {hasAddress && <li>{addressParts.join(' ')}</li>}
+                {store.contactPhone && (
+                  <li>
+                    <a href={`tel:${store.contactPhone}`} className="hover:text-[#facc15] transition-colors">{store.contactPhone}</a>
+                  </li>
+                )}
+                {store.contactEmail && (
+                  <li>
+                    <a href={`mailto:${store.contactEmail}`} className="hover:text-[#facc15] transition-colors break-all">{store.contactEmail}</a>
+                  </li>
+                )}
+                {store.lineId && <li>LINE {store.lineId}</li>}
+              </ul>
+            </div>
+          )}
 
         </div>
 

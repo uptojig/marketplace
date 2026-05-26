@@ -27,13 +27,7 @@ export function SaiSingHeaderAdapter(props: ScaffoldHeaderProps) {
 export function SaiSingFooterAdapter(props: ScaffoldFooterProps) {
   return (
     <SaiSingFooter
-      store={{
-        name: props.store.name,
-        slug: props.store.slug,
-        facebookUrl: props.store.facebookUrl,
-        instagramUrl: props.store.instagramUrl,
-        twitterUrl: props.store.twitterUrl,
-      }}
+      store={props.store}
       categories={props.categories ?? []}
       accent={props.accent}
     />

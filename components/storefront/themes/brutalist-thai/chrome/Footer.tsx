@@ -6,6 +6,14 @@ export interface FooterProps {
     name: string;
     slug: string;
     logoUrl?: string | null;
+    description?: string | null;
+    tagline?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    subdistrict?: string | null;
+    district?: string | null;
+    province?: string | null;
+    postalCode?: string | null;
   };
   categories: string[];
 }
@@ -28,7 +36,7 @@ export function Footer({ store, categories }: FooterProps) {
               </span>
             )}
             <p className="text-xs font-medium leading-relaxed">
-              โรงพิมพ์ระบบอนาล็อกและจัดจำหน่ายโปสเตอร์งานศิลปะสไตล์ Brutalist พิมพ์บนกระดาษอาร์ตหนาพิเศษ 250 แกรม ด้วยหมึกพรีเมียมสีเข้มข้นสูง
+              {store.description ?? store.tagline ?? 'งานพิมพ์ศิลปะคุณภาพสูง'}
             </p>
           </div>
 
@@ -50,14 +58,25 @@ export function Footer({ store, categories }: FooterProps) {
           </div>
 
           {/* Studio info */}
-          <div>
-            <h4 className="text-xs uppercase tracking-widest font-black mb-4 font-[family:var(--font-google-sans)]">STUDIO</h4>
-            <p className="text-xs leading-relaxed font-medium">
-              BLOCK PRESS STUDIO<br />
-              เจริญกรุง, กรุงเทพมหานคร<br />
-              เปิดวันพุธ - วันอาทิตย์ 11:00 - 19:00 น.
-            </p>
-          </div>
+          {(() => {
+            const parts = [
+              store.addressLine1,
+              store.addressLine2,
+              store.subdistrict,
+              store.district,
+              store.province,
+              store.postalCode,
+            ].filter((p): p is string => Boolean(p && p.trim()));
+            if (parts.length === 0) return null;
+            return (
+              <div>
+                <h4 className="text-xs uppercase tracking-widest font-black mb-4 font-[family:var(--font-google-sans)]">STUDIO</h4>
+                <p className="text-xs leading-relaxed font-medium">
+                  {parts.join(' ')}
+                </p>
+              </div>
+            );
+          })()}
 
           {/* Legal / Policy */}
           <div>

@@ -9,6 +9,18 @@ interface MaiHatthakamFooterProps {
     name: string;
     slug: string;
     logoUrl?: string | null;
+    description?: string | null;
+    tagline?: string | null;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
+    facebookUrl?: string | null;
+    instagramUrl?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    subdistrict?: string | null;
+    district?: string | null;
+    province?: string | null;
+    postalCode?: string | null;
   };
 }
 
@@ -30,40 +42,61 @@ export function MaiHatthakamFooter({ store }: MaiHatthakamFooterProps) {
               )}
             </Link>
             <p className="text-[#fde8c8]/80 text-sm leading-relaxed font-[family:var(--font-kanit)] mb-6 max-w-sm">
-              เซรามิกทำมือจากเตาดินเผาที่เชียงราย ทุกใบปั้นด้วยความตั้งใจ ส่งต่อร่องรอยของศิลปินผ่านงานฝีมือที่ใช้ได้จริงในชีวิตประจำวัน
+              {store.description ?? store.tagline ?? 'งานฝีมือคุณภาพ'}
             </p>
-            <div className="flex space-x-5">
-              <a href="#" className="text-[#fde8c8]/60 hover:text-[#d97706] transition-colors">
-                <span className="sr-only">Instagram</span>
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-[#fde8c8]/60 hover:text-[#d97706] transition-colors">
-                <span className="sr-only">Facebook</span>
-                <Facebook className="h-5 w-5" />
-              </a>
-            </div>
+            {(store.instagramUrl || store.facebookUrl) && (
+              <div className="flex space-x-5">
+                {store.instagramUrl && (
+                  <a href={store.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-[#fde8c8]/60 hover:text-[#d97706] transition-colors">
+                    <span className="sr-only">Instagram</span>
+                    <Instagram className="h-5 w-5" />
+                  </a>
+                )}
+                {store.facebookUrl && (
+                  <a href={store.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-[#fde8c8]/60 hover:text-[#d97706] transition-colors">
+                    <span className="sr-only">Facebook</span>
+                    <Facebook className="h-5 w-5" />
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Contact & Visit */}
           <div className="md:col-span-4 lg:col-span-4">
-            <h3 className="text-sm font-semibold text-[#fef9f1] tracking-wider uppercase mb-6 font-[family:var(--font-kanit)]">ติดต่อ & เยี่ยมชมเตาเผา</h3>
+            <h3 className="text-sm font-semibold text-[#fef9f1] tracking-wider uppercase mb-6 font-[family:var(--font-kanit)]">ติดต่อ</h3>
             <ul className="space-y-4">
-              <li className="flex items-start">
-                <MapPin className="h-5 w-5 text-[#7c2d12] mr-3 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-[#fde8c8]/80 font-[family:var(--font-kanit)] leading-relaxed">
-                  123 หมู่บ้านดินเผา ตำบลแม่อาย<br />
-                  อำเภอเมือง จังหวัดเชียงราย 57000<br />
-                  <span className="text-xs text-[#d97706] mt-1 block">เปิดให้เข้าชมทุกวันเสาร์ 10:00 - 16:00 น.</span>
-                </span>
-              </li>
-              <li className="flex items-center">
-                <Phone className="h-5 w-5 text-[#7c2d12] mr-3 flex-shrink-0" />
-                <span className="text-sm text-[#fde8c8]/80 font-[family:var(--font-kanit)]">053-123-4567</span>
-              </li>
-              <li className="flex items-center">
-                <Mail className="h-5 w-5 text-[#7c2d12] mr-3 flex-shrink-0" />
-                <span className="text-sm text-[#fde8c8]/80 font-[family:var(--font-kanit)]">hello@mai-hatthakam.com</span>
-              </li>
+              {(() => {
+                const parts = [
+                  store.addressLine1,
+                  store.addressLine2,
+                  store.subdistrict,
+                  store.district,
+                  store.province,
+                  store.postalCode,
+                ].filter((p): p is string => Boolean(p && p.trim()));
+                if (parts.length === 0) return null;
+                return (
+                  <li className="flex items-start">
+                    <MapPin className="h-5 w-5 text-[#7c2d12] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-[#fde8c8]/80 font-[family:var(--font-kanit)] leading-relaxed">
+                      {parts.join(' ')}
+                    </span>
+                  </li>
+                );
+              })()}
+              {store.contactPhone && (
+                <li className="flex items-center">
+                  <Phone className="h-5 w-5 text-[#7c2d12] mr-3 flex-shrink-0" />
+                  <a href={`tel:${store.contactPhone}`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)]">{store.contactPhone}</a>
+                </li>
+              )}
+              {store.contactEmail && (
+                <li className="flex items-center">
+                  <Mail className="h-5 w-5 text-[#7c2d12] mr-3 flex-shrink-0" />
+                  <a href={`mailto:${store.contactEmail}`} className="text-sm text-[#fde8c8]/80 hover:text-[#d97706] transition-colors font-[family:var(--font-kanit)] break-all">{store.contactEmail}</a>
+                </li>
+              )}
             </ul>
           </div>
 

@@ -23,7 +23,7 @@ export function CalderaSkinFooter({ store }: FooterProps) {
               )}
             </Link>
             <p className="font-[family:var(--font-prompt)] text-sm text-[#9cd6df]/80 uppercase tracking-widest leading-relaxed">
-              สกินแคร์สูตรเฉพาะ พัฒนาในห้องแล็บไทย
+              {store.description ?? store.tagline ?? 'สกินแคร์สูตรเฉพาะ'}
             </p>
           </div>
           
@@ -56,9 +56,21 @@ export function CalderaSkinFooter({ store }: FooterProps) {
               Lab Location
             </h3>
             <address className="not-italic font-[family:var(--font-prompt)] text-sm font-light text-[#f4f8f9]/80 space-y-4">
-              <p>Chula Cosmetics Lab<br />Bangkok, Thailand</p>
-              <p>Mon - Fri: 09:00 - 17:00</p>
-              <p>contact@{store.slug}.com</p>
+              {(() => {
+                const parts = [
+                  store.addressLine1,
+                  store.addressLine2,
+                  store.subdistrict,
+                  store.district,
+                  store.province,
+                  store.postalCode,
+                ].filter((p): p is string => Boolean(p && p.trim()));
+                if (parts.length === 0) return null;
+                return <p>{parts.join(' ')}</p>;
+              })()}
+              {store.contactEmail && (
+                <p><a href={`mailto:${store.contactEmail}`} className="hover:text-[#9cd6df] transition-colors break-all">{store.contactEmail}</a></p>
+              )}
             </address>
           </div>
         </div>

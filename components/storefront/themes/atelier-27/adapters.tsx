@@ -30,9 +30,18 @@ export function Atelier27FooterAdapter(props: ScaffoldFooterProps) {
       store={{
         name: props.store.name,
         slug: props.store.slug,
+        logoUrl: props.store.logoUrl,
+        description: props.store.description,
+        tagline: props.store.tagline,
         facebookUrl: props.store.facebookUrl,
         instagramUrl: props.store.instagramUrl,
         twitterUrl: props.store.twitterUrl,
+        addressLine1: props.store.addressLine1,
+        addressLine2: props.store.addressLine2,
+        subdistrict: props.store.subdistrict,
+        district: props.store.district,
+        province: props.store.province,
+        postalCode: props.store.postalCode,
       }}
       categories={props.categories ?? []}
       accent={props.accent}

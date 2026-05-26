@@ -28,6 +28,14 @@ export function BrutalistThaiFooterAdapter(props: ScaffoldFooterProps) {
       store={{
         name: props.store.name,
         slug: props.store.slug,
+        description: props.store.description,
+        tagline: props.store.tagline,
+        addressLine1: props.store.addressLine1,
+        addressLine2: props.store.addressLine2,
+        subdistrict: props.store.subdistrict,
+        district: props.store.district,
+        province: props.store.province,
+        postalCode: props.store.postalCode,
       }}
       categories={props.categories ?? []}
     />
