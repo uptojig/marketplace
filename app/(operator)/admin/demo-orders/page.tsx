@@ -107,6 +107,22 @@ export default function DemoOrdersPage() {
   const [storeDomains, setStoreDomains] = useState<string[]>([]);
   const [testLoading, setTestLoading] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  // Mock customer + transaction details (matches what the bank gateway
+  // exposes in their transaction-detail modal). All optional — the API
+  // falls back to placeholders.
+  const [testCustomerName, setTestCustomerName] = useState("");
+  const [testCustomerEmail, setTestCustomerEmail] = useState("");
+  const [testCustomerPhone, setTestCustomerPhone] = useState("");
+  const [testRef1, setTestRef1] = useState("");
+  const [testRef2, setTestRef2] = useState("");
+  const [testMid, setTestMid] = useState("");
+  const [testFee, setTestFee] = useState("");
+  const [testCustom1, setTestCustom1] = useState("");
+  const [testCustom2, setTestCustom2] = useState("");
+  const [testCustom3, setTestCustom3] = useState("");
+  const [testCustom4, setTestCustom4] = useState("");
+  const [testCustom5, setTestCustom5] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -115,6 +131,8 @@ export default function DemoOrdersPage() {
         fetch("/api/admin/webhook-logs?limit=50&source=ANYPAY"),
         fetch("/api/admin/stores"),
       ]);
+      // (storesRes parsed below; declaration moved here so the
+      //  full-store fallback can run even when the response is empty.)
       if (ordersRes.ok) {
         const data = await ordersRes.json();
         setOrders(data.orders ?? []);
@@ -125,9 +143,17 @@ export default function DemoOrdersPage() {
       }
       if (storesRes.ok) {
         const data = await storesRes.json();
-        const domains = (data.stores ?? data ?? [])
-          .map((s: { customDomain?: string | null }) => s.customDomain)
-          .filter(Boolean) as string[];
+        // Show EVERY store in the test dropdown so dev can fire a
+        // webhook against any storefront — custom-domain or not.
+        // Falls back to "<slug>.basketplace.co" for stores that
+        // haven't published a vanity domain yet.
+        const stores = (data.stores ?? data ?? []) as Array<{
+          slug?: string;
+          customDomain?: string | null;
+        }>;
+        const domains = stores
+          .map((s) => s.customDomain || (s.slug ? `${s.slug}.basketplace.co` : null))
+          .filter((d): d is string => Boolean(d));
         if (domains.length > 0) {
           setStoreDomains(domains);
           setTestDomain((prev) => (domains.includes(prev) ? prev : domains[0]));
@@ -163,6 +189,18 @@ export default function DemoOrdersPage() {
           amount: parseFloat(testAmount) || 500,
           channel: testChannel,
           domain: testDomain,
+          customerName: testCustomerName.trim() || undefined,
+          customerEmail: testCustomerEmail.trim() || undefined,
+          customerPhone: testCustomerPhone.trim() || undefined,
+          ref1: testRef1.trim() || undefined,
+          ref2: testRef2.trim() || undefined,
+          mid: testMid.trim() || undefined,
+          fee: testFee.trim() ? parseFloat(testFee) : undefined,
+          custom1: testCustom1.trim() || undefined,
+          custom2: testCustom2.trim() || undefined,
+          custom3: testCustom3.trim() || undefined,
+          custom4: testCustom4.trim() || undefined,
+          custom5: testCustom5.trim() || undefined,
         }),
       });
       const data = await res.json();
@@ -288,6 +326,113 @@ export default function DemoOrdersPage() {
                 </SelectContent>
               </Select>
             </OperatorField>
+
+            {/* Customer identity — populates the User row + the webhook
+                 payload so demo orders look like real buyers (matters
+                 for chargeback evidence testing). */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <OperatorField label="ชื่อลูกค้า">
+                <input
+                  type="text"
+                  value={testCustomerName}
+                  onChange={(e) => setTestCustomerName(e.target.value)}
+                  placeholder="พุฒิพร ลอวสัน"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </OperatorField>
+              <OperatorField label="อีเมลลูกค้า">
+                <input
+                  type="email"
+                  value={testCustomerEmail}
+                  onChange={(e) => setTestCustomerEmail(e.target.value)}
+                  placeholder="buyer@example.com"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </OperatorField>
+            </div>
+
+            <OperatorField label="เบอร์โทรลูกค้า">
+              <input
+                type="tel"
+                value={testCustomerPhone}
+                onChange={(e) => setTestCustomerPhone(e.target.value)}
+                placeholder="081-234-5678"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              />
+            </OperatorField>
+
+            {/* Bank/gateway-level transaction detail fields — match
+                 what shows in the gateway's TX detail modal (ref1/2,
+                 MID, fee, custom 1-5). All optional; hidden by default. */}
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="text-xs text-muted-foreground hover:text-foreground underline w-fit"
+            >
+              {showAdvanced ? "ซ่อน" : "แสดง"}ข้อมูลธุรกรรมขั้นสูง (ref1, ref2, MID, fee, custom 1-5)
+            </button>
+
+            {showAdvanced && (
+              <div className="space-y-3 rounded-md border border-dashed p-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <OperatorField label="ref1">
+                    <input
+                      type="text"
+                      value={testRef1}
+                      onChange={(e) => setTestRef1(e.target.value)}
+                      placeholder="00CIMB26050700256964"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono"
+                    />
+                  </OperatorField>
+                  <OperatorField label="ref2">
+                    <input
+                      type="text"
+                      value={testRef2}
+                      onChange={(e) => setTestRef2(e.target.value)}
+                      placeholder="ODRddf0e1d49f4f"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono"
+                    />
+                  </OperatorField>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <OperatorField label="MID">
+                    <input
+                      type="text"
+                      value={testMid}
+                      onChange={(e) => setTestMid(e.target.value)}
+                      placeholder="010555915430967"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono"
+                    />
+                  </OperatorField>
+                  <OperatorField label="ค่าธรรมเนียม (THB)">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={testFee}
+                      onChange={(e) => setTestFee(e.target.value)}
+                      placeholder="350"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </OperatorField>
+                </div>
+                {([
+                  ["1", testCustom1, setTestCustom1],
+                  ["2", testCustom2, setTestCustom2],
+                  ["3", testCustom3, setTestCustom3],
+                  ["4", testCustom4, setTestCustom4],
+                  ["5", testCustom5, setTestCustom5],
+                ] as const).map(([n, val, setter]) => (
+                  <OperatorField key={n} label={`ข้อมูลที่กำหนดเอง ${n}`}>
+                    <input
+                      type="text"
+                      value={val}
+                      onChange={(e) => setter(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </OperatorField>
+                ))}
+              </div>
+            )}
 
             {testResult && (
               <OperatorCallout tone={testResult.ok ? "success" : "danger"}>

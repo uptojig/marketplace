@@ -18,7 +18,23 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: { amount?: number; channel?: string; domain?: string };
+  let body: {
+    amount?: number;
+    channel?: string;
+    domain?: string;
+    customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    ref1?: string;
+    ref2?: string;
+    mid?: string;
+    fee?: number;
+    custom1?: string;
+    custom2?: string;
+    custom3?: string;
+    custom4?: string;
+    custom5?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -38,8 +54,18 @@ export async function POST(req: Request) {
         amount,
         currency: "THB",
         channel,
-        customer_name: "ทดสอบ Demo",
-        customer_email: "test@basketplace.co",
+        customer_name: body.customerName ?? "ทดสอบ Demo",
+        customer_email: body.customerEmail ?? "test@basketplace.co",
+        customer_phone: body.customerPhone,
+        ref1: body.ref1,
+        ref2: body.ref2,
+        mid: body.mid,
+        fee: body.fee,
+        custom1: body.custom1,
+        custom2: body.custom2,
+        custom3: body.custom3,
+        custom4: body.custom4,
+        custom5: body.custom5,
         timestamp: new Date().toISOString(),
         metadata: { test: true },
       },
