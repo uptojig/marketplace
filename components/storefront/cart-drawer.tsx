@@ -214,44 +214,53 @@ export function CartDrawer({ storeSlug, freeShippingThreshold = 990 }: Props) {
                       )}
                     </div>
                     <div className="flex items-end justify-between">
-                      <div
-                        className="inline-flex items-center rounded-full border overflow-hidden"
-                        style={{
-                          borderColor: 'var(--shop-border, #e5e5e5)',
-                          background: 'var(--shop-bg, #ffffff)',
-                        }}
-                      >
-                        <button
-                          onClick={() =>
-                            setQty(
-                              line.productId,
-                              Math.max(line.qty - 1, 0),
-                              line.storeSlug,
-                            )
-                          }
-                          aria-label="ลดจำนวน"
-                          className="px-2 py-1"
-                          style={{ color: 'var(--shop-ink, #0a0a0a)' }}
-                        >
-                          <Minus size={12} />
-                        </button>
+                      {line.productType === 'DIGITAL' ? (
                         <span
-                          className="px-2 text-xs font-bold tabular-nums min-w-[18px] text-center"
-                          style={{ color: 'var(--shop-ink, #0a0a0a)' }}
+                          className="text-xs font-[family:var(--font-prompt)]"
+                          style={{ color: 'var(--shop-ink-muted, #71717a)' }}
                         >
-                          {line.qty}
+                          {line.qty === 1 ? '1 ชิ้น' : `${line.qty} ชิ้น (ดิจิทัล)`}
                         </span>
-                        <button
-                          onClick={() =>
-                            setQty(line.productId, line.qty + 1, line.storeSlug)
-                          }
-                          aria-label="เพิ่มจำนวน"
-                          className="px-2 py-1"
-                          style={{ color: 'var(--shop-ink, #0a0a0a)' }}
+                      ) : (
+                        <div
+                          className="inline-flex items-center rounded-full border overflow-hidden"
+                          style={{
+                            borderColor: 'var(--shop-border, #e5e5e5)',
+                            background: 'var(--shop-bg, #ffffff)',
+                          }}
                         >
-                          <Plus size={12} />
-                        </button>
-                      </div>
+                          <button
+                            onClick={() =>
+                              setQty(
+                                line.productId,
+                                Math.max(line.qty - 1, 0),
+                                line.storeSlug,
+                              )
+                            }
+                            aria-label="ลดจำนวน"
+                            className="px-2 py-1"
+                            style={{ color: 'var(--shop-ink, #0a0a0a)' }}
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span
+                            className="px-2 text-xs font-bold tabular-nums min-w-[18px] text-center"
+                            style={{ color: 'var(--shop-ink, #0a0a0a)' }}
+                          >
+                            {line.qty}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setQty(line.productId, line.qty + 1, line.storeSlug)
+                            }
+                            aria-label="เพิ่มจำนวน"
+                            className="px-2 py-1"
+                            style={{ color: 'var(--shop-ink, #0a0a0a)' }}
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2">
                         <p
                           className="text-sm font-[family:var(--font-kanit)] font-bold tabular-nums"

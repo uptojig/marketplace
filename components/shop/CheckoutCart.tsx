@@ -67,7 +67,7 @@ export function CheckoutCart({
             </div>
             <div className="text-xs text-muted-foreground">{l.storeName}</div>
             <div className="flex items-center justify-between pt-1">
-              {editable ? (
+              {editable && l.productType !== "DIGITAL" ? (
                 <div className="inline-flex h-7 items-center rounded-md border text-sm">
                   <button
                     type="button"
@@ -90,7 +90,13 @@ export function CheckoutCart({
                   </button>
                 </div>
               ) : (
-                <span className="text-xs text-muted-foreground">x{l.qty}</span>
+                <span className="text-xs text-muted-foreground">
+                  {l.productType === "DIGITAL"
+                    ? l.qty === 1
+                      ? "1 ชิ้น"
+                      : `${l.qty} ชิ้น (ดิจิทัล)`
+                    : `x${l.qty}`}
+                </span>
               )}
               <span className="text-sm font-semibold">{formatTHB(l.priceTHB * l.qty)}</span>
             </div>

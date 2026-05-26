@@ -13,6 +13,7 @@ const NAV = [
   { href: "/admin/agents", label: "ตัวแทน (Agents)", icon: "Award", group: "ตรวจสอบและอนุมัติ" },
   { href: "/admin/users", label: "ผู้ใช้", icon: "Users", group: "ผู้ใช้และระบบ" },
   { href: "/admin/orders", label: "คำสั่งซื้อ", icon: "ShoppingCart", group: "จัดการ Marketplace" },
+  { href: "/admin/credit-topups", label: "เติมเครดิต", icon: "Wallet", group: "จัดการ Marketplace" },
   { href: "/admin/messages", label: "ข้อความ", icon: "Mail", group: "จัดการ Marketplace" },
   { href: "/admin/products", label: "สินค้า", icon: "Package", group: "จัดการ Marketplace" },
   { href: "/admin/audit-log", label: "Audit log", icon: "Shield", group: "ผู้ใช้และระบบ" },

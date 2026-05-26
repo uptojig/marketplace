@@ -58,6 +58,21 @@ export default async function CreditPage({
     listLedger({ userId: user.id, storeId: store.id, limit: 20 }),
   ]);
 
+  // Hydrate topup reference numbers so the ledger UI can link to
+  // /receipts/<ref> without a client round-trip.
+  const topupIds = ledgerRows
+    .map((e) => e.topupId)
+    .filter((id): id is string => Boolean(id));
+  const topupRefs = topupIds.length
+    ? await prisma.creditTopup.findMany({
+        where: { id: { in: topupIds } },
+        select: { id: true, referenceNumber: true },
+      })
+    : [];
+  const refByTopupId = new Map(
+    topupRefs.map((t) => [t.id, t.referenceNumber] as const),
+  );
+
   const initialLedger = ledgerRows.map((e) => ({
     id: e.id,
     type: e.type as 'TOPUP' | 'SPEND' | 'REFUND' | 'ADJUST',
@@ -65,6 +80,7 @@ export default async function CreditPage({
     balanceAfterTHB: Number(e.balanceAfter),
     orderId: e.orderId,
     topupId: e.topupId,
+    topupRef: e.topupId ? (refByTopupId.get(e.topupId) ?? null) : null,
     note: e.note,
     createdAt: e.createdAt.toISOString(),
   }));

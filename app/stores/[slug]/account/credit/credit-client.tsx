@@ -24,6 +24,10 @@ interface LedgerEntry {
   balanceAfterTHB: number;
   orderId: string | null;
   topupId: string | null;
+  /** Human-readable TOP-YYYYMMDD-XXXXXX. Present on TOPUP entries
+   *  whose CreditTopup row carries a referenceNumber (server stamps
+   *  this at intent creation; pre-evidence-pack rows may be NULL). */
+  topupRef: string | null;
   note: string | null;
   createdAt: string;
 }
@@ -54,6 +58,13 @@ export function CreditClient({
   const [amountError, setAmountError] = useState<string | null>(null);
   const [topupLoading, setTopupLoading] = useState(false);
   const [topupError, setTopupError] = useState<string | null>(null);
+  /** Per-top-up ToS acceptance — buyer must tick the checkbox each
+   *  time. Server stamps the version + timestamp on the CreditTopup
+   *  row for chargeback evidence. */
+  const [tosAccepted, setTosAccepted] = useState(false);
+  // Keep in sync with CURRENT_CREDIT_TOS_VERSION in
+  // app/api/credit/topup/route.ts — the server rejects mismatches.
+  const TOS_VERSION = "credit-2026-05-26";
 
   const [polling, setPolling] = useState(false);
   const [pollTimedOut, setPollTimedOut] = useState(false);
@@ -159,6 +170,10 @@ export function CreditClient({
       setTopupError('กรุณาเลือกหรือระบุยอดเติมที่ถูกต้อง');
       return;
     }
+    if (!tosAccepted) {
+      setTopupError('กรุณายอมรับเงื่อนไขก่อนทำรายการ');
+      return;
+    }
     setTopupLoading(true);
     try {
       const res = await fetch('/api/credit/topup', {
@@ -167,6 +182,8 @@ export function CreditClient({
         body: JSON.stringify({
           storeSlug,
           amountTHB: effectiveAmount,
+          tosAccepted: true,
+          tosVersion: TOS_VERSION,
         }),
       });
       const data = await res.json().catch(() => null);
@@ -372,9 +389,35 @@ export function CreditClient({
             </p>
           )}
 
+          <label
+            className="mt-4 flex items-start gap-2 text-xs font-[family:var(--font-prompt)] cursor-pointer select-none"
+            style={{ color: 'var(--shop-ink-muted,#71717a)' }}
+          >
+            <input
+              type="checkbox"
+              checked={tosAccepted}
+              onChange={(e) => setTosAccepted(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              ข้าพเจ้ายอมรับ{' '}
+              <a
+                href="/terms/credit"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:opacity-70"
+                style={{ color: 'var(--shop-primary,#0a0a0a)' }}
+              >
+                เงื่อนไขการเติมเครดิต
+              </a>{' '}
+              และเข้าใจว่าเครดิตที่เติมเข้าระบบแล้วไม่สามารถแลกเปลี่ยน
+              หรือขอคืนเป็นเงินสดได้
+            </span>
+          </label>
+
           <button
             type="button"
-            disabled={topupLoading || !effectiveAmount || !!amountError}
+            disabled={topupLoading || !effectiveAmount || !!amountError || !tosAccepted}
             onClick={handleTopup}
             className="mt-5 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
             style={{
@@ -509,6 +552,16 @@ function LedgerRow({
                 <FileDown className="h-3 w-3" />
               )}
               ดูออเดอร์
+            </Link>
+          )}
+          {entry.type === 'TOPUP' && entry.topupRef && (
+            <Link
+              href={`/stores/${storeSlug}/account/credit/receipts/${entry.topupRef}`}
+              className="mt-1 ml-3 inline-flex items-center gap-1 text-[11px] font-semibold"
+              style={{ color: 'var(--shop-primary,#0a0a0a)' }}
+            >
+              <Receipt className="h-3 w-3" />
+              ดูใบเสร็จ
             </Link>
           )}
         </div>

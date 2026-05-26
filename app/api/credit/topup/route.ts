@@ -24,7 +24,18 @@ const schema = z.object({
   // can't move 7-figure sums in one shot. Buyers can top up multiple
   // times if they really need more.
   amountTHB: z.number().int().positive().max(100_000),
+  /** Must be true — the buyer ticked the "ยอมรับเงื่อนไขการเติมเครดิต"
+   *  checkbox. Required for chargeback defense. */
+  tosAccepted: z.literal(true),
+  /** Slug of the ToS document version the buyer saw. Stored on the
+   *  CreditTopup row alongside tosAcceptedAt. */
+  tosVersion: z.string().min(1).max(60),
 });
+
+/** Server-side ToS version constant. Bump this string whenever the
+ *  /terms/credit page changes; new top-ups stamp the new version and
+ *  old rows keep their original. */
+export const CURRENT_CREDIT_TOS_VERSION = "credit-2026-05-26";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions).catch(() => null);
@@ -57,6 +68,31 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Store not found" }, { status: 404 });
   }
 
+  // Server-side ToS check — reject anything that doesn't match the
+  // currently-published version. A buyer who saw a stale form (e.g.
+  // open tab during a ToS update) is forced to re-confirm.
+  if (parsed.data.tosVersion !== CURRENT_CREDIT_TOS_VERSION) {
+    return NextResponse.json(
+      {
+        error: "เงื่อนไขการเติมเครดิตมีการอัปเดต กรุณารีโหลดหน้านี้แล้วยอมรับใหม่",
+        code: "TOS_VERSION_MISMATCH",
+        currentVersion: CURRENT_CREDIT_TOS_VERSION,
+      },
+      { status: 409 },
+    );
+  }
+
+  // Capture chargeback-defense evidence at intent creation time. We
+  // honor X-Forwarded-For (added by Caddy / load balancers) but only
+  // trust the FIRST hop — downstream entries can be forged by the
+  // client. Falls back to the direct connection IP otherwise.
+  const xff = req.headers.get("x-forwarded-for") ?? "";
+  const ipAddress =
+    xff.split(",")[0]?.trim()
+    || req.headers.get("x-real-ip")
+    || undefined;
+  const userAgent = req.headers.get("user-agent")?.slice(0, 1000) ?? undefined;
+
   try {
     const result = await createTopupIntent({
       userId: user.id,
@@ -64,6 +100,9 @@ export async function POST(req: Request) {
       storeSlug: store.slug,
       amountTHB: parsed.data.amountTHB,
       customerEmail: user.email ?? undefined,
+      ipAddress,
+      userAgent,
+      tosVersion: parsed.data.tosVersion,
     });
     return NextResponse.json(result);
   } catch (err) {
