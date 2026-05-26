@@ -157,6 +157,22 @@ export function StoreCartClient({
     );
   }
 
+  // Once the server map arrives, clamp any DIGITAL line whose qty > 1
+  // down to 1 — DIGITAL items are licensed per-buyer; legacy carts
+  // from before the qty-cap shipped may still carry qty=N.
+  useEffect(() => {
+    if (Object.keys(serverTypes).length === 0) return;
+    for (const l of lines) {
+      if (
+        l.qty > 1
+        && (serverTypes[l.productId] === "DIGITAL" || l.productType === "DIGITAL")
+      ) {
+        setQty(l.productId, 1, store.slug);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverTypes]);
+
   // All-digital carts ship nothing — no shipping fee, no free-shipping
   // progress bar. The "ซื้ออีก ฿X จะได้ส่งฟรี" nudge would be confusing
   // for a buyer of pure software.
@@ -560,7 +576,7 @@ export function StoreCartClient({
                             so the custom +/- buttons aren't visually
                             doubled. Per-store cart isolation: scope the
                             mutation to (productId, store.slug). */}
-                        {l.productType === "DIGITAL" ? (
+                        {lineIsDigital(l.productId, l.productType) ? (
                           <span
                             className="text-xs font-[family:var(--font-prompt)]"
                             style={{ color: "var(--shop-ink-muted)" }}
