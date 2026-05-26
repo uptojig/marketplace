@@ -5,6 +5,7 @@ import { getNotifier } from "@/lib/notify";
 import {
   sendOrderPaidEmail,
   sendDigitalUnlockReadyEmail,
+  sendGiftUnlockReadyEmails,
 } from "@/lib/transactional-email";
 import { createDigitalUnlocksForOrder } from "@/lib/digital/create-unlocks";
 
@@ -131,6 +132,17 @@ export async function runPostPaidHooks(
       await notifier.info("order.digital.email_skipped", {
         orderId,
         reason: digitalEmailResult.reason,
+      });
+    }
+    // Gift recipients get their own magic-link email. Hook is idempotent
+    // on its own because it only emails unlocks with recipientEmail
+    // set; replays still match zero rows on the second pass.
+    const giftResult = await sendGiftUnlockReadyEmails({ orderId });
+    if (giftResult.sent + giftResult.failed > 0) {
+      await notifier.info("order.gift.emails", {
+        orderId,
+        sent: giftResult.sent,
+        failed: giftResult.failed,
       });
     }
   }

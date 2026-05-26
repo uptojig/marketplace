@@ -11,6 +11,14 @@ import type { Coupon } from "@/lib/coupons/types";
 export interface CartLine {
   productId: string;
   qty: number;
+  /** Gift recipients — set ONLY for DIGITAL products. createOrderFromCart
+   *  validates that qty === recipients.length and the product is
+   *  DIGITAL before snapshotting onto OrderItem.giftRecipientsJson. */
+  giftRecipients?: {
+    email: string;
+    name: string;
+    message?: string;
+  }[];
 }
 
 export interface CreateOrderInput {
@@ -48,6 +56,26 @@ export async function createOrderFromCart(input: CreateOrderInput) {
   }
 
   const lineMap = new Map(input.items.map((i) => [i.productId, i.qty]));
+  const giftMap = new Map(
+    input.items
+      .filter((i) => i.giftRecipients && i.giftRecipients.length > 0)
+      .map((i) => [i.productId, i.giftRecipients!]),
+  );
+
+  // Server-side validation: gift recipients only allowed on DIGITAL
+  // products, and qty MUST equal recipients.length so the post-PAID
+  // hook creates the right number of unlocks.
+  for (const item of input.items) {
+    if (!item.giftRecipients || item.giftRecipients.length === 0) continue;
+    const product = products.find((p) => p.id === item.productId);
+    if (!product) continue;
+    if (product.productType !== "DIGITAL") {
+      throw new Error("ของขวัญใช้ได้กับสินค้าดิจิทัลเท่านั้น");
+    }
+    if (item.qty !== item.giftRecipients.length) {
+      throw new Error("จำนวนผู้รับไม่ตรงกับจำนวนสินค้า");
+    }
+  }
   const subtotalNumber = products.reduce(
     (acc, p) => acc + Number(p.priceTHB) * (lineMap.get(p.id) ?? 0),
     0,
@@ -137,13 +165,20 @@ export async function createOrderFromCart(input: CreateOrderInput) {
         shippingAddressJson:
           (input.address ?? Prisma.JsonNull) as unknown as Prisma.InputJsonValue,
         items: {
-          create: products.map((p) => ({
-            productId: p.id,
-            storeId: p.storeId,
-            qty: lineMap.get(p.id) ?? 1,
-            unitPriceTHB: p.priceTHB,
-            supplier: p.supplier,
-          })),
+          create: products.map((p) => {
+            const gifts = giftMap.get(p.id);
+            return {
+              productId: p.id,
+              storeId: p.storeId,
+              qty: lineMap.get(p.id) ?? 1,
+              unitPriceTHB: p.priceTHB,
+              supplier: p.supplier,
+              giftRecipientsJson:
+                gifts && gifts.length > 0
+                  ? (gifts as unknown as Prisma.InputJsonValue)
+                  : Prisma.JsonNull,
+            };
+          }),
         },
         payment: {
           create: {

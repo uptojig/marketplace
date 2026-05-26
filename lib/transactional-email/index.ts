@@ -24,6 +24,9 @@ export type { SendAbandonedCartInput } from "./hooks/send-abandoned-cart";
 export { sendDigitalUnlockReadyEmail } from "./hooks/send-digital-unlock-ready";
 export type { SendDigitalUnlockReadyInput } from "./hooks/send-digital-unlock-ready";
 
+export { sendGiftUnlockReadyEmails } from "./hooks/send-gift-unlock-ready";
+export type { SendGiftUnlockReadyInput } from "./hooks/send-gift-unlock-ready";
+
 // Low-level primitives.
 export { sendEmail } from "./send";
 export type { SendEmailOptions, SendEmailResult } from "./send";

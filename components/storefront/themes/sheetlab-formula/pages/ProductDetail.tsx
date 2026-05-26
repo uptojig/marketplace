@@ -18,6 +18,9 @@ import {
   FileSpreadsheet,
   Download,
   Check,
+  Plus,
+  X,
+  Gift,
 } from 'lucide-react';
 import type { ProductDetailProps } from '@/lib/templates/types';
 import { useCart } from '@/lib/store/cart';
@@ -30,6 +33,13 @@ const FEATURE_BULLETS = [
   'ปลดล็อกเซลล์ไม่จำกัด แก้ไขได้',
 ];
 
+const MAX_RECIPIENTS = 20;
+const MESSAGE_MAX = 200;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type Recipient = { email: string; name: string; message?: string };
+type BuyMode = 'self' | 'gift';
+
 export default function SheetlabFormulaProductDetail({
   store,
   product,
@@ -38,6 +48,11 @@ export default function SheetlabFormulaProductDetail({
   const add = useCart((s) => s.add);
   const [activeImg, setActiveImg] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
+  const [lastAddedMode, setLastAddedMode] = useState<BuyMode>('self');
+  const [mode, setMode] = useState<BuyMode>('self');
+  const [recipients, setRecipients] = useState<Recipient[]>([
+    { email: '', name: '', message: '' },
+  ]);
 
   const homeUrl = `/stores/${store.slug}`;
   const catalogUrl = `/stores/${store.slug}/category`;
@@ -62,20 +77,77 @@ export default function SheetlabFormulaProductDetail({
     product.originalPriceTHB != null &&
     product.originalPriceTHB > product.priceTHB;
 
+  const giftInvalid = useMemo(() => {
+    if (mode !== 'gift') return false;
+    if (recipients.length === 0) return true;
+    return recipients.some(
+      (r) => !r.name.trim() || !r.email.trim() || !EMAIL_RE.test(r.email.trim()),
+    );
+  }, [mode, recipients]);
+
+  const updateRecipient = (idx: number, patch: Partial<Recipient>) => {
+    setRecipients((prev) =>
+      prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)),
+    );
+  };
+
+  const addRecipient = () => {
+    setRecipients((prev) =>
+      prev.length >= MAX_RECIPIENTS
+        ? prev
+        : [...prev, { email: '', name: '', message: '' }],
+    );
+  };
+
+  const removeRecipient = (idx: number) => {
+    setRecipients((prev) =>
+      prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx),
+    );
+  };
+
   const handleAdd = () => {
-    add({
+    if (mode === 'gift' && giftInvalid) return;
+
+    const base = {
       productId: product.id,
       storeSlug: store.slug,
       storeName: store.name,
       title: product.title,
       priceTHB: product.priceTHB,
       imageUrl: product.imageUrl ?? undefined,
-      productType: 'DIGITAL',
-      digitalKind: 'EXCEL',
-    });
+      productType: 'DIGITAL' as const,
+      digitalKind: 'EXCEL' as const,
+    };
+
+    if (mode === 'gift') {
+      const cleaned = recipients.map((r) => {
+        const msg = r.message?.trim();
+        return {
+          email: r.email.trim(),
+          name: r.name.trim(),
+          ...(msg ? { message: msg } : {}),
+        };
+      });
+      add({ ...base, giftRecipients: cleaned }, cleaned.length);
+    } else {
+      add(base);
+    }
+
+    setLastAddedMode(mode);
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 2000);
+    // Reset gift form back to defaults after a successful add.
+    setRecipients([{ email: '', name: '', message: '' }]);
+    setMode('self');
   };
+
+  const giftTotal = product.priceTHB * recipients.length;
+  const buyLabel =
+    mode === 'gift' && recipients.length >= 1
+      ? `ส่งของขวัญให้ ${recipients.length} คน`
+      : 'เพิ่มในตะกร้า';
+  const confirmLabel =
+    lastAddedMode === 'gift' ? 'ส่งของขวัญแล้ว ✓' : 'เพิ่มในตะกร้า ✓';
 
   return (
     <div className="min-h-screen bg-[#F8FAFB] text-[#1F2937] font-[family:var(--font-prompt)]">
@@ -218,16 +290,164 @@ export default function SheetlabFormulaProductDetail({
               </ul>
             </div>
 
-            {/* Add to cart */}
+            {/* Mode picker + Add to cart */}
             <div className="mt-7">
+              <div
+                role="tablist"
+                aria-label="เลือกวิธีซื้อ"
+                className="flex flex-col sm:flex-row gap-2 mb-4"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === 'self'}
+                  onClick={() => setMode('self')}
+                  className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold border transition-colors ${
+                    mode === 'self'
+                      ? 'text-white border-transparent'
+                      : 'bg-white text-[#1F2937] border-[#E5E7EB] hover:border-[#107C41]'
+                  }`}
+                  style={
+                    mode === 'self' ? { background: '#107C41' } : undefined
+                  }
+                >
+                  ซื้อให้ตัวเอง
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === 'gift'}
+                  onClick={() => setMode('gift')}
+                  className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold border transition-colors ${
+                    mode === 'gift'
+                      ? 'text-white border-transparent'
+                      : 'bg-white text-[#1F2937] border-[#E5E7EB] hover:border-[#F5A623]'
+                  }`}
+                  style={
+                    mode === 'gift' ? { background: '#F5A623' } : undefined
+                  }
+                >
+                  <Gift className="w-4 h-4" />
+                  ซื้อเป็นของขวัญ
+                </button>
+              </div>
+
+              {mode === 'gift' ? (
+                <div className="mb-4 rounded-md border border-[#E5E7EB] bg-white p-4">
+                  <div className="space-y-4">
+                    {recipients.map((r, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-md border border-[#E5E7EB] bg-[#FAFBFC] p-3"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-[#107C41] font-[family:var(--font-kanit)]">
+                            ผู้รับคนที่ {idx + 1}
+                          </span>
+                          {recipients.length > 1 ? (
+                            <button
+                              type="button"
+                              onClick={() => removeRecipient(idx)}
+                              aria-label={`ลบผู้รับคนที่ ${idx + 1}`}
+                              className="inline-flex items-center justify-center w-6 h-6 rounded text-[#6B7280] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          ) : null}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <input
+                            type="email"
+                            required
+                            value={r.email}
+                            onChange={(e) =>
+                              updateRecipient(idx, { email: e.target.value })
+                            }
+                            placeholder="อีเมล"
+                            aria-label={`อีเมลผู้รับคนที่ ${idx + 1}`}
+                            className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#1F2937] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#107C41] focus:ring-1 focus:ring-[#107C41]"
+                          />
+                          <input
+                            type="text"
+                            required
+                            value={r.name}
+                            onChange={(e) =>
+                              updateRecipient(idx, { name: e.target.value })
+                            }
+                            placeholder="ชื่อ"
+                            aria-label={`ชื่อผู้รับคนที่ ${idx + 1}`}
+                            className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#1F2937] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#107C41] focus:ring-1 focus:ring-[#107C41]"
+                          />
+                        </div>
+                        <div className="mt-2">
+                          <input
+                            type="text"
+                            value={r.message ?? ''}
+                            maxLength={MESSAGE_MAX}
+                            onChange={(e) =>
+                              updateRecipient(idx, {
+                                message: e.target.value,
+                              })
+                            }
+                            placeholder="ข้อความ (ไม่บังคับ)"
+                            aria-label={`ข้อความถึงผู้รับคนที่ ${idx + 1}`}
+                            className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#1F2937] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#107C41] focus:ring-1 focus:ring-[#107C41]"
+                          />
+                          <div className="mt-1 text-right text-[10px] text-[#9CA3AF]">
+                            {(r.message?.length ?? 0)}/{MESSAGE_MAX}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {recipients.length < MAX_RECIPIENTS ? (
+                    <button
+                      type="button"
+                      onClick={addRecipient}
+                      className="mt-3 inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium text-[#107C41] border border-dashed border-[#107C41] hover:bg-[#F0FDF4] transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      เพิ่มผู้รับ
+                    </button>
+                  ) : null}
+
+                  {giftInvalid ? (
+                    <p
+                      className="mt-3 text-xs font-medium text-[#DC2626]"
+                      role="alert"
+                    >
+                      กรุณากรอกอีเมลและชื่อของผู้รับทุกคนให้ครบ และตรวจสอบรูปแบบอีเมลให้ถูกต้อง
+                    </p>
+                  ) : null}
+
+                  <div className="mt-4 pt-3 border-t border-[#E5E7EB] flex items-baseline justify-between flex-wrap gap-2">
+                    <span className="text-xs text-[#6B7280]">
+                      {recipients.length} × {formatTHB(product.priceTHB)}
+                    </span>
+                    <span
+                      className="text-base font-bold font-[family:var(--font-kanit)]"
+                      style={{ color: '#107C41' }}
+                    >
+                      รวม {formatTHB(giftTotal)}
+                    </span>
+                  </div>
+                </div>
+              ) : null}
+
               <button
                 type="button"
                 onClick={handleAdd}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-md text-white text-sm font-semibold shadow-sm hover:opacity-95 transition-opacity"
+                disabled={mode === 'gift' && giftInvalid}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-md text-white text-sm font-semibold shadow-sm hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ background: '#107C41' }}
               >
-                <Download className="w-4 h-4" />
-                เพิ่มในตะกร้า
+                {mode === 'gift' ? (
+                  <Gift className="w-4 h-4" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                {buyLabel}
               </button>
               {justAdded ? (
                 <p
@@ -235,7 +455,7 @@ export default function SheetlabFormulaProductDetail({
                   role="status"
                   aria-live="polite"
                 >
-                  เพิ่มในตะกร้า ✓
+                  {confirmLabel}
                 </p>
               ) : null}
               <p className="mt-3 text-xs text-[#6B7280]">
