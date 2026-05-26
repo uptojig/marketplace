@@ -68,23 +68,36 @@ export default async function AdminTopupEvidencePage({
 
   // Pull WebhookLog rows that mention this topup id — these are the
   // raw audit-log entries proving when AnyPay PAID-ed the transaction.
-  const webhookLogs = topup.anypayTransactionId
-    ? await prisma.webhookLog.findMany({
-        where: {
-          source: "ANYPAY",
-          OR: [
-            { bodyJson: { path: ["transaction_id"], equals: topup.anypayTransactionId } },
-            {
-              bodyJson: {
-                path: ["order_id"],
-                equals: `topup:${topup.id}`,
-              },
-            },
-          ],
-        },
-        orderBy: { receivedAt: "asc" },
-      })
-    : [];
+  // Raw SQL because Prisma's JSON-path filter typing is brittle here
+  // (different Prisma versions accept different shapes; PostgreSQL ->>
+  // is dependable). Wrapped in try/catch so a malformed payload from
+  // ages ago can't crash the whole evidence page.
+  type WebhookLogRow = {
+    id: string;
+    receivedAt: Date;
+    endpoint: string;
+    signatureValid: boolean;
+    processed: boolean;
+    processingError: string | null;
+  };
+  let webhookLogs: WebhookLogRow[] = [];
+  if (topup.anypayTransactionId) {
+    try {
+      webhookLogs = await prisma.$queryRaw<WebhookLogRow[]>`
+        SELECT id, "receivedAt", endpoint, "signatureValid",
+               processed, "processingError"
+        FROM "WebhookLog"
+        WHERE source = 'ANYPAY'
+          AND (
+            "bodyJson"->>'transaction_id' = ${topup.anypayTransactionId}
+            OR "bodyJson"->>'order_id' = ${"topup:" + topup.id}
+          )
+        ORDER BY "receivedAt" ASC
+      `;
+    } catch (err) {
+      console.warn("[admin/credit-topups] webhook log lookup failed:", err);
+    }
+  }
 
   // Buyer's per-store credit balance + ledger since this top-up. Shows
   // how the credit moved after settlement — burned on orders, refunded,
