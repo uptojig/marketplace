@@ -87,7 +87,9 @@ jobs:
               -v "$IMG_DIR":/images:ro \
               -w /app \
               node:20-bookworm-slim \
-              sh -c "corepack enable \
+              sh -c "apt-get update -qq \
+                && apt-get install -y -qq openssl ca-certificates \
+                && corepack enable \
                 && corepack prepare pnpm@9.0.0 --activate \
                 && pnpm install --no-frozen-lockfile --prefer-offline --silent \
                 && pnpm tsx scripts/seed-bulk-excel-templates.ts /images"
