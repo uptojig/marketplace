@@ -444,6 +444,11 @@ import {
   EduClassroomHomepageAdapter,
   edu_classroom_th_Catalog,
   edu_classroom_th_ProductDetail,
+  edu_classroom_th_Cart,
+  edu_classroom_th_Checkout,
+  edu_classroom_th_About,
+  edu_classroom_th_Help,
+  edu_classroom_th_Contact,
 } from '@/components/storefront/themes/edu-classroom-th/adapters';
 
 export const templates: Record<TemplateId, Template> = {
@@ -1462,10 +1467,11 @@ export const templates: Record<TemplateId, Template> = {
       home: EduClassroomHomepageAdapter,
       catalog: edu_classroom_th_Catalog,
       pdp: edu_classroom_th_ProductDetail,
-      cart: makeThaiCartAdapter(),
-      checkout: makeThaiCheckoutAdapter(),
-      about: makeAboutAdapter(),
-      help: makeHelpAdapter(),
+      cart: edu_classroom_th_Cart,
+      checkout: edu_classroom_th_Checkout,
+      about: edu_classroom_th_About,
+      help: edu_classroom_th_Help,
+      contact: edu_classroom_th_Contact,
     },
   },
 

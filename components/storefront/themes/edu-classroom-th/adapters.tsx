@@ -34,9 +34,10 @@ export function EduClassroomFooterAdapter(props: ScaffoldFooterProps) {
   );
 }
 
-// EduClassroom embeds its announcement bar directly into the Header
-// (the blue "ดาวน์โหลดได้ทันที" strip), so the scaffold strip slot is
-// intentionally null to avoid double-stacking.
+// EduClassroom embeds its always-on "ดาวน์โหลดทันที" announcement strip
+// directly into the Header. The scaffold-level strip slot stays null
+// to avoid double-stacking; operators who want the rotating strip
+// active should swap this for `AnnouncementStrip` from `./chrome`.
 export function EduClassroomStripAdapter(_props: ScaffoldStripProps) {
   return null;
 }
@@ -63,8 +64,14 @@ export function EduClassroomHomepageAdapter(props: ScaffoldHomepageProps) {
   );
 }
 
-// Page re-exports — let the dispatcher import lazily
+// Page re-exports — let the dispatcher import the bespoke pages lazily.
+// Every page below is hand-written; none of them go through any of the
+// shared catalog/pdp/cart/checkout adapter helpers (the bespoke spec
+// forbids that indirection).
 export { default as edu_classroom_th_Catalog } from './pages/Catalog';
 export { default as edu_classroom_th_ProductDetail } from './pages/ProductDetail';
 export { default as edu_classroom_th_Cart } from './pages/Cart';
 export { default as edu_classroom_th_Checkout } from './pages/Checkout';
+export { default as edu_classroom_th_About } from './pages/About';
+export { default as edu_classroom_th_Help } from './pages/Help';
+export { default as edu_classroom_th_Contact } from './pages/Contact';
