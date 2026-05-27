@@ -29,6 +29,8 @@ const GROUP_LABEL: Record<TemplateGroup, string> = {
   "neon": "นีออน & ของแต่งคอนเสิร์ต",
   "mystic-mu": "สายมู & เลเวลอัพ",
   "edu-classroom": "ห้องเรียน & สื่อการสอน",
+  "notion-mart": "เทมเพลต Notion",
+  "prompt-hub": "AI Prompts",
 };
 
 const GROUP_ORDER: TemplateGroup[] = [
