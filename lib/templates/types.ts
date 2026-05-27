@@ -39,6 +39,8 @@ export type TemplateGroup =
   | 'neon'
   | 'mystic-mu'
   | 'edu-classroom'
+  | 'prompt-hub'
+  | 'notion-mart'
 ;
 
 export type TemplateId =
@@ -97,7 +99,9 @@ export type TemplateId =
   | 'caseinw'
   | 'sheetlab-formula'
   | 'mystic-mu-th'
-  | 'edu-classroom-th';
+  | 'edu-classroom-th'
+  | 'prompt-hub-th'
+  | 'notion-mart-th';
 
 
 

@@ -93,6 +93,18 @@ import {
   EDU_CLASSROOM_BODY_CLASS,
   EDU_CLASSROOM_TOKENS,
 } from "@/lib/landing/edu-classroom";
+import {
+  isPromptHubStore,
+  promptHubCssVars,
+  PROMPT_HUB_BODY_CLASS,
+  PROMPT_HUB_TOKENS,
+} from "@/lib/landing/prompt-hub";
+import {
+  isNotionMartStore,
+  notionMartCssVars,
+  NOTION_MART_BODY_CLASS,
+  NOTION_MART_TOKENS,
+} from "@/lib/landing/notion-mart";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { isCaseStudioStore } from "@/lib/landing/case-studio";
 
@@ -110,6 +122,8 @@ export type ThemeKey =
   | "neon"
   | "mystic-mu"
   | "edu-classroom"
+  | "prompt-hub"
+  | "notion-mart"
   | "pet-house"
   | "case-studio"
   | "default";
@@ -197,6 +211,8 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   else if (isNeonStore(key)) chromeKey = "neon";
   else if (isMysticMuStore(key)) chromeKey = "mystic-mu";
   else if (isEduClassroomStore(key)) chromeKey = "edu-classroom";
+  else if (isPromptHubStore(key)) chromeKey = "prompt-hub";
+  else if (isNotionMartStore(key)) chromeKey = "notion-mart";
 
   let familyClass = "";
   let familyVars: Record<string, string> = {};
@@ -269,6 +285,18 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyAccent = EDU_CLASSROOM_TOKENS.primary;
       familyButtonShape = "pill";
       break;
+    case "prompt-hub":
+      familyClass = PROMPT_HUB_BODY_CLASS;
+      familyVars = promptHubCssVars();
+      familyAccent = PROMPT_HUB_TOKENS.primary;
+      familyButtonShape = "pill";
+      break;
+    case "notion-mart":
+      familyClass = NOTION_MART_BODY_CLASS;
+      familyVars = notionMartCssVars();
+      familyAccent = NOTION_MART_TOKENS.accent;
+      familyButtonShape = "square";
+      break;
     default:
       break;
   }
@@ -324,6 +352,8 @@ export function resolveContentThemeKey(store: ThemeInput): ThemeKey {
   if (isNeonStore(key)) return "neon";
   if (isMysticMuStore(key)) return "mystic-mu";
   if (isEduClassroomStore(key)) return "edu-classroom";
+  if (isPromptHubStore(key)) return "prompt-hub";
+  if (isNotionMartStore(key)) return "notion-mart";
   return "default";
 }
 

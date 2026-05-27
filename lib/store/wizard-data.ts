@@ -11,7 +11,8 @@ export type NicheId =
   | "wholesale"
   | "handmade"
   | "vintage"
-  | "general";
+  | "general"
+  | "digital";
 
 export type Niche = {
   id: NicheId;
@@ -32,6 +33,7 @@ export const NICHES: Niche[] = [
   { id: "handmade", label: "งานฝีมือ", emoji: "🎨", recommendedTemplates: ["mai-hatthakam", "pigment-studio"] },
   { id: "vintage", label: "วินเทจ / มือสอง", emoji: "🕰️", recommendedTemplates: ["brutalist-thai", "mono-eight", "atelier-27"] },
   { id: "general", label: "อื่นๆ / ขายทั่วไป", emoji: "🛍️", recommendedTemplates: ["pastel-pack", "sai-sing"] },
+  { id: "digital", label: "ดิจิทัล / AI", emoji: "🤖", recommendedTemplates: ["prompt-hub-th"] },
 ];
 
 // ─── Templates (20) ────────────────────────────────────────────────────────
@@ -417,6 +419,22 @@ export const TEMPLATES: Template[] = [
     group: "edu-classroom",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
+  },
+  {
+    id: "prompt-hub-th",
+    name: "PromptHub",
+    description: "มาร์เก็ตเพลส AI Prompts สำหรับ ChatGPT · Midjourney · Sora · ดาวน์โหลดได้ทันที",
+    group: "prompt-hub",
+    theme: { spacing: "default", radius: "round", titleScale: "display", font: "sans" },
+    behavior: { bottomNav: "visible", stickyCTA: "buy-now", digitalOnly: true },
+  },
+  {
+    id: "notion-mart-th",
+    name: "NotionMart",
+    description: "เทมเพลต Notion พร้อมใช้ · ระบบงาน · จัดการเวลา · ฐานข้อมูล CRM · ดาวน์โหลดทันที",
+    group: "notion-mart",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { stickyCTA: "buy-now", digitalOnly: true },
   },
 ];
 

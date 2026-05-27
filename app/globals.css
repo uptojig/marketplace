@@ -3050,3 +3050,161 @@
   outline-offset: 1px;
   border-color: var(--shop-primary, #2563EB);
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   theme-prompt-hub — Dark tech AI prompts marketplace.
+   Signature: neon purple + cyan on near-black indigo, tabular
+   numerics, glass surface cards, developer-grade typography.
+   ───────────────────────────────────────────────────────────────── */
+
+.theme-prompt-hub {
+  color-scheme: dark;
+}
+
+.theme-prompt-hub ::selection {
+  background-color: var(--shop-primary, #A855F7);
+  color: var(--shop-ink, #F8FAFC);
+}
+
+/* Neon glow utilities — the visual signature of the family. */
+.theme-prompt-hub .ph-glow-primary {
+  box-shadow:
+    0 0 0 1px rgba(168, 85, 247, 0.4),
+    0 0 12px rgba(168, 85, 247, 0.4),
+    0 0 32px rgba(168, 85, 247, 0.2);
+}
+.theme-prompt-hub .ph-glow-accent {
+  box-shadow:
+    0 0 0 1px rgba(6, 182, 212, 0.4),
+    0 0 12px rgba(6, 182, 212, 0.35),
+    0 0 28px rgba(6, 182, 212, 0.18);
+}
+.theme-prompt-hub .ph-glow-primary-lg {
+  box-shadow:
+    0 0 0 1px rgba(168, 85, 247, 0.5),
+    0 0 24px rgba(168, 85, 247, 0.5),
+    0 0 64px rgba(168, 85, 247, 0.28);
+}
+
+/* Gradient text — for hero headlines + price callouts. */
+.theme-prompt-hub .ph-gradient-text {
+  background-image: linear-gradient(135deg, #A855F7 0%, #06B6D4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.theme-prompt-hub .ph-gradient-bg {
+  background-image: linear-gradient(135deg, #A855F7 0%, #06B6D4 100%);
+}
+.theme-prompt-hub .ph-gradient-bg-soft {
+  background-image: linear-gradient(135deg, rgba(168, 85, 247, 0.16) 0%, rgba(6, 182, 212, 0.16) 100%);
+}
+
+/* Glass surface — frosted card with inner glow for product tiles. */
+.theme-prompt-hub .ph-glass {
+  background-color: rgba(19, 19, 46, 0.6);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgba(168, 85, 247, 0.16);
+}
+.theme-prompt-hub .ph-glass:hover {
+  border-color: rgba(168, 85, 247, 0.4);
+  background-color: rgba(30, 30, 63, 0.7);
+}
+
+/* Dotted grid background — for hero / empty-state surfaces. */
+.theme-prompt-hub .ph-grid-bg {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(168, 85, 247, 0.18) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Mono / tabular numbers — pricing + code blocks. */
+.theme-prompt-hub .ph-tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+/* Hide scrollbar for category rails */
+.theme-prompt-hub .hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.theme-prompt-hub .hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   theme-notion-mart — Notion-inspired clean storefronts for digital
+   template/productivity stores. Signature: off-white paper, hairline
+   borders, subtle gray-on-white surfaces, mono-tinged code accents,
+   underline-only hover links. Used by every store whose templateId
+   belongs to the `notion-mart` group.
+   ───────────────────────────────────────────────────────────────── */
+
+.theme-notion-mart {
+  color-scheme: light;
+}
+
+.theme-notion-mart ::selection {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.theme-notion-mart .nm-hairline {
+  border-color: #e5e5e5;
+}
+
+.theme-notion-mart .nm-hover:hover {
+  background-color: #efeeec;
+}
+
+.theme-notion-mart .nm-code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
+    "Liberation Mono", "Courier New", monospace;
+  background-color: #f7f6f3;
+  border: 1px solid #e5e5e5;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #1a1a1a;
+}
+
+.theme-notion-mart .nm-callout {
+  border-left: 3px solid #2563eb;
+  background-color: #f7f6f3;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+}
+
+.theme-notion-mart .nm-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.theme-notion-mart .nm-card:hover {
+  border-color: #1a1a1a;
+  box-shadow: 0 1px 0 0 rgba(15, 15, 15, 0.04);
+}
+
+.theme-notion-mart .nm-link {
+  color: #1a1a1a;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.1s ease-out, color 0.1s ease-out;
+}
+.theme-notion-mart .nm-link:hover {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.theme-notion-mart .hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.theme-notion-mart .hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

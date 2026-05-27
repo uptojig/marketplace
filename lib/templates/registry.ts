@@ -426,6 +426,20 @@ import {
 } from '@/components/storefront/themes/sheetlab-formula/adapters';
 
 import {
+  NotionMartHeaderAdapter,
+  NotionMartFooterAdapter,
+  NotionMartStripAdapter,
+  NotionMartHomepageAdapter,
+  NotionMartAboutAdapter,
+  NotionMartHelpAdapter,
+  notion_mart_th_Catalog,
+  notion_mart_th_ProductDetail,
+  notion_mart_th_Cart,
+  notion_mart_th_Checkout,
+  notion_mart_th_Contact,
+} from '@/components/storefront/themes/notion-mart-th/adapters';
+
+import {
   MysticMuHeaderAdapter,
   MysticMuFooterAdapter,
   MysticMuStripAdapter,
@@ -450,6 +464,19 @@ import {
   edu_classroom_th_Help,
   edu_classroom_th_Contact,
 } from '@/components/storefront/themes/edu-classroom-th/adapters';
+import {
+  PromptHubHeaderAdapter,
+  PromptHubFooterAdapter,
+  PromptHubStripAdapter,
+  PromptHubHomepageAdapter,
+  PromptHubAboutAdapter,
+  PromptHubHelpAdapter,
+  prompt_hub_th_Catalog,
+  prompt_hub_th_ProductDetail,
+  prompt_hub_th_Cart,
+  prompt_hub_th_Checkout,
+  prompt_hub_th_Contact,
+} from '@/components/storefront/themes/prompt-hub-th/adapters';
 
 export const templates: Record<TemplateId, Template> = {
   handmade: {
@@ -1475,6 +1502,30 @@ export const templates: Record<TemplateId, Template> = {
     },
   },
 
+  'prompt-hub-th': {
+    id: 'prompt-hub-th',
+    name: 'PromptHub',
+    description: 'มาร์เก็ตเพลส AI Prompts สำหรับ ChatGPT · Midjourney · Sora · ดาวน์โหลดได้ทันที',
+    group: 'prompt-hub',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now', digitalOnly: true },
+    chrome: {
+      Header: PromptHubHeaderAdapter,
+      Footer: PromptHubFooterAdapter,
+      AnnouncementStrip: PromptHubStripAdapter,
+      shellShape: 'centered',
+    },
+    pages: {
+      home: PromptHubHomepageAdapter,
+      catalog: prompt_hub_th_Catalog,
+      pdp: prompt_hub_th_ProductDetail,
+      cart: prompt_hub_th_Cart,
+      checkout: prompt_hub_th_Checkout,
+      about: PromptHubAboutAdapter,
+      help: PromptHubHelpAdapter,
+      contact: prompt_hub_th_Contact,
+    },
+  },
+
   'sheetlab-formula': {
     id: 'sheetlab-formula',
     name: 'Sheetlab Formula',
@@ -1527,6 +1578,31 @@ export const templates: Record<TemplateId, Template> = {
       about: MysticMuAboutAdapter,
       help: MysticMuHelpAdapter,
       contact: mystic_mu_th_Contact,
+    },
+  },
+
+  'notion-mart-th': {
+    id: 'notion-mart-th',
+    name: 'NotionMart',
+    description:
+      'เทมเพลต Notion พร้อมใช้ · ระบบงาน · จัดการเวลา · ฐานข้อมูล CRM · ดาวน์โหลดทันที',
+    group: 'notion-mart',
+    behavior: { bottomNav: 'hidden', stickyCTA: 'buy-now', digitalOnly: true },
+    chrome: {
+      Header: NotionMartHeaderAdapter,
+      Footer: NotionMartFooterAdapter,
+      AnnouncementStrip: NotionMartStripAdapter,
+      shellShape: 'sidebar-left',
+    },
+    pages: {
+      home: NotionMartHomepageAdapter,
+      catalog: notion_mart_th_Catalog,
+      pdp: notion_mart_th_ProductDetail,
+      cart: notion_mart_th_Cart,
+      checkout: notion_mart_th_Checkout,
+      about: NotionMartAboutAdapter,
+      help: NotionMartHelpAdapter,
+      contact: notion_mart_th_Contact,
     },
   },
 };

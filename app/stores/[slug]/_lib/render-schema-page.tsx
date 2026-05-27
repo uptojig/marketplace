@@ -25,8 +25,12 @@ import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { isNeonStore } from "@/lib/landing/neon";
 import { isMysticMuStore } from "@/lib/landing/mystic-mu";
+import { isNotionMartStore } from "@/lib/landing/notion-mart";
+import { isPromptHubStore } from "@/lib/landing/prompt-hub";
 import { PolicyShell as NeonFestivalPolicyShell } from "@/components/storefront/themes/neon-festival/PolicyShell";
 import { PolicyShell as MysticMuPolicyShell } from "@/components/storefront/themes/mystic-mu-th/PolicyShell";
+import { NotionMartPolicyShell } from "@/components/storefront/themes/notion-mart-th/PolicyShell";
+import { PolicyShell as PromptHubPolicyShell } from "@/components/storefront/themes/prompt-hub-th/PolicyShell";
 import {
   FashionBeautyPolicyShell,
   fashionBeautyPolicyHeading,
@@ -151,6 +155,13 @@ function wrapInFamilyShell(
       <MysticMuPolicyShell title={fallbackTitle}>
         {inner}
       </MysticMuPolicyShell>
+    );
+  }
+  if (isNotionMartStore(familyKey)) {
+    return (
+      <NotionMartPolicyShell title={fallbackTitle}>
+        {inner}
+      </NotionMartPolicyShell>
     );
   }
   return inner;
