@@ -420,6 +420,9 @@ export const TEMPLATES: Template[] = [
     description: "วอลเปเปอร์มงคล สายมู หนุนดวง เสริมโชค สไตล์ Mario เลเวลอัพชีวิต",
     group: "mystic-mu",
     theme: { spacing: "default", radius: "sharp", titleScale: "display", font: "sans" },
+    behavior: { stickyCTA: "buy-now" },
+  },
+  {
     id: "edu-classroom-th",
     name: "EduClassroom",
     description: "ใบงาน · สไลด์ · ข้อสอบ สำหรับครูประถม–มัธยมต้น ดาวน์โหลดได้ทันที",

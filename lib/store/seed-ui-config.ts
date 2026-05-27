@@ -226,6 +226,11 @@ const GROUP_DEFAULTS: Record<TemplateGroup, RecipePages> = {
       { type: "hero", id: "bento-grid-05" },
       { type: "product-list", id: "product-list-04" },
       { type: "product-list", id: "product-list-08" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
   // EduClassroom — Thai K-9 teacher digital downloads. Friendly notebook
   // hero + bento product grid sized for ใบงาน/สไลด์/ข้อสอบ tiles.
   "edu-classroom": {
