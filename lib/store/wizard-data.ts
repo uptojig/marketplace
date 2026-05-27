@@ -411,6 +411,11 @@ export const TEMPLATES: Template[] = [
     description: "วอลเปเปอร์มงคล สายมู หนุนดวง เสริมโชค สไตล์ Mario เลเวลอัพชีวิต",
     group: "mystic-mu",
     theme: { spacing: "default", radius: "sharp", titleScale: "display", font: "sans" },
+    id: "edu-classroom-th",
+    name: "EduClassroom",
+    description: "ใบงาน · สไลด์ · ข้อสอบ สำหรับครูประถม–มัธยมต้น ดาวน์โหลดได้ทันที",
+    group: "edu-classroom",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
   },
 ];
@@ -615,6 +620,7 @@ export const THEME_OPTIONS: ThemeOption[] = [
   { key: "everyday", name: "ขายปลีกทั่วไป", description: "สไตล์ Shopee ภาพใหญ่ ราคาเด่น แท็บหมวด", templateId: "everyday-retail" },
   { key: "taobao", name: "มาร์เก็ตเพลส", description: "โทนส้ม-แดง-ชมพู ลดทุกวัน อารมณ์ Taobao", templateId: "taobao-style" },
   { key: "packaging", name: "บรรจุภัณฑ์ & ซัพพลาย", description: "พาสเทลสดใส เหมาะสินค้าบรรจุภัณฑ์/ซัพพลาย", templateId: "packaging-supply" },
+  { key: "edu-classroom", name: "ห้องเรียน & สื่อการสอน", description: "สำหรับครูประถม–มัธยมต้นขายใบงาน/สไลด์/ข้อสอบ ดาวน์โหลดได้ทันที", templateId: "edu-classroom-th" },
 ];
 
 

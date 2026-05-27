@@ -25,6 +25,7 @@ import { specialtyCssVars } from "@/lib/landing/specialty";
 import { communityCssVars } from "@/lib/landing/community";
 import { taobaoCssVars } from "@/lib/landing/taobao";
 import { packagingCssVars } from "@/lib/landing/packaging";
+import { eduClassroomCssVars } from "@/lib/landing/edu-classroom";
 
 export interface ThemeColors {
   bg: string;
@@ -119,6 +120,9 @@ export function themeColorsFor(
       break;
     case "everyday":
       base = EVERYDAY_COLORS;
+      break;
+    case "edu-classroom":
+      base = fromCssVars(eduClassroomCssVars());
       break;
     default:
       // pet-house / case-studio (slug singletons, no preview family) + default

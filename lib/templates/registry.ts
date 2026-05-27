@@ -438,6 +438,13 @@ import {
   mystic_mu_th_Checkout,
   mystic_mu_th_Contact,
 } from '@/components/storefront/themes/mystic-mu-th/adapters';
+  EduClassroomHeaderAdapter,
+  EduClassroomFooterAdapter,
+  EduClassroomStripAdapter,
+  EduClassroomHomepageAdapter,
+  edu_classroom_th_Catalog,
+  edu_classroom_th_ProductDetail,
+} from '@/components/storefront/themes/edu-classroom-th/adapters';
 
 export const templates: Record<TemplateId, Template> = {
   handmade: {
@@ -1433,6 +1440,28 @@ export const templates: Record<TemplateId, Template> = {
       home: CaseinwHomepageAdapter,
       catalog: makeCatalogAdapter('05'),
       pdp: makePdpAdapter('03', '04'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter(),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
+    },
+  },
+
+  'edu-classroom-th': {
+    id: 'edu-classroom-th',
+    name: 'EduClassroom',
+    description: 'เทมเพลตใบงาน · สไลด์ · ข้อสอบ สำหรับครูประถม–มัธยมต้น ดาวน์โหลดได้ทันที',
+    group: 'edu-classroom',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: EduClassroomHeaderAdapter,
+      Footer: EduClassroomFooterAdapter,
+      AnnouncementStrip: EduClassroomStripAdapter,
+    },
+    pages: {
+      home: EduClassroomHomepageAdapter,
+      catalog: edu_classroom_th_Catalog,
+      pdp: edu_classroom_th_ProductDetail,
       cart: makeThaiCartAdapter(),
       checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),

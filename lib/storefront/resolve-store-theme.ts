@@ -87,6 +87,12 @@ import {
   MYSTIC_MU_TOKENS,
 } from "@/lib/landing/mystic-mu";
 import { isEverydayStore } from "@/lib/landing/everyday";
+import {
+  isEduClassroomStore,
+  eduClassroomCssVars,
+  EDU_CLASSROOM_BODY_CLASS,
+  EDU_CLASSROOM_TOKENS,
+} from "@/lib/landing/edu-classroom";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { isCaseStudioStore } from "@/lib/landing/case-studio";
 
@@ -103,6 +109,7 @@ export type ThemeKey =
   | "community"
   | "neon"
   | "mystic-mu"
+  | "edu-classroom"
   | "pet-house"
   | "case-studio"
   | "default";
@@ -189,6 +196,7 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   else if (isCommunityStore(key)) chromeKey = "community";
   else if (isNeonStore(key)) chromeKey = "neon";
   else if (isMysticMuStore(key)) chromeKey = "mystic-mu";
+  else if (isEduClassroomStore(key)) chromeKey = "edu-classroom";
 
   let familyClass = "";
   let familyVars: Record<string, string> = {};
@@ -255,6 +263,11 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyVars = mysticMuCssVars();
       familyAccent = MYSTIC_MU_TOKENS.primary;
       familyButtonShape = "square";
+    case "edu-classroom":
+      familyClass = EDU_CLASSROOM_BODY_CLASS;
+      familyVars = eduClassroomCssVars();
+      familyAccent = EDU_CLASSROOM_TOKENS.primary;
+      familyButtonShape = "pill";
       break;
     default:
       break;
@@ -310,6 +323,7 @@ export function resolveContentThemeKey(store: ThemeInput): ThemeKey {
   if (isCommunityStore(key)) return "community";
   if (isNeonStore(key)) return "neon";
   if (isMysticMuStore(key)) return "mystic-mu";
+  if (isEduClassroomStore(key)) return "edu-classroom";
   return "default";
 }
 
