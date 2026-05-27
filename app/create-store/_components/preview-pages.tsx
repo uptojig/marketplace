@@ -66,6 +66,8 @@ type Family =
   | "neon"
   | "mystic-mu"
   | "edu-classroom"
+  | "vector-bazaar"
+  | "photo-vault"
   | "salepage-market"
   | "default";
 
@@ -131,6 +133,8 @@ const FAMILY_STYLE: Record<
   neon: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "sharp" },
   "mystic-mu": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "sharp" },
   "edu-classroom": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "round" },
+  "vector-bazaar": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_INTER, heading: "sans", radius: "round" },
+  "photo-vault": { serif: SERIF_FRAUNCES, mono: MONO_JET, sans: SANS_SYS, heading: "serif", radius: "sharp" },
   "salepage-market": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_INTER, heading: "sans", radius: "sharp" },
   default: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
 };

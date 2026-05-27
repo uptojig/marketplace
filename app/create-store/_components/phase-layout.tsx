@@ -29,6 +29,8 @@ const GROUP_LABEL: Record<TemplateGroup, string> = {
   "neon": "นีออน & ของแต่งคอนเสิร์ต",
   "mystic-mu": "สายมู & เลเวลอัพ",
   "edu-classroom": "ห้องเรียน & สื่อการสอน",
+  "vector-bazaar": "เวกเตอร์ & ไอคอน SVG",
+  "photo-vault": "พรีเซ็ตช่างภาพ",
   "salepage-market": "มาร์เก็ตเซลเพจ HTML",
 };
 
@@ -46,6 +48,8 @@ const GROUP_ORDER: TemplateGroup[] = [
   "neon",
   "mystic-mu",
   "edu-classroom",
+  "vector-bazaar",
+  "photo-vault",
   "salepage-market",
 ];
 
