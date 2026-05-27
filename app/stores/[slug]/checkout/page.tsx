@@ -4,6 +4,8 @@ import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
 import type { TemplateId } from "@/lib/templates/types";
 
+export const dynamic = "force-dynamic";
+
 // /stores/[slug]/checkout → redirect to first checkout step inside
 // the same store namespace. Previously redirected to /checkout/address
 // (marketplace root) which left the store theme.
