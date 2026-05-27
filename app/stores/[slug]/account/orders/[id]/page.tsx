@@ -174,13 +174,18 @@ export default async function OrderDetailPage({ params }: OrderDetailProps) {
         <div className="divide-y">
           {order.items.map((item) => {
             const productHref = `/stores/${slug}/products/${item.productId}`;
+            // Per-product review entry — paid digital + delivered physical
+            // both qualify. Bottom-of-page aggregate "เขียนรีวิว" was a
+            // single button for the whole order, which made no sense for
+            // multi-item carts; reviews are per product on the PDP.
+            const canReview =
+              order.status === 'PAID' || order.status === 'DELIVERED';
             return (
-              <Link
-                key={item.id}
-                href={productHref}
-                className="flex gap-3 p-4 hover:bg-muted/30"
-              >
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded">
+              <div key={item.id} className="flex gap-3 p-4 hover:bg-muted/30">
+                <Link
+                  href={productHref}
+                  className="relative h-16 w-16 shrink-0 overflow-hidden rounded"
+                >
                   <Image
                     src={item.thumbnailUrl}
                     alt={item.title}
@@ -189,18 +194,28 @@ export default async function OrderDetailPage({ params }: OrderDetailProps) {
                     sizes="64px"
                     unoptimized
                   />
-                </div>
+                </Link>
                 <div className="flex-1 min-w-0">
-                  <p className="line-clamp-2 text-sm">{item.title}</p>
+                  <Link href={productHref} className="hover:underline">
+                    <p className="line-clamp-2 text-sm">{item.title}</p>
+                  </Link>
                   {item.variantName && (
                     <p className="text-xs text-muted-foreground">{item.variantName}</p>
                   )}
                   <p className="mt-0.5 text-xs text-muted-foreground">x{item.qty}</p>
+                  {canReview && (
+                    <Link
+                      href={`${productHref}?review=1#reviews`}
+                      className="mt-1.5 inline-flex text-xs font-medium text-primary hover:underline"
+                    >
+                      เขียนรีวิวสินค้านี้
+                    </Link>
+                  )}
                 </div>
                 <div className="text-right text-sm font-semibold">
                   ฿{item.lineTotalTHB.toLocaleString()}
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>
@@ -268,7 +283,6 @@ export default async function OrderDetailPage({ params }: OrderDetailProps) {
         {order.status === 'DELIVERED' && (
           <>
             <Button variant="outline">ซื้อซ้ำ</Button>
-            <Button variant="outline">เขียนรีวิว</Button>
             <Button variant="outline">ขอคืนสินค้า</Button>
           </>
         )}

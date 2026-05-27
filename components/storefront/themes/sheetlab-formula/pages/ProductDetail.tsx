@@ -644,6 +644,22 @@ function ReviewsSection({ productId }: { productId: string }) {
     void fetchReviews();
   }, [fetchReviews]);
 
+  // Deep-link: /products/<id>?review=1 (linked from /account/orders/[id])
+  // auto-opens the review form for signed-in buyers and scrolls to the
+  // section. Guests still see the sign-in CTA in the same slot.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('review') === '1' && isSignedIn) {
+      setFormOpen(true);
+      requestAnimationFrame(() => {
+        document
+          .getElementById('reviews')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [isSignedIn]);
+
   const resetForm = () => {
     setRating(5);
     setHoverRating(0);
@@ -709,7 +725,8 @@ function ReviewsSection({ productId }: { productId: string }) {
 
   return (
     <section
-      className="mt-16 pt-10 border-t border-[#E5E7EB]"
+      id="reviews"
+      className="mt-16 pt-10 border-t border-[#E5E7EB] scroll-mt-24"
       aria-labelledby="reviews-heading"
     >
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
