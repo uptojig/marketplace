@@ -86,6 +86,12 @@ import {
   MYSTIC_MU_BODY_CLASS,
   MYSTIC_MU_TOKENS,
 } from "@/lib/landing/mystic-mu";
+import {
+  isVectorBazaarStore,
+  vectorBazaarCssVars,
+  VECTOR_BAZAAR_BODY_CLASS,
+  VECTOR_BAZAAR_TOKENS,
+} from "@/lib/landing/vector-bazaar";
 import { isEverydayStore } from "@/lib/landing/everyday";
 import {
   isEduClassroomStore,
@@ -110,6 +116,7 @@ export type ThemeKey =
   | "neon"
   | "mystic-mu"
   | "edu-classroom"
+  | "vector-bazaar"
   | "pet-house"
   | "case-studio"
   | "default";
@@ -197,6 +204,7 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   else if (isNeonStore(key)) chromeKey = "neon";
   else if (isMysticMuStore(key)) chromeKey = "mystic-mu";
   else if (isEduClassroomStore(key)) chromeKey = "edu-classroom";
+  else if (isVectorBazaarStore(key)) chromeKey = "vector-bazaar";
 
   let familyClass = "";
   let familyVars: Record<string, string> = {};
@@ -269,6 +277,12 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyAccent = EDU_CLASSROOM_TOKENS.primary;
       familyButtonShape = "pill";
       break;
+    case "vector-bazaar":
+      familyClass = VECTOR_BAZAAR_BODY_CLASS;
+      familyVars = vectorBazaarCssVars();
+      familyAccent = VECTOR_BAZAAR_TOKENS.primary;
+      familyButtonShape = "pill";
+      break;
     default:
       break;
   }
@@ -324,6 +338,7 @@ export function resolveContentThemeKey(store: ThemeInput): ThemeKey {
   if (isNeonStore(key)) return "neon";
   if (isMysticMuStore(key)) return "mystic-mu";
   if (isEduClassroomStore(key)) return "edu-classroom";
+  if (isVectorBazaarStore(key)) return "vector-bazaar";
   return "default";
 }
 

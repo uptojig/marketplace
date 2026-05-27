@@ -25,8 +25,10 @@ import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { isNeonStore } from "@/lib/landing/neon";
 import { isMysticMuStore } from "@/lib/landing/mystic-mu";
+import { isVectorBazaarStore } from "@/lib/landing/vector-bazaar";
 import { PolicyShell as NeonFestivalPolicyShell } from "@/components/storefront/themes/neon-festival/PolicyShell";
 import { PolicyShell as MysticMuPolicyShell } from "@/components/storefront/themes/mystic-mu-th/PolicyShell";
+import { PolicyShell as VectorBazaarPolicyShell } from "@/components/storefront/themes/vector-bazaar-th/PolicyShell";
 import {
   FashionBeautyPolicyShell,
   fashionBeautyPolicyHeading,
@@ -151,6 +153,13 @@ function wrapInFamilyShell(
       <MysticMuPolicyShell title={fallbackTitle}>
         {inner}
       </MysticMuPolicyShell>
+    );
+  }
+  if (isVectorBazaarStore(familyKey)) {
+    return (
+      <VectorBazaarPolicyShell title={fallbackTitle}>
+        {inner}
+      </VectorBazaarPolicyShell>
     );
   }
   return inner;
