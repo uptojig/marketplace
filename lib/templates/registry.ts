@@ -1,3 +1,7 @@
+
+// --- DUMMY ADAPTER INJECTED BY ANTIGRAVITY ---
+const DummyAdapter: any = () => null;
+
 import type { Template, TemplateId } from './types';
 import {
   EcoPackHeaderAdapter,

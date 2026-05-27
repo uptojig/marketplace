@@ -109,7 +109,15 @@ export default function Checkout({
             imageUrl: l.imageUrl,
           })),
           shipping: { method: shipping, feeTHB: shippingFee },
-          customer: form,
+          address: {
+            recipientName: form.name,
+            phone: form.phone,
+            line1: form.addressLine,
+            subdistrict: form.subdistrict,
+            district: form.district,
+            province: form.province,
+            postalCode: form.postalCode,
+          },
         }),
       });
       const data = await res.json();

@@ -44,11 +44,10 @@ const SUPPORT_LINKS: Array<{
   label: string;
   pageSlug: string | null;
 }> = [
-  { href: (s) => `/stores/${s}/about`, label: 'เกี่ยวกับเรา', pageSlug: 'about' },
-  { href: (s) => `/stores/${s}/shipping`, label: 'การจัดส่ง', pageSlug: 'shipping' },
-  { href: (s) => `/stores/${s}/returns`, label: 'นโยบายคืนสินค้า', pageSlug: 'returns' },
-  { href: (s) => `/stores/${s}/faq`, label: 'คำถามที่พบบ่อย', pageSlug: 'faq' },
-  { href: (s) => `/stores/${s}/contact`, label: 'ติดต่อเรา', pageSlug: null },
+  { href: (s) => `/stores/${s}/how-to-order`, label: 'วิธีการสั่งซื้อ', pageSlug: null },
+  { href: (s) => `/stores/${s}/shipping`, label: 'การจัดส่ง', pageSlug: null },
+  { href: (s) => `/stores/${s}/returns`, label: 'การคืนสินค้า', pageSlug: null },
+  { href: (s) => `/stores/${s}/faq`, label: 'FAQ', pageSlug: null },
 ];
 
 function joinAddress(parts: Array<string | null | undefined>): string {

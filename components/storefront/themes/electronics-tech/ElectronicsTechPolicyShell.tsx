@@ -190,9 +190,9 @@ export function electronicsTechPolicyHeading(
 ): { eyebrow: string; title: string } {
   switch (pageSlug) {
     case 'shipping':
-      return { eyebrow: 'DOC.SHIP-001', title: 'Shipping & delivery' };
+      return { eyebrow: 'DOC.SHIP-001', title: 'นโยบายการจัดส่ง' };
     case 'returns':
-      return { eyebrow: 'DOC.RTN-001', title: 'Returns & RMA' };
+      return { eyebrow: 'DOC.RTN-001', title: 'การคืนสินค้า' };
     case 'faq':
       return { eyebrow: 'DOC.FAQ-001', title: 'FAQ — Frequently Asked' };
     case 'privacy':
