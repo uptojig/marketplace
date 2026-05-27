@@ -64,7 +64,7 @@ const SHIPPING_OPTIONS = [
 type ShippingId = (typeof SHIPPING_OPTIONS)[number]['id'];
 
 const PAYMENT_OPTIONS = [
-  { id: 'ANYPAY', label: 'ANYPAY', desc: 'PromptPay / บัตรเครดิต / TrueMoney' },
+  { id: 'ANYPAY', label: 'ANYPAY', desc: 'ชำระผ่าน AnyPay' },
 ] as const;
 
 type PaymentId = (typeof PAYMENT_OPTIONS)[number]['id'];

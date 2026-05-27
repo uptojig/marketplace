@@ -134,13 +134,8 @@ const DEFAULT_SHIPPING: ShippingOption[] = [
   { id: 'REGISTERED', name: 'ลงทะเบียนไปรษณีย์ไทย', priceTHB: 30, eta: '3-5 วัน' },
 ];
 
-// CREDIT is offered by default so per-store wallets are reachable from
-// every themed shop without each theme having to override paymentOptions.
-// The view disables/hides it for guests (no session) and when the live
-// balance is below the order total.
 const DEFAULT_PAYMENT: PaymentOption[] = [
-  { id: 'ANYPAY', name: 'ชำระผ่าน AnyPay (PromptPay / บัตรเครดิต)' },
-  { id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' },
+  { id: 'ANYPAY', name: 'ชำระผ่าน AnyPay' },
 ];
 
 interface ThaiCheckoutStoreProp {
