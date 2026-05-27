@@ -226,12 +226,13 @@ export function ThaiCheckoutAdapterView({
   const total = subtotal + effectiveShipping;
 
   // If the resolved allDigital flag flips after server data lands, the
-  // user may already be on the address/payment step from a stale render.
-  // Kick them back to step 4 (confirm) so they never see shipping UI for
-  // a digital order. Only fires while in steps 2 or 3 to avoid loops.
+  // user may already be on the address step from a stale render. Kick
+  // them to step 3 (payment) so they never see shipping UI for a digital
+  // order — but keep them on step 3 so they can still pick CREDIT vs
+  // ANYPAY. Only fires from step 2 to avoid loops.
   useEffect(() => {
-    if (allDigital && (step === 2 || step === 3)) {
-      setStep(4);
+    if (allDigital && step === 2) {
+      setStep(3);
     }
   }, [allDigital, step]);
 
@@ -250,9 +251,10 @@ export function ThaiCheckoutAdapterView({
 
   function nextFromCart() {
     if (lines.length === 0) return;
-    // All-digital orders skip address (step 2) AND shipping picker
-    // (step 3) — jump straight to confirm.
-    setStep(allDigital ? 4 : 2);
+    // All-digital orders skip address (step 2) but still land on step 3
+    // so the buyer can pick a payment method (CREDIT vs ANYPAY) — the
+    // PaymentStep itself hides the shipping section when allDigital.
+    setStep(allDigital ? 3 : 2);
   }
 
   function nextFromAddress() {
@@ -518,7 +520,7 @@ export function ThaiCheckoutAdapterView({
                 isGuest={isGuest}
                 total={total}
                 storeSlug={store.slug}
-                onBack={() => setStep(2)}
+                onBack={() => setStep(allDigital ? 1 : 2)}
                 onNext={nextFromPayment}
               />
             )}
@@ -536,7 +538,7 @@ export function ThaiCheckoutAdapterView({
                 submitLabel={submitLabel}
                 error={error}
                 allDigital={allDigital}
-                onBack={() => setStep(allDigital ? 1 : 3)}
+                onBack={() => setStep(3)}
                 onSubmit={placeOrder}
                 onEditAddress={() => setStep(2)}
                 onEditShipping={() => setStep(3)}
@@ -585,14 +587,14 @@ function CheckoutStepper({
    *  of the flow at all — render a 2-step stepper (cart → confirm). */
   allDigital?: boolean;
 }) {
-  // For digital-only orders the address + payment-picker steps are
-  // skipped entirely (placeOrder reads paymentMethod from local state
-  // and posts directly), so the stepper hides them too. The internal
-  // step values keep their original ids so the existing setStep(4)
-  // hand-offs continue to work.
+  // For digital-only orders the address step is skipped (no parcel to
+  // ship), but the payment-picker stays — buyers still need to choose
+  // between CREDIT and ANYPAY. The internal step ids keep their original
+  // values so the existing setStep hand-offs continue to work.
   const steps = allDigital
     ? [
         { id: 1 as const, label: labels.cart },
+        { id: 3 as const, label: labels.payment },
         { id: 4 as const, label: labels.confirm },
       ]
     : [
