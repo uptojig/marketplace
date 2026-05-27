@@ -1,5 +1,5 @@
 /**
- * One-shot seed: bulk-create 69 Excel-template products on the sheetlab
+ * One-shot seed: bulk-create 59 Excel-template products on the sheetlab
  * store from a directory of cover images.
  *
  *   pnpm tsx scripts/seed-bulk-excel-templates.ts <imageDir>
@@ -7,7 +7,9 @@
  * The directory should contain JPEG files (any naming) — the script
  * sorts them by name + maps each to one entry in the curated catalog
  * below. Idempotent on externalProductId, so re-running updates rather
- * than duplicates.
+ * than duplicates. Any sheetlab products whose externalProductId is
+ * not in the current TEMPLATES list will be deactivated (active=false)
+ * to clean up orphans from prior runs that had more entries.
  *
  * Requires env: DATABASE_URL, SPACES_ENDPOINT/REGION/BUCKET/KEY/SECRET.
  * Designed to run inside the marketplace-control docker container on
@@ -22,7 +24,7 @@ const prisma = new PrismaClient();
 
 const STORE_SLUG = "sheetlab-th";
 
-// 69 curated Thai SME Excel template entries spread across 6 buckets.
+// 59 curated Thai SME Excel template entries spread across 6 buckets.
 // Order matches the alphabetically-sorted image list so each image
 // lands on the matching slot. Edit titles here if the cover better
 // fits a different topic — the script preserves slot order.
@@ -37,7 +39,7 @@ interface TemplateEntry {
 }
 
 const TEMPLATES: TemplateEntry[] = [
-  // ── การเงิน · บัญชี (15) ─────────────────────────────────────
+  // ── การเงิน · บัญชี (13) ─────────────────────────────────────
   { externalProductId: "tpl-fin-01", title: "Monthly Income & Expense Tracker", titleTh: "เทมเพลตงบรายรับ-รายจ่ายรายเดือน", descriptionTh: "บันทึกรายรับ-รายจ่ายส่วนตัวหรือธุรกิจขนาดเล็ก สรุปยอดรวม + กราฟแยกประเภทอัตโนมัติ พร้อมใช้ทันที", categoryName: "การเงิน", priceTHB: 99 },
   { externalProductId: "tpl-fin-02", title: "P&L Statement Template", titleTh: "เทมเพลตงบกำไรขาดทุน (P&L)", descriptionTh: "งบกำไรขาดทุนมาตรฐานสำหรับ SME ไทย รายเดือน · รายไตรมาส · รายปี พร้อมสูตรอัตโนมัติทุกบรรทัด", categoryName: "การเงิน", priceTHB: 199 },
   { externalProductId: "tpl-fin-03", title: "Cash Flow Statement", titleTh: "งบกระแสเงินสด Cash Flow Statement", descriptionTh: "ติดตามเงินสดเข้า-ออกจริงรายเดือน แยก operating · investing · financing พร้อมพยากรณ์ 12 เดือนข้างหน้า", categoryName: "การเงิน", priceTHB: 290 },
@@ -51,10 +53,8 @@ const TEMPLATES: TemplateEntry[] = [
   { externalProductId: "tpl-fin-11", title: "Personal Budget Planner", titleTh: "เทมเพลตวางแผนงบรายจ่ายส่วนตัว", descriptionTh: "แบ่งงบ 50/30/20 พร้อมเตือนเมื่อใช้เกินงบ ติดตามเป้าหมายการออม + หนี้สินรายเดือน", categoryName: "การเงิน", priceTHB: 99 },
   { externalProductId: "tpl-fin-12", title: "Break-Even Point Calculator", titleTh: "เครื่องคำนวณจุดคุ้มทุน (Break-even Point)", descriptionTh: "หา BEP ของธุรกิจคุณจาก fixed cost · variable cost · ราคาขาย พร้อมกราฟ Cost-Volume-Profit", categoryName: "การเงิน", priceTHB: 199 },
   { externalProductId: "tpl-fin-13", title: "ROI / ROAS / CAC Calculator", titleTh: "เครื่องคำนวณ ROI / ROAS / CAC / LTV", descriptionTh: "วัดประสิทธิภาพการลงทุนและการตลาด แดชบอร์ดสรุปอัตโนมัติ พร้อม benchmark อุตสาหกรรม", categoryName: "การเงิน", priceTHB: 299 },
-  { externalProductId: "tpl-fin-14", title: "Daily Cash Book", titleTh: "ตารางบันทึกรายรับ-รายจ่ายธุรกิจ (Daily Cash Book)", descriptionTh: "สมุดเงินสดรายวันมาตรฐาน รับ-จ่าย-คงเหลือ พร้อมส่งออก PDF ปิดบัญชีสิ้นเดือนได้ทันที", categoryName: "บัญชี", priceTHB: 149 },
-  { externalProductId: "tpl-fin-15", title: "Annual Budget Template", titleTh: "เทมเพลตงบประมาณประจำปี (Annual Budget)", descriptionTh: "วางแผนงบประมาณ 12 เดือน แยกตามแผนก/ฝ่าย พร้อมตรวจสอบ variance จริงกับงบ", categoryName: "การเงิน", priceTHB: 290 },
 
-  // ── การตลาด · ขาย (12) ───────────────────────────────────────
+  // ── การตลาด · ขาย (10) ───────────────────────────────────────
   { externalProductId: "tpl-mkt-01", title: "Multi-Platform Ad ROAS Tracker", titleTh: "เครื่องคำนวณ ROAS โฆษณา Meta + Google + TikTok", descriptionTh: "รวมยอดโฆษณาทุกแพลตฟอร์มในที่เดียว แดชบอร์ดเปรียบเทียบ ROAS · CPM · CPC อัตโนมัติ", categoryName: "การตลาด", priceTHB: 290 },
   { externalProductId: "tpl-mkt-02", title: "Monthly Content Calendar", titleTh: "ตาราง Content Calendar รายเดือน (IG · FB · TikTok)", descriptionTh: "วางแผนคอนเทนต์ 30 วันล่วงหน้า รองรับทุกแพลตฟอร์ม พร้อม template caption + hashtag bank", categoryName: "การตลาด", priceTHB: 149 },
   { externalProductId: "tpl-mkt-03", title: "Ad Performance Dashboard", titleTh: "Dashboard ติดตาม Performance โฆษณา", descriptionTh: "สรุปแคมเปญทั้งหมดในที่เดียว KPI · spend · revenue · ROAS แสดงเป็นกราฟ pivot ปรับได้", categoryName: "การตลาด", priceTHB: 390 },
@@ -65,10 +65,8 @@ const TEMPLATES: TemplateEntry[] = [
   { externalProductId: "tpl-mkt-08", title: "A/B Test Results Analyzer", titleTh: "ตาราง A/B Test Results Analysis", descriptionTh: "วิเคราะห์ผล A/B test ทางสถิติ คำนวณ confidence level · sample size อัตโนมัติ", categoryName: "การตลาด", priceTHB: 199 },
   { externalProductId: "tpl-mkt-09", title: "Marketing Funnel Tracker", titleTh: "เทมเพลต Marketing Funnel Tracker", descriptionTh: "ติดตามลูกค้าตั้งแต่ awareness → conversion เห็น drop-off แต่ละขั้น พร้อม conversion rate", categoryName: "การตลาด", priceTHB: 199 },
   { externalProductId: "tpl-mkt-10", title: "Social Media Analytics Dashboard", titleTh: "Dashboard Social Media Analytics รวมทุกแพลตฟอร์ม", descriptionTh: "ติดตาม follower growth · engagement · reach · top posts สรุปรายสัปดาห์อัตโนมัติ", categoryName: "การตลาด", priceTHB: 390 },
-  { externalProductId: "tpl-mkt-11", title: "Lead Scoring Spreadsheet", titleTh: "เทมเพลต Lead Scoring สำหรับฝ่ายขาย", descriptionTh: "ให้คะแนน lead อัตโนมัติจาก demographic + behavior แบ่ง hot/warm/cold lead", categoryName: "การตลาด", priceTHB: 290 },
-  { externalProductId: "tpl-mkt-12", title: "Marketing Budget Allocator", titleTh: "เทมเพลตจัดสรรงบการตลาด (Budget Allocation)", descriptionTh: "วางแผนงบโฆษณา 12 เดือน แยกตามช่องทาง · แคมเปญ พร้อมเปรียบเทียบจริงกับ plan", categoryName: "การตลาด", priceTHB: 199 },
 
-  // ── HR · เงินเดือน (10) ──────────────────────────────────────
+  // ── HR · เงินเดือน (8) ───────────────────────────────────────
   { externalProductId: "tpl-hr-01", title: "Payroll & Social Security Calculator", titleTh: "เทมเพลตคิดเงินเดือน + ประกันสังคม (สปส.1-10)", descriptionTh: "คำนวณเงินเดือน · OT · ภาษีหัก ณ ที่จ่าย · ประกันสังคมอัตโนมัติ พร้อมแบบ สปส.1-10", categoryName: "HR", priceTHB: 490 },
   { externalProductId: "tpl-hr-02", title: "Leave Management Tracker", titleTh: "ตารางจัดการการลางาน (Leave Tracker)", descriptionTh: "ติดตามการลาพักร้อน · ลาป่วย · ลากิจของพนักงานทั้งบริษัท แสดงปฏิทินภาพรวมทีม", categoryName: "HR", priceTHB: 199 },
   { externalProductId: "tpl-hr-03", title: "KPI Evaluation Template", titleTh: "เทมเพลตประเมินผลพนักงาน KPI", descriptionTh: "แบบประเมินผลแบบ KPI + 360° feedback พร้อมสรุปเป็นคะแนนรวม + กราฟ radar", categoryName: "HR", priceTHB: 290 },
@@ -77,10 +75,8 @@ const TEMPLATES: TemplateEntry[] = [
   { externalProductId: "tpl-hr-06", title: "Employee Onboarding Checklist", titleTh: "เทมเพลต Checklist พนักงานใหม่ (Onboarding)", descriptionTh: "รายการตรวจสอบ 30 · 60 · 90 วันแรก พร้อม survey feedback + culture fit assessment", categoryName: "HR", priceTHB: 99 },
   { externalProductId: "tpl-hr-07", title: "Hourly Wage Calculator", titleTh: "ตารางคำนวณค่าจ้างรายชั่วโมง / รายวัน", descriptionTh: "คำนวณค่าจ้างพาร์ทไทม์ · รายชั่วโมง · ฟรีแลนซ์ พร้อมหัก SSO · ภาษีอัตโนมัติ", categoryName: "HR", priceTHB: 149 },
   { externalProductId: "tpl-hr-08", title: "Total Employee Cost Estimator", titleTh: "เทมเพลตประมาณการต้นทุนพนักงาน (Total Employee Cost)", descriptionTh: "คำนวณต้นทุนรวมต่อพนักงาน — เงินเดือน · สวัสดิการ · OT · training · overhead", categoryName: "HR", priceTHB: 290 },
-  { externalProductId: "tpl-hr-09", title: "Training & Development Tracker", titleTh: "เทมเพลตติดตามการฝึกอบรมพนักงาน", descriptionTh: "วางแผน training plan รายบุคคล + budget · attendance · post-training assessment", categoryName: "HR", priceTHB: 199 },
-  { externalProductId: "tpl-hr-10", title: "Performance Review Template", titleTh: "เทมเพลตประเมินผลรายปี (Annual Performance Review)", descriptionTh: "แบบประเมินครอบคลุม goal · competency · 360° พร้อมสรุปเป็น development plan", categoryName: "HR", priceTHB: 290 },
 
-  // ── คลังสินค้า · Inventory (10) ──────────────────────────────
+  // ── คลังสินค้า · Inventory (8) ───────────────────────────────
   { externalProductId: "tpl-inv-01", title: "FIFO/LIFO Inventory Tracker", titleTh: "Inventory Tracker FIFO / LIFO + ต้นทุน", descriptionTh: "ติดตามสต็อกแบบ FIFO หรือ LIFO คำนวณต้นทุนสินค้าคงเหลือ · COGS อัตโนมัติ", categoryName: "คลังสินค้า", priceTHB: 390 },
   { externalProductId: "tpl-inv-02", title: "Stock Reorder Point Calculator", titleTh: "เทมเพลตคำนวณจุดสั่งซื้อใหม่ (Reorder Point)", descriptionTh: "หา reorder point · safety stock · EOQ ของแต่ละ SKU พร้อมเตือนเมื่อใกล้จุดสั่งซื้อ", categoryName: "คลังสินค้า", priceTHB: 199 },
   { externalProductId: "tpl-inv-03", title: "Monthly Stocktake Sheet", titleTh: "ตารางตรวจนับสต็อกรายเดือน", descriptionTh: "แบบฟอร์มนับสต็อกแบบมืออาชีพ — เปรียบเทียบ book vs actual หา variance อัตโนมัติ", categoryName: "คลังสินค้า", priceTHB: 149 },
@@ -89,10 +85,8 @@ const TEMPLATES: TemplateEntry[] = [
   { externalProductId: "tpl-inv-06", title: "Purchase Order Tracker", titleTh: "เทมเพลตจัดการใบสั่งซื้อ (Purchase Order)", descriptionTh: "ออก PO · ติดตามสถานะรับของ · จับคู่ invoice พร้อม 3-way matching อัตโนมัติ", categoryName: "คลังสินค้า", priceTHB: 199 },
   { externalProductId: "tpl-inv-07", title: "ABC Inventory Analysis", titleTh: "เทมเพลตวิเคราะห์สต็อก ABC Analysis", descriptionTh: "แบ่งสินค้าเป็น A/B/C ตาม revenue contribution หา top 20% ที่ทำรายได้ 80%", categoryName: "คลังสินค้า", priceTHB: 290 },
   { externalProductId: "tpl-inv-08", title: "Inventory Turnover Calculator", titleTh: "เทมเพลตคำนวณ Inventory Turnover Ratio", descriptionTh: "หา turnover ratio · days inventory outstanding ของแต่ละ SKU เพื่อหา slow-mover", categoryName: "คลังสินค้า", priceTHB: 199 },
-  { externalProductId: "tpl-inv-09", title: "Expiry Date Tracker", titleTh: "ตารางบริหารสินค้าใกล้หมดอายุ", descriptionTh: "ติดตามวันหมดอายุของสต็อก เตือนล่วงหน้า 30 · 60 · 90 วัน พร้อม FEFO sequence", categoryName: "คลังสินค้า", priceTHB: 149 },
-  { externalProductId: "tpl-inv-10", title: "Multi-Warehouse Stock Tracker", titleTh: "Dashboard ติดตามสต็อกหลายคลัง", descriptionTh: "รวมยอดสต็อกจากหลาย warehouse ในที่เดียว — โอนย้ายระหว่างคลังพร้อม transit tracking", categoryName: "คลังสินค้า", priceTHB: 390 },
 
-  // ── E-commerce · ขายของออนไลน์ (12) ──────────────────────────
+  // ── E-commerce · ขายของออนไลน์ (10) ──────────────────────────
   { externalProductId: "tpl-ec-01", title: "Marketplace Sales Dashboard", titleTh: "Dashboard ติดตามยอดขาย Shopee · Lazada · TikTok Shop", descriptionTh: "รวมยอดขายจากทุกแพลตฟอร์มในที่เดียว แสดง revenue · units · top SKU พร้อม trend", categoryName: "E-commerce", priceTHB: 590 },
   { externalProductId: "tpl-ec-02", title: "Online Store P&L", titleTh: "เทมเพลต P&L ร้านค้าออนไลน์", descriptionTh: "งบกำไรขาดทุนเฉพาะร้าน Shopee/Lazada — หักค่า commission · ads · shipping อัตโนมัติ", categoryName: "E-commerce", priceTHB: 290 },
   { externalProductId: "tpl-ec-03", title: "Order Fulfillment Tracker", titleTh: "เทมเพลตติดตามการจัดส่ง (Order Fulfillment)", descriptionTh: "ติดตามสถานะออเดอร์ตั้งแต่ pack · ship · delivered พร้อม SLA fulfillment time", categoryName: "E-commerce", priceTHB: 199 },
@@ -103,8 +97,6 @@ const TEMPLATES: TemplateEntry[] = [
   { externalProductId: "tpl-ec-08", title: "Best-Seller Top 10 Dashboard", titleTh: "Dashboard ติดตามสินค้าขายดี Top 10 รายวัน", descriptionTh: "อัพเดทสินค้าขายดี top 10 ทุกวัน · สัปดาห์ · เดือน แสดง trend movement up/down", categoryName: "E-commerce", priceTHB: 290 },
   { externalProductId: "tpl-ec-09", title: "Retail Pricing Calculator", titleTh: "เทมเพลตคำนวณราคาขายสินค้า (Markup + Margin)", descriptionTh: "ตั้งราคาขายจาก cost + target margin คำนวณ markup · margin · break-even pricing", categoryName: "E-commerce", priceTHB: 149 },
   { externalProductId: "tpl-ec-10", title: "Cart Abandonment Analyzer", titleTh: "เทมเพลตวิเคราะห์ Cart Abandonment", descriptionTh: "หาสาเหตุ cart abandonment · recovery rate ของ remarketing campaign", categoryName: "E-commerce", priceTHB: 199 },
-  { externalProductId: "tpl-ec-11", title: "Live Commerce Sales Tracker", titleTh: "เทมเพลต Live Commerce Sales Tracker", descriptionTh: "ติดตามยอดขาย live แต่ละรอบ — viewer · CTR · AOV · conversion พร้อมเปรียบเทียบ host", categoryName: "E-commerce", priceTHB: 290 },
-  { externalProductId: "tpl-ec-12", title: "Daily Sales Reconciliation", titleTh: "เทมเพลตกระทบยอดขายรายวัน (Daily Reconciliation)", descriptionTh: "กระทบยอด POS · platform · bank รายวัน หา discrepancy ทันทีก่อนปิดวัน", categoryName: "E-commerce", priceTHB: 199 },
 
   // ── Dashboard · BI (10) ──────────────────────────────────────
   { externalProductId: "tpl-dsb-01", title: "SME KPI Dashboard", titleTh: "KPI Dashboard สำหรับ SME (ครบทุกฝ่าย)", descriptionTh: "แดชบอร์ดรวม KPI sales · finance · ops · HR ในหน้าเดียว update อัตโนมัติจาก data sheet", categoryName: "แดชบอร์ด", priceTHB: 490 },
@@ -119,8 +111,8 @@ const TEMPLATES: TemplateEntry[] = [
   { externalProductId: "tpl-dsb-10", title: "Weekly Business Review Dashboard", titleTh: "Weekly Business Review Dashboard", descriptionTh: "แดชบอร์ดสำหรับประชุม WBR รายสัปดาห์ — KPI variance · top risk · weekly highlights", categoryName: "แดชบอร์ด", priceTHB: 290 },
 ];
 
-if (TEMPLATES.length !== 69) {
-  console.error(`Template count is ${TEMPLATES.length}, expected 69`);
+if (TEMPLATES.length !== 59) {
+  console.error(`Template count is ${TEMPLATES.length}, expected 59`);
   process.exit(1);
 }
 
@@ -230,7 +222,23 @@ async function main() {
     }
   }
 
+  // Deactivate orphan bulk-template products — only those with the `tpl-`
+  // prefix (this script's own namespace) so we never touch the curated
+  // SHEETLAB-* products from seed-sheetlab-formula-store.ts. Drops the
+  // 10 entries removed from this run: tpl-fin-14/15, tpl-mkt-11/12,
+  // tpl-hr-09/10, tpl-inv-09/10, tpl-ec-11/12.
+  const keepIds = TEMPLATES.map((t) => t.externalProductId);
+  const orphans = await prisma.product.updateMany({
+    where: {
+      storeId: store.id,
+      active: true,
+      externalProductId: { startsWith: "tpl-", notIn: keepIds },
+    },
+    data: { active: false },
+  });
+
   console.log(`\nDone: ${created} created, ${updated} updated, ${imageUploaded} images uploaded`);
+  console.log(`Deactivated ${orphans.count} orphan products no longer in TEMPLATES`);
   console.log(`Visit https://basketplace.co/stores/${STORE_SLUG}`);
 }
 
