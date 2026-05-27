@@ -65,6 +65,7 @@ type Family =
   | "community"
   | "neon"
   | "mystic-mu"
+  | "edu-classroom"
   | "default";
 
 type PreviewBehavior = Partial<
@@ -128,6 +129,7 @@ const FAMILY_STYLE: Record<
   community: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
   neon: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "sharp" },
   "mystic-mu": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "sharp" },
+  "edu-classroom": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "round" },
   default: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
 };
 

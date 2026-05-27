@@ -2970,4 +2970,83 @@
   background-image:
     linear-gradient(90deg, transparent 0%, transparent 49%, rgba(26, 26, 46, 0.08) 49%, rgba(26, 26, 46, 0.08) 51%, transparent 51%);
   background-size: 32px 32px;
+/* ─────────────────────────────────────────────────────────────
+   EduClassroom theme — applied via `theme-edu-classroom` class on
+   the .shop-page wrapper for stores in the `edu-classroom` family.
+   Goal: every sub-page (cart / category / products / checkout /
+   account) inherits the same notebook-paper + classroom-blue +
+   chalkboard-yellow palette without per-page rewrites.
+
+   Voice: friendly · trustworthy · cheerful — for Thai K-9 teachers
+   buying digital teaching material (ใบงาน / สไลด์ / ข้อสอบ).
+   ───────────────────────────────────────────────────────── */
+.theme-edu-classroom {
+  --shop-bg: #FAFAF9;          /* warm white / notebook page */
+  --shop-bg-soft: #FEF3C7;     /* cream notebook band */
+  --shop-card: #FFFFFF;        /* clean card surface */
+  --shop-primary: #2563EB;     /* classroom blue */
+  --shop-primary-hover: #1D4ED8;
+  --shop-primary-dark: #1E40AF;
+  --shop-accent: #F59E0B;      /* chalkboard yellow */
+  --shop-accent-hover: #D97706;
+  --shop-accent-dark: #B45309;
+  --shop-savings: #16A34A;     /* gold-star green */
+  --shop-ink: #0F172A;
+  --shop-ink-muted: #475569;
+  --shop-border: #E2E8F0;
+  --shop-muted: #F1F5F9;
+}
+
+/* Heading hierarchy uses Kanit (friendly geometric Thai) — body
+   stays Prompt for legibility on long paragraphs. */
+.theme-edu-classroom h1,
+.theme-edu-classroom h2,
+.theme-edu-classroom h3 {
+  font-family: var(--font-kanit), "Kanit", "Prompt", system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+/* Primary CTAs become rounded-full pills — softens the chrome so
+   teachers feel invited, not pressured. */
+.theme-edu-classroom button[style*="--shop-primary"],
+.theme-edu-classroom a[style*="--shop-primary"] {
+  border-radius: 9999px !important;
+}
+
+/* Notebook-card surface — soft border + tiny chalk-yellow corner
+   tint for cards that opt in via data attribute. */
+.theme-edu-classroom [data-edu-notebook="true"] {
+  background-color: #FFFFFF;
+  background-image:
+    radial-gradient(at 4% 4%, rgba(245, 158, 11, 0.06) 0%, transparent 22%),
+    radial-gradient(at 96% 96%, rgba(37, 99, 235, 0.04) 0%, transparent 30%);
+  border: 1px solid var(--shop-border, #E2E8F0);
+  border-radius: 1rem;
+}
+
+/* Chalk-yellow "ดาวประจำสัปดาห์" badge variant — opt-in via data
+   attribute, sits above product cards in featured rails. */
+.theme-edu-classroom [data-edu-star-badge="true"] {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* Inputs adopt rounded-full pills with a soft blue focus ring so
+   forms inherit the classroom-blue identity across every subpage. */
+.theme-edu-classroom input:not([type="checkbox"]):not([type="radio"]),
+.theme-edu-classroom textarea,
+.theme-edu-classroom select {
+  border-radius: 0.75rem;
+  background-color: #FFFFFF;
+  border-color: var(--shop-border, #E2E8F0);
+}
+.theme-edu-classroom input:not([type="checkbox"]):not([type="radio"]):focus,
+.theme-edu-classroom textarea:focus,
+.theme-edu-classroom select:focus {
+  outline: 2px solid rgba(37, 99, 235, 0.25);
+  outline-offset: 1px;
+  border-color: var(--shop-primary, #2563EB);
 }

@@ -438,6 +438,18 @@ import {
   mystic_mu_th_Checkout,
   mystic_mu_th_Contact,
 } from '@/components/storefront/themes/mystic-mu-th/adapters';
+  EduClassroomHeaderAdapter,
+  EduClassroomFooterAdapter,
+  EduClassroomStripAdapter,
+  EduClassroomHomepageAdapter,
+  edu_classroom_th_Catalog,
+  edu_classroom_th_ProductDetail,
+  edu_classroom_th_Cart,
+  edu_classroom_th_Checkout,
+  edu_classroom_th_About,
+  edu_classroom_th_Help,
+  edu_classroom_th_Contact,
+} from '@/components/storefront/themes/edu-classroom-th/adapters';
 
 export const templates: Record<TemplateId, Template> = {
   handmade: {
@@ -1437,6 +1449,29 @@ export const templates: Record<TemplateId, Template> = {
       checkout: makeThaiCheckoutAdapter(),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
+    },
+  },
+
+  'edu-classroom-th': {
+    id: 'edu-classroom-th',
+    name: 'EduClassroom',
+    description: 'เทมเพลตใบงาน · สไลด์ · ข้อสอบ สำหรับครูประถม–มัธยมต้น ดาวน์โหลดได้ทันที',
+    group: 'edu-classroom',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: EduClassroomHeaderAdapter,
+      Footer: EduClassroomFooterAdapter,
+      AnnouncementStrip: EduClassroomStripAdapter,
+    },
+    pages: {
+      home: EduClassroomHomepageAdapter,
+      catalog: edu_classroom_th_Catalog,
+      pdp: edu_classroom_th_ProductDetail,
+      cart: edu_classroom_th_Cart,
+      checkout: edu_classroom_th_Checkout,
+      about: edu_classroom_th_About,
+      help: edu_classroom_th_Help,
+      contact: edu_classroom_th_Contact,
     },
   },
 
