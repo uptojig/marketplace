@@ -19,5 +19,9 @@ export const metadata: Metadata = {
 };
 
 export default function ThemesCatalogPage() {
-  return <ThemesCatalogGrid templates={SALEPAGE_TEMPLATES} />;
+  // Strip the `component` field (a React function) so we can pass the
+  // template list across the Server → Client boundary. RSC can't
+  // serialize function references unless they're "use server" actions.
+  const templates = SALEPAGE_TEMPLATES.map(({ component: _c, ...rest }) => rest);
+  return <ThemesCatalogGrid templates={templates} />;
 }
