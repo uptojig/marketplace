@@ -464,6 +464,7 @@ import {
   mystic_mu_th_Checkout,
   mystic_mu_th_Contact,
 } from '@/components/storefront/themes/mystic-mu-th/adapters';
+import {
   EduClassroomHeaderAdapter,
   EduClassroomFooterAdapter,
   EduClassroomStripAdapter,
