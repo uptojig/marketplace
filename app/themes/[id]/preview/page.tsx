@@ -9,6 +9,8 @@ import { getSalepageTemplate } from '@/lib/salepages/registry';
 import { DEMO_SALEPAGE } from '@/lib/salepages/demo-data';
 import { PreviewBar } from './preview-bar';
 
+export const dynamic = 'force-dynamic';
+
 interface Params {
   params: Promise<{ id: string }>;
 }
