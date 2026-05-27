@@ -63,6 +63,8 @@ function themeForGroup(group: TemplateGroup): {
       return { fontPrimary: "Inter Tight", fontDisplay: "JetBrains Mono" };
     case "specialty":
       return { fontPrimary: "Prompt", fontDisplay: "Fraunces" };
+    case "photo-vault":
+      return { fontPrimary: "Prompt", fontDisplay: "Kanit" };
     case "community":
     case "business-model":
     case "everyday":
@@ -230,6 +232,18 @@ const GROUP_DEFAULTS: Record<TemplateGroup, RecipePages> = {
     home: [
       { type: "hero", id: "bento-grid-09" },
       { type: "product-list", id: "product-list-02" },
+      { type: "product-list", id: "product-list-06" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
+  // Photo Vault — photographer dark-luxe. Charcoal canvas + amber CTA,
+  // gallery-style portrait product grid for editorial preset previews.
+  "photo-vault": {
+    home: [
+      { type: "hero", id: "bento-grid-11" },
+      { type: "product-list", id: "product-list-04" },
       { type: "product-list", id: "product-list-06" },
     ],
     pdp: "product-overview-06",

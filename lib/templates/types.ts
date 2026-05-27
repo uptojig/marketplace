@@ -40,6 +40,7 @@ export type TemplateGroup =
   | 'mystic-mu'
   | 'edu-classroom'
   | 'vector-bazaar'
+  | 'photo-vault'
 ;
 
 export type TemplateId =
@@ -99,7 +100,8 @@ export type TemplateId =
   | 'sheetlab-formula'
   | 'mystic-mu-th'
   | 'edu-classroom-th'
-  | 'vector-bazaar-th';
+  | 'vector-bazaar-th'
+  | 'photo-vault-th';
 
 
 
