@@ -71,6 +71,19 @@ import {
   neon_festival_Contact,
 } from '@/components/storefront/themes/neon-festival/adapters';
 import {
+  VectorBazaarHeaderAdapter,
+  VectorBazaarFooterAdapter,
+  VectorBazaarStripAdapter,
+  VectorBazaarHomepageAdapter,
+  VectorBazaarAboutAdapter,
+  VectorBazaarHelpAdapter,
+  vector_bazaar_th_Catalog,
+  vector_bazaar_th_ProductDetail,
+  vector_bazaar_th_Cart,
+  vector_bazaar_th_Checkout,
+  vector_bazaar_th_Contact,
+} from '@/components/storefront/themes/vector-bazaar-th/adapters';
+import {
   CasethepHeaderAdapter,
   CasethepFooterAdapter,
   CasethepStripAdapter,
@@ -426,20 +439,6 @@ import {
 } from '@/components/storefront/themes/sheetlab-formula/adapters';
 
 import {
-  NotionMartHeaderAdapter,
-  NotionMartFooterAdapter,
-  NotionMartStripAdapter,
-  NotionMartHomepageAdapter,
-  NotionMartAboutAdapter,
-  NotionMartHelpAdapter,
-  notion_mart_th_Catalog,
-  notion_mart_th_ProductDetail,
-  notion_mart_th_Cart,
-  notion_mart_th_Checkout,
-  notion_mart_th_Contact,
-} from '@/components/storefront/themes/notion-mart-th/adapters';
-
-import {
   MysticMuHeaderAdapter,
   MysticMuFooterAdapter,
   MysticMuStripAdapter,
@@ -452,8 +451,6 @@ import {
   mystic_mu_th_Checkout,
   mystic_mu_th_Contact,
 } from '@/components/storefront/themes/mystic-mu-th/adapters';
-
-import {
   EduClassroomHeaderAdapter,
   EduClassroomFooterAdapter,
   EduClassroomStripAdapter,
@@ -467,18 +464,18 @@ import {
   edu_classroom_th_Contact,
 } from '@/components/storefront/themes/edu-classroom-th/adapters';
 import {
-  PromptHubHeaderAdapter,
-  PromptHubFooterAdapter,
-  PromptHubStripAdapter,
-  PromptHubHomepageAdapter,
-  PromptHubAboutAdapter,
-  PromptHubHelpAdapter,
-  prompt_hub_th_Catalog,
-  prompt_hub_th_ProductDetail,
-  prompt_hub_th_Cart,
-  prompt_hub_th_Checkout,
-  prompt_hub_th_Contact,
-} from '@/components/storefront/themes/prompt-hub-th/adapters';
+  PhotoVaultHeaderAdapter,
+  PhotoVaultFooterAdapter,
+  PhotoVaultStripAdapter,
+  PhotoVaultHomepageAdapter,
+  PhotoVaultAboutAdapter,
+  PhotoVaultHelpAdapter,
+  photo_vault_th_Catalog,
+  photo_vault_th_ProductDetail,
+  photo_vault_th_Cart,
+  photo_vault_th_Checkout,
+  photo_vault_th_Contact,
+} from '@/components/storefront/themes/photo-vault-th/adapters';
 
 export const templates: Record<TemplateId, Template> = {
   handmade: {
@@ -753,6 +750,31 @@ export const templates: Record<TemplateId, Template> = {
       about: NeonFestivalAboutAdapter,
       help: NeonFestivalHelpAdapter,
       contact: neon_festival_Contact,
+    },
+  },
+
+  'vector-bazaar-th': {
+    id: 'vector-bazaar-th',
+    name: 'VectorBazaar',
+    description:
+      'SVG illustrations · icon packs · vector assets แก้ไขได้ใน Figma, AI, Sketch · ดาวน์โหลด .svg .ai .eps ทันที',
+    group: 'vector-bazaar',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: VectorBazaarHeaderAdapter,
+      Footer: VectorBazaarFooterAdapter,
+      AnnouncementStrip: VectorBazaarStripAdapter,
+      shellShape: 'centered',
+    },
+    pages: {
+      home: VectorBazaarHomepageAdapter,
+      catalog: vector_bazaar_th_Catalog,
+      pdp: vector_bazaar_th_ProductDetail,
+      cart: vector_bazaar_th_Cart,
+      checkout: vector_bazaar_th_Checkout,
+      about: VectorBazaarAboutAdapter,
+      help: VectorBazaarHelpAdapter,
+      contact: vector_bazaar_th_Contact,
     },
   },
 
@@ -1504,30 +1526,6 @@ export const templates: Record<TemplateId, Template> = {
     },
   },
 
-  'prompt-hub-th': {
-    id: 'prompt-hub-th',
-    name: 'PromptHub',
-    description: 'มาร์เก็ตเพลส AI Prompts สำหรับ ChatGPT · Midjourney · Sora · ดาวน์โหลดได้ทันที',
-    group: 'prompt-hub',
-    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now', digitalOnly: true },
-    chrome: {
-      Header: PromptHubHeaderAdapter,
-      Footer: PromptHubFooterAdapter,
-      AnnouncementStrip: PromptHubStripAdapter,
-      shellShape: 'centered',
-    },
-    pages: {
-      home: PromptHubHomepageAdapter,
-      catalog: prompt_hub_th_Catalog,
-      pdp: prompt_hub_th_ProductDetail,
-      cart: prompt_hub_th_Cart,
-      checkout: prompt_hub_th_Checkout,
-      about: PromptHubAboutAdapter,
-      help: PromptHubHelpAdapter,
-      contact: prompt_hub_th_Contact,
-    },
-  },
-
   'sheetlab-formula': {
     id: 'sheetlab-formula',
     name: 'Sheetlab Formula',
@@ -1583,28 +1581,35 @@ export const templates: Record<TemplateId, Template> = {
     },
   },
 
-  'notion-mart-th': {
-    id: 'notion-mart-th',
-    name: 'NotionMart',
+  'photo-vault-th': {
+    id: 'photo-vault-th',
+    name: 'PhotoVault',
     description:
-      'เทมเพลต Notion พร้อมใช้ · ระบบงาน · จัดการเวลา · ฐานข้อมูล CRM · ดาวน์โหลดทันที',
-    group: 'notion-mart',
-    behavior: { bottomNav: 'hidden', stickyCTA: 'buy-now', digitalOnly: true },
+      'Lightroom Presets · Photoshop Actions · LUTs สำหรับช่างภาพ · ดาวน์โหลด .xmp .acr .cube ทันที',
+    group: 'photo-vault',
+    behavior: {
+      bottomNav: 'hidden',
+      stickyCTA: 'buy-now',
+      digitalOnly: true,
+      productCardStyle: 'editorial',
+    },
     chrome: {
-      Header: NotionMartHeaderAdapter,
-      Footer: NotionMartFooterAdapter,
-      AnnouncementStrip: NotionMartStripAdapter,
-      shellShape: 'sidebar-left',
+      Header: PhotoVaultHeaderAdapter,
+      Footer: PhotoVaultFooterAdapter,
+      AnnouncementStrip: PhotoVaultStripAdapter,
+      // Full-bleed dark hero — header sits sticky over the gradient
+      // gallery wall on the homepage.
+      shellShape: 'full-bleed',
     },
     pages: {
-      home: NotionMartHomepageAdapter,
-      catalog: notion_mart_th_Catalog,
-      pdp: notion_mart_th_ProductDetail,
-      cart: notion_mart_th_Cart,
-      checkout: notion_mart_th_Checkout,
-      about: NotionMartAboutAdapter,
-      help: NotionMartHelpAdapter,
-      contact: notion_mart_th_Contact,
+      home: PhotoVaultHomepageAdapter,
+      catalog: photo_vault_th_Catalog,
+      pdp: photo_vault_th_ProductDetail,
+      cart: photo_vault_th_Cart,
+      checkout: photo_vault_th_Checkout,
+      about: PhotoVaultAboutAdapter,
+      help: PhotoVaultHelpAdapter,
+      contact: photo_vault_th_Contact,
     },
   },
 };

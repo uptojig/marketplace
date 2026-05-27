@@ -47,6 +47,8 @@ const GROUP_ORDER: TemplateGroup[] = [
   "neon",
   "mystic-mu",
   "edu-classroom",
+  "notion-mart",
+  "prompt-hub",
 ];
 
 /**

@@ -67,6 +67,7 @@ type Family =
   | "mystic-mu"
   | "edu-classroom"
   | "prompt-hub"
+  | "notion-mart"
   | "default";
 
 type PreviewBehavior = Partial<
@@ -131,6 +132,8 @@ const FAMILY_STYLE: Record<
   neon: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "sharp" },
   "mystic-mu": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "sharp" },
   "edu-classroom": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "round" },
+  "prompt-hub": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "round" },
+  "notion-mart": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
   default: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
 };
 
