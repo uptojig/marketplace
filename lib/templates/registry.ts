@@ -1442,7 +1442,17 @@ export const templates: Record<TemplateId, Template> = {
       catalog: sheetlab_formula_Catalog,
       pdp: sheetlab_formula_ProductDetail,
       cart: makeThaiCartAdapter(),
-      checkout: makeThaiCheckoutAdapter(),
+      checkout: makeThaiCheckoutAdapter({
+        // Digital-formula store — credit wallet is a first-class payment
+        // path here (header shows the live "เครดิต ฿X" pill + a top-up
+        // link). The global DEFAULT_PAYMENT was trimmed to ANYPAY-only
+        // in 659ec6c; we re-add CREDIT just for sheetlab so buying
+        // actually debits the on-screen balance.
+        paymentOptions: [
+          { id: 'ANYPAY', name: 'ชำระผ่าน AnyPay' },
+          { id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' },
+        ],
+      }),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
     },
