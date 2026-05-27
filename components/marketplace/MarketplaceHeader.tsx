@@ -27,6 +27,7 @@ interface NavItem {
 
 const NAV_ITEMS: ReadonlyArray<NavItem> = [
   { label: 'ตัวอย่างร้านค้า', href: '/stores' },
+  { label: 'เทมเพลตหน้าขาย', href: '/themes' },
   { label: 'วิธีใช้งาน', href: '/help/how-to-order' },
   { label: 'ราคา', href: '/#pricing' },
   { label: 'ช่วยเหลือ', href: '/help/how-to-pay' },
