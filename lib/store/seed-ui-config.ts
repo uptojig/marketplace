@@ -224,6 +224,11 @@ const GROUP_DEFAULTS: Record<TemplateGroup, RecipePages> = {
       { type: "hero", id: "bento-grid-05" },
       { type: "product-list", id: "product-list-04" },
       { type: "product-list", id: "product-list-08" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
   // EduClassroom — Thai K-9 teacher digital downloads. Friendly notebook
   // hero + bento product grid sized for ใบงาน/สไลด์/ข้อสอบ tiles.
   "edu-classroom": {
@@ -231,6 +236,28 @@ const GROUP_DEFAULTS: Record<TemplateGroup, RecipePages> = {
       { type: "hero", id: "bento-grid-09" },
       { type: "product-list", id: "product-list-02" },
       { type: "product-list", id: "product-list-06" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
+  // Notion Mart — Notion-doc style for digital template stores.
+  "notion-mart": {
+    home: [
+      { type: "hero", id: "hero-section-01" },
+      { type: "product-list", id: "product-list-04" },
+      { type: "product-list", id: "product-list-07" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
+  // Prompt Hub — sibling agent's placeholder; the prompt-hub agent owns
+  // the final recipe. Stub keeps the Record exhaustive for TS.
+  "prompt-hub": {
+    home: [
+      { type: "hero", id: "hero-section-01" },
+      { type: "product-list", id: "product-list-04" },
     ],
     pdp: "product-overview-06",
     catalog: "product-category-08",

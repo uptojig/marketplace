@@ -164,6 +164,13 @@ function wrapInFamilyShell(
       </NotionMartPolicyShell>
     );
   }
+  if (isPromptHubStore(familyKey)) {
+    return (
+      <PromptHubPolicyShell title={fallbackTitle}>
+        {inner}
+      </PromptHubPolicyShell>
+    );
+  }
   return inner;
 }
 
