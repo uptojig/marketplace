@@ -24,7 +24,9 @@ import { isLifestyleStore } from "@/lib/landing/lifestyle";
 import { isElectronicsTechStore } from "@/lib/landing/electronics-tech";
 import { isSpecialtyStore } from "@/lib/landing/specialty";
 import { isNeonStore } from "@/lib/landing/neon";
+import { isMysticMuStore } from "@/lib/landing/mystic-mu";
 import { PolicyShell as NeonFestivalPolicyShell } from "@/components/storefront/themes/neon-festival/PolicyShell";
+import { PolicyShell as MysticMuPolicyShell } from "@/components/storefront/themes/mystic-mu-th/PolicyShell";
 import {
   FashionBeautyPolicyShell,
   fashionBeautyPolicyHeading,
@@ -142,6 +144,13 @@ function wrapInFamilyShell(
       <NeonFestivalPolicyShell title={fallbackTitle}>
         {inner}
       </NeonFestivalPolicyShell>
+    );
+  }
+  if (isMysticMuStore(familyKey)) {
+    return (
+      <MysticMuPolicyShell title={fallbackTitle}>
+        {inner}
+      </MysticMuPolicyShell>
     );
   }
   return inner;

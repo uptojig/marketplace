@@ -216,6 +216,19 @@ const GROUP_DEFAULTS: Record<TemplateGroup, RecipePages> = {
     catalog: "product-category-08",
     cart: "shopping-cart-03",
   },
+  // Mystic-Mu — Mario-pixel-art Thai สายมู digital-wallpaper. Energetic
+  // hero + dense product grid; cart picks shopping-cart-03 for the
+  // bold-border buy-now flow.
+  "mystic-mu": {
+    home: [
+      { type: "hero", id: "bento-grid-05" },
+      { type: "product-list", id: "product-list-04" },
+      { type: "product-list", id: "product-list-08" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
 };
 
 // ─── Doc-sourced recipes (27 entries) ──────────────────────────────────

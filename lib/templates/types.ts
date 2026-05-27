@@ -37,6 +37,7 @@ export type TemplateGroup =
   | 'taobao'
   | 'packaging'
   | 'neon'
+  | 'mystic-mu'
 ;
 
 export type TemplateId =
@@ -93,7 +94,8 @@ export type TemplateId =
   | 'casethep'
   | 'casetify-clone'
   | 'caseinw'
-  | 'sheetlab-formula';
+  | 'sheetlab-formula'
+  | 'mystic-mu-th';
 
 
 

@@ -425,6 +425,20 @@ import {
   sheetlab_formula_ProductDetail,
 } from '@/components/storefront/themes/sheetlab-formula/adapters';
 
+import {
+  MysticMuHeaderAdapter,
+  MysticMuFooterAdapter,
+  MysticMuStripAdapter,
+  MysticMuHomepageAdapter,
+  MysticMuAboutAdapter,
+  MysticMuHelpAdapter,
+  mystic_mu_th_Catalog,
+  mystic_mu_th_ProductDetail,
+  mystic_mu_th_Cart,
+  mystic_mu_th_Checkout,
+  mystic_mu_th_Contact,
+} from '@/components/storefront/themes/mystic-mu-th/adapters';
+
 export const templates: Record<TemplateId, Template> = {
   handmade: {
     id: 'handmade',
@@ -1454,6 +1468,30 @@ export const templates: Record<TemplateId, Template> = {
       }),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
+    },
+  },
+
+  'mystic-mu-th': {
+    id: 'mystic-mu-th',
+    name: 'MysticMu',
+    description:
+      'วอลเปเปอร์มงคล สายมู หนุนดวง เสริมโชค สไตล์ Mario เลเวลอัพชีวิต — ดาวน์โหลดได้ทันที',
+    group: 'mystic-mu',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: MysticMuHeaderAdapter,
+      Footer: MysticMuFooterAdapter,
+      AnnouncementStrip: MysticMuStripAdapter,
+    },
+    pages: {
+      home: MysticMuHomepageAdapter,
+      catalog: mystic_mu_th_Catalog,
+      pdp: mystic_mu_th_ProductDetail,
+      cart: mystic_mu_th_Cart,
+      checkout: mystic_mu_th_Checkout,
+      about: MysticMuAboutAdapter,
+      help: MysticMuHelpAdapter,
+      contact: mystic_mu_th_Contact,
     },
   },
 };
