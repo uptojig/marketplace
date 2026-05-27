@@ -427,6 +427,14 @@ export const TEMPLATES: Template[] = [
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
   },
+  {
+    id: "photo-vault-th",
+    name: "PhotoVault",
+    description: "พรีเซ็ต Lightroom · Actions · LUTs · charcoal + amber luxe สำหรับช่างภาพ",
+    group: "photo-vault",
+    theme: { spacing: "default", radius: "sharp", titleScale: "display", font: "sans" },
+    behavior: { stickyCTA: "buy-now" },
+  },
 ];
 
 // ─── Palettes ──────────────────────────────────────────────────────────────

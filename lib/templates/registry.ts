@@ -463,6 +463,19 @@ import {
   edu_classroom_th_Help,
   edu_classroom_th_Contact,
 } from '@/components/storefront/themes/edu-classroom-th/adapters';
+import {
+  PhotoVaultHeaderAdapter,
+  PhotoVaultFooterAdapter,
+  PhotoVaultStripAdapter,
+  PhotoVaultHomepageAdapter,
+  PhotoVaultAboutAdapter,
+  PhotoVaultHelpAdapter,
+  photo_vault_th_Catalog,
+  photo_vault_th_ProductDetail,
+  photo_vault_th_Cart,
+  photo_vault_th_Checkout,
+  photo_vault_th_Contact,
+} from '@/components/storefront/themes/photo-vault-th/adapters';
 
 export const templates: Record<TemplateId, Template> = {
   handmade: {
@@ -1565,6 +1578,38 @@ export const templates: Record<TemplateId, Template> = {
       about: MysticMuAboutAdapter,
       help: MysticMuHelpAdapter,
       contact: mystic_mu_th_Contact,
+    },
+  },
+
+  'photo-vault-th': {
+    id: 'photo-vault-th',
+    name: 'PhotoVault',
+    description:
+      'Lightroom Presets · Photoshop Actions · LUTs สำหรับช่างภาพ · ดาวน์โหลด .xmp .acr .cube ทันที',
+    group: 'photo-vault',
+    behavior: {
+      bottomNav: 'hidden',
+      stickyCTA: 'buy-now',
+      digitalOnly: true,
+      productCardStyle: 'editorial',
+    },
+    chrome: {
+      Header: PhotoVaultHeaderAdapter,
+      Footer: PhotoVaultFooterAdapter,
+      AnnouncementStrip: PhotoVaultStripAdapter,
+      // Full-bleed dark hero — header sits sticky over the gradient
+      // gallery wall on the homepage.
+      shellShape: 'full-bleed',
+    },
+    pages: {
+      home: PhotoVaultHomepageAdapter,
+      catalog: photo_vault_th_Catalog,
+      pdp: photo_vault_th_ProductDetail,
+      cart: photo_vault_th_Cart,
+      checkout: photo_vault_th_Checkout,
+      about: PhotoVaultAboutAdapter,
+      help: PhotoVaultHelpAdapter,
+      contact: photo_vault_th_Contact,
     },
   },
 };

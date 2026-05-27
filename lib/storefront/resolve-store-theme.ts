@@ -92,6 +92,12 @@ import {
   VECTOR_BAZAAR_BODY_CLASS,
   VECTOR_BAZAAR_TOKENS,
 } from "@/lib/landing/vector-bazaar";
+import {
+  isPhotoVaultStore,
+  photoVaultCssVars,
+  PHOTO_VAULT_BODY_CLASS,
+  PHOTO_VAULT_TOKENS,
+} from "@/lib/landing/photo-vault";
 import { isEverydayStore } from "@/lib/landing/everyday";
 import {
   isEduClassroomStore,
@@ -117,6 +123,7 @@ export type ThemeKey =
   | "mystic-mu"
   | "edu-classroom"
   | "vector-bazaar"
+  | "photo-vault"
   | "pet-house"
   | "case-studio"
   | "default";
@@ -205,6 +212,7 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   else if (isMysticMuStore(key)) chromeKey = "mystic-mu";
   else if (isEduClassroomStore(key)) chromeKey = "edu-classroom";
   else if (isVectorBazaarStore(key)) chromeKey = "vector-bazaar";
+  else if (isPhotoVaultStore(key)) chromeKey = "photo-vault";
 
   let familyClass = "";
   let familyVars: Record<string, string> = {};
@@ -283,6 +291,12 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyAccent = VECTOR_BAZAAR_TOKENS.primary;
       familyButtonShape = "pill";
       break;
+    case "photo-vault":
+      familyClass = PHOTO_VAULT_BODY_CLASS;
+      familyVars = photoVaultCssVars();
+      familyAccent = PHOTO_VAULT_TOKENS.primary;
+      familyButtonShape = "square";
+      break;
     default:
       break;
   }
@@ -339,6 +353,7 @@ export function resolveContentThemeKey(store: ThemeInput): ThemeKey {
   if (isMysticMuStore(key)) return "mystic-mu";
   if (isEduClassroomStore(key)) return "edu-classroom";
   if (isVectorBazaarStore(key)) return "vector-bazaar";
+  if (isPhotoVaultStore(key)) return "photo-vault";
   return "default";
 }
 

@@ -3150,3 +3150,75 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   theme-photo-vault — โฟโต้วอลต์ · photographer dark luxe.
+   Charcoal canvas, amber spotlight accents, film-grain noise, and
+   golden-hour gradient utilities for hero panels + price chips.
+   ───────────────────────────────────────────────────────────────── */
+
+.theme-photo-vault {
+  color-scheme: dark;
+}
+
+.theme-photo-vault ::selection {
+  background-color: #F59E0B;
+  color: #0C0A09;
+}
+
+/* Subtle film-grain noise overlay — apply with `.pv-grain` on a
+   relatively-positioned section. Uses inline SVG so no extra asset. */
+.theme-photo-vault .pv-grain {
+  position: relative;
+}
+.theme-photo-vault .pv-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* Amber spotlight box-glow for CTAs and price tags. */
+.theme-photo-vault .pv-glow-amber {
+  box-shadow:
+    0 0 0 1px rgba(245, 158, 11, 0.35),
+    0 14px 40px -10px rgba(245, 158, 11, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.theme-photo-vault .pv-glow-rose {
+  box-shadow:
+    0 0 0 1px rgba(225, 29, 72, 0.35),
+    0 14px 40px -10px rgba(225, 29, 72, 0.55);
+}
+
+/* Soft golden text gradient for hero headlines. */
+.theme-photo-vault .pv-text-gold {
+  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 45%, #D97706 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Border-only divider chip used for category pills + tag rails. */
+.theme-photo-vault .pv-chip {
+  border: 1px solid #44403C;
+  background: rgba(28, 25, 23, 0.6);
+  backdrop-filter: blur(6px) saturate(160%);
+}
+.theme-photo-vault .pv-chip:hover {
+  border-color: #F59E0B;
+  background: rgba(28, 25, 23, 0.9);
+}
+
+/* Hide scrollbar utility (re-using neon's pattern for category rails). */
+.theme-photo-vault .hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.theme-photo-vault .hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
