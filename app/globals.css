@@ -2900,3 +2900,74 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   theme-mystic-mu — Mario-inspired Thai สายมู / auspicious shop.
+   Signature: pixel-bold 2-4px dark borders + hard offset shadows +
+   Mario red CTA on Mario sky-blue background. Coin-gold accents.
+   Used by every store whose templateId belongs to the `mystic-mu`
+   group (currently: mystic-mu-th).
+   ───────────────────────────────────────────────────────────────── */
+
+.theme-mystic-mu {
+  color-scheme: light;
+}
+
+.theme-mystic-mu ::selection {
+  background-color: #FFD700; /* coin gold */
+  color: #1A1A2E;
+}
+
+/* Pixel-art hard offset shadow utilities — the family signature. The
+   classic Mario "block" outline. */
+.theme-mystic-mu .pixel-shadow-sm {
+  box-shadow: 3px 3px 0 0 #1A1A2E;
+}
+.theme-mystic-mu .pixel-shadow-md {
+  box-shadow: 4px 4px 0 0 #1A1A2E;
+}
+.theme-mystic-mu .pixel-shadow-lg {
+  box-shadow: 6px 6px 0 0 #1A1A2E;
+}
+
+/* Press-down interactive pattern — element nudges down/right by the
+   shadow offset on :active. Matches the Mario "block hit" feel. */
+.theme-mystic-mu .pixel-press {
+  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+}
+.theme-mystic-mu .pixel-press:active {
+  transform: translate(4px, 4px);
+  box-shadow: none !important;
+}
+
+/* Coin sparkle — a soft gold glow on hover for stars / charm icons. */
+.theme-mystic-mu .coin-glow {
+  text-shadow: 0 0 8px #FFD700, 0 0 16px rgba(255, 215, 0, 0.5);
+}
+
+/* Pixel-art cloud bg pattern for hero / footer accents. Drawn with
+   layered radial gradients so no external image is needed. */
+.theme-mystic-mu .pixel-clouds {
+  background-image:
+    radial-gradient(circle at 20% 30%, #ffffff 0, #ffffff 18px, transparent 19px),
+    radial-gradient(circle at 80% 60%, #ffffff 0, #ffffff 22px, transparent 23px),
+    radial-gradient(circle at 50% 80%, #ffffff 0, #ffffff 14px, transparent 15px);
+  background-size: 240px 240px;
+  background-repeat: repeat;
+}
+
+/* Hide scrollbar for category rails */
+.theme-mystic-mu .hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.theme-mystic-mu .hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Mario brick texture for accent panels — a subtle repeated stripe. */
+.theme-mystic-mu .pixel-bricks {
+  background-image:
+    linear-gradient(90deg, transparent 0%, transparent 49%, rgba(26, 26, 46, 0.08) 49%, rgba(26, 26, 46, 0.08) 51%, transparent 51%);
+  background-size: 32px 32px;
+}

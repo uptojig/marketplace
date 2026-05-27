@@ -405,6 +405,14 @@ export const TEMPLATES: Template[] = [
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
   },
+  {
+    id: "mystic-mu-th",
+    name: "MysticMu มูเลเวลอัพ",
+    description: "วอลเปเปอร์มงคล สายมู หนุนดวง เสริมโชค สไตล์ Mario เลเวลอัพชีวิต",
+    group: "mystic-mu",
+    theme: { spacing: "default", radius: "sharp", titleScale: "display", font: "sans" },
+    behavior: { stickyCTA: "buy-now" },
+  },
 ];
 
 // ─── Palettes ──────────────────────────────────────────────────────────────

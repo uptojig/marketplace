@@ -80,6 +80,12 @@ import {
   NEON_BODY_CLASS,
   NEON_TOKENS,
 } from "@/lib/landing/neon";
+import {
+  isMysticMuStore,
+  mysticMuCssVars,
+  MYSTIC_MU_BODY_CLASS,
+  MYSTIC_MU_TOKENS,
+} from "@/lib/landing/mystic-mu";
 import { isEverydayStore } from "@/lib/landing/everyday";
 import { isPetHouseStore } from "@/lib/landing/pet-house";
 import { isCaseStudioStore } from "@/lib/landing/case-studio";
@@ -96,6 +102,7 @@ export type ThemeKey =
   | "packaging"
   | "community"
   | "neon"
+  | "mystic-mu"
   | "pet-house"
   | "case-studio"
   | "default";
@@ -181,6 +188,7 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   else if (isTaobaoStore(key)) chromeKey = "taobao";
   else if (isCommunityStore(key)) chromeKey = "community";
   else if (isNeonStore(key)) chromeKey = "neon";
+  else if (isMysticMuStore(key)) chromeKey = "mystic-mu";
 
   let familyClass = "";
   let familyVars: Record<string, string> = {};
@@ -242,6 +250,12 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyAccent = NEON_TOKENS.primary;
       familyButtonShape = "square";
       break;
+    case "mystic-mu":
+      familyClass = MYSTIC_MU_BODY_CLASS;
+      familyVars = mysticMuCssVars();
+      familyAccent = MYSTIC_MU_TOKENS.primary;
+      familyButtonShape = "square";
+      break;
     default:
       break;
   }
@@ -295,6 +309,7 @@ export function resolveContentThemeKey(store: ThemeInput): ThemeKey {
   if (isPackagingStore(key)) return "packaging";
   if (isCommunityStore(key)) return "community";
   if (isNeonStore(key)) return "neon";
+  if (isMysticMuStore(key)) return "mystic-mu";
   return "default";
 }
 

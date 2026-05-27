@@ -40,6 +40,7 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
   taobao: ['taobao-style'],
   packaging: ['packaging-supply', 'pastel-pack', 'omnipack', 'blackwrapp'],
   neon: ['neon-festival'],
+  'mystic-mu': ['mystic-mu-th'],
 } as const;
 
 /** Inverse lookup: TemplateId → TemplateGroup. */
