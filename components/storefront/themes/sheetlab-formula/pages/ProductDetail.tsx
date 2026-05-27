@@ -316,7 +316,7 @@ export default function SheetlabFormulaProductDetail({
                     mode === 'self' ? { background: '#107C41' } : undefined
                   }
                 >
-                  ซื้อให้ตัวเอง
+                  ซื้อ
                 </button>
                 <button
                   type="button"
@@ -333,7 +333,7 @@ export default function SheetlabFormulaProductDetail({
                   }
                 >
                   <Gift className="w-4 h-4" />
-                  ซื้อเป็นของขวัญ
+                  ส่งของขวัญ
                 </button>
               </div>
 
