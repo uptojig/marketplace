@@ -287,6 +287,7 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyVars = mysticMuCssVars();
       familyAccent = MYSTIC_MU_TOKENS.primary;
       familyButtonShape = "square";
+      break;
     case "edu-classroom":
       familyClass = EDU_CLASSROOM_BODY_CLASS;
       familyVars = eduClassroomCssVars();
