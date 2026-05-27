@@ -109,6 +109,10 @@ const MONO_JET = '"JetBrains Mono", ui-monospace, "Cascadia Mono", monospace';
 const SANS_OUTFIT = '"Outfit", "Plus Jakarta Sans", "DM Sans", "Prompt", sans-serif';
 const SANS_INTER = '"Inter Tight", "Inter", "IBM Plex Sans Thai", sans-serif';
 const SANS_SYS = "ui-sans-serif, system-ui, sans-serif";
+// Thai-first font stacks for the 5 digital-product families. Memory rule:
+// Google Thai fonts only (Kanit / Prompt) — no Sarabun, no Playfair serif.
+const KANIT = '"Kanit", "IBM Plex Sans Thai", system-ui, sans-serif';
+const PROMPT = '"Prompt", "IBM Plex Sans Thai", system-ui, sans-serif';
 
 /**
  * Per-family STYLE cues (fonts + corner radius) for the preview mocks. COLORS
@@ -131,11 +135,11 @@ const FAMILY_STYLE: Record<
   packaging: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "round" },
   community: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
   neon: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "sharp" },
-  "mystic-mu": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "sharp" },
-  "edu-classroom": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "round" },
-  "vector-bazaar": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_INTER, heading: "sans", radius: "round" },
-  "photo-vault": { serif: SERIF_FRAUNCES, mono: MONO_JET, sans: SANS_SYS, heading: "serif", radius: "sharp" },
-  "salepage-market": { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_INTER, heading: "sans", radius: "sharp" },
+  "mystic-mu": { serif: KANIT, mono: MONO_JET, sans: PROMPT, heading: "sans", radius: "sharp" },
+  "edu-classroom": { serif: KANIT, mono: MONO_JET, sans: PROMPT, heading: "sans", radius: "round" },
+  "vector-bazaar": { serif: KANIT, mono: MONO_JET, sans: PROMPT, heading: "sans", radius: "round" },
+  "photo-vault": { serif: KANIT, mono: MONO_JET, sans: PROMPT, heading: "sans", radius: "sharp" },
+  "salepage-market": { serif: KANIT, mono: MONO_JET, sans: PROMPT, heading: "sans", radius: "sharp" },
   default: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
 };
 
