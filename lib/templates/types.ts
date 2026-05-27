@@ -39,6 +39,7 @@ export type TemplateGroup =
   | 'neon'
   | 'mystic-mu'
   | 'edu-classroom'
+  | 'vector-bazaar'
 ;
 
 export type TemplateId =
@@ -97,7 +98,8 @@ export type TemplateId =
   | 'caseinw'
   | 'sheetlab-formula'
   | 'mystic-mu-th'
-  | 'edu-classroom-th';
+  | 'edu-classroom-th'
+  | 'vector-bazaar-th';
 
 
 

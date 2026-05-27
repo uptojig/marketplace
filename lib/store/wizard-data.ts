@@ -29,7 +29,7 @@ export const NICHES: Niche[] = [
   { id: "kids", label: "แม่และเด็ก", emoji: "🧸", recommendedTemplates: ["tinyhand-wooden-toys"] },
   { id: "food", label: "อาหาร", emoji: "🍱", recommendedTemplates: ["talad-see-sod", "bulkbox-industrial", "petit-cote"] },
   { id: "wholesale", label: "ขายส่ง / B2B", emoji: "📦", recommendedTemplates: ["bulkbox-industrial", "inkstone-paper"] },
-  { id: "handmade", label: "งานฝีมือ", emoji: "🎨", recommendedTemplates: ["mai-hatthakam", "pigment-studio"] },
+  { id: "handmade", label: "งานฝีมือ", emoji: "🎨", recommendedTemplates: ["mai-hatthakam", "pigment-studio", "vector-bazaar-th"] },
   { id: "vintage", label: "วินเทจ / มือสอง", emoji: "🕰️", recommendedTemplates: ["brutalist-thai", "mono-eight", "atelier-27"] },
   { id: "general", label: "อื่นๆ / ขายทั่วไป", emoji: "🛍️", recommendedTemplates: ["pastel-pack", "sai-sing"] },
 ];
@@ -132,6 +132,15 @@ export const TEMPLATES: Template[] = [
     group: "neon",
     theme: { spacing: "default", radius: "sharp", titleScale: "display", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
+  },
+  {
+    id: "vector-bazaar-th",
+    name: "VectorBazaar",
+    description:
+      "SVG · icon packs · vector assets สำหรับนักออกแบบ ดาวน์โหลดทันที แก้ไขได้ใน Figma / AI / Sketch",
+    group: "vector-bazaar",
+    theme: { spacing: "airy", radius: "round", titleScale: "display", font: "sans-display" },
+    behavior: { stickyCTA: "buy-now", bottomNav: "visible" },
   },
   {
     id: "brutalist-thai",

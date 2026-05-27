@@ -3050,3 +3050,103 @@
   outline-offset: 1px;
   border-color: var(--shop-primary, #2563EB);
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   theme-vector-bazaar — Designer-friendly SVG / vector asset marketplace.
+   Signature: playful pastel-rainbow gradient bands, soft rounded surfaces
+   (1rem / 1.5rem corners), a checkerboard "transparency" backdrop for
+   asset thumbnails, and a confetti-dot accent pattern for category rails.
+   Used by every store whose templateId belongs to the `vector-bazaar`
+   group.
+   ───────────────────────────────────────────────────────────────── */
+
+.theme-vector-bazaar {
+  color-scheme: light;
+}
+
+.theme-vector-bazaar ::selection {
+  background-color: #F472B6;
+  color: #1E1B4B;
+}
+
+/* Rainbow gradient text — used for hero headlines, category section
+   titles, and "free download" badges. */
+.theme-vector-bazaar .vb-rainbow-text {
+  background-image: linear-gradient(
+    90deg,
+    #F472B6 0%,
+    #FBBF24 25%,
+    #34D399 50%,
+    #60A5FA 75%,
+    #A78BFA 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Rainbow gradient surface — hero bands, "featured pack" cards. */
+.theme-vector-bazaar .vb-rainbow-bg {
+  background-image: linear-gradient(
+    135deg,
+    #FCE7F3 0%,
+    #FEF3C7 25%,
+    #D1FAE5 50%,
+    #DBEAFE 75%,
+    #EDE9FE 100%
+  );
+}
+
+/* Checkerboard "transparency" backdrop for asset previews — gives the
+   SVG-thumbnail tiles that signature design-tool look. */
+.theme-vector-bazaar .vb-checker {
+  background-image:
+    linear-gradient(45deg, #FCE7F3 25%, transparent 25%),
+    linear-gradient(-45deg, #FCE7F3 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #FCE7F3 75%),
+    linear-gradient(-45deg, transparent 75%, #FCE7F3 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+}
+
+/* Confetti-dot pattern — category band background, "subscribe" sections. */
+.theme-vector-bazaar .vb-confetti {
+  background-image:
+    radial-gradient(circle at 20% 30%, #F472B6 2px, transparent 3px),
+    radial-gradient(circle at 80% 20%, #FBBF24 2px, transparent 3px),
+    radial-gradient(circle at 50% 70%, #60A5FA 2px, transparent 3px),
+    radial-gradient(circle at 15% 80%, #34D399 2px, transparent 3px),
+    radial-gradient(circle at 90% 90%, #A78BFA 2px, transparent 3px);
+  background-size: 80px 80px;
+}
+
+/* Magnetic card hover — designer marketplace cards lift gently and
+   gain a colored glow. Pair with `.vb-glow-{primary|accent|savings}`. */
+.theme-vector-bazaar .vb-card-hover {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.theme-vector-bazaar .vb-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px -8px rgba(244, 114, 182, 0.35);
+}
+
+.theme-vector-bazaar .vb-glow-primary {
+  box-shadow: 0 8px 24px -6px rgba(244, 114, 182, 0.4);
+}
+.theme-vector-bazaar .vb-glow-accent {
+  box-shadow: 0 8px 24px -6px rgba(96, 165, 250, 0.4);
+}
+.theme-vector-bazaar .vb-glow-savings {
+  box-shadow: 0 8px 24px -6px rgba(251, 191, 36, 0.4);
+}
+
+/* Hide scrollbar for category rails / format-filter chips */
+.theme-vector-bazaar .vb-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.theme-vector-bazaar .vb-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

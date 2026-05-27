@@ -42,6 +42,7 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
   neon: ['neon-festival'],
   'mystic-mu': ['mystic-mu-th'],
   'edu-classroom': ['edu-classroom-th'],
+  'vector-bazaar': ['vector-bazaar-th'],
 } as const;
 
 /** Inverse lookup: TemplateId → TemplateGroup. */

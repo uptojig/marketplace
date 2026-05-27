@@ -71,6 +71,19 @@ import {
   neon_festival_Contact,
 } from '@/components/storefront/themes/neon-festival/adapters';
 import {
+  VectorBazaarHeaderAdapter,
+  VectorBazaarFooterAdapter,
+  VectorBazaarStripAdapter,
+  VectorBazaarHomepageAdapter,
+  VectorBazaarAboutAdapter,
+  VectorBazaarHelpAdapter,
+  vector_bazaar_th_Catalog,
+  vector_bazaar_th_ProductDetail,
+  vector_bazaar_th_Cart,
+  vector_bazaar_th_Checkout,
+  vector_bazaar_th_Contact,
+} from '@/components/storefront/themes/vector-bazaar-th/adapters';
+import {
   CasethepHeaderAdapter,
   CasethepFooterAdapter,
   CasethepStripAdapter,
@@ -724,6 +737,31 @@ export const templates: Record<TemplateId, Template> = {
       about: NeonFestivalAboutAdapter,
       help: NeonFestivalHelpAdapter,
       contact: neon_festival_Contact,
+    },
+  },
+
+  'vector-bazaar-th': {
+    id: 'vector-bazaar-th',
+    name: 'VectorBazaar',
+    description:
+      'SVG illustrations · icon packs · vector assets แก้ไขได้ใน Figma, AI, Sketch · ดาวน์โหลด .svg .ai .eps ทันที',
+    group: 'vector-bazaar',
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    chrome: {
+      Header: VectorBazaarHeaderAdapter,
+      Footer: VectorBazaarFooterAdapter,
+      AnnouncementStrip: VectorBazaarStripAdapter,
+      shellShape: 'centered',
+    },
+    pages: {
+      home: VectorBazaarHomepageAdapter,
+      catalog: vector_bazaar_th_Catalog,
+      pdp: vector_bazaar_th_ProductDetail,
+      cart: vector_bazaar_th_Cart,
+      checkout: vector_bazaar_th_Checkout,
+      about: VectorBazaarAboutAdapter,
+      help: VectorBazaarHelpAdapter,
+      contact: vector_bazaar_th_Contact,
     },
   },
 
