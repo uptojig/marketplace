@@ -18,8 +18,11 @@ const CATEGORY_LABEL: Record<string, string> = {
   software: 'Software',
 };
 
+/** Template as serialized for the client — no `component` function ref. */
+type DetailTemplate = Omit<SalepageTemplate, 'component'>;
+
 interface Props {
-  template: SalepageTemplate;
+  template: DetailTemplate;
 }
 
 export function ThemeDetailView({ template: t }: Props) {

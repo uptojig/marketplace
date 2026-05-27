@@ -23,5 +23,9 @@ export default async function ThemeDetailPage({ params }: Params) {
   const t = getSalepageTemplate(id);
   if (!t) notFound();
 
-  return <ThemeDetailView template={t} />;
+  // Strip the `component` field (a React function) so the template can
+  // cross the Server → Client boundary. RSC can't serialize function
+  // references unless they're "use server" actions.
+  const { component: _c, ...template } = t;
+  return <ThemeDetailView template={template} />;
 }
