@@ -69,9 +69,23 @@ const NAV_GROUPS: NavGroupDef[] = [
   },
 ];
 
-export function AccountSidebar({ storeSlug }: { storeSlug: string }) {
+export function AccountSidebar({
+  storeSlug,
+  digitalOnly = false,
+}: {
+  storeSlug: string;
+  /** Drop entries that don't apply to digital-only stores (e.g.
+   *  /addresses — nothing ever ships). */
+  digitalOnly?: boolean;
+}) {
   const pathname = usePathname();
   const base = `/stores/${storeSlug}/account`;
+  const groups = digitalOnly
+    ? NAV_GROUPS.map((g) => ({
+        ...g,
+        items: g.items.filter((i) => i.to !== '/addresses'),
+      }))
+    : NAV_GROUPS;
 
   return (
     <aside className="space-y-5">
@@ -86,7 +100,7 @@ export function AccountSidebar({ storeSlug }: { storeSlug: string }) {
         แดชบอร์ด
       </Link>
 
-      {NAV_GROUPS.map((group) => (
+      {groups.map((group) => (
         <div key={group.label}>
           <h3 className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             {group.label}

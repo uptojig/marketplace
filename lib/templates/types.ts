@@ -125,6 +125,10 @@ export interface BehaviorFlags {
   heroSize?: 'cover' | 'large' | 'portrait' | 'video' | 'live-tile' | 'none';
   badgeSlot?: 'official' | 'b2b' | 'condition' | 'performance';
   productCardStyle?: 'default' | 'minimal' | 'editorial' | 'spec-rows';
+  /** Cart contains only DIGITAL products — no shipping address ever
+   *  needed. Hides the /account/addresses entry from the sidebar and
+   *  any future "saved address" surfaces. */
+  digitalOnly?: boolean;
 }
 
 

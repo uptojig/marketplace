@@ -1431,7 +1431,7 @@ export const templates: Record<TemplateId, Template> = {
     name: 'Sheetlab Formula',
     description: 'ขายสูตร Excel · spreadsheet grid · digital-first · ดาวน์โหลดทันที',
     group: 'specialty',
-    behavior: { bottomNav: 'hidden', stickyCTA: 'add-to-cart' },
+    behavior: { bottomNav: 'hidden', stickyCTA: 'add-to-cart', digitalOnly: true },
     chrome: {
       Header: SheetlabFormulaHeaderAdapter,
       Footer: SheetlabFormulaFooterAdapter,
@@ -1443,13 +1443,12 @@ export const templates: Record<TemplateId, Template> = {
       pdp: sheetlab_formula_ProductDetail,
       cart: makeThaiCartAdapter(),
       checkout: makeThaiCheckoutAdapter({
-        // Digital-formula store — credit wallet is a first-class payment
-        // path here (header shows the live "เครดิต ฿X" pill + a top-up
-        // link). The global DEFAULT_PAYMENT was trimmed to ANYPAY-only
-        // in 659ec6c; we re-add CREDIT just for sheetlab so buying
-        // actually debits the on-screen balance.
+        // Digital-formula store — CREDIT is the ONLY way to buy a
+        // template. Buyers fund the wallet via AnyPay through the
+        // /account/credit/topup flow (separate route, always ANYPAY);
+        // checkout itself never touches the gateway. Forces the
+        // header pill to actually decrement on every purchase.
         paymentOptions: [
-          { id: 'ANYPAY', name: 'ชำระผ่าน AnyPay' },
           { id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' },
         ],
       }),

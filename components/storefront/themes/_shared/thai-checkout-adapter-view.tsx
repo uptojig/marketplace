@@ -238,11 +238,20 @@ export function ThaiCheckoutAdapterView({
 
   const creditAvailable = !isGuest && creditBalanceTHB !== null;
   const creditEnough = creditAvailable && (creditBalanceTHB ?? 0) >= total;
-  // Map a UI option id onto the /api/checkout enum. Anything not
-  // explicitly CREDIT routes through ANYPAY — same default the API
-  // itself uses, so we stay consistent across themes.
+  const hasAnypayOption = paymentOptions.some((o) => o.id === 'ANYPAY');
+  // Map UI selection → /api/checkout enum. The historical fallback
+  // routed unusable CREDIT (guest / short balance) through ANYPAY so
+  // the buyer always had a way to pay — fine when ANYPAY was offered,
+  // but a CREDIT-only store (sheetlab) doesn't want gateway charges to
+  // sneak through. Only fall back when ANYPAY is actually in the menu.
   const apiPaymentMethod: "ANYPAY" | "CREDIT" =
-    payment.id === "CREDIT" && creditEnough ? "CREDIT" : "ANYPAY";
+    payment.id === "CREDIT" && (creditEnough || !hasAnypayOption)
+      ? "CREDIT"
+      : "ANYPAY";
+  // Disable next/submit when the selected option can't actually run —
+  // CREDIT-only stores must keep the buyer in the funnel (sign in →
+  // top up → buy) instead of silently letting them through.
+  const paymentBlocked = payment.id === 'CREDIT' && !creditEnough;
 
   function updateField<K extends keyof AddressForm>(key: K) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -522,6 +531,7 @@ export function ThaiCheckoutAdapterView({
                 storeSlug={store.slug}
                 onBack={() => setStep(allDigital ? 1 : 2)}
                 onNext={nextFromPayment}
+                blocked={paymentBlocked}
               />
             )}
 
@@ -542,6 +552,7 @@ export function ThaiCheckoutAdapterView({
                 onSubmit={placeOrder}
                 onEditAddress={() => setStep(2)}
                 onEditShipping={() => setStep(3)}
+                blocked={paymentBlocked}
               />
             )}
           </section>
@@ -911,6 +922,7 @@ function PaymentStep({
   storeSlug,
   onBack,
   onNext,
+  blocked = false,
 }: {
   palette: ResolvedPalette;
   shippingOptions: ShippingOption[];
@@ -931,6 +943,9 @@ function PaymentStep({
   storeSlug: string;
   onBack: () => void;
   onNext: () => void;
+  /** Current payment selection isn't actually usable (guest on a
+   *  CREDIT-only store, or balance short). Disables "ดำเนินการต่อ". */
+  blocked?: boolean;
 }) {
   return (
     <div className="space-y-4">
@@ -1124,6 +1139,7 @@ function PaymentStep({
         </Button>
         <Button
           onClick={onNext}
+          disabled={blocked}
           className="text-sm font-semibold"
           style={{ background: palette.primary, color: palette.primaryFg }}
         >
@@ -1150,6 +1166,7 @@ function ConfirmStep({
   onEditAddress,
   onEditShipping,
   allDigital = false,
+  blocked = false,
 }: {
   palette: ResolvedPalette;
   address: AddressForm;
@@ -1168,6 +1185,9 @@ function ConfirmStep({
   /** When true, hide all shipping/address related rows — the cart is
    *  digital-only and no parcel is going out. */
   allDigital?: boolean;
+  /** When true, the selected payment can't actually run (e.g. guest on
+   *  a CREDIT-only store). Disables the submit button. */
+  blocked?: boolean;
 }) {
   return (
     <div className="space-y-4">
@@ -1310,7 +1330,7 @@ function ConfirmStep({
         </Button>
         <Button
           onClick={onSubmit}
-          disabled={submitting}
+          disabled={submitting || blocked}
           className="text-sm font-semibold flex-1 max-w-xs py-5"
           style={{ background: palette.primary, color: palette.primaryFg }}
         >
