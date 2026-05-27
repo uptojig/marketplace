@@ -76,6 +76,42 @@ export async function createOrderFromCart(input: CreateOrderInput) {
       throw new Error("จำนวนผู้รับไม่ตรงกับจำนวนสินค้า");
     }
   }
+
+  // Server-side guard: refuse self-buy lines for digital products the
+  // user already owns. The unlock is non-consumable, so re-purchasing
+  // would just burn credit on a duplicate. Gift lines are exempt —
+  // the buyer may own the file but want to send a copy to someone
+  // else. Mirrors the UI guard in the sheetlab PDP.
+  if (input.userId) {
+    const digitalSelfProductIds = input.items
+      .filter((i) => !i.giftRecipients?.length)
+      .map((i) => i.productId)
+      .filter(
+        (pid) =>
+          products.find((p) => p.id === pid)?.productType === "DIGITAL",
+      );
+    if (digitalSelfProductIds.length > 0) {
+      const owned = await prisma.digitalUnlock.findMany({
+        where: {
+          userId: input.userId,
+          productId: { in: digitalSelfProductIds },
+          recipientEmail: null,
+          revokedAt: null,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+        select: { productId: true },
+      });
+      if (owned.length > 0) {
+        const ownedIds = new Set(owned.map((o: { productId: string }) => o.productId));
+        const titles = products
+          .filter((p) => ownedIds.has(p.id))
+          .map((p) => p.title);
+        throw new Error(
+          `เป็นเจ้าของแล้ว: ${titles.join(", ")} — ไม่สามารถซื้อซ้ำได้`,
+        );
+      }
+    }
+  }
   const subtotalNumber = products.reduce(
     (acc, p) => acc + Number(p.priceTHB) * (lineMap.get(p.id) ?? 0),
     0,

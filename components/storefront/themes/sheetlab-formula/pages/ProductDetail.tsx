@@ -59,6 +59,31 @@ export default function SheetlabFormulaProductDetail({
     { email: '', name: '', message: '' },
   ]);
 
+  // Ownership check — digital templates are non-consumable, buying the
+  // same file twice is just wasted credit. Hide the self-buy CTA when
+  // the signed-in buyer already holds an active unlock; the gift flow
+  // stays (they may still want to send it to someone else).
+  const [owned, setOwned] = useState<boolean>(false);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/digital/ownership?productId=${encodeURIComponent(product.id)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { owned?: boolean } | null) => {
+        if (!cancelled && data?.owned) setOwned(true);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [product.id]);
+
+  // Auto-switch to gift mode if the buyer already owns this template —
+  // the "ซื้อ" tab is hidden in that state, so leaving mode='self'
+  // would leave them on an invisible tab.
+  useEffect(() => {
+    if (owned) setMode('gift');
+  }, [owned]);
+
   const homeUrl = `/stores/${store.slug}`;
   const catalogUrl = `/stores/${store.slug}/category`;
 
@@ -112,6 +137,9 @@ export default function SheetlabFormulaProductDetail({
 
   const handleAdd = () => {
     if (mode === 'gift' && giftInvalid) return;
+    // Defensive: buyers who already own the template can only add gifts
+    // for others; self-add is a no-op (the UI hides the self tab too).
+    if (mode === 'self' && owned) return;
 
     const base = {
       productId: product.id,
@@ -297,27 +325,49 @@ export default function SheetlabFormulaProductDetail({
 
             {/* Mode picker + Add to cart */}
             <div className="mt-7">
+              {owned ? (
+                <div
+                  className="mb-4 rounded-md border border-[#A7D5BB] bg-[#ECFDF3] p-3 flex items-center justify-between gap-3"
+                  role="status"
+                >
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#0F5132] font-[family:var(--font-kanit)]">
+                    <Check className="w-4 h-4" aria-hidden="true" />
+                    เป็นเจ้าของแล้ว — ซื้อซ้ำไม่ได้
+                  </div>
+                  <Link
+                    href={`/stores/${store.slug}/account/downloads`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-white shadow-sm hover:opacity-95 transition-opacity"
+                    style={{ background: '#107C41' }}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    ดาวน์โหลด
+                  </Link>
+                </div>
+              ) : null}
+
               <div
                 role="tablist"
                 aria-label="เลือกวิธีซื้อ"
                 className="flex flex-col sm:flex-row gap-2 mb-4"
               >
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === 'self'}
-                  onClick={() => setMode('self')}
-                  className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold border transition-colors ${
-                    mode === 'self'
-                      ? 'text-white border-transparent'
-                      : 'bg-white text-[#1F2937] border-[#E5E7EB] hover:border-[#107C41]'
-                  }`}
-                  style={
-                    mode === 'self' ? { background: '#107C41' } : undefined
-                  }
-                >
-                  ซื้อ
-                </button>
+                {!owned && (
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={mode === 'self'}
+                    onClick={() => setMode('self')}
+                    className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold border transition-colors ${
+                      mode === 'self'
+                        ? 'text-white border-transparent'
+                        : 'bg-white text-[#1F2937] border-[#E5E7EB] hover:border-[#107C41]'
+                    }`}
+                    style={
+                      mode === 'self' ? { background: '#107C41' } : undefined
+                    }
+                  >
+                    ซื้อ
+                  </button>
+                )}
                 <button
                   type="button"
                   role="tab"
@@ -470,7 +520,7 @@ export default function SheetlabFormulaProductDetail({
                 </p>
               ) : null}
               <p className="mt-3 text-xs text-[#6B7280]">
-                ชำระผ่าน AnyPay · ดาวน์โหลดทันทีหลังชำระเงิน
+                ชำระด้วยเครดิตในร้าน · ดาวน์โหลดทันทีหลังชำระเงิน
               </p>
             </div>
 
