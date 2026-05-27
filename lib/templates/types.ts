@@ -38,6 +38,7 @@ export type TemplateGroup =
   | 'packaging'
   | 'neon'
   | 'mystic-mu'
+  | 'edu-classroom'
 ;
 
 export type TemplateId =
@@ -95,7 +96,8 @@ export type TemplateId =
   | 'casetify-clone'
   | 'caseinw'
   | 'sheetlab-formula'
-  | 'mystic-mu-th';
+  | 'mystic-mu-th'
+  | 'edu-classroom-th';
 
 
 
