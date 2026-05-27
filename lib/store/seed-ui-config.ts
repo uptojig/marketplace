@@ -250,6 +250,20 @@ const GROUP_DEFAULTS: Record<TemplateGroup, RecipePages> = {
     catalog: "product-category-08",
     cart: "shopping-cart-03",
   },
+  // Salepage Market — ThemeForest-style developer marketplace for
+  // HTML salepage templates. Clean grid, technical metadata, live-demo
+  // iframe is the differentiator (rendered by the bespoke PDP, not by
+  // the recipe — the recipe just covers the v12 schema fallback case).
+  "salepage-market": {
+    home: [
+      { type: "hero", id: "hero-section-01" },
+      { type: "product-list", id: "product-list-01" },
+      { type: "product-list", id: "product-list-05" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
 };
 
 // ─── Doc-sourced recipes (27 entries) ──────────────────────────────────

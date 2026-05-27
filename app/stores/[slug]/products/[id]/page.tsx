@@ -181,6 +181,8 @@ export default async function ShopProductPage({
               : null,
           videoUrl: product.videoUrl,
           categoryName: product.categoryName,
+          externalPayload: product.externalPayload,
+          updatedAt: product.createdAt,
         }}
         related={related.map((r) => ({
           id: r.id,

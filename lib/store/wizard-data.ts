@@ -435,6 +435,15 @@ export const TEMPLATES: Template[] = [
     theme: { spacing: "default", radius: "sharp", titleScale: "display", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
   },
+  {
+    id: "salepage-market-th",
+    name: "SalepageMarket",
+    description:
+      "มาร์เก็ตเทมเพลต HTML salepage · พรีวิวสดในเบราว์เซอร์ · ดาวน์โหลดทันที · ThemeForest-style",
+    group: "salepage-market",
+    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { stickyCTA: "buy-now" },
+  },
 ];
 
 // ─── Palettes ──────────────────────────────────────────────────────────────
