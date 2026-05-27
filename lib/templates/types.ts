@@ -41,6 +41,7 @@ export type TemplateGroup =
   | 'edu-classroom'
   | 'vector-bazaar'
   | 'photo-vault'
+  | 'salepage-market'
 ;
 
 export type TemplateId =
@@ -101,7 +102,8 @@ export type TemplateId =
   | 'mystic-mu-th'
   | 'edu-classroom-th'
   | 'vector-bazaar-th'
-  | 'photo-vault-th';
+  | 'photo-vault-th'
+  | 'salepage-market-th';
 
 
 
@@ -387,6 +389,14 @@ export interface ProductDetailProps {
     stockLeft?: number | null;
     videoUrl?: string | null;
     categoryName?: string | null;
+    /** Supplier-specific JSON blob (CJ / AliExpress / template metadata).
+     *  Loose `unknown` because the shape varies; templates parse it
+     *  defensively. SalepageMarket reads `demoUrl` and `tags` from it
+     *  to render the live-demo iframe and tech badge row. */
+    externalPayload?: unknown;
+    /** Last update timestamp surfaced to template PDPs (e.g. SalepageMarket
+     *  shows "อัปเดตล่าสุด" badge). Server may pass ISO string or Date. */
+    updatedAt?: string | Date | null;
   };
   /** Up-to-N other products from the same store — for related rails. */
   related: TemplateProductCard[];

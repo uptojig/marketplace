@@ -437,6 +437,19 @@ import {
   sheetlab_formula_Catalog,
   sheetlab_formula_ProductDetail,
 } from '@/components/storefront/themes/sheetlab-formula/adapters';
+import {
+  SalepageMarketHeaderAdapter,
+  SalepageMarketFooterAdapter,
+  SalepageMarketStripAdapter,
+  SalepageMarketHomepageAdapter,
+  SalepageMarketAboutAdapter,
+  SalepageMarketHelpAdapter,
+  salepage_market_th_Catalog,
+  salepage_market_th_ProductDetail,
+  salepage_market_th_Cart,
+  salepage_market_th_Checkout,
+  salepage_market_th_Contact,
+} from '@/components/storefront/themes/salepage-market-th/adapters';
 
 import {
   MysticMuHeaderAdapter,
@@ -1610,6 +1623,31 @@ export const templates: Record<TemplateId, Template> = {
       about: PhotoVaultAboutAdapter,
       help: PhotoVaultHelpAdapter,
       contact: photo_vault_th_Contact,
+    },
+  },
+
+  'salepage-market-th': {
+    id: 'salepage-market-th',
+    name: 'SalepageMarket',
+    description:
+      'มาร์เก็ตเทมเพลตเซลเพจ HTML · พรีวิวสด · ดาวน์โหลดได้ทันที',
+    group: 'salepage-market',
+    behavior: { bottomNav: 'hidden', stickyCTA: 'buy-now', digitalOnly: true },
+    chrome: {
+      Header: SalepageMarketHeaderAdapter,
+      Footer: SalepageMarketFooterAdapter,
+      AnnouncementStrip: SalepageMarketStripAdapter,
+      shellShape: 'magazine',
+    },
+    pages: {
+      home: SalepageMarketHomepageAdapter,
+      catalog: salepage_market_th_Catalog,
+      pdp: salepage_market_th_ProductDetail,
+      cart: salepage_market_th_Cart,
+      checkout: salepage_market_th_Checkout,
+      about: SalepageMarketAboutAdapter,
+      help: SalepageMarketHelpAdapter,
+      contact: salepage_market_th_Contact,
     },
   },
 };

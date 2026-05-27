@@ -98,6 +98,12 @@ import {
   PHOTO_VAULT_BODY_CLASS,
   PHOTO_VAULT_TOKENS,
 } from "@/lib/landing/photo-vault";
+import {
+  isSalepageMarketStore,
+  salepageMarketCssVars,
+  SALEPAGE_MARKET_BODY_CLASS,
+  SALEPAGE_MARKET_TOKENS,
+} from "@/lib/landing/salepage-market";
 import { isEverydayStore } from "@/lib/landing/everyday";
 import {
   isEduClassroomStore,
@@ -124,6 +130,7 @@ export type ThemeKey =
   | "edu-classroom"
   | "vector-bazaar"
   | "photo-vault"
+  | "salepage-market"
   | "pet-house"
   | "case-studio"
   | "default";
@@ -213,6 +220,7 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   else if (isEduClassroomStore(key)) chromeKey = "edu-classroom";
   else if (isVectorBazaarStore(key)) chromeKey = "vector-bazaar";
   else if (isPhotoVaultStore(key)) chromeKey = "photo-vault";
+  else if (isSalepageMarketStore(key)) chromeKey = "salepage-market";
 
   let familyClass = "";
   let familyVars: Record<string, string> = {};
@@ -297,6 +305,12 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyAccent = PHOTO_VAULT_TOKENS.primary;
       familyButtonShape = "square";
       break;
+    case "salepage-market":
+      familyClass = SALEPAGE_MARKET_BODY_CLASS;
+      familyVars = salepageMarketCssVars();
+      familyAccent = SALEPAGE_MARKET_TOKENS.primary;
+      familyButtonShape = "square";
+      break;
     default:
       break;
   }
@@ -354,6 +368,7 @@ export function resolveContentThemeKey(store: ThemeInput): ThemeKey {
   if (isEduClassroomStore(key)) return "edu-classroom";
   if (isVectorBazaarStore(key)) return "vector-bazaar";
   if (isPhotoVaultStore(key)) return "photo-vault";
+  if (isSalepageMarketStore(key)) return "salepage-market";
   return "default";
 }
 

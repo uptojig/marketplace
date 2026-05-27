@@ -27,10 +27,12 @@ import { isNeonStore } from "@/lib/landing/neon";
 import { isMysticMuStore } from "@/lib/landing/mystic-mu";
 import { isVectorBazaarStore } from "@/lib/landing/vector-bazaar";
 import { isPhotoVaultStore } from "@/lib/landing/photo-vault";
+import { isSalepageMarketStore } from "@/lib/landing/salepage-market";
 import { PolicyShell as NeonFestivalPolicyShell } from "@/components/storefront/themes/neon-festival/PolicyShell";
 import { PolicyShell as MysticMuPolicyShell } from "@/components/storefront/themes/mystic-mu-th/PolicyShell";
 import { PolicyShell as VectorBazaarPolicyShell } from "@/components/storefront/themes/vector-bazaar-th/PolicyShell";
 import { PolicyShell as PhotoVaultPolicyShell } from "@/components/storefront/themes/photo-vault-th/PolicyShell";
+import { SalepageMarketPolicyShell } from "@/components/storefront/themes/salepage-market-th/PolicyShell";
 import {
   FashionBeautyPolicyShell,
   fashionBeautyPolicyHeading,
@@ -169,6 +171,13 @@ function wrapInFamilyShell(
       <PhotoVaultPolicyShell title={fallbackTitle}>
         {inner}
       </PhotoVaultPolicyShell>
+    );
+  }
+  if (isSalepageMarketStore(familyKey)) {
+    return (
+      <SalepageMarketPolicyShell title={fallbackTitle}>
+        {inner}
+      </SalepageMarketPolicyShell>
     );
   }
   return inner;

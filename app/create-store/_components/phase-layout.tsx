@@ -29,6 +29,7 @@ const GROUP_LABEL: Record<TemplateGroup, string> = {
   "neon": "นีออน & ของแต่งคอนเสิร์ต",
   "mystic-mu": "สายมู & เลเวลอัพ",
   "edu-classroom": "ห้องเรียน & สื่อการสอน",
+  "salepage-market": "มาร์เก็ตเซลเพจ HTML",
 };
 
 const GROUP_ORDER: TemplateGroup[] = [
@@ -45,6 +46,7 @@ const GROUP_ORDER: TemplateGroup[] = [
   "neon",
   "mystic-mu",
   "edu-classroom",
+  "salepage-market",
 ];
 
 /**
