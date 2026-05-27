@@ -66,6 +66,7 @@ type Family =
   | "neon"
   | "mystic-mu"
   | "edu-classroom"
+  | "prompt-hub"
   | "default";
 
 type PreviewBehavior = Partial<
