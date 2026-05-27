@@ -472,6 +472,7 @@ export function ThaiCheckoutAdapterView({
           current={step}
           palette={palette}
           labels={stepLabels}
+          allDigital={allDigital}
           onStepClick={(s) => {
             if (s < step) setStep(s);
           }}
@@ -552,6 +553,7 @@ export function ThaiCheckoutAdapterView({
               shipping={effectiveShipping}
               total={total}
               threshold={threshold}
+              allDigital={allDigital}
               // On step 1 the main cart panel already lists every item
               // with image + qty controls — don't repeat them in the
               // sticky aside, just show the totals.
@@ -573,18 +575,32 @@ function CheckoutStepper({
   palette,
   labels,
   onStepClick,
+  allDigital = false,
 }: {
   current: 1 | 2 | 3 | 4;
   palette: ResolvedPalette;
   labels: ResolvedStepLabels;
   onStepClick: (s: 1 | 2 | 3 | 4) => void;
+  /** When true the address + payment-method picker steps are not part
+   *  of the flow at all — render a 2-step stepper (cart → confirm). */
+  allDigital?: boolean;
 }) {
-  const steps = [
-    { id: 1 as const, label: labels.cart },
-    { id: 2 as const, label: labels.address },
-    { id: 3 as const, label: labels.payment },
-    { id: 4 as const, label: labels.confirm },
-  ];
+  // For digital-only orders the address + payment-picker steps are
+  // skipped entirely (placeOrder reads paymentMethod from local state
+  // and posts directly), so the stepper hides them too. The internal
+  // step values keep their original ids so the existing setStep(4)
+  // hand-offs continue to work.
+  const steps = allDigital
+    ? [
+        { id: 1 as const, label: labels.cart },
+        { id: 4 as const, label: labels.confirm },
+      ]
+    : [
+        { id: 1 as const, label: labels.cart },
+        { id: 2 as const, label: labels.address },
+        { id: 3 as const, label: labels.payment },
+        { id: 4 as const, label: labels.confirm },
+      ];
 
   return (
     <nav aria-label="ขั้นตอนการชำระเงิน">
@@ -607,7 +623,7 @@ function CheckoutStepper({
                     : palette.inkMuted,
                 }}
               >
-                {completed ? <Check className="h-3.5 w-3.5" /> : s.id}
+                {completed ? <Check className="h-3.5 w-3.5" /> : i + 1}
               </span>
               <span
                 className="hidden sm:inline text-sm font-medium"
@@ -1323,6 +1339,7 @@ function OrderSummaryCard({
   total,
   threshold,
   showLineItems = true,
+  allDigital = false,
 }: {
   palette: ResolvedPalette;
   lines: ReturnType<typeof useCart.getState>['lines'];
@@ -1334,6 +1351,9 @@ function OrderSummaryCard({
    *  main panel already shows the items in full. Keep showing on
    *  steps 2-4 where the buyer needs the at-a-glance reference. */
   showLineItems?: boolean;
+  /** When true the cart is digital-only — hide ค่าจัดส่ง row and the
+   *  free-shipping progress nudge entirely. */
+  allDigital?: boolean;
 }) {
   const remaining = Math.max(0, threshold - subtotal);
   return (
@@ -1399,17 +1419,19 @@ function OrderSummaryCard({
           <dt style={{ color: palette.inkMuted }}>ยอดสินค้า</dt>
           <dd style={{ color: palette.ink }}>{formatTHB(subtotal)}</dd>
         </div>
-        <div className="flex items-center justify-between">
-          <dt style={{ color: palette.inkMuted }}>ค่าจัดส่ง</dt>
-          <dd
-            style={{
-              color: shipping === 0 ? palette.primary : palette.ink,
-            }}
-          >
-            {shipping === 0 ? 'ส่งฟรี' : formatTHB(shipping)}
-          </dd>
-        </div>
-        {remaining > 0 && (
+        {!allDigital && (
+          <div className="flex items-center justify-between">
+            <dt style={{ color: palette.inkMuted }}>ค่าจัดส่ง</dt>
+            <dd
+              style={{
+                color: shipping === 0 ? palette.primary : palette.ink,
+              }}
+            >
+              {shipping === 0 ? 'ส่งฟรี' : formatTHB(shipping)}
+            </dd>
+          </div>
+        )}
+        {!allDigital && remaining > 0 && (
           <div className="space-y-1.5">
             <p
               className="text-xs"

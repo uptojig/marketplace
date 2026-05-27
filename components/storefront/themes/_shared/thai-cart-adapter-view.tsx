@@ -343,50 +343,67 @@ export function ThaiCartAdapterView({ store, config }: ThaiCartAdapterViewProps)
                       </div>
 
                       <div className="mt-3 sm:mt-4 flex items-end justify-between">
-                        <div
-                          className="inline-flex h-9 items-center overflow-hidden rounded-md border"
-                          style={{ borderColor: palette.border }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => setQty(l.productId, l.qty - 1, store.slug)}
-                            disabled={l.qty <= 1}
-                            aria-label="ลด"
-                            className="inline-flex h-9 w-9 items-center justify-center text-sm disabled:opacity-40"
-                            style={{ color: palette.ink }}
-                          >
-                            <Minus className="h-3.5 w-3.5" />
-                          </button>
-                          <input
-                            type="number"
-                            inputMode="numeric"
-                            min={1}
-                            value={l.qty}
-                            onChange={(e) =>
-                              setQty(
-                                l.productId,
-                                Math.max(1, parseInt(e.target.value, 10) || 1),
-                                store.slug,
-                              )
-                            }
-                            className="h-9 w-12 bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        {lineIsDigital(l.productId, l.productType) ? (
+                          // Digital lines never have a quantity beyond 1 —
+                          // each buyer gets exactly one unlock per product
+                          // and the cart enforces qty=1 server-side. Show a
+                          // static badge instead of an interactive stepper
+                          // so the buyer can't tap +.
+                          <span
+                            className="inline-flex h-9 items-center rounded-md border px-3 text-xs font-medium"
                             style={{
-                              color: palette.ink,
-                              borderLeft: `1px solid ${palette.border}`,
-                              borderRight: `1px solid ${palette.border}`,
+                              borderColor: palette.border,
+                              color: palette.inkMuted,
                             }}
-                            aria-label={`จำนวน ${l.title}`}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setQty(l.productId, l.qty + 1, store.slug)}
-                            aria-label="เพิ่ม"
-                            className="inline-flex h-9 w-9 items-center justify-center text-sm"
-                            style={{ color: palette.ink }}
                           >
-                            <Plus className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+                            ดิจิทัล · 1 สิทธิ์
+                          </span>
+                        ) : (
+                          <div
+                            className="inline-flex h-9 items-center overflow-hidden rounded-md border"
+                            style={{ borderColor: palette.border }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => setQty(l.productId, l.qty - 1, store.slug)}
+                              disabled={l.qty <= 1}
+                              aria-label="ลด"
+                              className="inline-flex h-9 w-9 items-center justify-center text-sm disabled:opacity-40"
+                              style={{ color: palette.ink }}
+                            >
+                              <Minus className="h-3.5 w-3.5" />
+                            </button>
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              min={1}
+                              value={l.qty}
+                              onChange={(e) =>
+                                setQty(
+                                  l.productId,
+                                  Math.max(1, parseInt(e.target.value, 10) || 1),
+                                  store.slug,
+                                )
+                              }
+                              className="h-9 w-12 bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                              style={{
+                                color: palette.ink,
+                                borderLeft: `1px solid ${palette.border}`,
+                                borderRight: `1px solid ${palette.border}`,
+                              }}
+                              aria-label={`จำนวน ${l.title}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setQty(l.productId, l.qty + 1, store.slug)}
+                              aria-label="เพิ่ม"
+                              className="inline-flex h-9 w-9 items-center justify-center text-sm"
+                              style={{ color: palette.ink }}
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        )}
 
                         <button
                           type="button"
