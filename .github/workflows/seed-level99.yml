@@ -47,6 +47,20 @@ jobs:
               "ZIP_URL='${ZIP_URL}' bash -s" <<'REMOTE'
             set -euo pipefail
 
+            # Ensure swap is on before the memory-heavy pnpm install +
+            # prisma generate — without it the container is OOM-killed
+            # (exit 137) on the RAM-tight droplet, which also threatens
+            # the live production containers. Mirrors deploy.sh's swap
+            # bootstrap; idempotent (swapon fails harmlessly if already on).
+            if ! swapon --show | grep -q /swapfile; then
+              echo "→ Enabling 4G swap"
+              fallocate -l 4G /swapfile || true
+              chmod 600 /swapfile || true
+              mkswap /swapfile || true
+              swapon /swapfile || true
+            fi
+            free -h || true
+
             WORKDIR=/tmp/level99-seed
             rm -rf "$WORKDIR"
             mkdir -p "$WORKDIR/extracted"
@@ -93,9 +107,14 @@ jobs:
             git reset --hard origin/feat/multi-tenant-provisioning
 
             echo "→ Running seed script inside node:20 container"
+            # Cap V8 heap so peak install/generate memory stays bounded;
+            # swap (enabled above) absorbs the rest. Single pnpm worker
+            # (--child-concurrency=1) keeps the install from spawning
+            # several heavy node processes at once.
             docker run --rm \
               --env-file /etc/marketplace/control.env \
               --network=host \
+              -e NODE_OPTIONS=--max-old-space-size=1024 \
               -v /opt/marketplace:/app \
               -v "$ROOT":/sets:ro \
               -w /app \
@@ -104,7 +123,7 @@ jobs:
                 && apt-get install -y -qq openssl ca-certificates \
                 && corepack enable \
                 && corepack prepare pnpm@9.0.0 --activate \
-                && pnpm install --no-frozen-lockfile --prefer-offline --silent \
+                && pnpm install --no-frozen-lockfile --prefer-offline --silent --child-concurrency=1 \
                 && pnpm tsx scripts/seed-level99.ts /sets"
 
             rm -rf "$WORKDIR"
