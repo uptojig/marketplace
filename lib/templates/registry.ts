@@ -438,6 +438,12 @@ import {
   sheetlab_formula_ProductDetail,
 } from '@/components/storefront/themes/sheetlab-formula/adapters';
 import {
+  DigiVaultHeaderAdapter,
+  DigiVaultFooterAdapter,
+  DigiVaultStripAdapter,
+  DigiVaultHomepageAdapter,
+} from '@/components/storefront/themes/digi-vault/adapters';
+import {
   SalepageMarketHeaderAdapter,
   SalepageMarketFooterAdapter,
   SalepageMarketStripAdapter,
@@ -490,6 +496,25 @@ import {
   photo_vault_th_Checkout,
   photo_vault_th_Contact,
 } from '@/components/storefront/themes/photo-vault-th/adapters';
+
+import {
+  MuWallpaperHeaderAdapter,
+  MuWallpaperFooterAdapter,
+  MuWallpaperStripAdapter,
+  MuWallpaperHomepageAdapter,
+} from '@/components/storefront/themes/mu-wallpaper-th/adapters';
+import {
+  IconMartHeaderAdapter,
+  IconMartFooterAdapter,
+  IconMartStripAdapter,
+  IconMartHomepageAdapter,
+} from '@/components/storefront/themes/iconmart-th/adapters';
+import {
+  ResumeStudioHeaderAdapter,
+  ResumeStudioFooterAdapter,
+  ResumeStudioStripAdapter,
+  ResumeStudioHomepageAdapter,
+} from '@/components/storefront/themes/resume-studio-th/adapters';
 
 export const templates: Record<TemplateId, Template> = {
   handmade: {
@@ -1571,6 +1596,34 @@ export const templates: Record<TemplateId, Template> = {
     },
   },
 
+  'digi-vault': {
+    id: 'digi-vault',
+    name: 'DigiVault',
+    description:
+      'มาร์เก็ตไฟล์ดิจิทัลทุกรูปแบบ · กราฟิก เทมเพลต เสียง วิดีโอ อีบุ๊ก โค้ด · เครดิตในร้าน · ดาวน์โหลดทันที',
+    group: 'specialty',
+    behavior: { bottomNav: 'hidden', stickyCTA: 'buy-now', digitalOnly: true },
+    chrome: {
+      Header: DigiVaultHeaderAdapter,
+      Footer: DigiVaultFooterAdapter,
+      AnnouncementStrip: DigiVaultStripAdapter,
+    },
+    pages: {
+      home: DigiVaultHomepageAdapter,
+      catalog: makeCatalogAdapter('06'),
+      pdp: makePdpAdapter('03', '04'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter({
+        // Digital-only store — CREDIT is the only way to buy. Buyers fund
+        // the wallet via AnyPay through /account/credit; checkout itself
+        // just decrements the in-store balance.
+        paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],
+      }),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
+    },
+  },
+
   'mystic-mu-th': {
     id: 'mystic-mu-th',
     name: 'MysticMu',
@@ -1649,6 +1702,79 @@ export const templates: Record<TemplateId, Template> = {
       about: SalepageMarketAboutAdapter,
       help: SalepageMarketHelpAdapter,
       contact: salepage_market_th_Contact,
+    },
+  },
+
+  // ── Digital stores: credit-only checkout, no shipping address ──
+  'mu-wallpaper-th': {
+    id: 'mu-wallpaper-th',
+    name: 'Mu Wallpaper',
+    description: 'วอลเปเปอร์มงคล สายมู หนุนดวง เสริมโชค · ดาวน์โหลดทันที จ่ายด้วยเครดิต',
+    group: 'mystic-mu',
+    behavior: { bottomNav: 'hidden', stickyCTA: 'add-to-cart', digitalOnly: true },
+    chrome: {
+      Header: MuWallpaperHeaderAdapter,
+      Footer: MuWallpaperFooterAdapter,
+      AnnouncementStrip: MuWallpaperStripAdapter,
+    },
+    pages: {
+      home: MuWallpaperHomepageAdapter,
+      catalog: makeCatalogAdapter('04'),
+      pdp: makePdpAdapter('04', '05'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter({
+        paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],
+      }),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
+    },
+  },
+
+  'iconmart-th': {
+    id: 'iconmart-th',
+    name: 'IconMart',
+    description: 'ชุดไอคอน · social · payment · UI icon · ดาวน์โหลดทันที จ่ายด้วยเครดิต',
+    group: 'vector-bazaar',
+    behavior: { bottomNav: 'hidden', stickyCTA: 'add-to-cart', digitalOnly: true },
+    chrome: {
+      Header: IconMartHeaderAdapter,
+      Footer: IconMartFooterAdapter,
+      AnnouncementStrip: IconMartStripAdapter,
+    },
+    pages: {
+      home: IconMartHomepageAdapter,
+      catalog: makeCatalogAdapter('04'),
+      pdp: makePdpAdapter('04', '05'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter({
+        paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],
+      }),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
+    },
+  },
+
+  'resume-studio-th': {
+    id: 'resume-studio-th',
+    name: 'Resume Studio',
+    description: 'เทมเพลตเรซูเม่ · CV · พร้อมแก้ · ดาวน์โหลดทันที จ่ายด้วยเครดิต',
+    group: 'specialty',
+    behavior: { bottomNav: 'hidden', stickyCTA: 'add-to-cart', digitalOnly: true },
+    chrome: {
+      Header: ResumeStudioHeaderAdapter,
+      Footer: ResumeStudioFooterAdapter,
+      AnnouncementStrip: ResumeStudioStripAdapter,
+    },
+    pages: {
+      home: ResumeStudioHomepageAdapter,
+      catalog: makeCatalogAdapter('04'),
+      pdp: makePdpAdapter('04', '05'),
+      cart: makeThaiCartAdapter(),
+      checkout: makeThaiCheckoutAdapter({
+        paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],
+      }),
+      about: makeAboutAdapter(),
+      help: makeHelpAdapter(),
     },
   },
 };

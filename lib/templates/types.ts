@@ -99,11 +99,15 @@ export type TemplateId =
   | 'casetify-clone'
   | 'caseinw'
   | 'sheetlab-formula'
+  | 'digi-vault'
   | 'mystic-mu-th'
   | 'edu-classroom-th'
   | 'vector-bazaar-th'
   | 'photo-vault-th'
-  | 'salepage-market-th';
+  | 'salepage-market-th'
+  | 'mu-wallpaper-th'
+  | 'iconmart-th'
+  | 'resume-studio-th';
 
 
 
