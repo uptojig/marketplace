@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Search, Menu, X, Sparkles } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
+import { formatTHB } from '@/lib/utils';
 
 interface Props {
   storeSlug: string;
@@ -20,6 +21,31 @@ interface Props {
 export function Header({ storeSlug, storeName, storeLogoUrl, categories = [] }: Props) {
   const cartCount = useCart((s) => s.lines.filter((l) => l.storeSlug === storeSlug).length);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Buyer's per-store credit balance. null = still loading or guest
+  // (non-ok from /api/credit/balance). When loaded with a positive
+  // balance, the header pill shows "⭐ เครดิต ฿X" instead of the
+  // generic "เติมเครดิต" top-up CTA.
+  const [creditBalanceTHB, setCreditBalanceTHB] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/credit/balance?storeSlug=${encodeURIComponent(storeSlug)}`)
+      .then(async (res) => {
+        if (cancelled) return;
+        if (!res.ok) {
+          setCreditBalanceTHB(null);
+          return;
+        }
+        const data = (await res.json()) as { balanceTHB: number };
+        setCreditBalanceTHB(data.balanceTHB);
+      })
+      .catch(() => {
+        if (!cancelled) setCreditBalanceTHB(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [storeSlug]);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b-4 border-[#1A1A2E] font-[family:var(--font-prompt)]">
@@ -86,6 +112,28 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories = [] }: 
             <Search className="w-5 h-5" />
           </button>
         </form>
+
+        {/* Credit pill — gold coin block. Shows live balance when signed in,
+            otherwise links straight to the in-store top-up page. */}
+        <Link
+          href={`/stores/${storeSlug}/account/credit/topup`}
+          className="h-11 px-3 sm:px-4 flex items-center gap-1.5 bg-[#FFD700] text-[#1A1A2E] border-4 border-[#1A1A2E] font-[family:var(--font-kanit)] font-black uppercase tracking-wide text-xs sm:text-sm shadow-[3px_3px_0_0_#1A1A2E] hover:bg-[#FFE55C] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all whitespace-nowrap"
+          aria-label={
+            creditBalanceTHB !== null && creditBalanceTHB > 0
+              ? `ยอดเครดิต ${formatTHB(creditBalanceTHB)}`
+              : 'เติมเครดิตในร้าน'
+          }
+        >
+          <span aria-hidden>⭐</span>
+          {creditBalanceTHB !== null && creditBalanceTHB > 0 ? (
+            <span>
+              <span className="hidden sm:inline">เครดิต </span>
+              {formatTHB(creditBalanceTHB)}
+            </span>
+          ) : (
+            <span>เติมเครดิต</span>
+          )}
+        </Link>
 
         {/* Cart CTA — Mario red block */}
         <Link

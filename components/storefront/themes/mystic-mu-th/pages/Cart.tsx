@@ -19,9 +19,6 @@ import { calculate } from '@/lib/coupons/calculator';
 import type { Coupon } from '@/lib/coupons/types';
 import { formatTHB } from '@/lib/utils';
 
-const FREE_SHIPPING_THRESHOLD = 990;
-const DEFAULT_SHIPPING = 50;
-
 interface StoreLite {
   id: string;
   slug: string;
@@ -70,7 +67,9 @@ export default function Cart({ store }: { store: StoreLite }) {
 
   const subtotal = lines.reduce((n, l) => n + l.priceTHB * l.qty, 0);
   const itemCount = lines.reduce((n, l) => n + l.qty, 0);
-  const shippingBefore = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : DEFAULT_SHIPPING;
+  // Digital store — no shipping ever. Keep shippingPerStore at 0 so the
+  // coupon calculator never adds a parcel fee.
+  const shippingBefore = 0;
 
   const calculation = useMemo(() => {
     if (lines.length === 0 || coupons.length === 0) return null;
@@ -91,10 +90,8 @@ export default function Cart({ store }: { store: StoreLite }) {
   }, [lines, coupons, store.id, shippingBefore]);
 
   const totalDiscount = calculation?.totalDiscount ?? 0;
-  const shippingAfter = calculation?.shippingAfterDiscount[store.id] ?? shippingBefore;
-  const total = Math.max(0, subtotal + shippingAfter - totalDiscount);
-  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  const progressPct = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+  // Total = subtotal − discount. No shipping fee is ever added.
+  const total = Math.max(0, subtotal - totalDiscount);
 
   useEffect(() => {
     if (codes.length === 0) {
@@ -227,26 +224,11 @@ export default function Cart({ store }: { store: StoreLite }) {
       <div className="max-w-7xl mx-auto px-4 py-8 grid lg:grid-cols-[1fr_360px] gap-6 lg:gap-8">
         {/* Lines */}
         <div className="space-y-4">
-          {/* Free-ship progress */}
-          {remaining > 0 ? (
-            <div className="bg-white border-4 border-[#1A1A2E] p-4 shadow-[4px_4px_0_0_#1A1A2E]">
-              <p className="font-[family:var(--font-kanit)] font-black uppercase text-sm mb-2 flex items-center gap-2">
-                <Coins className="w-5 h-5 text-[#FFD700]" />
-                ช้อปเพิ่ม {formatTHB(remaining)} เพื่อส่งฟรี!
-              </p>
-              <div className="h-4 border-4 border-[#1A1A2E] bg-[#E8E8F0] overflow-hidden">
-                <div
-                  className="h-full bg-[#FFD700] transition-all"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="bg-[#009A4E] text-white border-4 border-[#1A1A2E] p-4 shadow-[4px_4px_0_0_#1A1A2E] font-[family:var(--font-kanit)] font-black uppercase text-sm flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#FFD700]" />
-              ส่งฟรีทั่วประเทศ! (ดาวน์โหลดอัตโนมัติ)
-            </div>
-          )}
+          {/* Digital delivery notice — no shipping for downloadable goods */}
+          <div className="bg-[#009A4E] text-white border-4 border-[#1A1A2E] p-4 shadow-[4px_4px_0_0_#1A1A2E] font-[family:var(--font-kanit)] font-black uppercase text-sm flex items-center gap-2">
+            <Download className="w-5 h-5 text-[#FFD700]" />
+            สื่อดิจิทัล · ดาวน์โหลดทันทีหลังชำระเงิน (ไม่มีค่าจัดส่ง)
+          </div>
 
           {lines.map((l) => (
             <div
@@ -380,11 +362,6 @@ export default function Cart({ store }: { store: StoreLite }) {
             </h3>
             <div className="space-y-2 text-sm">
               <Row label="ยอดสินค้า" value={formatTHB(subtotal)} />
-              <Row
-                label="ค่าจัดส่ง"
-                value={shippingAfter === 0 ? 'ฟรี' : formatTHB(shippingAfter)}
-                valueClass={shippingAfter === 0 ? 'text-[#009A4E] font-black' : ''}
-              />
               {totalDiscount > 0 && (
                 <Row
                   label="ส่วนลด"

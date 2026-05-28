@@ -1577,7 +1577,7 @@ export const templates: Record<TemplateId, Template> = {
     description:
       'สื่อการสอน ใบงาน แบบฝึกหัด สไตล์ Mario เลเวลอัพการเรียนรู้ — ดาวน์โหลดได้ทันที',
     group: 'mystic-mu',
-    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
+    behavior: { bottomNav: 'visible', stickyCTA: 'buy-now', digitalOnly: true },
     chrome: {
       Header: MysticMuHeaderAdapter,
       Footer: MysticMuFooterAdapter,

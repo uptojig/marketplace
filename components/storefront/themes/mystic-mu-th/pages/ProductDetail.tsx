@@ -13,6 +13,10 @@ import {
   Coins,
   Crown,
   Zap,
+  ZoomIn,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cart';
 import { formatTHB } from '@/lib/utils';
@@ -70,6 +74,7 @@ export default function ProductDetail({ store, product, related }: ProductDetail
   }, [product.imageUrl, product.images]);
 
   const [activeImage, setActiveImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [qty, setQty] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(
     product.variants[0]?.id ?? null,
@@ -129,9 +134,14 @@ export default function ProductDetail({ store, product, related }: ProductDetail
       </section>
 
       <div className="max-w-7xl mx-auto px-4 py-8 grid lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Gallery */}
+        {/* Gallery — preview the worksheet pages before buying */}
         <div className="space-y-4">
-          <div className="relative aspect-square border-4 border-[#1A1A2E] shadow-[8px_8px_0_0_#1A1A2E] bg-white overflow-hidden">
+          <button
+            type="button"
+            onClick={() => gallery.length > 0 && setLightboxOpen(true)}
+            aria-label="ดูตัวอย่างไฟล์แบบเต็มจอ"
+            className="group relative block w-full aspect-square border-4 border-[#1A1A2E] shadow-[8px_8px_0_0_#1A1A2E] bg-white overflow-hidden cursor-zoom-in"
+          >
             {hasDiscount && (
               <div className="absolute top-5 -left-2 z-10 bg-[#E52521] text-white font-[family:var(--font-kanit)] font-black text-base uppercase px-4 py-2 border-4 border-[#1A1A2E] shadow-[4px_4px_0_0_#1A1A2E] rotate-[-4deg]">
                 ลด {discountPct}%
@@ -144,7 +154,7 @@ export default function ProductDetail({ store, product, related }: ProductDetail
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={gallery[activeImage]}
-                alt={product.title}
+                alt={`${product.title} — ตัวอย่างหน้าที่ ${activeImage + 1}`}
                 className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
@@ -152,25 +162,52 @@ export default function ProductDetail({ store, product, related }: ProductDetail
                 <Sparkles className="w-24 h-24 text-white drop-shadow-[3px_3px_0_#1A1A2E]" />
               </div>
             )}
-          </div>
-          {gallery.length > 1 && (
-            <div className="grid grid-cols-5 gap-2">
-              {gallery.slice(0, 5).map((src, idx) => (
-                <button
-                  key={src}
-                  type="button"
-                  onClick={() => setActiveImage(idx)}
-                  className={`aspect-square border-4 overflow-hidden bg-white ${
-                    idx === activeImage
-                      ? 'border-[#E52521] shadow-[3px_3px_0_0_#1A1A2E]'
-                      : 'border-[#1A1A2E] hover:border-[#E52521]'
-                  } active:translate-x-0.5 active:translate-y-0.5 transition-transform`}
-                  aria-label={`รูปที่ ${idx + 1}`}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
+            {gallery.length > 0 && (
+              <span className="absolute bottom-0 inset-x-0 z-10 bg-[#1A1A2E]/85 text-white px-4 py-2.5 font-[family:var(--font-kanit)] font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-2 group-hover:bg-[#E52521] transition-colors">
+                <ZoomIn className="w-4 h-4" /> คลิกเพื่อดูตัวอย่างไฟล์เต็มจอ
+              </span>
+            )}
+          </button>
+
+          {gallery.length > 0 && (
+            <div className="border-4 border-[#1A1A2E] bg-white shadow-[5px_5px_0_0_#1A1A2E]">
+              <div className="bg-[#FFD700] border-b-4 border-[#1A1A2E] px-3 py-2 flex items-center gap-2">
+                <h3 className="font-[family:var(--font-kanit)] font-black uppercase tracking-widest text-xs sm:text-sm flex items-center gap-1.5">
+                  <ZoomIn className="w-4 h-4 text-[#E52521]" /> ตัวอย่างไฟล์ · พรีวิวหน้าใบงาน
+                </h3>
+                <span className="ml-auto bg-[#1A1A2E] text-white border-2 border-[#1A1A2E] px-2 py-0.5 font-[family:var(--font-kanit)] font-black text-[10px] uppercase tracking-widest">
+                  {gallery.length} หน้า
+                </span>
+              </div>
+              <div className="p-3 space-y-2">
+                <div className="grid grid-cols-5 gap-2">
+                  {gallery.map((src, idx) => (
+                    <button
+                      key={src}
+                      type="button"
+                      onClick={() => {
+                        setActiveImage(idx);
+                        setLightboxOpen(true);
+                      }}
+                      className={`relative aspect-square border-4 overflow-hidden bg-white ${
+                        idx === activeImage
+                          ? 'border-[#E52521] shadow-[3px_3px_0_0_#1A1A2E]'
+                          : 'border-[#1A1A2E] hover:border-[#E52521]'
+                      } active:translate-x-0.5 active:translate-y-0.5 transition-transform`}
+                      aria-label={`ดูตัวอย่างหน้าที่ ${idx + 1}`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt="" className="w-full h-full object-cover" />
+                      <span className="absolute bottom-0 right-0 bg-[#1A1A2E] text-white text-[9px] font-[family:var(--font-kanit)] font-black px-1 leading-tight">
+                        {idx + 1}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] font-bold text-[#4A4A6E] leading-snug">
+                  * ภาพตัวอย่างเป็นหน้าใบงานบางส่วน (อาจมีลายน้ำ) — ดาวน์โหลดไฟล์เต็มคุณภาพสูงหลังชำระเงิน
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -440,6 +477,95 @@ export default function ProductDetail({ store, product, related }: ProductDetail
             </div>
           </div>
         </section>
+      )}
+
+      {/* Preview lightbox — full-screen worksheet-page viewer with prev/next */}
+      {lightboxOpen && gallery.length > 0 && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="ตัวอย่างไฟล์"
+          onClick={() => setLightboxOpen(false)}
+          className="fixed inset-0 z-[100] bg-[#1A1A2E]/90 flex flex-col items-center justify-center p-4 sm:p-8"
+        >
+          {/* Header bar */}
+          <div className="w-full max-w-4xl flex items-center gap-3 mb-3">
+            <span className="bg-[#FFD700] text-[#1A1A2E] border-4 border-[#1A1A2E] px-3 py-1.5 font-[family:var(--font-kanit)] font-black uppercase text-xs tracking-widest shadow-[3px_3px_0_0_#000]">
+              ตัวอย่างไฟล์ · หน้า {activeImage + 1}/{gallery.length}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxOpen(false);
+              }}
+              aria-label="ปิด"
+              className="ml-auto w-11 h-11 flex items-center justify-center bg-[#E52521] text-white border-4 border-[#1A1A2E] shadow-[3px_3px_0_0_#000] hover:bg-[#009A4E] active:translate-x-0.5 active:translate-y-0.5 transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Image + nav */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-4xl flex-1 min-h-0 border-4 border-[#1A1A2E] shadow-[10px_10px_0_0_#000] bg-white overflow-hidden flex items-center justify-center"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={gallery[activeImage]}
+              alt={`${product.title} — ตัวอย่างหน้าที่ ${activeImage + 1}`}
+              className="max-w-full max-h-full object-contain"
+            />
+            {gallery.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveImage((i) => (i - 1 + gallery.length) % gallery.length)
+                  }
+                  aria-label="หน้าก่อนหน้า"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-[#FFD700] text-[#1A1A2E] border-4 border-[#1A1A2E] shadow-[3px_3px_0_0_#000] hover:bg-[#E52521] hover:text-white active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveImage((i) => (i + 1) % gallery.length)}
+                  aria-label="หน้าถัดไป"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-[#FFD700] text-[#1A1A2E] border-4 border-[#1A1A2E] shadow-[3px_3px_0_0_#000] hover:bg-[#E52521] hover:text-white active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Thumbnail rail inside lightbox */}
+          {gallery.length > 1 && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-4xl mt-3 flex gap-2 overflow-x-auto pb-1"
+            >
+              {gallery.map((src, idx) => (
+                <button
+                  key={src}
+                  type="button"
+                  onClick={() => setActiveImage(idx)}
+                  aria-label={`หน้าที่ ${idx + 1}`}
+                  className={`shrink-0 w-14 h-14 border-4 overflow-hidden bg-white ${
+                    idx === activeImage
+                      ? 'border-[#FFD700]'
+                      : 'border-[#1A1A2E] opacity-70 hover:opacity-100'
+                  } transition-opacity`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
