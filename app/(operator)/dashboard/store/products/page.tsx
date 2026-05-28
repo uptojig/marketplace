@@ -9,7 +9,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, Pencil, Search, X } from "lucide-react";
+import { Plus, Pencil, Search, X, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 import { formatTHB } from "@/lib/utils";
@@ -162,6 +162,13 @@ export default async function StoreProductsPage({
         </div>
         <div className="flex shrink-0 flex-wrap items-start gap-2">
           <TranslateTitlesButton untranslatedCount={untranslatedCount} />
+          <Link
+            href={`/dashboard/store/products/bulk${slugSuffix}`}
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-4 text-sm font-medium shadow-sm hover:bg-accent"
+          >
+            <Layers className="h-3.5 w-3.5" />
+            เพิ่มทีละหลายรายการ
+          </Link>
           <Link
             href={`/dashboard/store/products/new${slugSuffix}`}
             className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
