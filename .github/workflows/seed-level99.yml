@@ -25,7 +25,7 @@ on:
 jobs:
   seed:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.10.0
@@ -58,7 +58,20 @@ jobs:
             fi
 
             echo "→ Fetching zip from $ZIP_URL"
-            curl -fSL --max-time 600 -o "$WORKDIR/sets.zip" "$ZIP_URL"
+            # Force HTTP/1.1 — the droplet hit "curl: (92) HTTP/2 stream
+            # PROTOCOL_ERROR" pulling the 144MB release asset over h2,
+            # which also tanked throughput. Retry + resume guard against
+            # transient drops on a large transfer.
+            curl -fSL --http1.1 --retry 5 --retry-delay 5 --retry-connrefused \
+              --connect-timeout 30 --max-time 1800 -C - \
+              -o "$WORKDIR/sets.zip" "$ZIP_URL"
+
+            DL_BYTES=$(stat -c%s "$WORKDIR/sets.zip" 2>/dev/null || echo 0)
+            echo "→ Downloaded $DL_BYTES bytes"
+            if [ "$DL_BYTES" -lt 1000000 ]; then
+              echo "ERROR: download too small — aborting"
+              exit 1
+            fi
 
             echo "→ Extracting"
             unzip -q "$WORKDIR/sets.zip" -d "$WORKDIR/extracted"
