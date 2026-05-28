@@ -435,14 +435,14 @@ export default function CheckoutConfirmClient({
                   checked={paymentMethod === "ANYPAY"}
                   onChange={() => setPaymentMethod("ANYPAY")}
                 />
-                <div className="text-sm font-medium">ชำระผ่าน AnyPay</div>
+                <div className="text-sm font-medium">ชำระผ่าน QR PromptPay</div>
               </div>
               <div className="text-xs text-muted-foreground">
-                PromptPay · บัตรเครดิต · BNPL
+                พร้อมเพย์ · บัตรเครดิต · BNPL
               </div>
             </label>
 
-            {/* CREDIT — disabled when balance insufficient or guest. */}
+            {/* CREDIT option hidden — no stores use it in production yet.
             {(() => {
               const enough =
                 creditBalanceTHB !== null && creditBalanceTHB >= total;
@@ -497,6 +497,7 @@ export default function CheckoutConfirmClient({
                 </label>
               );
             })()}
+            */}
           </div>
         </div>
 
