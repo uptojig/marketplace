@@ -14,16 +14,11 @@ export async function POST(req: Request) {
 
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const transactionId = `ANYPAY-MOCK-${Date.now()}`;
-  // Pass return_url through so the mock gate lands the buyer on the
-  // correct post-payment page (e.g. /account/credit for topups vs
-  // /checkout/success for orders).
-  const params = new URLSearchParams({
-    order_id,
-    amount: String(amount),
-    tx: transactionId,
-  });
-  if (return_url) params.set("return_url", return_url);
-  const paymentUrl = `${base}/mock-payment-gate?${params.toString()}`;
+  // Instead of redirecting to the mock gateway dev UI (which breaks tenant routing),
+  // we immediately return the return_url (the success page) as the payment destination.
+  // This completely bypasses the PAID webhook simulation, leaving the order naturally
+  // in 'PENDING_PAYMENT' state so the success page correctly displays 'รอชำระเงิน'.
+  const paymentUrl = return_url || `${base}/order-success?orderId=${order_id}`;
 
   return NextResponse.json({
     status: "success",

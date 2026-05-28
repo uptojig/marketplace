@@ -423,7 +423,7 @@ export default async function StoreOrderSuccess({
                 fontWeight: 600,
               }}
             >
-              Order #{shortCode} Confirmed
+              Order #{shortCode} {order.status === "PENDING_PAYMENT" ? "Pending" : "Confirmed"}
             </p>
           )}
           {isSpecialty && (
@@ -491,7 +491,7 @@ export default async function StoreOrderSuccess({
                       ? "Thanks — your order is in"
                       : isSpecialty
                         ? "Thank you for supporting handcrafted goods"
-                        : "ขอบคุณสำหรับคำสั่งซื้อ"}
+                        : order.status === "PENDING_PAYMENT" ? "รอการชำระเงิน" : "ขอบคุณสำหรับคำสั่งซื้อ"}
           </h1>
           {isTrust && (
             <div
@@ -519,12 +519,18 @@ export default async function StoreOrderSuccess({
               ...(isSpecialty ? { fontFamily: SPECIALTY_HAND_FONT } : {}),
             }}
           >
-            เราได้รับคำสั่งซื้อของคุณแล้ว
-            {me.email && (
+            {order.status === "PENDING_PAYMENT" ? (
+              "คำสั่งซื้อของคุณอยู่ในระบบแล้ว กรุณาชำระเงินเพื่อดำเนินการต่อ และสามารถกดติดตามสถานะคำสั่งซื้อได้ที่ปุ่มด้านล่าง"
+            ) : (
               <>
-                {" "}
-                และส่งใบยืนยันไปที่{" "}
-                <span style={{ color: "var(--shop-ink)" }}>{me.email}</span>
+                เราได้รับคำสั่งซื้อของคุณแล้ว
+                {me.email && (
+                  <>
+                    {" "}
+                    และส่งใบยืนยันไปที่{" "}
+                    <span style={{ color: "var(--shop-ink)" }}>{me.email}</span>
+                  </>
+                )}
               </>
             )}
           </p>
@@ -759,7 +765,7 @@ export default async function StoreOrderSuccess({
             style={{ background: "var(--shop-primary)" }}
           >
             <Link
-              href={`/stores/${params.slug}/account/orders/${order.id}`}
+              href={`/stores/${params.slug}/account/orders`}
               className="inline-flex items-center justify-center gap-2"
             >
               {isTrust

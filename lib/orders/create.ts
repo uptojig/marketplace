@@ -193,6 +193,7 @@ export async function createOrderFromCart(input: CreateOrderInput) {
     const created = await tx.order.create({
       data: {
         userId: input.userId,
+        storeId: firstStoreId,
         status: OrderStatus.PENDING_PAYMENT,
         subtotalTHB: subtotal,
         shippingTHB: shippingAfter,
@@ -209,6 +210,9 @@ export async function createOrderFromCart(input: CreateOrderInput) {
               qty: lineMap.get(p.id) ?? 1,
               unitPriceTHB: p.priceTHB,
               supplier: p.supplier,
+              title: p.titleTh || p.title,
+              thumbnailUrl: p.imageUrl ?? null,
+              variantName: null, // If cart items had variants we'd pass them here, but p doesn't have variantName currently
               giftRecipientsJson:
                 gifts && gifts.length > 0
                   ? (gifts as unknown as Prisma.InputJsonValue)

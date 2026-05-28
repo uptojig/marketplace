@@ -437,9 +437,6 @@ export default function CheckoutConfirmClient({
                 />
                 <div className="text-sm font-medium">ชำระผ่าน QR PromptPay</div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                พร้อมเพย์ · บัตรเครดิต · BNPL
-              </div>
             </label>
 
             {/* CREDIT option hidden — no stores use it in production yet.
