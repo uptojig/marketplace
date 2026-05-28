@@ -18,19 +18,24 @@ export function KycResumeRedirect() {
       // Purge the dead key from the previous wizard version.
       window.localStorage.removeItem(LEGACY_STORAGE_KEY);
 
-      // Already on a specific session (resume / view) — nothing to do, and
-      // redirecting again would loop.
+      // Skip auto-resume in these cases:
+      //   - sid in URL → already on a specific session; redirecting would loop.
+      //   - c  in URL → an agent invite link is an explicit "start fresh under
+      //     this agent" signal. Auto-resuming a cached old session here would
+      //     silently drop the user back into an unrelated past application
+      //     (returning visitors were getting ?c=0001 rewritten to
+      //     ?c=0001&sid=<cached> every time). Refresh mid-wizard is unaffected
+      //     because the wizard's URL carries ?sid= once a session has started.
       const params = new URLSearchParams(window.location.search);
-      if (params.get("sid")) return;
+      if (params.get("sid") || params.get("c")) return;
 
       const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw) as { sid?: string };
       if (!parsed?.sid) return;
 
-      // Preserve existing query params — crucially the agent invite code `c`,
-      // so resuming a cached session never strips the referral the landing
-      // gate (and /api/wizard) requires for a fresh start.
+      // No c / sid in URL — bare /apply visit. Resume the cached session by
+      // appending its sid (other params, if any, are preserved).
       params.set("sid", parsed.sid);
       router.replace(`/apply?${params.toString()}`);
     } catch {
