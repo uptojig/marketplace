@@ -3,8 +3,8 @@
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
-import { Mail } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mail, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -210,6 +210,230 @@ function EmailForm({
                     : 'ส่งลิงก์ยืนยันทางอีเมล'}
       </Button>
     </form>
+  );
+}
+
+interface FamilyFlags {
+  isFashionBeauty: boolean;
+  isTrust: boolean;
+  isBusinessModel: boolean;
+  isLifestyle: boolean;
+  isElectronicsTech: boolean;
+  isSpecialty: boolean;
+}
+
+/**
+ * Phone-only signup. Creates the account immediately (name + phone +
+ * password → /api/auth/signup-phone, which assigns a synthetic
+ * @inbox.basketplace.co address) then signs in via the Credentials
+ * provider's phone path. For buyers with no external email — receipts
+ * land in /account/inbox.
+ */
+function PhoneForm({
+  storeSlug,
+  defaultCallback,
+  flags,
+}: {
+  storeSlug: string;
+  defaultCallback: string;
+  flags: FamilyFlags;
+}) {
+  const router = useRouter();
+  const params = useSearchParams();
+  const next = params.get('callbackUrl') || params.get('next') || defaultCallback;
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const { isFashionBeauty, isTrust, isBusinessModel, isLifestyle, isElectronicsTech, isSpecialty } = flags;
+  const labelClass =
+    isFashionBeauty ? 'mb-2 block text-xs uppercase tracking-[0.18em]'
+      : isTrust ? 'mb-2 block text-xs uppercase'
+      : isBusinessModel ? 'mb-1.5 block text-xs font-semibold uppercase'
+      : isLifestyle ? 'mb-2 block text-xs uppercase'
+      : isElectronicsTech ? 'mb-2 block text-[11px] uppercase'
+      : isSpecialty ? 'mb-2 block text-xs uppercase tracking-[0.16em]'
+      : 'mb-1 block text-sm font-medium';
+  const inputClass =
+    isFashionBeauty ? 'rounded-full border-[var(--shop-border)] bg-white px-4 py-5'
+      : isTrust ? 'rounded-sm border-[var(--shop-accent)] bg-white px-4 py-5'
+      : isBusinessModel ? 'rounded-md border-[var(--shop-border)] bg-white px-3 py-2.5'
+      : isLifestyle ? 'rounded-2xl border-[var(--shop-border)] bg-white px-4 py-5'
+      : isElectronicsTech ? 'rounded-md border-[var(--shop-border)] bg-white px-4 py-5'
+      : isSpecialty ? 'rounded-md border-[var(--shop-border)] bg-[var(--shop-card)] px-4 py-5'
+      : '';
+  const themed = isFashionBeauty || isTrust || isBusinessModel || isLifestyle || isElectronicsTech || isSpecialty;
+  const submitClass = themed
+    ? 'w-full rounded-md py-6 text-sm font-semibold text-white hover:opacity-90'
+    : 'w-full';
+  const submitStyle = themed ? { background: 'var(--shop-primary)' } : undefined;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    if (!name.trim() || !phone.trim() || !password) {
+      setErr('กรอกชื่อ เบอร์โทร และรหัสผ่านให้ครบ');
+      return;
+    }
+    if (password.length < 8) {
+      setErr('รหัสผ่านอย่างน้อย 8 ตัวอักษร');
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch('/api/auth/signup-phone', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ storeSlug, name: name.trim(), phone, password }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setErr(data.error ?? 'สมัครไม่สำเร็จ');
+        return;
+      }
+      // Account created — sign in via the CredentialsProvider phone path.
+      const signin = await signIn('credentials', {
+        phone,
+        password,
+        redirect: false,
+      });
+      if (signin?.error) {
+        setErr('สมัครสำเร็จ แต่เข้าสู่ระบบไม่ได้ — ลองเข้าสู่ระบบด้วยเบอร์โทร');
+        return;
+      }
+      router.push(next);
+      router.refresh();
+    } catch {
+      setErr('เกิดข้อผิดพลาด — ลองใหม่อีกครั้ง');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 text-left">
+      <label className="block">
+        <span className={labelClass} style={{ color: 'var(--shop-ink-muted)' }}>
+          ชื่อ
+        </span>
+        <Input
+          type="text"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="ชื่อ-นามสกุล"
+          className={inputClass}
+          disabled={busy}
+        />
+      </label>
+      <label className="block">
+        <span className={labelClass} style={{ color: 'var(--shop-ink-muted)' }}>
+          เบอร์โทร
+        </span>
+        <Input
+          type="tel"
+          required
+          autoComplete="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="0812345678"
+          className={inputClass}
+          disabled={busy}
+        />
+      </label>
+      <label className="block">
+        <span className={labelClass} style={{ color: 'var(--shop-ink-muted)' }}>
+          รหัสผ่าน
+        </span>
+        <Input
+          type="password"
+          required
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="อย่างน้อย 8 ตัวอักษร"
+          className={inputClass}
+          disabled={busy}
+        />
+      </label>
+      {err && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {err}
+        </div>
+      )}
+      <Button type="submit" disabled={busy} className={submitClass} style={submitStyle}>
+        {busy ? 'กำลังสมัคร...' : 'สมัครด้วยเบอร์โทร'}
+      </Button>
+      <p className="text-center text-xs" style={{ color: 'var(--shop-ink-muted)' }}>
+        ใบเสร็จและลิงก์ดาวน์โหลดจะอยู่ในกล่องข้อความของบัญชี
+      </p>
+    </form>
+  );
+}
+
+/**
+ * Method toggle — email magic-link (default) vs phone + password. Lets
+ * buyers without an external email still create an account.
+ */
+function SignupMethods({
+  storeSlug,
+  defaultCallback,
+  flags,
+}: {
+  storeSlug: string;
+  defaultCallback: string;
+  flags: FamilyFlags;
+}) {
+  const [method, setMethod] = useState<'email' | 'phone'>('email');
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => setMethod('email')}
+          className={`inline-flex items-center justify-center gap-1.5 rounded-md border py-2 text-sm font-medium transition ${
+            method === 'email'
+              ? 'border-[var(--shop-primary)] text-[var(--shop-primary)] bg-[var(--shop-primary)]/5'
+              : 'border-[var(--shop-border)] text-[var(--shop-ink-muted)] hover:bg-[var(--shop-muted)]'
+          }`}
+        >
+          <Mail className="h-4 w-4" />
+          อีเมล
+        </button>
+        <button
+          type="button"
+          onClick={() => setMethod('phone')}
+          className={`inline-flex items-center justify-center gap-1.5 rounded-md border py-2 text-sm font-medium transition ${
+            method === 'phone'
+              ? 'border-[var(--shop-primary)] text-[var(--shop-primary)] bg-[var(--shop-primary)]/5'
+              : 'border-[var(--shop-border)] text-[var(--shop-ink-muted)] hover:bg-[var(--shop-muted)]'
+          }`}
+        >
+          <Phone className="h-4 w-4" />
+          เบอร์โทร
+        </button>
+      </div>
+
+      {method === 'email' ? (
+        <EmailForm
+          defaultCallback={defaultCallback}
+          isFashionBeauty={flags.isFashionBeauty}
+          isTrust={flags.isTrust}
+          isBusinessModel={flags.isBusinessModel}
+          isLifestyle={flags.isLifestyle}
+          isElectronicsTech={flags.isElectronicsTech}
+          isSpecialty={flags.isSpecialty}
+        />
+      ) : (
+        <PhoneForm
+          storeSlug={storeSlug}
+          defaultCallback={defaultCallback}
+          flags={flags}
+        />
+      )}
+    </div>
   );
 }
 
@@ -526,14 +750,17 @@ export function StoreSignUpClient({
           </div>
 
           <Suspense fallback={null}>
-            <EmailForm
+            <SignupMethods
+              storeSlug={storeSlug}
               defaultCallback={defaultCallback}
-              isFashionBeauty={isFashionBeauty}
-              isTrust={isTrust}
-              isBusinessModel={isBusinessModel}
-              isLifestyle={isLifestyle}
-              isElectronicsTech={isElectronicsTech}
-              isSpecialty={isSpecialty}
+              flags={{
+                isFashionBeauty,
+                isTrust,
+                isBusinessModel,
+                isLifestyle,
+                isElectronicsTech,
+                isSpecialty,
+              }}
             />
           </Suspense>
 
