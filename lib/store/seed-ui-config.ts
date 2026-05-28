@@ -65,6 +65,8 @@ function themeForGroup(group: TemplateGroup): {
       return { fontPrimary: "Prompt", fontDisplay: "Fraunces" };
     case "photo-vault":
       return { fontPrimary: "Prompt", fontDisplay: "Kanit" };
+    case "resume-forge":
+      return { fontPrimary: "Prompt", fontDisplay: "Kanit" };
     case "community":
     case "business-model":
     case "everyday":
@@ -231,6 +233,19 @@ const GROUP_DEFAULTS: Record<TemplateGroup, RecipePages> = {
     catalog: "product-category-08",
     cart: "shopping-cart-03",
   },
+  // Vector Bazaar — designer-friendly SVG / icon marketplace. Editorial
+  // grid with category-driven product rails; cart picks shopping-cart-03
+  // for the rounded-pill checkout flow that matches the theme glow.
+  "vector-bazaar": {
+    home: [
+      { type: "hero", id: "hero-section-01" },
+      { type: "product-list", id: "product-list-04" },
+      { type: "product-list", id: "product-list-08" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
   // EduClassroom — Thai K-9 teacher digital downloads. Friendly notebook
   // hero + bento product grid sized for ใบงาน/สไลด์/ข้อสอบ tiles.
   "edu-classroom": {
@@ -264,6 +279,19 @@ const GROUP_DEFAULTS: Record<TemplateGroup, RecipePages> = {
       { type: "hero", id: "hero-section-01" },
       { type: "product-list", id: "product-list-01" },
       { type: "product-list", id: "product-list-05" },
+    ],
+    pdp: "product-overview-06",
+    catalog: "product-category-08",
+    cart: "shopping-cart-03",
+  },
+  // ResumeForge — resume/CV template marketplace. Pro corporate navy + gold
+  // composition. Clean hero band leads into product-category showcase, then
+  // editorial product grid for ATS-friendly preview tiles.
+  "resume-forge": {
+    home: [
+      { type: "hero", id: "hero-section-01" },
+      { type: "product-list", id: "product-list-01" },
+      { type: "product-list", id: "product-list-04" },
     ],
     pdp: "product-overview-06",
     catalog: "product-category-08",

@@ -42,6 +42,7 @@ export type TemplateGroup =
   | 'vector-bazaar'
   | 'photo-vault'
   | 'salepage-market'
+  | 'resume-forge'
 ;
 
 export type TemplateId =
@@ -107,7 +108,8 @@ export type TemplateId =
   | 'salepage-market-th'
   | 'mu-wallpaper-th'
   | 'iconmart-th'
-  | 'resume-studio-th';
+  | 'resume-studio-th'
+  | 'resume-forge-th';
 
 
 

@@ -32,6 +32,7 @@ const GROUP_LABEL: Record<TemplateGroup, string> = {
   "vector-bazaar": "เวกเตอร์ & ไอคอน SVG",
   "photo-vault": "พรีเซ็ตช่างภาพ",
   "salepage-market": "มาร์เก็ตเซลเพจ HTML",
+  "resume-forge": "เรซูเม่ & CV",
 };
 
 const GROUP_ORDER: TemplateGroup[] = [
@@ -51,6 +52,7 @@ const GROUP_ORDER: TemplateGroup[] = [
   "vector-bazaar",
   "photo-vault",
   "salepage-market",
+  "resume-forge",
 ];
 
 /**

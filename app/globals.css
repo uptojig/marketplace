@@ -3268,3 +3268,122 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   theme-resume-forge — ResumeForge · pro corporate navy + gold.
+   Resume / CV / cover-letter template marketplace. Navy primary
+   on slate canvas with pure-white card surfaces so document
+   previews read like printed pages; burnt-gold for premium /
+   "executive" badges; ATS-pass green for success chips.
+   Signature: paper-stock card lift, navy-to-gold thin underline
+   on headlines, faint ATS-grid backdrop on hero bands.
+   ───────────────────────────────────────────────────────────────── */
+
+.theme-resume-forge {
+  color-scheme: light;
+}
+
+.theme-resume-forge ::selection {
+  background-color: #1E3A8A;
+  color: #F8FAFC;
+}
+
+/* Headline navy → gold gradient text — hero + section titles. */
+.theme-resume-forge .rf-gradient-text {
+  background-image: linear-gradient(
+    90deg,
+    #1E3A8A 0%,
+    #1E40AF 45%,
+    #B45309 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Subtle ATS-grid backdrop — hero band + policy cover. Reads like a
+   resume template's faint print-margin guides. */
+.theme-resume-forge .rf-grid-bg {
+  background-color: #F8FAFC;
+  background-image:
+    linear-gradient(rgba(30, 58, 138, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 138, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Soft navy diagonal stripe — hero accent panel + cta band. */
+.theme-resume-forge .rf-stripe-bg {
+  background-image: linear-gradient(
+    135deg,
+    #1E3A8A 0%,
+    #1E40AF 50%,
+    #172554 100%
+  );
+}
+
+/* Document-card paper lift — hover state for product / template cards. */
+.theme-resume-forge .rf-card {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+}
+.theme-resume-forge .rf-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px -16px rgba(30, 58, 138, 0.28),
+              0 4px 12px -4px rgba(15, 23, 42, 0.08);
+  border-color: #1E3A8A;
+}
+
+/* Navy CTA glow — primary buttons + sticky checkout bar. */
+.theme-resume-forge .rf-glow-primary {
+  box-shadow: 0 10px 28px -10px rgba(30, 58, 138, 0.45),
+              0 2px 4px rgba(15, 23, 42, 0.06);
+}
+.theme-resume-forge .rf-glow-accent {
+  box-shadow: 0 10px 28px -10px rgba(180, 83, 9, 0.45),
+              0 2px 4px rgba(15, 23, 42, 0.06);
+}
+
+/* ATS-pass chip — used on hero + PDP trust strip. */
+.theme-resume-forge .rf-ats-chip {
+  background-color: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+/* Section divider — thin navy → gold rule under section headlines. */
+.theme-resume-forge .rf-rule {
+  display: block;
+  width: 56px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1E3A8A 0%, #B45309 100%);
+}
+
+/* Hide scrollbar for category / category-chip rails */
+.theme-resume-forge .rf-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.theme-resume-forge .rf-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Input/textarea defaults — match the navy focus ring across all forms. */
+.theme-resume-forge input:not([type="checkbox"]):not([type="radio"]),
+.theme-resume-forge textarea,
+.theme-resume-forge select {
+  border-radius: 0.5rem;
+  background-color: #FFFFFF;
+  border-color: #CBD5E1;
+}
+.theme-resume-forge input:not([type="checkbox"]):not([type="radio"]):focus,
+.theme-resume-forge textarea:focus,
+.theme-resume-forge select:focus {
+  outline: 2px solid rgba(30, 58, 138, 0.3);
+  outline-offset: 1px;
+  border-color: #1E3A8A;
+}

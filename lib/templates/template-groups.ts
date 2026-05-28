@@ -45,6 +45,7 @@ export const TEMPLATE_GROUPS_MAP: Record<TemplateGroup, readonly TemplateId[]> =
   'vector-bazaar': ['vector-bazaar-th', 'iconmart-th'],
   'photo-vault': ['photo-vault-th'],
   'salepage-market': ['salepage-market-th'],
+  'resume-forge': ['resume-forge-th'],
 } as const;
 
 /** Inverse lookup: TemplateId → TemplateGroup. */

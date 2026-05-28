@@ -104,6 +104,12 @@ import {
   SALEPAGE_MARKET_BODY_CLASS,
   SALEPAGE_MARKET_TOKENS,
 } from "@/lib/landing/salepage-market";
+import {
+  isResumeForgeStore,
+  resumeForgeCssVars,
+  RESUME_FORGE_BODY_CLASS,
+  RESUME_FORGE_TOKENS,
+} from "@/lib/landing/resume-forge";
 import { isEverydayStore } from "@/lib/landing/everyday";
 import {
   isEduClassroomStore,
@@ -131,6 +137,7 @@ export type ThemeKey =
   | "vector-bazaar"
   | "photo-vault"
   | "salepage-market"
+  | "resume-forge"
   | "pet-house"
   | "case-studio"
   | "default";
@@ -221,6 +228,7 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   else if (isVectorBazaarStore(key)) chromeKey = "vector-bazaar";
   else if (isPhotoVaultStore(key)) chromeKey = "photo-vault";
   else if (isSalepageMarketStore(key)) chromeKey = "salepage-market";
+  else if (isResumeForgeStore(key)) chromeKey = "resume-forge";
 
   let familyClass = "";
   let familyVars: Record<string, string> = {};
@@ -312,6 +320,12 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
       familyAccent = SALEPAGE_MARKET_TOKENS.primary;
       familyButtonShape = "square";
       break;
+    case "resume-forge":
+      familyClass = RESUME_FORGE_BODY_CLASS;
+      familyVars = resumeForgeCssVars();
+      familyAccent = RESUME_FORGE_TOKENS.primary;
+      familyButtonShape = "square";
+      break;
     default:
       break;
   }
@@ -370,6 +384,7 @@ export function resolveContentThemeKey(store: ThemeInput): ThemeKey {
   if (isVectorBazaarStore(key)) return "vector-bazaar";
   if (isPhotoVaultStore(key)) return "photo-vault";
   if (isSalepageMarketStore(key)) return "salepage-market";
+  if (isResumeForgeStore(key)) return "resume-forge";
   return "default";
 }
 
