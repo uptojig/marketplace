@@ -147,7 +147,17 @@ export default async function ApplyPage({
     return <RejectedScreen reason={reason} />;
   }
 
-  if (latest && IN_PROGRESS.has(latest.state)) {
+  // Belt-and-suspenders for expired-but-IN_PROGRESS sessions: the 30-minute
+  // inactivity timeout + cron purge (item 2) is the primary mechanism, but
+  // guard the render path too so a row that slipped past the cron doesn't
+  // resurrect a dead wizard. Falling through here renders the landing, which
+  // for logged-in users with an in-progress agent referral context lets them
+  // start fresh cleanly.
+  const latestExpiresAt =
+    (latest as { expiresAt?: Date | string | null } | null)?.expiresAt ?? null;
+  const latestExpired =
+    !!latestExpiresAt && new Date(latestExpiresAt).getTime() <= Date.now();
+  if (latest && IN_PROGRESS.has(latest.state) && !latestExpired) {
     return (
       <WizardShell>
         <KycWizard initialSessionId={latest.id} />
@@ -413,9 +423,19 @@ function RejectedScreen({ reason }: { reason: string | null }) {
 // ─────────────────────────────────────────────────────────────────
 
 function WizardShell({ children }: { children: React.ReactNode }) {
+  // Outer container only — does NOT wrap `children` in a white card. Each
+  // render path inside KycWizard owns its own surface:
+  //   - the main wizard renders Stepper (sticky card) + step-content card
+  //     as siblings, so the Stepper can `position: sticky` against the
+  //     viewport without an overflow-clipping ancestor breaking it
+  //   - the success / approved / terminal branches render their own cards
+  //
+  // This used to wrap children in a `rounded-2xl bg-white p-4/6 shadow-sm`
+  // div, but that combined with `overflow-x-hidden` inside the wizard
+  // created a scroll context that killed `sticky` on the Stepper.
   return (
-    <div className="mx-auto max-w-[960px] px-5 py-10 md:py-12">
-      <div className="mb-6">
+    <div className="mx-auto max-w-[960px] px-5 py-8 md:py-10">
+      <div className="mb-5 md:mb-6">
         <span className="inline-block text-[13px] font-medium uppercase tracking-[0.16em] text-mp-coral">
           KYC Wizard — ยืนยันตัวตน
         </span>
@@ -429,9 +449,7 @@ function WizardShell({ children }: { children: React.ReactNode }) {
           เก็บเอกสารให้ครบทุกขั้นตอน ระบบจะตรวจอัตโนมัติด้วย OCR และ cross-check ตามลำดับ
         </p>
       </div>
-      <div className="rounded-2xl border border-mp-border bg-white p-4 md:p-6 shadow-sm">
-        {children}
-      </div>
+      {children}
     </div>
   );
 }
