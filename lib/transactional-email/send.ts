@@ -9,6 +9,8 @@
 import type React from "react";
 import { render } from "@react-email/components";
 import { getResendClient } from "./client";
+import { isInboxAddress } from "@/lib/inbox/synth-email";
+import { deliverToInbox } from "@/lib/inbox/deliver";
 
 export interface SendEmailOptions {
   to: string;
@@ -56,6 +58,15 @@ export async function sendEmail(
     const reason = err instanceof Error ? err.message : String(err);
     console.warn("[transactional-email] render failed:", reason);
     return { ok: false, reason: `render_failed: ${reason}` };
+  }
+
+  // In-app inbox short-circuit: phone-only customers have a synthetic
+  // @inbox.basketplace.co address that no external mailbox backs. Write
+  // the rendered HTML straight to their InboxMessage row instead of
+  // handing it to Resend (which would hard-bounce). Reader UI lives at
+  // /account/inbox.
+  if (isInboxAddress(to)) {
+    return deliverToInbox({ to, from, subject, html, text });
   }
 
   const client = getResendClient();

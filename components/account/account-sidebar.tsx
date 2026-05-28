@@ -12,6 +12,7 @@ import {
   CreditCard,
   Download,
   Heart,
+  Mail,
   MapPin,
   Package,
   ShieldCheck,
@@ -28,6 +29,8 @@ interface NavItemDef {
   /** Path under /stores/[slug]/account — leading slash, no slug. */
   to: string;
   soon?: boolean;
+  /** Key into the per-item badge-count map (see AccountSidebar props). */
+  badgeKey?: 'inbox';
 }
 
 interface NavGroupDef {
@@ -41,6 +44,7 @@ const NAV_GROUPS: NavGroupDef[] = [
     items: [
       { icon: Package, label: 'คำสั่งซื้อของฉัน', to: '/orders' },
       { icon: Download, label: 'คลังสินค้าดิจิทัล', to: '/downloads' },
+      { icon: Mail, label: 'กล่องข้อความ', to: '/inbox', badgeKey: 'inbox' },
     ],
   },
   {
@@ -72,14 +76,20 @@ const NAV_GROUPS: NavGroupDef[] = [
 export function AccountSidebar({
   storeSlug,
   digitalOnly = false,
+  inboxUnread = 0,
 }: {
   storeSlug: string;
   /** Drop entries that don't apply to digital-only stores (e.g.
    *  /addresses — nothing ever ships). */
   digitalOnly?: boolean;
+  /** Unread inbox count — drives the badge on the กล่องข้อความ entry. */
+  inboxUnread?: number;
 }) {
   const pathname = usePathname();
   const base = `/stores/${storeSlug}/account`;
+  const badgeCounts: Record<NonNullable<NavItemDef['badgeKey']>, number> = {
+    inbox: inboxUnread,
+  };
   const groups = digitalOnly
     ? NAV_GROUPS.map((g) => ({
         ...g,
@@ -110,6 +120,7 @@ export function AccountSidebar({
               const Icon = item.icon;
               const href = `${base}${item.to}`;
               const isActive = pathname === href || pathname.startsWith(href + '/');
+              const badge = item.badgeKey ? badgeCounts[item.badgeKey] : 0;
               return (
                 <Link
                   key={href}
@@ -123,6 +134,11 @@ export function AccountSidebar({
                 >
                   <Icon className="h-4 w-4" />
                   <span className="flex-1">{item.label}</span>
+                  {badge > 0 && (
+                    <span className="inline-flex min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-bold text-white">
+                      {badge > 99 ? '99+' : badge}
+                    </span>
+                  )}
                   {item.soon && (
                     <span className="text-[9px] text-muted-foreground">soon</span>
                   )}
