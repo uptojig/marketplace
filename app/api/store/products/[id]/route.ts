@@ -35,7 +35,16 @@ const updateSchema = z.object({
   active: z.boolean().optional().default(true),
   hasVariants: z.boolean().optional().default(false),
   variants: z.array(variantSchema).max(50).optional().default([]),
-});
+  productType: z.enum(["PHYSICAL", "DIGITAL"]).optional().default("PHYSICAL"),
+  digitalKind: z
+    .enum(["EBOOK", "EXCEL", "VECTOR", "PROMPT", "ARCHIVE", "OTHER"])
+    .optional()
+    .nullable(),
+  promptText: z.string().max(20000).optional().nullable(),
+}).refine(
+  (d) => d.productType !== "DIGITAL" || !!d.digitalKind,
+  { message: "digitalKind required for digital products", path: ["digitalKind"] },
+);
 
 function syntheticId(prefix: string) {
   return `${prefix}_${crypto.randomUUID()}`;
@@ -156,7 +165,13 @@ export async function PATCH(
           categoryName,
           ...(categoryId !== undefined ? { categoryId } : {}),
           active: d.active ?? true,
-          hasVariants: d.hasVariants ?? false,
+          hasVariants: d.productType === "DIGITAL" ? false : (d.hasVariants ?? false),
+          productType: d.productType ?? "PHYSICAL",
+          digitalKind: d.productType === "DIGITAL" ? (d.digitalKind ?? null) : null,
+          promptText:
+            d.productType === "DIGITAL" && d.digitalKind === "PROMPT"
+              ? (d.promptText ?? null)
+              : null,
         },
       });
 
@@ -183,7 +198,7 @@ export async function PATCH(
         });
       }
 
-      if (d.variants && d.variants.length > 0) {
+      if (d.productType !== "DIGITAL" && d.variants && d.variants.length > 0) {
         await tx.productVariant.createMany({
           data: d.variants.map((v) => ({
             productId: params.id,

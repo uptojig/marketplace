@@ -32,9 +32,20 @@ export interface DigitalAssetRow {
 interface Props {
   productId: string;
   initialAssets: DigitalAssetRow[];
+  /** Upload endpoint. Defaults to the admin route; the vendor dashboard
+   *  passes /api/store/digital-assets/upload (ownership-checked). */
+  uploadUrl?: string;
+  /** Base for the per-asset DELETE — `${deleteUrlBase}/${id}`. Defaults
+   *  to the admin route. */
+  deleteUrlBase?: string;
 }
 
-export function DigitalAssetsManager({ productId, initialAssets }: Props) {
+export function DigitalAssetsManager({
+  productId,
+  initialAssets,
+  uploadUrl = "/api/admin/digital-assets/upload",
+  deleteUrlBase = "/api/admin/digital-assets",
+}: Props) {
   const router = useRouter();
   const [assets, setAssets] = useState<DigitalAssetRow[]>(initialAssets);
   const [uploading, setUploading] = useState(false);
@@ -52,7 +63,7 @@ export function DigitalAssetsManager({ productId, initialAssets }: Props) {
       form.append("file", file);
       form.append("isPreview", isPreview ? "true" : "false");
 
-      const res = await fetch("/api/admin/digital-assets/upload", {
+      const res = await fetch(uploadUrl, {
         method: "POST",
         body: form,
       });
@@ -74,7 +85,7 @@ export function DigitalAssetsManager({ productId, initialAssets }: Props) {
     if (!confirm("ลบไฟล์นี้? — ผู้ที่ซื้อแล้วยังคงดาวน์โหลดได้จนกว่า Spaces จะลบ object")) {
       return;
     }
-    const res = await fetch(`/api/admin/digital-assets/${id}`, {
+    const res = await fetch(`${deleteUrlBase}/${id}`, {
       method: "DELETE",
     });
     if (!res.ok) {

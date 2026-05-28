@@ -21,6 +21,14 @@ export type VariantValues = {
   imageUrl: string;
 };
 
+export type DigitalKind =
+  | "EBOOK"
+  | "EXCEL"
+  | "VECTOR"
+  | "PROMPT"
+  | "ARCHIVE"
+  | "OTHER";
+
 export type ProductFormValues = {
   title: string;
   titleTh: string;
@@ -34,9 +42,21 @@ export type ProductFormValues = {
   active: boolean;
   hasVariants: boolean;
   variants: VariantValues[];
+  productType?: "PHYSICAL" | "DIGITAL";
+  digitalKind?: DigitalKind | null;
+  promptText?: string;
   supplier?: "CJ" | "ALIEXPRESS" | "MOCK";
   externalProductId?: string;
   externalPayload?: unknown;
+};
+
+export const DIGITAL_KIND_LABELS: Record<DigitalKind, string> = {
+  EXCEL: "ไฟล์ Excel / Google Sheets (.xlsx)",
+  EBOOK: "อีบุ๊ก (PDF / EPUB)",
+  VECTOR: "ไฟล์เวกเตอร์ (AI / SVG / PSD)",
+  PROMPT: "Prompt (ข้อความ — ก๊อปไปใช้ได้เลย)",
+  ARCHIVE: "ไฟล์รวม (.zip)",
+  OTHER: "อื่น ๆ (เสียง / วิดีโอ / ฟอนต์)",
 };
 
 const EMPTY_VARIANT: VariantValues = {
@@ -61,6 +81,9 @@ export const EMPTY_PRODUCT: ProductFormValues = {
   active: true,
   hasVariants: false,
   variants: [],
+  productType: "PHYSICAL",
+  digitalKind: null,
+  promptText: "",
 };
 
 export function ProductForm({
@@ -211,8 +234,15 @@ export function ProductForm({
       ),
       categoryName: form.categoryName,
       active: form.active,
-      hasVariants: form.hasVariants,
-      variants: form.hasVariants
+      productType: form.productType ?? "PHYSICAL",
+      digitalKind: form.productType === "DIGITAL" ? (form.digitalKind ?? null) : null,
+      promptText:
+        form.productType === "DIGITAL" && form.digitalKind === "PROMPT"
+          ? (form.promptText ?? "")
+          : null,
+      // Digital products never carry variants.
+      hasVariants: form.productType === "DIGITAL" ? false : form.hasVariants,
+      variants: form.productType !== "DIGITAL" && form.hasVariants
         ? form.variants.map((v) => ({
             externalVariantId: v.externalVariantId,
             attributes: {
@@ -336,6 +366,78 @@ export function ProductForm({
           </div>
         </Section>
       )}
+
+      {/* ── Product type (physical vs digital) ─────────────────── */}
+      <Section
+        title="ประเภทสินค้า"
+        hint="สินค้าดิจิทัลส่งเป็นไฟล์ดาวน์โหลด ไม่ต้องจัดส่ง"
+      >
+        <div className="grid grid-cols-2 gap-2">
+          {(["PHYSICAL", "DIGITAL"] as const).map((t) => {
+            const active = (form.productType ?? "PHYSICAL") === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => update("productType", t)}
+                className={`rounded-md border py-2.5 text-sm font-medium transition ${
+                  active
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-input hover:bg-muted"
+                }`}
+                aria-pressed={active}
+              >
+                {t === "PHYSICAL" ? "สินค้าทั่วไป (จัดส่ง)" : "สินค้าดิจิทัล (ดาวน์โหลด)"}
+              </button>
+            );
+          })}
+        </div>
+
+        {form.productType === "DIGITAL" && (
+          <div className="mt-4 space-y-4">
+            <Field label="ชนิดไฟล์ดิจิทัล" required>
+              <select
+                value={form.digitalKind ?? ""}
+                onChange={(e) =>
+                  update("digitalKind", (e.target.value || null) as DigitalKind | null)
+                }
+                required
+                className="w-full rounded-md border px-3 py-2 text-sm bg-white"
+              >
+                <option value="" disabled>
+                  เลือกชนิดไฟล์…
+                </option>
+                {(Object.keys(DIGITAL_KIND_LABELS) as DigitalKind[]).map((k) => (
+                  <option key={k} value={k}>
+                    {DIGITAL_KIND_LABELS[k]}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            {form.digitalKind === "PROMPT" ? (
+              <Field
+                label="เนื้อหา Prompt"
+                hint="ข้อความเต็มที่ผู้ซื้อจะปลดล็อก + ก๊อปไปใช้ได้หลังชำระเงิน"
+              >
+                <textarea
+                  value={form.promptText ?? ""}
+                  onChange={(e) => update("promptText", e.target.value)}
+                  rows={6}
+                  placeholder="วางข้อความ prompt ที่นี่…"
+                  className="w-full rounded-md border px-3 py-2 text-sm font-mono"
+                />
+              </Field>
+            ) : (
+              <p className="rounded-md border border-dashed bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+                {mode === "create"
+                  ? "บันทึกสินค้าก่อน แล้วระบบจะพาไปหน้าอัปโหลดไฟล์ดาวน์โหลด"
+                  : "อัปโหลดไฟล์ดาวน์โหลดได้ที่ส่วน “ไฟล์ดาวน์โหลด” ด้านล่างฟอร์มนี้"}
+              </p>
+            )}
+          </div>
+        )}
+      </Section>
 
       {/* ── Product info ───────────────────────────────────────── */}
       <Section title="ข้อมูลสินค้า">
@@ -491,7 +593,8 @@ export function ProductForm({
         </div>
       </Section>
 
-      {/* ── Variants ───────────────────────────────────────────── */}
+      {/* ── Variants (physical only) ───────────────────────────── */}
+      {form.productType !== "DIGITAL" && (
       <Section title="ตัวเลือกสินค้า (Variants)">
         <label className="flex items-center gap-3 pb-3">
           <input
@@ -618,6 +721,7 @@ export function ProductForm({
           </div>
         )}
       </Section>
+      )}
 
       {/* ── Status ─────────────────────────────────────────────── */}
       <Section title="สถานะ">

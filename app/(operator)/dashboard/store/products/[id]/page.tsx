@@ -7,6 +7,7 @@ import {
   type ProductFormValues,
   type VariantValues,
 } from "@/components/dashboard/product-form";
+import { DigitalAssetsManager } from "@/app/(operator)/admin/products/[id]/digital-assets-manager";
 import { resolveDashboardStore } from "@/lib/stores/resolve-dashboard-store";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,10 @@ export default async function EditProductPage({
 
   const product = await prisma.product.findUnique({
     where: { id: params.id },
-    include: { variants: { orderBy: { createdAt: "asc" } } },
+    include: {
+      variants: { orderBy: { createdAt: "asc" } },
+      digitalAssets: { orderBy: { createdAt: "asc" } },
+    },
   });
 
   // 404 (not 403) on cross-store access — same response shape whether
@@ -70,7 +74,16 @@ export default async function EditProductPage({
     active: product.active,
     hasVariants: product.hasVariants,
     variants,
+    productType: product.productType,
+    digitalKind: product.digitalKind ?? null,
+    promptText: product.promptText ?? "",
   };
+
+  // File-based digital products (everything except PROMPT) get the
+  // asset uploader below the form. PROMPT kind stores its content in
+  // promptText (edited inline in the form), no file needed.
+  const showAssetManager =
+    product.productType === "DIGITAL" && product.digitalKind !== "PROMPT";
 
   // Slug suffix to preserve the active-store selection across nav
   // links (back button + "ดูในหน้าร้าน" doesn't need it because
@@ -115,6 +128,27 @@ export default async function EditProductPage({
         productId={product.id}
         defaultValues={defaultValues}
       />
+
+      {showAssetManager && (
+        <section className="rounded-lg border p-5">
+          <h2 className="text-lg font-semibold">ไฟล์ดาวน์โหลด</h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            อัปโหลดไฟล์ที่ผู้ซื้อจะได้รับ (PDF / XLSX / AI / ZIP — สูงสุด 100 MB)
+          </p>
+          <DigitalAssetsManager
+            productId={product.id}
+            uploadUrl="/api/store/digital-assets/upload"
+            deleteUrlBase="/api/store/digital-assets"
+            initialAssets={product.digitalAssets.map((a) => ({
+              id: a.id,
+              fileName: a.fileName,
+              fileFormat: a.fileFormat,
+              fileSizeMB: a.fileSizeMB,
+              isPreview: a.isPreview,
+            }))}
+          />
+        </section>
+      )}
     </div>
   );
 }

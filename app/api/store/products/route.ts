@@ -43,11 +43,24 @@ const createSchema = z.object({
   active: z.boolean().optional().default(true),
   hasVariants: z.boolean().optional().default(false),
   variants: z.array(variantSchema).max(50).optional().default([]),
+  // Digital-product fields. Default PHYSICAL keeps every existing
+  // caller unchanged. digitalKind is required when DIGITAL; promptText
+  // only applies to the PROMPT kind (the others attach files later via
+  // /api/store/digital-assets/upload on the edit page).
+  productType: z.enum(["PHYSICAL", "DIGITAL"]).optional().default("PHYSICAL"),
+  digitalKind: z
+    .enum(["EBOOK", "EXCEL", "VECTOR", "PROMPT", "ARCHIVE", "OTHER"])
+    .optional()
+    .nullable(),
+  promptText: z.string().max(20000).optional().nullable(),
   // import-flow extras (when user pasted a supplier URL)
   supplier: z.enum(["CJ", "ALIEXPRESS", "MOCK"]).optional(),
   externalProductId: z.string().min(1).optional(),
   externalPayload: z.unknown().optional(),
-});
+}).refine(
+  (d) => d.productType !== "DIGITAL" || !!d.digitalKind,
+  { message: "digitalKind required for digital products", path: ["digitalKind"] },
+);
 
 // Resolve the dashboard's active store. Mirrors lib/stores/resolve-
 // dashboard-store.ts but for API context: prefer the explicit storeSlug
@@ -184,14 +197,22 @@ export async function POST(req: Request) {
         categoryName,
         categoryId,
         active: d.active ?? true,
-        hasVariants: d.hasVariants ?? false,
+        // Digital products never carry variants — force the flag off so
+        // the storefront PDP doesn't render an empty variant picker.
+        hasVariants: d.productType === "DIGITAL" ? false : (d.hasVariants ?? false),
+        productType: d.productType ?? "PHYSICAL",
+        digitalKind: d.productType === "DIGITAL" ? (d.digitalKind ?? null) : null,
+        promptText:
+          d.productType === "DIGITAL" && d.digitalKind === "PROMPT"
+            ? (d.promptText ?? null)
+            : null,
         supplier,
         externalProductId,
         externalPayload: (d.externalPayload ?? null) as never,
       },
     });
 
-    if (d.variants && d.variants.length > 0) {
+    if (d.productType !== "DIGITAL" && d.variants && d.variants.length > 0) {
       await tx.productVariant.createMany({
         data: d.variants.map((v) => ({
           productId: product.id,
