@@ -69,6 +69,7 @@ type Family =
   | "vector-bazaar"
   | "photo-vault"
   | "salepage-market"
+  | "resume-forge"
   | "default";
 
 type PreviewBehavior = Partial<
@@ -140,6 +141,7 @@ const FAMILY_STYLE: Record<
   "vector-bazaar": { serif: KANIT, mono: MONO_JET, sans: PROMPT, heading: "sans", radius: "round" },
   "photo-vault": { serif: KANIT, mono: MONO_JET, sans: PROMPT, heading: "sans", radius: "sharp" },
   "salepage-market": { serif: KANIT, mono: MONO_JET, sans: PROMPT, heading: "sans", radius: "sharp" },
+  "resume-forge": { serif: KANIT, mono: MONO_JET, sans: PROMPT, heading: "sans", radius: "default" },
   default: { serif: SERIF_PLAYFAIR, mono: MONO_JET, sans: SANS_SYS, heading: "sans", radius: "default" },
 };
 

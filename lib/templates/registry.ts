@@ -515,6 +515,19 @@ import {
   ResumeStudioStripAdapter,
   ResumeStudioHomepageAdapter,
 } from '@/components/storefront/themes/resume-studio-th/adapters';
+import {
+  ResumeForgeHeaderAdapter,
+  ResumeForgeFooterAdapter,
+  ResumeForgeStripAdapter,
+  ResumeForgeHomepageAdapter,
+  ResumeForgeAboutAdapter,
+  ResumeForgeHelpAdapter,
+  resume_forge_th_Catalog,
+  resume_forge_th_ProductDetail,
+  resume_forge_th_Cart,
+  resume_forge_th_Checkout,
+  resume_forge_th_Contact,
+} from '@/components/storefront/themes/resume-forge-th/adapters';
 
 export const templates: Record<TemplateId, Template> = {
   handmade: {
@@ -1775,6 +1788,31 @@ export const templates: Record<TemplateId, Template> = {
       }),
       about: makeAboutAdapter(),
       help: makeHelpAdapter(),
+    },
+  },
+
+  'resume-forge-th': {
+    id: 'resume-forge-th',
+    name: 'ResumeForge',
+    description:
+      'เทมเพลตเรซูเม่ · CV · cover letter · LinkedIn ATS-friendly · ดาวน์โหลด .docx .pdf ทันที',
+    group: 'resume-forge',
+    behavior: { bottomNav: 'hidden', stickyCTA: 'buy-now', digitalOnly: true },
+    chrome: {
+      Header: ResumeForgeHeaderAdapter,
+      Footer: ResumeForgeFooterAdapter,
+      AnnouncementStrip: ResumeForgeStripAdapter,
+      shellShape: 'centered',
+    },
+    pages: {
+      home: ResumeForgeHomepageAdapter,
+      catalog: resume_forge_th_Catalog,
+      pdp: resume_forge_th_ProductDetail,
+      cart: resume_forge_th_Cart,
+      checkout: resume_forge_th_Checkout,
+      about: ResumeForgeAboutAdapter,
+      help: ResumeForgeHelpAdapter,
+      contact: resume_forge_th_Contact,
     },
   },
 };

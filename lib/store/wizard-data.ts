@@ -31,7 +31,7 @@ export const NICHES: Niche[] = [
   { id: "wholesale", label: "ขายส่ง / B2B", emoji: "📦", recommendedTemplates: ["bulkbox-industrial", "inkstone-paper"] },
   { id: "handmade", label: "งานฝีมือ", emoji: "🎨", recommendedTemplates: ["mai-hatthakam", "pigment-studio", "vector-bazaar-th"] },
   { id: "vintage", label: "วินเทจ / มือสอง", emoji: "🕰️", recommendedTemplates: ["brutalist-thai", "mono-eight", "atelier-27"] },
-  { id: "general", label: "อื่นๆ / ขายทั่วไป", emoji: "🛍️", recommendedTemplates: ["pastel-pack", "sai-sing"] },
+  { id: "general", label: "อื่นๆ / ขายทั่วไป", emoji: "🛍️", recommendedTemplates: ["pastel-pack", "sai-sing", "resume-forge-th"] },
 ];
 
 // ─── Templates (20) ────────────────────────────────────────────────────────
@@ -477,6 +477,15 @@ export const TEMPLATES: Template[] = [
     description: "เทมเพลตเรซูเม่ · CV · พร้อมแก้ · ดาวน์โหลดทันที · จ่ายด้วยเครดิต",
     group: "specialty",
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+    behavior: { stickyCTA: "buy-now" },
+  },
+  {
+    id: "resume-forge-th",
+    name: "ResumeForge",
+    description:
+      "เทมเพลตเรซูเม่ · CV · cover letter · LinkedIn ATS-friendly · ดาวน์โหลด .docx .pdf ทันที",
+    group: "resume-forge",
+    theme: { spacing: "default", radius: "default", titleScale: "display", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
   },
 ];
