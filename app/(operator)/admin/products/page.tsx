@@ -65,6 +65,8 @@ export default async function AdminProductsPage({
       categoryName: true,
       active: true,
       createdAt: true,
+      productType: true,
+      _count: { select: { digitalAssets: true } },
       store: { select: { name: true, slug: true } },
     },
   });
@@ -75,7 +77,7 @@ export default async function AdminProductsPage({
   });
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4">
+    <div className="mx-auto max-w-7xl space-y-4">
       <OperatorPageHeader
         title="สินค้าทั้งหมด"
         description={`${products.length} แสดง (จำกัด 100 ล่าสุด)`}
@@ -116,16 +118,18 @@ export default async function AdminProductsPage({
         </OperatorTable>
       ) : (
         <OperatorTable>
-          <Table>
+          <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow>
-                <TableHead>สินค้า</TableHead>
-                <TableHead>ร้าน</TableHead>
-                <TableHead>หมวดหมู่</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead className="text-right">ราคา</TableHead>
-                <TableHead>สถานะ</TableHead>
-                <TableHead className="text-right" />
+                <TableHead className="w-[280px]">สินค้า</TableHead>
+                <TableHead className="w-[160px]">ร้าน</TableHead>
+                <TableHead className="w-[100px]">หมวดหมู่</TableHead>
+                <TableHead className="w-[80px]">Supplier</TableHead>
+                <TableHead className="w-[75px]">ประเภท</TableHead>
+                <TableHead className="w-[80px]">ไฟล์</TableHead>
+                <TableHead className="w-[80px] text-right">ราคา</TableHead>
+                <TableHead className="w-[70px]">สถานะ</TableHead>
+                <TableHead className="w-[80px] text-right" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,10 +147,10 @@ export default async function AdminProductsPage({
                       ) : (
                         <div className="h-10 w-10 rounded bg-muted" />
                       )}
-                      <p className="line-clamp-2 max-w-md text-xs">{p.title}</p>
+                      <p className="line-clamp-2 max-w-[200px] text-xs">{p.title}</p>
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs">{p.store.name}</TableCell>
+                  <TableCell className="text-xs truncate max-w-[160px]">{p.store.name}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {p.categoryName ?? "—"}
                   </TableCell>
@@ -154,6 +158,20 @@ export default async function AdminProductsPage({
                     <OperatorStatusBadge tone={SUPPLIER_TONE[p.supplier] ?? "neutral"}>
                       {p.supplier}
                     </OperatorStatusBadge>
+                  </TableCell>
+                  <TableCell>
+                    <OperatorStatusBadge tone={p.productType === "DIGITAL" ? "processing" : "neutral"}>
+                      {p.productType === "DIGITAL" ? "Digital" : "Physical"}
+                    </OperatorStatusBadge>
+                  </TableCell>
+                  <TableCell>
+                    {p.productType === "DIGITAL" ? (
+                      <OperatorStatusBadge tone={p._count.digitalAssets > 0 ? "success" : "warning"}>
+                        {p._count.digitalAssets > 0 ? `${p._count.digitalAssets} ไฟล์` : "ยังไม่มี"}
+                      </OperatorStatusBadge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right font-medium">
                     {formatTHB(Number(p.priceTHB))}
