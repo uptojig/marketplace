@@ -1,0 +1,99 @@
+name: One-shot seed — level99 EduClassroom worksheet sets
+
+# Downloads a zip of the 5 worksheet-set folders (each ~10 PDF + 10 PNG)
+# from a public URL, extracts on the droplet, then runs the level99 seed
+# script inside a Node container that already has DATABASE_URL + SPACES_*
+# from /etc/marketplace/control.env.
+#
+# Idempotent on externalProductId — re-running updates rows + skips PDFs
+# already attached rather than duplicating.
+#
+# How to get a zip URL:
+#   1. Drag-drop the zip into a comment on any GitHub issue/PR in this
+#      repo — GitHub serves it from a public githubusercontent.com URL.
+#   2. Or upload to any public host (Dropbox direct link, transfer.sh,
+#      DigitalOcean Spaces, etc.).
+
+on:
+  workflow_dispatch:
+    inputs:
+      zip_url:
+        description: "Public URL to the zip of worksheet-set folders"
+        required: true
+        type: string
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DROPLET_SSH_KEY }}
+
+      - name: Run level99 seed on droplet
+        env:
+          ZIP_URL: ${{ inputs.zip_url }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh -o StrictHostKeyChecking=accept-new \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              -o ConnectTimeout=30 \
+              -o ServerAliveInterval=60 \
+              -o ServerAliveCountMax=10 \
+              -o TCPKeepAlive=yes \
+              "root@${{ secrets.DROPLET_IP }}" \
+              "ZIP_URL='${ZIP_URL}' bash -s" <<'REMOTE'
+            set -euo pipefail
+
+            WORKDIR=/tmp/level99-seed
+            rm -rf "$WORKDIR"
+            mkdir -p "$WORKDIR/extracted"
+
+            if ! command -v unzip >/dev/null 2>&1; then
+              echo "→ Installing unzip"
+              DEBIAN_FRONTEND=noninteractive apt-get update -qq
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq unzip
+            fi
+
+            echo "→ Fetching zip from $ZIP_URL"
+            curl -fSL --max-time 600 -o "$WORKDIR/sets.zip" "$ZIP_URL"
+
+            echo "→ Extracting"
+            unzip -q "$WORKDIR/sets.zip" -d "$WORKDIR/extracted"
+
+            # Locate the root that holds the product sub-folders: find the
+            # first real PDF (skip the macOS __MACOSX fork dir), take its
+            # folder's parent as the root the script walks.
+            FIRST_PDF=$(find "$WORKDIR/extracted" -name '*.pdf' ! -path '*__MACOSX*' ! -name '._*' | head -1)
+            if [ -z "$FIRST_PDF" ]; then
+              echo "ERROR: no PDF files found in zip"
+              exit 1
+            fi
+            ROOT=$(dirname "$(dirname "$FIRST_PDF")")
+            echo "→ Root dir: $ROOT"
+            ls -1 "$ROOT"
+
+            cd /opt/marketplace
+            git fetch origin feat/multi-tenant-provisioning
+            git reset --hard origin/feat/multi-tenant-provisioning
+
+            echo "→ Running seed script inside node:20 container"
+            docker run --rm \
+              --env-file /etc/marketplace/control.env \
+              --network=host \
+              -v /opt/marketplace:/app \
+              -v "$ROOT":/sets:ro \
+              -w /app \
+              node:20-bookworm-slim \
+              sh -c "apt-get update -qq \
+                && apt-get install -y -qq openssl ca-certificates \
+                && corepack enable \
+                && corepack prepare pnpm@9.0.0 --activate \
+                && pnpm install --no-frozen-lockfile --prefer-offline --silent \
+                && pnpm tsx scripts/seed-level99.ts /sets"
+
+            rm -rf "$WORKDIR"
+            echo "→ Done"
+          REMOTE
