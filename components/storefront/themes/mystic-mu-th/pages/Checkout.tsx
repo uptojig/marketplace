@@ -145,7 +145,7 @@ export default function Checkout({ store }: { store: StoreLite }) {
             href={`/stores/${store.slug}/category`}
             className="inline-flex h-12 px-6 mt-2 items-center justify-center bg-[#E52521] text-white border-4 border-[#1A1A2E] font-[family:var(--font-kanit)] font-black uppercase tracking-widest shadow-[4px_4px_0_0_#1A1A2E] hover:bg-[#FFD700] hover:text-[#1A1A2E] active:translate-x-1 active:translate-y-1 active:shadow-none"
           >
-            มูเลย
+            ช้อปเลย
           </Link>
         </div>
       </div>

@@ -10,8 +10,8 @@ interface Props {
 }
 
 const DEFAULT_DESKTOP =
-  '⭐ มูเลเวลอัพ! ดาวน์โหลดวอลเปเปอร์มงคลทันทีหลังชำระเงิน · เสริมโชค หนุนดวง ทุกเดือน ⭐';
-const DEFAULT_MOBILE = '⭐ ดาวน์โหลดทันที · เสริมโชค ⭐';
+  '⭐ เลเวลอัพการเรียน! ดาวน์โหลดสื่อการสอนทันทีหลังชำระเงิน · ใบงานใหม่ทุกเดือน ⭐';
+const DEFAULT_MOBILE = '⭐ ดาวน์โหลดทันที · พร้อมพิมพ์ ⭐';
 
 /**
  * MysticMu announcement strip — coin-gold bar with dark text and

@@ -75,7 +75,7 @@ export function Header({ storeSlug, storeName, storeLogoUrl, categories = [] }: 
           <input
             type="text"
             name="q"
-            placeholder="ค้นหาวอลเปเปอร์มงคล..."
+            placeholder="ค้นหาสื่อการสอน ใบงาน..."
             className="w-full bg-white border-4 border-[#1A1A2E] py-2 pl-4 pr-10 text-sm font-semibold focus:outline-none focus:bg-[#FFF8DC] transition-colors placeholder:text-[#4A4A6E]"
           />
           <button

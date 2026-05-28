@@ -416,8 +416,8 @@ export const TEMPLATES: Template[] = [
   },
   {
     id: "mystic-mu-th",
-    name: "MysticMu มูเลเวลอัพ",
-    description: "วอลเปเปอร์มงคล สายมู หนุนดวง เสริมโชค สไตล์ Mario เลเวลอัพชีวิต",
+    name: "MysticMu เลเวลอัพการเรียน",
+    description: "สื่อการสอน ใบงาน แบบฝึกหัด สไตล์ Mario เลเวลอัพการเรียนรู้",
     group: "mystic-mu",
     theme: { spacing: "default", radius: "sharp", titleScale: "display", font: "sans" },
     behavior: { stickyCTA: "buy-now" },

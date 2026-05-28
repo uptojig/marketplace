@@ -55,7 +55,7 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: F
   const tagline =
     store.description?.trim() ||
     store.tagline?.trim() ||
-    'วอลเปเปอร์มงคล สายมู หนุนดวง เสริมโชค สไตล์ Mario เลเวลอัพชีวิต';
+    'สื่อการสอน ใบงาน แบบฝึกหัด สไตล์ Mario เลเวลอัพการเรียนรู้';
 
   return (
     <footer className="bg-[#1A1A2E] text-white font-[family:var(--font-prompt)]">
@@ -88,14 +88,14 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: F
           </Link>
           <p className="text-sm font-semibold text-white/70 leading-relaxed">{tagline}</p>
           <div className="inline-flex items-center gap-2 bg-[#FFD700] text-[#1A1A2E] border-4 border-white px-3 py-1.5 font-[family:var(--font-kanit)] font-black text-[11px] uppercase tracking-widest shadow-[3px_3px_0_0_#E52521]">
-            <Sparkles className="w-3.5 h-3.5" /> มูเลเวลอัพ
+            <Sparkles className="w-3.5 h-3.5" /> เลเวลอัพการเรียน
           </div>
         </div>
 
         {/* Categories */}
         <div>
           <h4 className="font-[family:var(--font-kanit)] font-black text-lg mb-4 uppercase tracking-widest text-[#FFD700] border-b-2 border-[#FFD700]/40 pb-2">
-            หมวดวอลเปเปอร์
+            หมวดสื่อการสอน
           </h4>
           <ul className="space-y-3 text-sm font-semibold text-white/80">
             {categories.length > 0 ? (

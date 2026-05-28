@@ -44,10 +44,10 @@ interface Props {
   landingContent?: LandingContent | null;
 }
 
-const DEFAULT_HEADLINE = 'เลเวลอัพ\nชีวิตด้วยมู';
+const DEFAULT_HEADLINE = 'เลเวลอัพ\nการเรียนรู้';
 const DEFAULT_SUB =
-  'รวมวอลเปเปอร์มงคลสายมู หนุนดวง เสริมโชค สำหรับมือถือ + เดสก์ท็อป — ดาวน์โหลดทันทีหลังชำระเงิน เลเวลอัพชีวิตในคลิกเดียว ⭐';
-const DEFAULT_CTA = 'มูเลย';
+  'รวมสื่อการสอน ใบงาน แบบฝึกหัด พร้อมพิมพ์ใช้งาน สำหรับครูและผู้ปกครอง — ดาวน์โหลดทันทีหลังชำระเงิน เลเวลอัพการเรียนในคลิกเดียว ⭐';
+const DEFAULT_CTA = 'ช้อปเลย';
 
 const CATEGORY_ICONS = [Coins, Star, Crown, Sparkles, Trophy, Wand2] as const;
 
@@ -316,14 +316,14 @@ export function Homepage({ store, products, categories, landingContent }: Props)
             พร้อมเลเวลอัพแล้วหรือยัง?
           </h3>
           <p className="text-[#1A1A2E] font-bold text-sm sm:text-base mb-6">
-            เลือกวอลเปเปอร์มงคลที่ใช่กับดวงคุณ · ดาวน์โหลดทันที · เปลี่ยนชีวิตในคลิกเดียว
+            เลือกสื่อการสอนที่ใช่กับห้องเรียนคุณ · ดาวน์โหลดทันที · พร้อมพิมพ์ในคลิกเดียว
           </p>
           <Link
             href={`/stores/${store.slug}/category`}
             className="inline-flex items-center justify-center h-14 px-8 bg-[#E52521] text-white border-4 border-[#1A1A2E] font-[family:var(--font-kanit)] font-black uppercase tracking-widest text-base shadow-[6px_6px_0_0_#1A1A2E] hover:bg-[#009A4E] active:translate-x-1.5 active:translate-y-1.5 active:shadow-none transition-all gap-2"
           >
             <Sparkles className="w-5 h-5" />
-            ช้อปวอลเปเปอร์ทั้งหมด
+            ดูสื่อการสอนทั้งหมด
             <ChevronRight className="w-5 h-5" />
           </Link>
         </div>

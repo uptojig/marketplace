@@ -195,14 +195,14 @@ export default function Cart({ store }: { store: StoreLite }) {
             ตะกร้าว่าง
           </h1>
           <p className="text-sm font-bold text-[#4A4A6E] uppercase tracking-widest mb-6">
-            ยังไม่มีวอลล์มงคลในตะกร้า · เลเวลอัพไม่ได้นะ!
+            ยังไม่มีสื่อการสอนในตะกร้า · เลเวลอัพไม่ได้นะ!
           </p>
           <Link
             href={`/stores/${store.slug}/category`}
             className="inline-flex items-center justify-center h-12 px-6 bg-[#E52521] text-white border-4 border-[#1A1A2E] font-[family:var(--font-kanit)] font-black uppercase tracking-widest shadow-[4px_4px_0_0_#1A1A2E] hover:bg-[#FFD700] hover:text-[#1A1A2E] active:translate-x-1 active:translate-y-1 active:shadow-none gap-2"
           >
             <Sparkles className="w-5 h-5" />
-            มูเลย
+            ช้อปเลย
           </Link>
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function Cart({ store }: { store: StoreLite }) {
             Cart · {itemCount} รายการ
           </div>
           <h1 className="font-[family:var(--font-kanit)] text-4xl sm:text-5xl font-black uppercase tracking-tight text-white drop-shadow-[4px_4px_0_#1A1A2E]">
-            ตะกร้าวอลล์มงคล
+            ตะกร้าสื่อการสอน
           </h1>
         </div>
       </section>

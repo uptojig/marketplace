@@ -91,7 +91,7 @@ export default function Catalog({
             <Wand2 className="w-3.5 h-3.5 text-[#E52521]" /> Level Select
           </div>
           <h1 className="font-[family:var(--font-kanit)] text-4xl sm:text-6xl font-black uppercase tracking-tight text-white drop-shadow-[5px_5px_0_#1A1A2E]">
-            วอลเปเปอร์ทั้งหมด
+            สื่อการสอนทั้งหมด
           </h1>
           <p className="text-white font-black mt-3 uppercase tracking-widest text-xs sm:text-sm drop-shadow-[2px_2px_0_#1A1A2E] flex items-center gap-2">
             <Coins className="w-4 h-4 text-[#FFD700]" />

@@ -1575,7 +1575,7 @@ export const templates: Record<TemplateId, Template> = {
     id: 'mystic-mu-th',
     name: 'MysticMu',
     description:
-      'วอลเปเปอร์มงคล สายมู หนุนดวง เสริมโชค สไตล์ Mario เลเวลอัพชีวิต — ดาวน์โหลดได้ทันที',
+      'สื่อการสอน ใบงาน แบบฝึกหัด สไตล์ Mario เลเวลอัพการเรียนรู้ — ดาวน์โหลดได้ทันที',
     group: 'mystic-mu',
     behavior: { bottomNav: 'visible', stickyCTA: 'buy-now' },
     chrome: {

@@ -179,7 +179,7 @@ export default function ProductDetail({ store, product, related }: ProductDetail
         <div className="space-y-6">
           <div className="space-y-2">
             <div className="text-[11px] font-[family:var(--font-kanit)] font-black uppercase tracking-widest text-white drop-shadow-[2px_2px_0_#1A1A2E]">
-              {product.categoryName ?? 'วอลเปเปอร์'} · #{product.id.slice(-6)}
+              {product.categoryName ?? 'สื่อการสอน'} · #{product.id.slice(-6)}
             </div>
             <h1 className="font-[family:var(--font-kanit)] text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight leading-tight text-white drop-shadow-[4px_4px_0_#1A1A2E]">
               {product.title}
@@ -335,7 +335,7 @@ export default function ProductDetail({ store, product, related }: ProductDetail
             {tab === 'desc' && (
               <div className="text-sm sm:text-base whitespace-pre-line leading-relaxed">
                 {product.description?.trim() ||
-                  'วอลเปเปอร์มงคลสายมูคุณภาพสูง ออกแบบเพื่อหนุนดวงและเสริมโชค — เหมาะกับทุกราศี ดาวน์โหลดได้ทันทีหลังชำระเงิน รองรับทุกอุปกรณ์'}
+                  'สื่อการสอนคุณภาพสูง ออกแบบตามหลักสูตร พร้อมพิมพ์ใช้งานในห้องเรียนหรือที่บ้าน — เหมาะกับครูและผู้ปกครอง ดาวน์โหลดได้ทันทีหลังชำระเงิน ไฟล์ PDF พร้อมพิมพ์'}
               </div>
             )}
             {tab === 'specs' && (
@@ -359,17 +359,17 @@ export default function ProductDetail({ store, product, related }: ProductDetail
                     ))}
                   </div>
                   <span className="font-[family:var(--font-kanit)] font-black uppercase tracking-widest text-xs">
-                    ลูกค้ามูพอใจ
+                    ครูพอใจ
                   </span>
                 </div>
                 <div className="space-y-3">
                   <ReviewCard
-                    name="คุณสมศรี"
-                    text="ดาวน์โหลดง่าย ภาพคมชัด ใส่แล้วรู้สึกชีวิตปังขึ้นจริงๆ ⭐"
+                    name="ครูสมศรี"
+                    text="ดาวน์โหลดง่าย ไฟล์คมชัด พิมพ์แจกเด็กในห้องได้เลย ประหยัดเวลาเตรียมสอนมาก ⭐"
                   />
                   <ReviewCard
-                    name="คุณจิรชัย"
-                    text="ตั้งเป็นวอลล์มือถือแล้วยอดขายขึ้น 2 เท่า มูจริง"
+                    name="ครูจิรชัย"
+                    text="ใบงานตรงหลักสูตร เด็กชอบ ทำเสร็จเร็ว ซื้ออีกแน่นอน"
                   />
                   <ReviewCard
                     name="คุณนภา"
