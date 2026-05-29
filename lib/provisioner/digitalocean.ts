@@ -47,6 +47,15 @@ async function doFetch(
     throw new Error("DigitalOcean token not configured (DIGITALOCEAN_TOKEN)");
   }
   return fetch(`${API_BASE}${path}`, {
+    // `cache: "no-store"` is load-bearing under Next.js App Router: the
+    // server-side `fetch` is patched to default to `force-cache` and keys
+    // the response by URL + method, ignoring auth headers. Without this
+    // opt-out, `getDroplet(id)` cheerfully returns the very first response
+    // it ever saw for that URL — typically `status: "new"` from when the
+    // droplet was 5 seconds old — and `waitForDropletActive` retries
+    // until it exhausts maxAttempts even though DO long since flipped
+    // the droplet to active. (Caller may still override via `init.cache`.)
+    cache: "no-store",
     ...rest,
     headers: {
       Authorization: `Bearer ${token}`,
