@@ -42,9 +42,26 @@ write_files:
     content: |
       Snapshot built at $(date -u +%Y-%m-%dT%H:%M:%SZ)
       Shop image: ${SHOP_IMAGE}
+  # Cap container json logs at 10 MB × 3 files. Without this, a chatty
+  # shop's stdout fills /var/lib/docker/containers/*/*-json.log until the
+  # 24 GB shop droplet's disk is wedged. Bake into the snapshot so every
+  # cloned shop starts under the cap before any container runs.
+  - path: /etc/docker/daemon.json
+    permissions: '0644'
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      }
 
 runcmd:
-  # Docker repo + install
+  # Docker repo + install. apt installs and starts dockerd in one step, so
+  # /etc/docker/daemon.json must already be on disk (it is, via write_files
+  # above) when this runs — otherwise the daemon comes up unrestricted and
+  # the first container ever started still has the old unlimited log opts.
   - install -m 0755 -d /etc/apt/keyrings
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
   - chmod a+r /etc/apt/keyrings/docker.gpg
