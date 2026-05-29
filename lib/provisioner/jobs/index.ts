@@ -224,6 +224,10 @@ async function waitForAppReadyJob(ctx: JobContext): Promise<JobResult> {
   const url = `https://${d.store.slug}.${cfg.cfPlatformDomain}/api/health`;
   try {
     const res = await fetch(url, {
+      // Next.js App Router patches fetch to default to `force-cache`,
+      // which would freeze the first response (typically 502 from a
+      // not-yet-ready droplet) for the lifetime of the server process.
+      cache: "no-store",
       signal: AbortSignal.timeout(10_000),
       headers: { "user-agent": "marketplace-provisioner/1.0" },
     });
@@ -309,7 +313,10 @@ async function healthCheckJob(ctx: JobContext): Promise<JobResult> {
   const url = `https://${d.store.slug}.${cfg.cfPlatformDomain}/api/health`;
   let ok = false;
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+    // Periodic health poll — must not hit Next.js's default fetch cache,
+    // otherwise a single bad result freezes the deployment's health
+    // forever. See doFetch in ../digitalocean.ts for the same fix.
+    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10_000) });
     ok = res.ok;
   } catch {
     ok = false;

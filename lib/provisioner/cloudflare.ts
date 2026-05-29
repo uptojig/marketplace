@@ -24,6 +24,12 @@ async function cfFetch(path: string, init: RequestInit = {}): Promise<Response> 
   const token = getConfig().cfToken;
   if (!token) throw new Error("Cloudflare token not configured (CLOUDFLARE_API_TOKEN)");
   return fetch(`${API_BASE}${path}`, {
+    // Next.js App Router patches `fetch` to default to `force-cache`,
+    // keyed by URL + method. Listing DNS records or polling a record
+    // after a write would otherwise return the stale pre-write view
+    // for the lifetime of the server process. See doFetch in
+    // ./digitalocean.ts for the same fix.
+    cache: "no-store",
     ...init,
     headers: {
       Authorization: `Bearer ${token}`,
@@ -140,7 +146,8 @@ export async function findZoneForDomain(
 // on whatever local resolver the host happens to have configured.
 export async function resolveARecord(hostname: string): Promise<string[]> {
   const url = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(hostname)}&type=A`;
-  const res = await fetch(url, { headers: { Accept: "application/dns-json" } });
+  // Bypass Next.js App Router's fetch cache — see cfFetch above.
+  const res = await fetch(url, { cache: "no-store", headers: { Accept: "application/dns-json" } });
   if (!res.ok) return [];
   const data = (await res.json()) as { Answer?: Array<{ type: number; data: string }> };
   return (data.Answer ?? []).filter((a) => a.type === 1).map((a) => a.data);
