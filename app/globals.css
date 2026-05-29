@@ -505,6 +505,67 @@
   }
 }
 
+/* ── มูดวง / Lucky Wallpaper — Mystical Premium skin ────────────
+   Activated when `app/stores/[slug]/layout.tsx` adds the
+   `theme-mu-wallpaper` class to the .shop-page wrapper (via the
+   mu-wallpaper-v1 chrome preset). Dark cosmic navy/purple + gold:
+   overrides the --shop-* tokens so the shared ShopHeader/ShopFooter
+   and every sub-page (cart / category / product) render dark-gold,
+   matching the MuWallpaperTemplate landing body. */
+.theme-mu-wallpaper {
+  --shop-bg: #0b0918;
+  --shop-card: #181333;
+  --shop-ink: #f4f1ea;
+  --shop-ink-muted: #a6a0c8;
+  --shop-border: rgba(255, 255, 255, 0.1);
+  --shop-primary: #e9cd84; /* gold */
+  --shop-accent: #e9cd84;
+  background-color: var(--shop-bg);
+  color: var(--shop-ink);
+}
+
+/* Retro-fit the shared chrome's Tailwind utilities (ShopHeader/
+   ShopFooter ship light bg-white + stone/gray text) so they read on
+   the dark canvas. Chain the parent class to beat Tailwind without a
+   blanket !important sweep — mirrors the theme-cyber strategy. */
+.theme-mu-wallpaper .bg-white,
+.theme-mu-wallpaper .bg-white\/95,
+.theme-mu-wallpaper .bg-white\/90 {
+  background-color: rgba(24, 19, 51, 0.92) !important; /* surface / 92 */
+  backdrop-filter: blur(8px);
+}
+.theme-mu-wallpaper .bg-stone-50,
+.theme-mu-wallpaper .bg-zinc-50,
+.theme-mu-wallpaper .bg-gray-50,
+.theme-mu-wallpaper .bg-stone-100,
+.theme-mu-wallpaper .bg-gray-100 {
+  background-color: #0b0918 !important;
+}
+.theme-mu-wallpaper .border-stone-200,
+.theme-mu-wallpaper .border-stone-300,
+.theme-mu-wallpaper .border-zinc-200,
+.theme-mu-wallpaper .border-gray-200,
+.theme-mu-wallpaper .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+.theme-mu-wallpaper .text-stone-900,
+.theme-mu-wallpaper .text-zinc-900,
+.theme-mu-wallpaper .text-gray-900 {
+  color: var(--shop-ink) !important;
+}
+.theme-mu-wallpaper .text-stone-700,
+.theme-mu-wallpaper .text-stone-600,
+.theme-mu-wallpaper .text-zinc-600,
+.theme-mu-wallpaper .text-gray-700,
+.theme-mu-wallpaper .text-gray-600 {
+  color: var(--shop-ink-muted) !important;
+}
+.theme-mu-wallpaper .text-stone-500,
+.theme-mu-wallpaper .text-zinc-500,
+.theme-mu-wallpaper .text-gray-500 {
+  color: #6f6a93 !important;
+}
+
 /* ── Cyberpunk theme (Family E only) ───────────────────────────
    Activated when `app/stores/[slug]/layout.tsx` adds the
    `theme-cyber` class to the .shop-page wrapper. These rules

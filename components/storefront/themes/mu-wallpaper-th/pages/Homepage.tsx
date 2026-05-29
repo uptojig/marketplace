@@ -32,6 +32,7 @@ import {
   MU_WALLPAPER_GOLD_GRADIENT,
   MU_CATEGORY_GLOW,
 } from '../palette';
+import { WallpaperTile, motifFor } from '../../../mu-wallpaper-motifs';
 
 const H = MU_WALLPAPER_HEX;
 
@@ -130,40 +131,6 @@ const FAQ = [
     a: 'ไฟล์ความละเอียดสูง 1440×3120px รองรับทั้ง iPhone และ Android ทุกรุ่น ตั้งเป็นหน้าจอล็อกหรือหน้าจอหลักได้ทั้งหมด',
   },
 ];
-
-/** Single 9:16 wallpaper preview tile — gradient nebula + stars + blessing. */
-function WallpaperTile({
-  glow,
-  imageUrl,
-  bless,
-  className,
-  style,
-}: {
-  glow: string;
-  imageUrl?: string | null;
-  bless?: string;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <div
-      className={`mu-wp ${className ?? ''}`}
-      style={{ ['--glow' as string]: glow, ...style }}
-    >
-      {imageUrl ? (
-        <img src={imageUrl} alt="" className="mu-wp-img" />
-      ) : (
-        <>
-          <div className="mu-wp-bg" />
-          <div className="mu-wp-stars" />
-          <div className="mu-wp-orb" />
-        </>
-      )}
-      {bless ? <span className="mu-wp-bless">{bless}</span> : null}
-      <div className="mu-wp-ring" />
-    </div>
-  );
-}
 
 export function MuWallpaperHomepage({
   store,
@@ -276,14 +243,31 @@ export function MuWallpaperHomepage({
               <WallpaperTile
                 glow={H.wealth}
                 imageUrl={heroImage}
+                motif="naga"
                 bless="ทรัพย์ไหลมา"
-                className="mu-wp-float-a"
+                style={{
+                  position: 'absolute',
+                  width: 150,
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%,-50%) rotate(-9deg) translateX(-54px)',
+                  boxShadow: H.shadow,
+                }}
               />
               <WallpaperTile
                 glow={H.career}
                 imageUrl={products[1]?.imageUrl ?? null}
+                motif="mandala"
                 bless="สำเร็จ"
-                className="mu-wp-float-b"
+                style={{
+                  position: 'absolute',
+                  width: 150,
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%,-50%) rotate(7deg) translateX(56px) translateY(18px)',
+                  zIndex: 2,
+                  boxShadow: H.shadow,
+                }}
               />
             </div>
           </div>
@@ -401,7 +385,7 @@ export function MuWallpaperHomepage({
                   style={{ ['--cat' as string]: glow }}
                 >
                   <div className="mu-card-media">
-                    <WallpaperTile glow={glow} imageUrl={p.imageUrl} />
+                    <WallpaperTile glow={glow} imageUrl={p.imageUrl} motif={motifFor(idx)} />
                     <span className="mu-card-badge">ปลุกเสกแล้ว</span>
                   </div>
                   <div className="mu-card-body">
@@ -462,6 +446,7 @@ export function MuWallpaperHomepage({
                   key={p?.id ?? i}
                   glow={Object.values(MU_CATEGORY_GLOW)[i] ?? H.gold}
                   imageUrl={p?.imageUrl ?? null}
+                  motif={motifFor(i)}
                   style={{ width: 54, borderRadius: 10 }}
                 />
               ))}

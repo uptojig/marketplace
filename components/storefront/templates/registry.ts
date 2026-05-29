@@ -25,6 +25,11 @@ export const REACT_TEMPLATES = {
     description:
       "Tech-forward e-commerce layout (Shadcn Studio inspired): announcement bar, sticky header, product hero with discount badge, category picker, trust strip, product grid, best-sellers row, dark footer. Tailored for phone-case / accessory stores.",
   },
+  "mu-wallpaper-v1": {
+    label: "มูดวง · Mystical Premium Gold",
+    description:
+      "Dark cosmic navy/purple + gold 'สายมู' (lucky/auspicious) landing: gold-gradient hero with floating sacred-motif wallpapers, lucky-day tool (day-of-week → lucky color/category), featured grid with procedural SVG yantra/naga/mandala art, 3-step guide, reviews, FAQ. Tailored for digital lucky-wallpaper stores.",
+  },
 } as const;
 
 export type ReactTemplateId = keyof typeof REACT_TEMPLATES;

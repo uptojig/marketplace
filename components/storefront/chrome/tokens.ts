@@ -82,9 +82,26 @@ const PRESET_MINI_MOPS: ShopChromePreset = {
   },
 };
 
+const PRESET_MU_WALLPAPER: ShopChromePreset = {
+  themeClass: "theme-mu-wallpaper",
+  tokens: {
+    accent: "#e9cd84", // brand gold
+    ink: "#f4f1ea",
+    bg: "#0b0918",
+    decorationGlyph: "✦",
+    announcement: {
+      message: "ปลุกเสกตามฤกษ์ · พรีวิวก่อนได้ทุกลาย · ซื้อแล้วดาวน์โหลดไฟล์เต็มทันที ไม่มีลายน้ำ",
+      mobileMessage: "พรีวิวก่อน · ดาวน์โหลดไฟล์เต็มทันที",
+    },
+    buttonShape: "pill",
+    glyphStyle: "filled",
+  },
+};
+
 const PRESETS: Record<string, ShopChromePreset> = {
   "caselnw-v1": PRESET_CASELNW,
   "mini-mops-v1": PRESET_MINI_MOPS,
+  "mu-wallpaper-v1": PRESET_MU_WALLPAPER,
 };
 
 /**

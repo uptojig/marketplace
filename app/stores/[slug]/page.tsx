@@ -24,6 +24,7 @@ import {
   type MiniMopsStore,
 } from "@/components/storefront/templates/MiniMopsTemplate";
 import { CaselNwTemplate } from "@/components/storefront/templates/CaselNwTemplate";
+import { MuWallpaperTemplate } from "@/components/storefront/templates/MuWallpaperTemplate";
 import {
   isReactTemplateSchema,
   type ReactTemplateSchema,
@@ -179,6 +180,20 @@ async function renderReactTemplate(
   if (schema.template === "caselnw-v1") {
     return (
       <CaselNwTemplate
+        store={templateStore}
+        products={products}
+        featuredProduct={featured}
+        navCategories={navCategories}
+        gridHeading={schema.gridHeading}
+        gridSubheading={schema.gridSubheading}
+        accent={schema.accentHex}
+      />
+    );
+  }
+
+  if (schema.template === "mu-wallpaper-v1") {
+    return (
+      <MuWallpaperTemplate
         store={templateStore}
         products={products}
         featuredProduct={featured}

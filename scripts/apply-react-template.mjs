@@ -16,6 +16,7 @@
  * components/storefront/templates/registry.ts):
  *   - mini-mops-v1
  *   - caselnw-v1
+ *   - mu-wallpaper-v1
  *
  * To revert: use scripts/reset-store-landing.mjs <storeId>
  */
@@ -23,7 +24,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const KNOWN_TEMPLATES = new Set(["mini-mops-v1", "caselnw-v1"]);
+const KNOWN_TEMPLATES = new Set([
+  "mini-mops-v1",
+  "caselnw-v1",
+  "mu-wallpaper-v1",
+]);
 
 const [, , slug, templateId, featuredProductId] = process.argv;
 
