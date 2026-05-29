@@ -189,7 +189,18 @@ while true; do
     if [ -n "$PULLED_ID" ] && [ "$PULLED_ID" != "$RUNNING_ID" ]; then
       echo "[update-agent] $(date -Iseconds) recreate: $RUNNING_ID -> $PULLED_ID"
       cd /opt/marketplace-shop
-      docker compose up -d --no-deps shop || echo "[update-agent] recreate failed"
+      if docker compose up -d --no-deps shop; then
+        # Reclaim disk: drop dangling image layers from prior tags + dead
+        # containers from interrupted recreates. Only AFTER a successful
+        # recreate, so a failed deploy can still roll back to the previous
+        # image (which is dangling now and would otherwise be nuked here).
+        # 24GB shop droplet otherwise fills in ~2 weeks -- each control
+        # plane push moves :latest, leaving a dangling layer per pull.
+        docker image prune -f >/dev/null 2>&1 || true
+        docker container prune -f >/dev/null 2>&1 || true
+      else
+        echo "[update-agent] recreate failed"
+      fi
     fi
   fi
 
@@ -220,8 +231,24 @@ StandardError=journal
 WantedBy=multi-user.target
 `;
 
+  // Docker daemon config: cap each container's json log at 10 MB × 3 files
+  // (was unlimited). Without this a chatty shop will fill /var/lib/docker/
+  // with multi-GB log files until the disk is wedged.
+  const dockerDaemonJson = `{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}
+`;
+
   const snapshotBoot = `#cloud-config
 write_files:
+  - path: /etc/docker/daemon.json
+    permissions: '0644'
+    content: |
+${dockerDaemonJson.split("\n").map((l) => `      ${l}`).join("\n")}
   - path: /opt/marketplace-shop/.env
     permissions: '0600'
     content: |
@@ -245,6 +272,9 @@ ${updateAgentUnit.split("\n").map((l) => `      ${l}`).join("\n")}
 
 runcmd:
   - timedatectl set-timezone Asia/Bangkok
+  # Apply daemon.json log-rotation BEFORE first container start so new
+  # containers inherit it. Snapshot already has docker installed.
+  - systemctl restart docker
   - mkdir -p /var/lib/caddy /var/log/caddy
   - echo "${cfg.doToken}" | docker login -u "${cfg.doToken}" --password-stdin registry.digitalocean.com
   - cd /opt/marketplace-shop && docker compose pull
@@ -267,6 +297,10 @@ packages:
   - jq
 
 write_files:
+  - path: /etc/docker/daemon.json
+    permissions: '0644'
+    content: |
+${dockerDaemonJson.split("\n").map((l) => `      ${l}`).join("\n")}
   - path: /opt/marketplace-shop/.env
     permissions: '0600'
     content: |
@@ -296,6 +330,8 @@ runcmd:
   - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
   - apt-get update
   - DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  # daemon.json is already on disk via write_files above, so apt's docker
+  # service is started by the install with our log-rotation in effect.
   - mkdir -p /var/lib/caddy /var/log/caddy
   - echo "${cfg.doToken}" | docker login -u "${cfg.doToken}" --password-stdin registry.digitalocean.com
   - cd /opt/marketplace-shop && docker compose pull
