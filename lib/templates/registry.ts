@@ -437,12 +437,12 @@ import {
   sheetlab_formula_Catalog,
   sheetlab_formula_ProductDetail,
 } from '@/components/storefront/themes/sheetlab-formula/adapters';
-import {
-  DigiVaultHeaderAdapter,
-  DigiVaultFooterAdapter,
-  DigiVaultStripAdapter,
-  DigiVaultHomepageAdapter,
-} from '@/components/storefront/themes/digi-vault/adapters';
+// import {
+//   DigiVaultHeaderAdapter,
+//   DigiVaultFooterAdapter,
+//   DigiVaultStripAdapter,
+//   DigiVaultHomepageAdapter,
+// } from '@/components/storefront/themes/digi-vault/adapters';
 import {
   SalepageMarketHeaderAdapter,
   SalepageMarketFooterAdapter,
@@ -1609,33 +1609,33 @@ export const templates: Record<TemplateId, Template> = {
     },
   },
 
-  'digi-vault': {
-    id: 'digi-vault',
-    name: 'DigiVault',
-    description:
-      'มาร์เก็ตไฟล์ดิจิทัลทุกรูปแบบ · กราฟิก เทมเพลต เสียง วิดีโอ อีบุ๊ก โค้ด · เครดิตในร้าน · ดาวน์โหลดทันที',
-    group: 'specialty',
-    behavior: { bottomNav: 'hidden', stickyCTA: 'buy-now', digitalOnly: true },
-    chrome: {
-      Header: DigiVaultHeaderAdapter,
-      Footer: DigiVaultFooterAdapter,
-      AnnouncementStrip: DigiVaultStripAdapter,
-    },
-    pages: {
-      home: DigiVaultHomepageAdapter,
-      catalog: makeCatalogAdapter('06'),
-      pdp: makePdpAdapter('03', '04'),
-      cart: makeThaiCartAdapter(),
-      checkout: makeThaiCheckoutAdapter({
-        // Digital-only store — CREDIT is the only way to buy. Buyers fund
-        // the wallet via AnyPay through /account/credit; checkout itself
-        // just decrements the in-store balance.
-        paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],
-      }),
-      about: makeAboutAdapter(),
-      help: makeHelpAdapter(),
-    },
-  },
+//   'digi-vault': {
+//     id: 'digi-vault',
+//     name: 'DigiVault',
+//     description:
+//       'มาร์เก็ตไฟล์ดิจิทัลทุกรูปแบบ · กราฟิก เทมเพลต เสียง วิดีโอ อีบุ๊ก โค้ด · เครดิตในร้าน · ดาวน์โหลดทันที',
+//     group: 'specialty',
+//     behavior: { bottomNav: 'hidden', stickyCTA: 'buy-now', digitalOnly: true },
+//     chrome: {
+//       Header: DigiVaultHeaderAdapter,
+//       Footer: DigiVaultFooterAdapter,
+//       AnnouncementStrip: DigiVaultStripAdapter,
+//     },
+//     pages: {
+//       home: DigiVaultHomepageAdapter,
+//       catalog: makeCatalogAdapter('06'),
+//       pdp: makePdpAdapter('03', '04'),
+//       cart: makeThaiCartAdapter(),
+//       checkout: makeThaiCheckoutAdapter({
+//         // Digital-only store — CREDIT is the only way to buy. Buyers fund
+//         // the wallet via AnyPay through /account/credit; checkout itself
+//         // just decrements the in-store balance.
+//         paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],
+//       }),
+//       about: makeAboutAdapter(),
+//       help: makeHelpAdapter(),
+//     },
+//   },
 
   'mystic-mu-th': {
     id: 'mystic-mu-th',

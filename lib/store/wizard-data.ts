@@ -414,14 +414,14 @@ export const TEMPLATES: Template[] = [
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { stickyCTA: "buy-now" },
   },
-  {
-    id: "digi-vault",
-    name: "DigiVault",
-    description: "มาร์เก็ตไฟล์ดิจิทัลทุกรูปแบบ · อินดิโก้-ม่วง · เครดิตในร้าน · ดาวน์โหลดทันที",
-    group: "specialty",
-    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { stickyCTA: "buy-now" },
-  },
+//   {
+//     id: "digi-vault",
+//     name: "DigiVault",
+//     description: "มาร์เก็ตไฟล์ดิจิทัลทุกรูปแบบ · อินดิโก้-ม่วง · เครดิตในร้าน · ดาวน์โหลดทันที",
+//     group: "specialty",
+//     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
+//     behavior: { stickyCTA: "buy-now" },
+//   },
   {
     id: "mystic-mu-th",
     name: "MysticMu เลเวลอัพการเรียน",

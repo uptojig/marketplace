@@ -100,7 +100,6 @@ export type TemplateId =
   | 'casetify-clone'
   | 'caseinw'
   | 'sheetlab-formula'
-  | 'digi-vault'
   | 'mystic-mu-th'
   | 'edu-classroom-th'
   | 'vector-bazaar-th'
