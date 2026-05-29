@@ -209,6 +209,12 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
   // chrome-level repaint.
   const OPT_OUT_FAMILY_CHROME: ReadonlySet<string> = new Set([
     "sheetlab-formula",
+    // `mu-wallpaper-th` is in the `mystic-mu` group for wizard purposes but
+    // ships its own gilded-midnight palette + Header/Footer/Strip adapters.
+    // Without this opt-out, `theme-mystic-mu` (Mario sky-blue) wins and
+    // re-paints --shop-bg/--shop-ink, so the bespoke fallback chain
+    // `var(--shop-bg, ${H.bg})` never reaches the dark midnight default.
+    "mu-wallpaper-th",
   ]);
   const optedOut = OPT_OUT_FAMILY_CHROME.has(key.templateId ?? "");
   if (optedOut) {
