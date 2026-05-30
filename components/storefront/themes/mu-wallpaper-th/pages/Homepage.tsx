@@ -625,7 +625,11 @@ export function MuWallpaperHomepage({
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          /* `contain` keeps marketing-style covers (4:5 / 16:9 graphics
+             with text + mockups at the edges) fully visible inside the
+             9:16 portrait tile. The dark `.mu-wp` background colour
+             absorbs any letterbox so the gap is invisible. */
+          object-fit: contain;
         }
         .mu-wp-bg {
           position: absolute;

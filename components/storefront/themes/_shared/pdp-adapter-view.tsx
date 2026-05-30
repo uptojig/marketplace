@@ -37,11 +37,14 @@ import type { ProductDetailProps } from '@/lib/templates/types';
 export function PdpAdapterView({
   data,
   style,
+  imageFit = 'cover',
 }: {
   data: ProductDetailProps;
   style: React.CSSProperties;
+  imageFit?: 'cover' | 'contain';
 }) {
   const { store, product, related } = data;
+  const imgFitClass = imageFit === 'contain' ? 'object-contain' : 'object-cover';
   const add = useCart((s) => s.add);
 
   const gallery = useMemo(() => {
@@ -152,7 +155,7 @@ export function PdpAdapterView({
                 <img
                   src={activeImage}
                   alt={product.title}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full ${imgFitClass}`}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center opacity-30 text-sm">
@@ -180,7 +183,7 @@ export function PdpAdapterView({
                       <img
                         src={src}
                         alt=""
-                        className="w-full h-full object-cover"
+                        className={`w-full h-full ${imgFitClass}`}
                       />
                     </button>
                   </li>
@@ -423,7 +426,7 @@ export function PdpAdapterView({
                         <img
                           src={r.imageUrl}
                           alt={r.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform"
+                          className={`w-full h-full ${imgFitClass} hover:scale-105 transition-transform`}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center opacity-30 text-xs">
