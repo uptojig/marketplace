@@ -29,7 +29,6 @@ const DEFAULT_BRAND_COPY =
   'สูตรสเปรดชีตคุณภาพ ดาวน์โหลดทันทีหลังชำระ';
 
 const PAYMENT_CHIPS = [
-  'ANYPAY',
   'PromptPay',
   'LINE Pay',
   'TrueMoney',

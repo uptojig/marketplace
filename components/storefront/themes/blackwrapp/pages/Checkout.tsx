@@ -350,7 +350,7 @@ export default function BlackwrappCheckout(props: CheckoutProps) {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white">
-                    จ่ายผ่าน ANYPAY
+                    จ่ายออนไลน์
                   </p>
                   <p className="text-xs text-white/55 mt-0.5">
                     บัตรเครดิต/เดบิต · PromptPay · TrueMoney · ปลอดภัย 100%
@@ -468,7 +468,7 @@ export default function BlackwrappCheckout(props: CheckoutProps) {
               }}
             >
               <Lock size={14} strokeWidth={2} />
-              จ่ายผ่าน ANYPAY · {formatTHB(total)}
+              จ่ายออนไลน์ · {formatTHB(total)}
             </button>
 
             <p className="text-[10px] tracking-[0.1em] text-white/40 text-center">

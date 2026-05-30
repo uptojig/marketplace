@@ -254,7 +254,7 @@ export default function Cart({
             </Link>
           </div>
           <p className="text-[11px] text-[color:var(--shop-ink-muted,#6B7280)] text-center px-4">
-            ชำระเงินผ่าน ANYPAY · PromptPay · บัตรเครดิต · โอนผ่านธนาคาร
+            ชำระเงินออนไลน์ · PromptPay · บัตรเครดิต · โอนผ่านธนาคาร
           </p>
         </aside>
       </div>

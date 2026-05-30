@@ -38,7 +38,7 @@ const SHIPPING_OPTIONS = [
   { id: 'EMS', name: 'EMS', priceTHB: 50, eta: '1-2 วัน' },
   { id: 'REGISTERED', name: 'ลงทะเบียนไปรษณีย์ไทย', priceTHB: 30, eta: '3-5 วัน' },
 ];
-const PAYMENT_OPTIONS = [{ id: 'ANYPAY', name: 'ชำระผ่าน AnyPay' }];
+const PAYMENT_OPTIONS = [{ id: 'ANYPAY', name: 'ชำระเงินออนไลน์' }];
 
 const FREE_SHIPPING_THRESHOLD = 590;
 

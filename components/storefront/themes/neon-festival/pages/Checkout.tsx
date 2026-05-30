@@ -266,7 +266,7 @@ export default function Checkout({ store }: { store: StoreLite }) {
                   วิธีชำระเงิน
                 </p>
                 <div className="px-4 py-3 border-4 border-black bg-yellow-400 font-[family:var(--font-kanit)] font-black uppercase text-sm">
-                  ชำระผ่าน AnyPay (พร้อมเพย์ / โอน / บัตร)
+                  ชำระเงินออนไลน์ (พร้อมเพย์ / โอน / บัตร)
                 </div>
               </div>
             </div>

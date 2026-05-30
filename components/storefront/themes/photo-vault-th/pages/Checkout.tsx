@@ -361,7 +361,7 @@ export default function Checkout({ store }: { store: StoreLite }) {
                 </p>
                 <div className="px-4 py-3 border border-[#F59E0B] bg-[#0C0A09] font-[family:var(--font-kanit)] font-semibold text-sm text-[#FBBF24] flex items-center gap-3">
                   <CreditCard className="w-4 h-4" />
-                  ชำระผ่าน AnyPay · พร้อมเพย์ / โอน / บัตรเครดิต
+                  ชำระเงินออนไลน์ · พร้อมเพย์ / โอน / บัตรเครดิต
                 </div>
               </div>
             </div>

@@ -9,8 +9,8 @@ interface Props {
   mobileMessage?: string;
 }
 
-const DEFAULT_MESSAGE = 'ส่งฟรีเมื่อช้อปครบ ฿590 · จ่ายผ่าน ANYPAY · ของแท้ทุกชิ้น';
-const DEFAULT_MOBILE = 'ส่งฟรี ฿590 · จ่าย ANYPAY';
+const DEFAULT_MESSAGE = 'ส่งฟรีเมื่อช้อปครบ ฿590 · จ่ายออนไลน์ · ของแท้ทุกชิ้น';
+const DEFAULT_MOBILE = 'ส่งฟรี ฿590 · จ่ายออนไลน์';
 
 /**
  * Konvy — soft K-beauty announcement strip.

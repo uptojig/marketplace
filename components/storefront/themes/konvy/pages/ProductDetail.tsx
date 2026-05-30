@@ -333,7 +333,7 @@ export default function ProductDetail({
             {[
               { Icon: ShieldCheck, label: 'คัดสรรคุณภาพ' },
               { Icon: Truck, label: 'ส่งฟรี ฿590+' },
-              { Icon: Sparkles, label: 'จ่าย ANYPAY' },
+              { Icon: Sparkles, label: 'จ่ายออนไลน์' },
             ].map(({ Icon, label }) => (
               <div
                 key={label}

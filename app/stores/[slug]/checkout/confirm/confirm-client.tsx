@@ -31,7 +31,7 @@ const SHIPPING_OPTIONS = [
 // BANK_TRANSFER removed — AnyPay covers PromptPay, card, BNPL, etc.
 // already, and operators didn't want a manual transfer slip workflow.
 const PAYMENT_OPTIONS = [
-  { id: "ANYPAY", name: "ชำระผ่าน AnyPay" },
+  { id: "ANYPAY", name: "ชำระเงินออนไลน์" },
 ];
 
 export default function CheckoutConfirmClient({

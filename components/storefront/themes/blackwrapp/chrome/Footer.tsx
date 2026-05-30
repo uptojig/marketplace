@@ -281,7 +281,7 @@ export function Footer({ store, categories }: FooterProps) {
               strokeWidth={2}
               style={{ color: 'var(--shop-primary, #00FF88)' }}
             />
-            <span>จ่ายผ่าน ANYPAY · DELIVERED</span>
+            <span>จ่ายออนไลน์ · DELIVERED</span>
           </div>
         </div>
       </div>

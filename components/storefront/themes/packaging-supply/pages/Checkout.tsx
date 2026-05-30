@@ -48,7 +48,7 @@ const STEPS: Array<{ id: Step; label: string }> = [
 // TrueMoney / Rabbit LINE Pay internally. COD removed per project rule
 // (CJ Dropshipping does not support cash-on-delivery).
 const PAYMENTS = [
-  { id: 'anypay', label: 'ANYPAY · พร้อมเพย์ / บัตร / TrueMoney', icon: CreditCard, note: 'ระบบรับชำระเงินที่ปลอดภัย รองรับทุกช่องทาง' },
+  { id: 'anypay', label: 'พร้อมเพย์ / บัตร / TrueMoney', icon: CreditCard, note: 'ระบบรับชำระเงินที่ปลอดภัย รองรับทุกช่องทาง' },
 ];
 
 const SHIPPING_OPTIONS = [

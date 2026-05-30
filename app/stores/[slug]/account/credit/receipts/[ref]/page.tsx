@@ -257,7 +257,7 @@ export default async function CreditReceiptPage({
               </p>
               {topup.anypayTransactionId ? (
                 <p className="sm:col-span-2 font-mono break-all">
-                  <span className="text-zinc-500">AnyPay Transaction: </span>
+                  <span className="text-zinc-500">เลขอ้างอิงการชำระเงิน: </span>
                   {topup.anypayTransactionId}
                 </p>
               ) : null}

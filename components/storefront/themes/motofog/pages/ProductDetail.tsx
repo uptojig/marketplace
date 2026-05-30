@@ -318,7 +318,7 @@ export function MotoFogProductDetail({
                 },
                 {
                   Icon: CreditCard,
-                  label: 'จ่ายผ่าน AnyPay',
+                  label: 'จ่ายออนไลน์',
                   desc: 'ปลอดภัยทุกธุรกรรม · QR / โอน / บัตรเครดิต',
                 },
               ].map(({ Icon, label, desc }) => (

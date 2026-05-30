@@ -58,7 +58,7 @@ function joinAddress(parts: Array<string | null | undefined>): string {
  *         address pulled from store.addressLine1/.../postalCode)
  *   row 3 copyright + social
  *
- * Trust strip explicitly says "จ่ายผ่าน ANYPAY" — no COD per project rule.
+ * Trust strip explicitly says "จ่ายออนไลน์" — no COD per project rule.
  */
 export function Footer({ store, categories = [], availableSupportPages = [] }: Props) {
   const supportLinks = availableSupportPages.filter((s) => SUPPORT_LABELS[s]);
@@ -77,7 +77,7 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: P
     { Icon: Sparkles, title: 'คัดสรรคุณภาพ', sub: 'ตรวจคุณภาพก่อนส่งทุกชิ้น' },
     { Icon: Truck, title: 'ส่งฟรีทั่วประเทศ', sub: 'เมื่อสั่งครบ ฿590' },
     { Icon: Headphones, title: 'ดูแลโดยทีมงานคนไทย', sub: 'แชทตอบไว 09:00-22:00' },
-    { Icon: ShieldCheck, title: 'จ่ายผ่าน ANYPAY', sub: 'พร้อมเพย์ · บัตร · TrueMoney' },
+    { Icon: ShieldCheck, title: 'จ่ายออนไลน์', sub: 'พร้อมเพย์ · บัตร · TrueMoney' },
   ];
 
   return (

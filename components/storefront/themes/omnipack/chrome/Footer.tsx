@@ -77,7 +77,7 @@ export function OmnipackFooter(props: FooterProps) {
             >
               ANYPAY
             </span>
-            <span>จ่ายผ่าน ANYPAY</span>
+            <span>จ่ายออนไลน์</span>
           </div>
         </div>
       </div>
@@ -314,7 +314,7 @@ export function OmnipackFooter(props: FooterProps) {
             © {new Date().getFullYear()} {store.name} · บรรจุภัณฑ์สำเร็จรูป
           </p>
           <p style={{ color: 'var(--shop-ink-muted)' }}>
-            ชำระเงินผ่าน ANYPAY เท่านั้น
+            ชำระเงินออนไลน์ เท่านั้น
           </p>
         </div>
       </div>

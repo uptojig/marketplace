@@ -72,7 +72,7 @@ const TRUST_TILES = [
 
 const HOW_IT_WORKS = [
   { step: 1, title: 'เลือกสูตรที่ต้องการ', caption: 'เลือกจากหมวดและพรีวิวก่อนซื้อ' },
-  { step: 2, title: 'ชำระผ่าน AnyPay', caption: 'PromptPay · บัตรเครดิต · BNPL' },
+  { step: 2, title: 'ชำระเงินออนไลน์', caption: 'PromptPay · บัตรเครดิต · BNPL' },
   { step: 3, title: 'ดาวน์โหลด .xlsx ทันที', caption: 'ลิงก์ส่งทางอีเมล + คลังบัญชี' },
 ];
 

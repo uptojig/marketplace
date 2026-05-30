@@ -73,7 +73,7 @@ const STEPS: StepDef[] = [
 ];
 
 const PAYMENT_OPTIONS: { id: string; name: string; desc: string }[] = [
-  { id: 'ANYPAY', name: 'AnyPay', desc: 'PromptPay · บัตรเครดิต · Mobile Banking' },
+  { id: 'ANYPAY', name: 'ชำระเงินออนไลน์', desc: 'PromptPay · บัตรเครดิต · Mobile Banking' },
 ];
 
 export default function EduClassroomCheckout({ store }: CheckoutProps) {
@@ -636,7 +636,7 @@ function PaymentStep({
       </h2>
       <p className="text-xs" style={{ color: EDU_INK_MUTED }}>
         คุณครูสามารถเลือกชำระผ่านพร้อมเพย์ บัตรเครดิต หรือ Mobile Banking
-        เลือกในขั้นตอนถัดไปบนหน้า AnyPay
+        เลือกในขั้นตอนถัดไปบนหน้าชำระเงิน
       </p>
       <div className="space-y-2">
         {paymentOptions.map((opt) => {
