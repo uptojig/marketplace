@@ -19,6 +19,12 @@ export interface ShopChromeTokens {
   ink?: string;
   /** Optional page background hex (defaults to slate-50). */
   bg?: string;
+  /** Optional surface hex for cards / panels (defaults to white). Set on
+   *  dark presets so the cream `--shop-ink` reads correctly on cards —
+   *  otherwise `tokensToCssVars` forces `--shop-card:#fff` and any
+   *  `style={{ color: var(--shop-ink) }}` inside `bg-[var(--shop-card)]`
+   *  becomes cream-on-white = invisible (the mu-wallpaper regression). */
+  card?: string;
   /** Glyph rendered next to the store name in header/footer.
    *  Falls back to the first letter of the store name. */
   decorationGlyph?: string | null;
@@ -88,6 +94,7 @@ const PRESET_MU_WALLPAPER: ShopChromePreset = {
     accent: "#e9cd84", // brand gold
     ink: "#f4f1ea",
     bg: "#0b0918",
+    card: "#181333", // MU_WALLPAPER_HEX.surface — midnight panel
     decorationGlyph: "✦",
     announcement: {
       message: "ปลุกเสกตามฤกษ์ · พรีวิวก่อนได้ทุกลาย · ซื้อแล้วดาวน์โหลดไฟล์เต็มทันที ไม่มีลายน้ำ",
@@ -222,6 +229,7 @@ export function resolveChromeTokens(opts: {
         opts.override?.accent ?? opts.primaryColor ?? t.accent,
       ink: opts.override?.ink ?? t.ink ?? "#0f172a",
       bg: opts.override?.bg ?? t.bg ?? "#f8fafc",
+      card: opts.override?.card ?? t.card ?? "#ffffff",
       decorationGlyph:
         opts.override?.decorationGlyph !== undefined
           ? opts.override.decorationGlyph
@@ -246,12 +254,13 @@ export function tokensToCssVars(tokens: {
   accent: string;
   ink: string;
   bg: string;
+  card?: string;
 }): React.CSSProperties {
   return {
     ["--shop-primary" as string]: tokens.accent,
     ["--shop-accent" as string]: tokens.accent,
     ["--shop-bg" as string]: tokens.bg,
-    ["--shop-card" as string]: "#ffffff",
+    ["--shop-card" as string]: tokens.card ?? "#ffffff",
     ["--shop-ink" as string]: tokens.ink,
     ["--shop-ink-muted" as string]: `color-mix(in srgb, ${tokens.ink} 60%, transparent)`,
     ["--shop-border" as string]: `color-mix(in srgb, ${tokens.ink} 12%, transparent)`,
