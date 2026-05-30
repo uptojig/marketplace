@@ -1733,7 +1733,13 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: MuWallpaperHomepageAdapter,
       catalog: makeCatalogAdapter('04'),
-      pdp: makePdpAdapter('04', '05'),
+      // `imageFit: 'contain'` keeps the marketing cover graphics (header
+      // text + device mockups + bottom tag) fully visible inside the
+      // square hero / thumbnails / related rail. The default `'cover'`
+      // would crop the edges where the cover's title and call-out tags
+      // live (mu-wallpaper covers are landscape composites, not square
+      // product photography).
+      pdp: makePdpAdapter('04', '05', undefined, { imageFit: 'contain' }),
       cart: makeThaiCartAdapter(),
       checkout: makeThaiCheckoutAdapter({
         paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],

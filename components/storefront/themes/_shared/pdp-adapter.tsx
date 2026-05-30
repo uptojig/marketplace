@@ -35,16 +35,28 @@ export type OverviewVariant =
   | '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09';
 export type ReviewVariant = '02' | '03' | '04' | '05';
 
+export interface PdpAdapterOptions {
+  /** How the hero / thumbnail / related images sit inside their square
+   *  containers. Default `'cover'` (legacy: fills + crops to fit, ideal
+   *  for product photography on uniform backgrounds). Pass `'contain'`
+   *  for storefronts whose imageUrl is marketing artwork with text and
+   *  device mockups at the edges (mu-wallpaper-th covers, salepage
+   *  hero composites, …) — `cover` would crop the readable parts. */
+  imageFit?: 'cover' | 'contain';
+}
+
 export function makePdpAdapter(
   _overview: OverviewVariant,
   _review: ReviewVariant,
   palette?: PdpPalette,
+  options?: PdpAdapterOptions,
 ) {
   const style: React.CSSProperties = {
     ...(palette ? paletteToCssVars(palette) : {}),
   };
+  const imageFit = options?.imageFit ?? 'cover';
 
   return function PdpAdapter(props: ProductDetailProps) {
-    return <PdpAdapterView data={props} style={style} />;
+    return <PdpAdapterView data={props} style={style} imageFit={imageFit} />;
   };
 }
