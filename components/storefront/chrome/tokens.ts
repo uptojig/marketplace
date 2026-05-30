@@ -98,6 +98,42 @@ const PRESET_MU_WALLPAPER: ShopChromePreset = {
   },
 };
 
+// IconMart (iconmart-th) — Linear/Vercel cool-blue digital icon-pack store.
+// Hex frozen from `ICONMART_HEX` in the theme's palette.ts; this preset
+// lets the outer wrapper emit the right --shop-* vars on the registry
+// path (layout.tsx final fallback), which OPT_OUT_FAMILY_CHROME alone
+// can't do — opt-out strips the wrong family vars but leaves the
+// wrapper on PRESET_DEFAULT (light slate). Without this, the bespoke
+// chrome's `var(--shop-bg, #FAFCFE)` fallback never wins because the
+// var IS defined (just to slate-50 default).
+const PRESET_ICONMART: ShopChromePreset = {
+  tokens: {
+    accent: "#1572DB", // ICONMART_HEX.primary — Linear/Vercel blue
+    ink: "#12161B",
+    bg: "#FAFCFE",
+    decorationGlyph: null,
+    announcement: null,
+    buttonShape: "rounded",
+    glyphStyle: "filled",
+  },
+};
+
+// Resume Studio (resume-studio-th) — indigo + mint resume / CV marketplace.
+// Hex from `RS_ACCENT` in palette.ts. Same rationale as PRESET_ICONMART —
+// without this the wrapper stays on PRESET_DEFAULT light slate and the
+// bespoke chrome's var-fallback chain never reaches its indigo base.
+const PRESET_RESUME_STUDIO: ShopChromePreset = {
+  tokens: {
+    accent: "#3364DB", // RS_ACCENT — indigo
+    ink: "#151B25",
+    bg: "#F8FAFD",
+    decorationGlyph: null,
+    announcement: null,
+    buttonShape: "rounded",
+    glyphStyle: "filled",
+  },
+};
+
 const PRESETS: Record<string, ShopChromePreset> = {
   "caselnw-v1": PRESET_CASELNW,
   "mini-mops-v1": PRESET_MINI_MOPS,
@@ -108,6 +144,8 @@ const PRESETS: Record<string, ShopChromePreset> = {
   // because the var IS defined (just to the wrong value). Mapping the
   // registry id here lets the dark midnight + gold reach the wrapper.
   "mu-wallpaper-th": PRESET_MU_WALLPAPER,
+  "iconmart-th": PRESET_ICONMART,
+  "resume-studio-th": PRESET_RESUME_STUDIO,
 };
 
 /**

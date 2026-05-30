@@ -215,6 +215,16 @@ export function resolveChromeTheme(store: ThemeInput): ChromeTheme {
     // re-paints --shop-bg/--shop-ink, so the bespoke fallback chain
     // `var(--shop-bg, ${H.bg})` never reaches the dark midnight default.
     "mu-wallpaper-th",
+    // `iconmart-th` is in the `vector-bazaar` group (twin of vector-bazaar-th
+    // for wizard categorisation) but ships its own Linear/Vercel cool-blue
+    // palette + IconMartHeader/Footer/Strip adapters. Without this opt-out,
+    // `theme-vector-bazaar` (bubblegum pink on cream) wins and overpaints.
+    "iconmart-th",
+    // `resume-studio-th` was placed in the `specialty` group, but it ships its
+    // own indigo + mint palette + ResumeStudioHeader/Footer/Strip adapters.
+    // Without this opt-out, `theme-specialty` (gold/cream sepia/kraft) wins
+    // and overpaints the indigo.
+    "resume-studio-th",
   ]);
   const optedOut = OPT_OUT_FAMILY_CHROME.has(key.templateId ?? "");
   if (optedOut) {
