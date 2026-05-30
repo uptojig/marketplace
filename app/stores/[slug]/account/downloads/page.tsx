@@ -54,11 +54,14 @@ export default async function DownloadsPage({
   // include's `product` is typed as required but Prisma will return
   // null if the FK target is gone, which would crash the render below
   // when we read `unlock.product.digitalKind`.
-  const unlocks = rawUnlocks.filter((u) => u.product != null);
-  // Optionally narrow to the current store only — buyer might own
-  // unlocks across multiple stores. For now show ALL so the buyer
-  // has one canonical library page (linked from each store's header).
-  // To scope per-store, filter: unlocks.filter(u => u.product.store.slug === params.slug)
+  // Scope to the CURRENT store — the digital library is rendered inside
+  // `/stores/[slug]/account`, so the buyer expects "what I own at THIS
+  // shop", not a cross-tenant feed. The previous "show all" behaviour
+  // leaked sheetlab-formula `.xlsx` files into muruko's library and read
+  // as a multi-tenant data bleed to operators.
+  const unlocks = rawUnlocks.filter(
+    (u) => u.product != null && u.product.store?.slug === params.slug,
+  );
 
   return (
     <main className="bg-[var(--shop-bg,#fafafa)] min-h-screen">
