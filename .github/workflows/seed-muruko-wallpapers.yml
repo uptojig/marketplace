@@ -49,8 +49,17 @@ jobs:
         env:
           ZIP_URL: ${{ inputs.zip_url }}
           DRY_RUN: ${{ inputs.dry_run }}
+          SPACES_ENDPOINT: ${{ secrets.SPACES_ENDPOINT }}
+          SPACES_REGION: ${{ secrets.SPACES_REGION }}
+          SPACES_BUCKET: ${{ secrets.SPACES_BUCKET }}
+          SPACES_KEY: ${{ secrets.SPACES_KEY }}
+          SPACES_SECRET: ${{ secrets.SPACES_SECRET }}
         run: |
           mkdir -p ~/.ssh
+          # Forward SPACES_* into the remote shell so the docker run can
+          # override /etc/marketplace/control.env with the bucket the
+          # operator wants the muruko wallpapers to land in (the droplet's
+          # default control.env points at a different bucket).
           ssh -o StrictHostKeyChecking=accept-new \
               -o UserKnownHostsFile=~/.ssh/known_hosts \
               -o ConnectTimeout=30 \
@@ -58,7 +67,14 @@ jobs:
               -o ServerAliveCountMax=10 \
               -o TCPKeepAlive=yes \
               "root@${{ secrets.DROPLET_IP }}" \
-              "ZIP_URL='${ZIP_URL}' DRY_RUN='${DRY_RUN}' bash -s" <<'REMOTE'
+              "ZIP_URL='${ZIP_URL}' \
+               DRY_RUN='${DRY_RUN}' \
+               SPACES_ENDPOINT='${SPACES_ENDPOINT}' \
+               SPACES_REGION='${SPACES_REGION}' \
+               SPACES_BUCKET='${SPACES_BUCKET}' \
+               SPACES_KEY='${SPACES_KEY}' \
+               SPACES_SECRET='${SPACES_SECRET}' \
+               bash -s" <<'REMOTE'
             set -euo pipefail
 
             # Swap bootstrap — see seed-level99.yml for full rationale.
@@ -129,10 +145,21 @@ jobs:
             fi
 
             echo "→ Running seed script inside node:20 container"
+            # `--env-file` loads the droplet's baseline env first
+            # (DATABASE_URL, etc.); subsequent `-e SPACES_*` flags
+            # OVERRIDE whatever bucket / key the droplet had pinned for
+            # the other seed scripts so muruko-wallpapers always lands
+            # in the operator-chosen bucket (passed in from the GH
+            # Actions secrets).
             docker run --rm \
               --env-file /etc/marketplace/control.env \
               --network=host \
               -e NODE_OPTIONS=--max-old-space-size=1024 \
+              -e SPACES_ENDPOINT="$SPACES_ENDPOINT" \
+              -e SPACES_REGION="$SPACES_REGION" \
+              -e SPACES_BUCKET="$SPACES_BUCKET" \
+              -e SPACES_KEY="$SPACES_KEY" \
+              -e SPACES_SECRET="$SPACES_SECRET" \
               -v /opt/marketplace:/app \
               -v "$ROOT":/wp:ro \
               -w /app \
