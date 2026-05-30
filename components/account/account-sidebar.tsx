@@ -102,8 +102,10 @@ export function AccountSidebar({
       <Link
         href={base}
         className={cn(
-          'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition',
-          pathname === base ? 'bg-primary text-primary-foreground' : 'hover:bg-accent',
+          'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition text-[var(--shop-ink)]',
+          pathname === base
+            ? 'bg-[color-mix(in_srgb,var(--shop-primary)_14%,transparent)] font-semibold'
+            : 'hover:bg-[color-mix(in_srgb,var(--shop-ink)_8%,transparent)]',
         )}
       >
         <User className="h-4 w-4" />
@@ -112,7 +114,7 @@ export function AccountSidebar({
 
       {groups.map((group) => (
         <div key={group.label}>
-          <h3 className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wide text-[var(--shop-ink-muted)]">
             {group.label}
           </h3>
           <nav className="space-y-0.5">
@@ -126,8 +128,10 @@ export function AccountSidebar({
                   key={href}
                   href={href}
                   className={cn(
-                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition',
-                    isActive ? 'bg-primary/10 font-medium text-primary' : 'hover:bg-accent',
+                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition text-[var(--shop-ink)]',
+                    isActive
+                      ? 'bg-[color-mix(in_srgb,var(--shop-primary)_14%,transparent)] font-semibold'
+                      : 'hover:bg-[color-mix(in_srgb,var(--shop-ink)_8%,transparent)]',
                     item.soon && 'cursor-not-allowed opacity-50',
                   )}
                   onClick={(e) => item.soon && e.preventDefault()}
@@ -140,7 +144,7 @@ export function AccountSidebar({
                     </span>
                   )}
                   {item.soon && (
-                    <span className="text-[9px] text-muted-foreground">soon</span>
+                    <span className="text-[9px] text-[var(--shop-ink-muted)]">soon</span>
                   )}
                 </Link>
               );
