@@ -187,7 +187,7 @@ const kanit = Kanit({
 
 export const metadata: Metadata = {
   title: "Marketplace",
-  description: "Multi-vendor dropshipping marketplace (AnyPay + China suppliers)",
+  description: "Multi-vendor dropshipping marketplace",
   referrer: "no-referrer",
 };
 

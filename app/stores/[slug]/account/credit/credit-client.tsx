@@ -240,7 +240,7 @@ export function CreditClient({
             className="mb-6 flex items-center gap-3 rounded-2xl border px-4 py-3 font-[family:var(--font-prompt)] text-sm"
             style={{
               borderColor: 'var(--shop-border,#e5e5e5)',
-              background: 'var(--shop-surface,#ffffff)',
+              background: 'var(--shop-card,#ffffff)',
               color: 'var(--shop-ink,#0a0a0a)',
             }}
           >
@@ -253,7 +253,7 @@ export function CreditClient({
             className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border px-4 py-3 font-[family:var(--font-prompt)] text-sm"
             style={{
               borderColor: 'var(--shop-border,#e5e5e5)',
-              background: 'var(--shop-surface,#ffffff)',
+              background: 'var(--shop-card,#ffffff)',
               color: 'var(--shop-ink,#0a0a0a)',
             }}
           >
@@ -285,7 +285,7 @@ export function CreditClient({
           className="rounded-3xl border p-6 sm:p-8 mb-8"
           style={{
             borderColor: 'var(--shop-border,#e5e5e5)',
-            background: 'var(--shop-surface,#ffffff)',
+            background: 'var(--shop-card,#ffffff)',
           }}
         >
           <div className="flex items-center gap-2 mb-2 font-[family:var(--font-prompt)] text-xs uppercase tracking-wider"
@@ -306,7 +306,7 @@ export function CreditClient({
           className="rounded-3xl border p-6 sm:p-8 mb-10"
           style={{
             borderColor: 'var(--shop-border,#e5e5e5)',
-            background: 'var(--shop-surface,#ffffff)',
+            background: 'var(--shop-card,#ffffff)',
           }}
         >
           <h2
@@ -462,7 +462,7 @@ export function CreditClient({
               className="rounded-2xl border divide-y overflow-hidden"
               style={{
                 borderColor: 'var(--shop-border,#e5e5e5)',
-                background: 'var(--shop-surface,#ffffff)',
+                background: 'var(--shop-card,#ffffff)',
               }}
             >
               {ledger.map((entry) => (
