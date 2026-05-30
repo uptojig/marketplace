@@ -101,8 +101,29 @@ jobs:
             # a Thai Windows / macOS Thai locale). Without it every
             # Thai filename becomes mojibake and the seed script
             # can't pair `หน้าปก` covers with their full files.
+            #
+            # macOS Finder writes the LOCAL header as UTF-8 and the
+            # CENTRAL header as the locale encoding — when -O forces
+            # cp874 for both, the local-vs-central mismatch raises a
+            # warning ("mismatching 'local' filename …, continuing
+            # with 'central' filename version") and unzip exits 1.
+            # Exit 1 from Info-ZIP unzip is "one or more warnings,
+            # extraction succeeded"; only ≥2 is a real failure. We
+            # capture the exit code, tolerate 0 and 1, and only abort
+            # for real errors so the cp874 mojibake-fix path stays
+            # usable.
             echo "→ Extracting (cp874)"
+            set +e
             unzip -O cp874 -q "$WORKDIR/wp.zip" -d "$WORKDIR/extracted"
+            UNZIP_RC=$?
+            set -e
+            if [ "$UNZIP_RC" -gt 1 ]; then
+              echo "ERROR: unzip exited $UNZIP_RC (>= 2 = real error)"
+              exit "$UNZIP_RC"
+            fi
+            if [ "$UNZIP_RC" -eq 1 ]; then
+              echo "  (unzip reported recoverable warnings — continuing)"
+            fi
 
             # Find the root that holds the 5 category subfolders.
             # Locate the first non-macOS image, walk up one level.
