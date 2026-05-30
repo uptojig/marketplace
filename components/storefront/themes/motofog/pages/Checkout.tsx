@@ -260,7 +260,7 @@ export function MotoFogCheckout({ store }: CheckoutProps) {
                     className="font-[family:var(--font-kanit)] italic font-black text-base uppercase tracking-wider"
                     style={{ color: 'var(--shop-ink, #F5F7FA)' }}
                   >
-                    จ่ายผ่าน AnyPay
+                    จ่ายออนไลน์
                   </p>
                   <p
                     className="font-[family:var(--font-prompt)] text-xs mt-1"
@@ -416,7 +416,7 @@ export function MotoFogCheckout({ store }: CheckoutProps) {
                   color: '#0A0A0A',
                 }}
               >
-                {submitting ? 'กำลังนำคุณไปยัง AnyPay...' : 'ยืนยัน · จ่ายผ่าน AnyPay'}
+                {submitting ? 'กำลังนำคุณไปยังหน้าชำระเงิน...' : 'ยืนยัน · จ่ายออนไลน์'}
                 <ArrowRight className="h-4 w-4" />
               </button>
               <div

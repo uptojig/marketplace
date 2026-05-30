@@ -329,7 +329,7 @@ export default function Cart({
                 <ChevronRight className="h-4 w-4" />
               </Link>
               <p className="mt-3 text-[10px] tracking-wider uppercase text-[#6B7280] font-[family:var(--font-kanit)] font-semibold text-center">
-                จ่ายผ่าน ANYPAY · ปลอดภัย
+                จ่ายออนไลน์ · ปลอดภัย
               </p>
             </div>
           </div>

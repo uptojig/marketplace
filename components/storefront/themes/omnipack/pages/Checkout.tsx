@@ -115,7 +115,7 @@ export function OmnipackCheckout(props: OmnipackCheckoutProps) {
             className="text-sm mt-1"
             style={{ color: 'var(--shop-ink-muted)' }}
           >
-            {store.name} · ปลอดภัย จ่ายผ่าน ANYPAY
+            {store.name} · ปลอดภัย จ่ายออนไลน์
           </p>
         </div>
 
@@ -195,7 +195,7 @@ export function OmnipackCheckout(props: OmnipackCheckoutProps) {
                     className="text-sm font-medium"
                     style={{ color: 'var(--shop-ink)' }}
                   >
-                    ชำระเงินผ่าน ANYPAY
+                    ชำระเงินออนไลน์
                   </p>
                   <p
                     className="text-xs"

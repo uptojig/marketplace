@@ -135,7 +135,7 @@ const DEFAULT_SHIPPING: ShippingOption[] = [
 ];
 
 const DEFAULT_PAYMENT: PaymentOption[] = [
-  { id: 'ANYPAY', name: 'ชำระผ่าน AnyPay' },
+  { id: 'ANYPAY', name: 'ชำระเงินออนไลน์' },
 ];
 
 interface ThaiCheckoutStoreProp {

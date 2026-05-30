@@ -379,7 +379,7 @@ export function MotoFogCart({
               >
                 <CreditCard className="h-3.5 w-3.5" />
                 <span className="uppercase tracking-widest font-bold">
-                  จ่ายผ่าน AnyPay
+                  จ่ายออนไลน์
                 </span>
               </div>
             </div>

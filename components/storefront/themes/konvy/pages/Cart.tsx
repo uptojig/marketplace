@@ -319,7 +319,7 @@ export default function Cart({
                   className="h-3 w-3"
                   style={{ color: 'var(--shop-primary)' }}
                 />
-                จ่ายผ่าน ANYPAY · ปลอดภัย 100%
+                จ่ายออนไลน์ · ปลอดภัย 100%
               </p>
             </div>
           </div>

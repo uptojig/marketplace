@@ -179,7 +179,7 @@ export function makeThaiCartAdapter(config: ThaiCartConfig = {}) {
     config.trustStrip ?? [
       { icon: 'truck', label: `ส่งฟรี ฿${threshold.toLocaleString()}+` },
       { icon: 'rotate', label: 'คืนได้ 7 วัน' },
-      { icon: 'banknote', label: 'ชำระผ่าน AnyPay' },
+      { icon: 'banknote', label: 'ชำระเงินออนไลน์' },
     ]
   ).map((item) => ({ icon: item.icon ?? 'truck', label: item.label }));
 

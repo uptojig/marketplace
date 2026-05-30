@@ -136,7 +136,7 @@ export default function Checkout({ store }: CheckoutProps) {
               className="h-3.5 w-3.5"
               style={{ color: 'var(--shop-primary)' }}
             />
-            ทุกการชำระเงินผ่าน ANYPAY · ปลอดภัยและรวดเร็ว
+            ทุกการชำระเงินออนไลน์ · ปลอดภัยและรวดเร็ว
           </p>
         </div>
       </section>
@@ -316,7 +316,7 @@ export default function Checkout({ store }: CheckoutProps) {
                     className="font-[family:var(--font-kanit)] font-semibold text-sm"
                     style={{ color: 'var(--shop-primary)' }}
                   >
-                    ANYPAY
+                    ชำระเงินออนไลน์
                   </p>
                   <p
                     className="text-xs mt-0.5"
@@ -334,7 +334,7 @@ export default function Checkout({ store }: CheckoutProps) {
                   className="h-3 w-3"
                   style={{ color: 'var(--shop-primary)' }}
                 />
-                ชำระเงินปลอดภัยผ่านเกตเวย์ ANYPAY
+                ชำระเงินปลอดภัย
               </p>
             </div>
           </section>

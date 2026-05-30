@@ -34,9 +34,9 @@ export function MotoFogStrip(_props: AnnouncementStripProps) {
       <div className="relative max-w-7xl mx-auto px-4 flex items-center justify-center gap-3">
         <Zap className="h-3.5 w-3.5 shrink-0" />
         <span className="hidden sm:inline">
-          ส่งฟรีทั่วประเทศ · สั่งครบ ฿1,990 · จ่ายผ่าน AnyPay เท่านั้น
+          ส่งฟรีทั่วประเทศ · สั่งครบ ฿1,990 · จ่ายออนไลน์ เท่านั้น
         </span>
-        <span className="sm:hidden">ส่งฟรี ฿1,990+ · AnyPay</span>
+        <span className="sm:hidden">ส่งฟรี ฿1,990+ · จ่ายออนไลน์</span>
         <Zap className="h-3.5 w-3.5 shrink-0" />
       </div>
     </div>

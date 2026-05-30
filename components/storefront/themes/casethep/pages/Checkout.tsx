@@ -360,7 +360,7 @@ export default function Checkout({
                     <CreditCard className="w-4 h-4" />
                   </span>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">ชำระผ่าน ANYPAY</p>
+                    <p className="text-sm font-medium">ชำระเงินออนไลน์</p>
                     <p className="text-xs text-[color:var(--shop-ink-muted,#6B7280)]">
                       PromptPay · บัตรเครดิต/เดบิต · โอนผ่านธนาคาร
                     </p>
@@ -396,7 +396,7 @@ export default function Checkout({
                 label="วิธีจัดส่ง"
                 value={SHIPPING_OPTIONS.find((s) => s.id === shipping)?.name ?? '—'}
               />
-              <SummaryRow label="วิธีชำระเงิน" value="ANYPAY" />
+              <SummaryRow label="วิธีชำระเงิน" value="ชำระเงินออนไลน์" />
               {form.note && <SummaryRow label="หมายเหตุ" value={form.note} />}
 
               {error && (

@@ -116,7 +116,7 @@ export function MotoFogFooter({ store }: FooterProps) {
                   className="font-[family:var(--font-kanit)] italic font-black text-base uppercase tracking-wider"
                   style={{ color: 'var(--shop-ink, #F5F7FA)' }}
                 >
-                  จ่ายผ่าน AnyPay
+                  จ่ายออนไลน์
                 </span>
               </div>
             </div>

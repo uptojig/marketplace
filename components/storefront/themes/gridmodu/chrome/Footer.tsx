@@ -255,7 +255,7 @@ export function Footer({
               className="text-[10px] tracking-[0.2em] uppercase font-[family:var(--font-kanit)] font-semibold"
               style={{ color: 'var(--shop-accent, #00BFFF)' }}
             >
-              จ่ายผ่าน ANYPAY · ปลอดภัย
+              จ่ายออนไลน์ · ปลอดภัย
             </span>
           </div>
         </div>

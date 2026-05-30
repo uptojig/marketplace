@@ -12,7 +12,7 @@ import React from 'react';
 import type { AnnouncementStripProps } from '@/lib/templates/types';
 
 const DEFAULT_MESSAGE =
-  '⚡ ดาวน์โหลดทันทีหลังชำระเงิน · รองรับ AnyPay (PromptPay, บัตรเครดิต, BNPL)';
+  '⚡ ดาวน์โหลดทันทีหลังชำระเงิน · รองรับ (PromptPay, บัตรเครดิต, BNPL)';
 
 export function SheetlabFormulaStrip({ message }: AnnouncementStripProps) {
   const text = message?.trim() ? message : DEFAULT_MESSAGE;

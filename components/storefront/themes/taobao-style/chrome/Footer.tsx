@@ -38,7 +38,7 @@ export function Footer({ store, categories }: FooterProps) {
     { Icon: ShieldCheck, title: 'คัดสรรคุณภาพ', sub: 'ทุกออเดอร์ตรวจก่อนส่ง 100%' },
     { Icon: Truck, title: 'ส่งฟรีทั่วประเทศ', sub: 'เมื่อสั่งครบ ฿199.-' },
     { Icon: Headphones, title: 'แชทตอบไว 24 ชม.', sub: 'มีทีมงานคนไทยดูแล' },
-    { Icon: CreditCard, title: 'จ่ายผ่าน ANYPAY', sub: 'สะดวก ปลอดภัย ได้มาตรฐาน' },
+    { Icon: CreditCard, title: 'จ่ายออนไลน์', sub: 'สะดวก ปลอดภัย ได้มาตรฐาน' },
   ];
 
   return (

@@ -191,7 +191,7 @@ export default function Checkout({ store }: CheckoutProps) {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="font-[family:var(--font-kanit)] font-semibold uppercase tracking-wider text-sm text-white">
-                    จ่ายผ่าน ANYPAY
+                    จ่ายออนไลน์
                   </div>
                   <div className="text-[10px] tracking-wider uppercase text-[#9CA3AF] font-[family:var(--font-kanit)] font-semibold mt-0.5">
                     บัตรเครดิต · พร้อมเพย์ · โอนธนาคาร · ปลอดภัย

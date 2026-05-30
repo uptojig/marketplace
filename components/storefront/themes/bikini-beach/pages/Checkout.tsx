@@ -86,7 +86,7 @@ const DEFAULT_SHIPPING: ShippingOption[] = [
 // PromptPay / Visa / Mastercard / TrueMoney / Rabbit LINE Pay / etc.
 // COD removed (CJ Dropshipping does not support it).
 const DEFAULT_PAYMENT: PaymentOption[] = [
-  { value: 'anypay', label: 'ANYPAY · พร้อมเพย์ / บัตร / TrueMoney', description: 'ระบบรับชำระเงินที่ปลอดภัย รองรับทุกช่องทาง', icon: <IconCreditCard size={22} /> },
+  { value: 'anypay', label: 'พร้อมเพย์ / บัตร / TrueMoney', description: 'ระบบรับชำระเงินที่ปลอดภัย รองรับทุกช่องทาง', icon: <IconCreditCard size={22} /> },
 ];
 
 // ============ Component ============

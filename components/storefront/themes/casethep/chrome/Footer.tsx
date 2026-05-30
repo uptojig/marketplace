@@ -76,7 +76,7 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: F
         borderTop: '1px solid rgba(0,0,0,0.06)',
       }}
     >
-      {/* Trust strip — "จ่ายผ่าน ANYPAY" (NO COD) */}
+      {/* Trust strip — "จ่ายออนไลน์" (NO COD) */}
       <div className="border-b" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs sm:text-sm">
           <div className="flex items-center gap-2.5">
@@ -99,7 +99,7 @@ export function Footer({ store, categories = [], availableSupportPages = [] }: F
               <CreditCard className="w-4 h-4" />
             </span>
             <div>
-              <p className="font-medium">จ่ายผ่าน ANYPAY</p>
+              <p className="font-medium">จ่ายออนไลน์</p>
               <p className="text-[11px] text-[color:var(--shop-ink-muted,#6B7280)]">PromptPay · บัตร · โอน</p>
             </div>
           </div>

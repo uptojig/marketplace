@@ -252,7 +252,7 @@ export function Checkout({ store }: CheckoutProps) {
               <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {(
                   [
-                    { id: 'anypay', l: 'ANYPAY · พร้อมเพย์ / บัตร / TrueMoney', Icon: Wallet },
+                    { id: 'anypay', l: 'พร้อมเพย์ / บัตร / TrueMoney', Icon: Wallet },
                   ] as const
                 ).map(({ id, l, Icon }) => {
                   const isActive = payment === id;

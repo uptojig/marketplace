@@ -355,7 +355,7 @@ export function MegaStoreCheckoutAdapter(props: ScaffoldCheckoutProps) {
       items={items}
       addresses={[]}
       paymentMethods={[
-        { id: 'anypay', name: 'ANYPAY · พร้อมเพย์ / บัตร / TrueMoney' },
+        { id: 'anypay', name: 'พร้อมเพย์ / บัตร / TrueMoney' },
       ]}
       shippingFee={50}
       onSubmitOrder={() => {
@@ -389,7 +389,7 @@ export function MegaStoreHelpAdapter(_props: ScaffoldHelpProps) {
     <MegaHelp
       faqs={[
         { q: 'ใช้เวลาส่งกี่วัน?', a: '1-3 วันทำการ ผ่าน Kerry / Flash / EMS หลังชำระเงินแล้ว' },
-        { q: 'ชำระเงินอย่างไรได้บ้าง?', a: 'ANYPAY รองรับบัตรเครดิต/เดบิต, PromptPay, TrueMoney และอื่นๆ — ' },
+        { q: 'ชำระเงินอย่างไรได้บ้าง?', a: 'ระบบรองรับบัตรเครดิต/เดบิต, PromptPay, TrueMoney และอื่นๆ — ' },
         { q: 'คืนหรือเปลี่ยนสินค้าได้ไหม?', a: 'ภายใน 15 วัน หากสินค้าชำรุดหรือไม่ตรงคำสั่งซื้อ' },
         { q: 'ติดต่อร้านได้ที่ไหน?', a: 'แชท 24 ชม. ผ่านหน้าศูนย์ช่วยเหลือ หรือโทร Call Center' },
       ]}

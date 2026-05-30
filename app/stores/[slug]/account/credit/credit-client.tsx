@@ -319,7 +319,7 @@ export function CreditClient({
             className="text-sm font-[family:var(--font-prompt)] mb-5"
             style={{ color: 'var(--shop-ink-muted,#71717a)' }}
           >
-            ชำระผ่าน AnyPay — เครดิตจะเข้าทันทีหลังการชำระเงินสำเร็จ
+            ชำระเงินออนไลน์ — เครดิตจะเข้าทันทีหลังการชำระเงินสำเร็จ
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
