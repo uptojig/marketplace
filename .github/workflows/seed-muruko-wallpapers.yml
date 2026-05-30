@@ -1,0 +1,149 @@
+name: One-shot seed — muruko wallpaper pack
+
+# Downloads the "29-05-2569 วอเปเปอร์" zip (5 category subfolders of
+# JPG/PNG cover+full pairs) from a public URL, extracts on the droplet
+# with cp874 so Thai filenames survive, then runs scripts/seed-muruko-
+# wallpapers.ts inside a Node container that already has DATABASE_URL +
+# SPACES_* from /etc/marketplace/control.env.
+#
+# Idempotent on externalProductId (MURUKO-WP-<category>-<number>) —
+# re-running skips anything already seeded rather than duplicating.
+#
+# How to get a zip URL:
+#   1. Drag-drop the zip into a comment on any GitHub issue/PR in this
+#      repo — GitHub serves it from a public githubusercontent.com URL
+#      (or user-attachments.githubusercontent.com).
+#   2. Or upload to any public host (Dropbox direct link, transfer.sh,
+#      DigitalOcean Spaces, etc.).
+#
+# Mirrors seed-level99.yml — same SSH pattern, same swap bootstrap,
+# same node:20 container invocation. Differences:
+#   • finds first .png/.jpg (not .pdf) to locate the extracted root
+#   • passes -O cp874 to unzip so Thai filenames don't mojibake
+#   • runs scripts/seed-muruko-wallpapers.ts
+
+on:
+  workflow_dispatch:
+    inputs:
+      zip_url:
+        description: "Public URL to the wallpaper zip"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry-run (list products, no uploads / no DB writes)"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DROPLET_SSH_KEY }}
+
+      - name: Run muruko wallpaper seed on droplet
+        env:
+          ZIP_URL: ${{ inputs.zip_url }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh -o StrictHostKeyChecking=accept-new \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              -o ConnectTimeout=30 \
+              -o ServerAliveInterval=60 \
+              -o ServerAliveCountMax=10 \
+              -o TCPKeepAlive=yes \
+              "root@${{ secrets.DROPLET_IP }}" \
+              "ZIP_URL='${ZIP_URL}' DRY_RUN='${DRY_RUN}' bash -s" <<'REMOTE'
+            set -euo pipefail
+
+            # Swap bootstrap — see seed-level99.yml for full rationale.
+            # 4G swap absorbs the pnpm install + prisma generate spike
+            # so the RAM-tight droplet doesn't OOM-kill the production
+            # containers.
+            if ! swapon --show | grep -q /swapfile; then
+              echo "→ Enabling 4G swap"
+              fallocate -l 4G /swapfile || true
+              chmod 600 /swapfile || true
+              mkswap /swapfile || true
+              swapon /swapfile || true
+            fi
+            free -h || true
+
+            WORKDIR=/tmp/muruko-wp-seed
+            rm -rf "$WORKDIR"
+            mkdir -p "$WORKDIR/extracted"
+
+            if ! command -v unzip >/dev/null 2>&1; then
+              echo "→ Installing unzip"
+              DEBIAN_FRONTEND=noninteractive apt-get update -qq
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq unzip
+            fi
+
+            echo "→ Fetching zip from $ZIP_URL"
+            curl -fSL --http1.1 --retry 5 --retry-delay 5 --retry-connrefused \
+              --connect-timeout 30 --max-time 1800 -C - \
+              -o "$WORKDIR/wp.zip" "$ZIP_URL"
+
+            DL_BYTES=$(stat -c%s "$WORKDIR/wp.zip" 2>/dev/null || echo 0)
+            echo "→ Downloaded $DL_BYTES bytes"
+            if [ "$DL_BYTES" -lt 1000000 ]; then
+              echo "ERROR: download too small — aborting"
+              exit 1
+            fi
+
+            # `-O cp874` makes unzip decode the legacy ZIP filename
+            # entries as Windows-874 Thai (the original was zipped on
+            # a Thai Windows / macOS Thai locale). Without it every
+            # Thai filename becomes mojibake and the seed script
+            # can't pair `หน้าปก` covers with their full files.
+            echo "→ Extracting (cp874)"
+            unzip -O cp874 -q "$WORKDIR/wp.zip" -d "$WORKDIR/extracted"
+
+            # Find the root that holds the 5 category subfolders.
+            # Locate the first non-macOS image, walk up one level.
+            FIRST_IMG=$(find "$WORKDIR/extracted" \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) ! -path '*__MACOSX*' ! -name '._*' | head -1)
+            if [ -z "$FIRST_IMG" ]; then
+              echo "ERROR: no JPG/PNG files found in zip"
+              exit 1
+            fi
+            # If the zip has a wrapping folder (e.g. extracted/วอเปเปอร์/<cat>/file)
+            # we still want the dir that DIRECTLY contains the category folders.
+            CATEGORY_DIR=$(dirname "$FIRST_IMG")
+            ROOT=$(dirname "$CATEGORY_DIR")
+            echo "→ Root dir: $ROOT"
+            ls -1 "$ROOT"
+
+            cd /opt/marketplace
+            git fetch origin feat/multi-tenant-provisioning
+            git reset --hard origin/feat/multi-tenant-provisioning
+
+            DRY_FLAG=""
+            if [ "${DRY_RUN:-false}" = "true" ]; then
+              DRY_FLAG="--dry-run"
+              echo "→ DRY RUN — no uploads, no DB writes"
+            fi
+
+            echo "→ Running seed script inside node:20 container"
+            docker run --rm \
+              --env-file /etc/marketplace/control.env \
+              --network=host \
+              -e NODE_OPTIONS=--max-old-space-size=1024 \
+              -v /opt/marketplace:/app \
+              -v "$ROOT":/wp:ro \
+              -w /app \
+              node:20-bookworm-slim \
+              sh -c "apt-get update -qq \
+                && apt-get install -y -qq openssl ca-certificates \
+                && corepack enable \
+                && corepack prepare pnpm@9.0.0 --activate \
+                && pnpm install --no-frozen-lockfile --prefer-offline --silent --child-concurrency=1 \
+                && pnpm tsx scripts/seed-muruko-wallpapers.ts /wp $DRY_FLAG"
+
+            rm -rf "$WORKDIR"
+            echo "→ Done"
+          REMOTE
