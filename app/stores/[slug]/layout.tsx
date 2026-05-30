@@ -529,6 +529,7 @@ export default async function ShopLayout({
     .filter((c): c is string => !!c);
 
   const { tokens, themeClass } = resolveChromeTokens({
+    templateId: effectiveTpl,
     primaryColor: primary,
   });
 

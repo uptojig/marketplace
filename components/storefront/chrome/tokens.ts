@@ -102,6 +102,12 @@ const PRESETS: Record<string, ShopChromePreset> = {
   "caselnw-v1": PRESET_CASELNW,
   "mini-mops-v1": PRESET_MINI_MOPS,
   "mu-wallpaper-v1": PRESET_MU_WALLPAPER,
+  // Registry-templated twin of `mu-wallpaper-v1`. Without this entry the
+  // outer wrapper emits PRESET_DEFAULT (`--shop-bg:#f8fafc`, light), and
+  // the bespoke chrome's `var(--shop-bg, #0b0918)` fallback never triggers
+  // because the var IS defined (just to the wrong value). Mapping the
+  // registry id here lets the dark midnight + gold reach the wrapper.
+  "mu-wallpaper-th": PRESET_MU_WALLPAPER,
 };
 
 /**
