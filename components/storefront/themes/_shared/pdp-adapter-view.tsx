@@ -37,11 +37,19 @@ import type { ProductDetailProps } from '@/lib/templates/types';
 export type PdpAspectRatio = 'square' | '4/3' | '3/4' | '16/9';
 export type PdpPriceColor = 'accent' | 'foreground';
 
-const ASPECT_CLASS: Record<PdpAspectRatio, string> = {
-  square: 'aspect-square',
-  '4/3': 'aspect-[4/3]',
-  '3/4': 'aspect-[3/4]',
-  '16/9': 'aspect-[16/9]',
+/**
+ * Inline aspectRatio CSS values — kept as native CSS strings instead of
+ * Tailwind arbitrary classes (`aspect-[4/3]`) so we don't depend on
+ * Tailwind JIT picking them up. JIT scans static class literals, and
+ * even when the literal appears in source it can miss arbitrary values
+ * that aren't safelisted, leaving the rule out of the compiled bundle
+ * and the hero image unsized in production.
+ */
+const ASPECT_VALUE: Record<PdpAspectRatio, string> = {
+  square: '1 / 1',
+  '4/3': '4 / 3',
+  '3/4': '3 / 4',
+  '16/9': '16 / 9',
 };
 
 export function PdpAdapterView({
@@ -66,7 +74,7 @@ export function PdpAdapterView({
 }) {
   const { store, product, related } = data;
   const imgFitClass = imageFit === 'contain' ? 'object-contain' : 'object-cover';
-  const aspectClass = ASPECT_CLASS[aspectRatio];
+  const aspectStyle: React.CSSProperties = { aspectRatio: ASPECT_VALUE[aspectRatio] };
   const priceStyle: React.CSSProperties =
     priceColor === 'foreground'
       ? { color: 'var(--card-foreground, var(--foreground, currentColor))' }
@@ -173,8 +181,8 @@ export function PdpAdapterView({
           {/* Gallery */}
           <div className="lg:col-span-7 space-y-3">
             <div
-              className={`bg-[var(--card,#fff)] border ${aspectClass} overflow-hidden`}
-              style={{ borderColor: 'var(--border, #e5e5e5)' }}
+              className="bg-[var(--card,#fff)] border overflow-hidden"
+              style={{ borderColor: 'var(--border, #e5e5e5)', ...aspectStyle }}
             >
               {activeImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -196,13 +204,14 @@ export function PdpAdapterView({
                     <button
                       type="button"
                       onClick={() => setActiveImage(src)}
-                      className={`block w-full ${aspectClass} border overflow-hidden hover:opacity-80 transition`}
+                      className="block w-full border overflow-hidden hover:opacity-80 transition"
                       style={{
                         borderColor:
                           src === activeImage
                             ? 'var(--primary, currentColor)'
                             : 'var(--border, #e5e5e5)',
                         borderWidth: src === activeImage ? 2 : 1,
+                        ...aspectStyle,
                       }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -446,7 +455,7 @@ export function PdpAdapterView({
                     href={`/stores/${store.slug}/products/${r.id}`}
                     className="block"
                   >
-                    <div className={`${aspectClass} overflow-hidden`}>
+                    <div className="overflow-hidden" style={aspectStyle}>
                       {r.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
