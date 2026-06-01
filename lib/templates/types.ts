@@ -108,8 +108,9 @@ export type TemplateId =
   | 'mu-wallpaper-th'
   | 'iconmart-th'
   | 'resume-studio-th'
-  | 'resume-forge-th';
-
+  | 'resume-forge-th'
+  | 'personapath-th'
+  | 'smsup-plus-th';
 
 
 
