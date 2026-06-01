@@ -1763,7 +1763,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: IconMartHomepageAdapter,
       catalog: makeCatalogAdapter('04'),
-      pdp: makePdpAdapter('04', '05'),
+      // Same rationale as mu-wallpaper-th (#237) — icon-pack covers are
+      // composite marketing graphics (grid of 20+ icons + header text +
+      // device mockups). `object-cover` would crop the corners where the
+      // most visually distinctive icons + the pack title live.
+      pdp: makePdpAdapter('04', '05', undefined, { imageFit: 'contain' }),
       cart: makeThaiCartAdapter(),
       checkout: makeThaiCheckoutAdapter({
         paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],
@@ -1787,7 +1791,11 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: ResumeStudioHomepageAdapter,
       catalog: makeCatalogAdapter('04'),
-      pdp: makePdpAdapter('04', '05'),
+      // Same rationale as mu-wallpaper-th (#237) — resume-preview covers
+      // are A4-portrait page mockups (CV layout + header tag + watermark
+      // along the edges). `object-cover` would crop the page borders and
+      // the bottom watermark.
+      pdp: makePdpAdapter('04', '05', undefined, { imageFit: 'contain' }),
       cart: makeThaiCartAdapter(),
       checkout: makeThaiCheckoutAdapter({
         paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],
