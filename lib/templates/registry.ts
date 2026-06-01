@@ -74,18 +74,6 @@ import {
   Atelier27StripAdapter,
   Atelier27HomepageAdapter,
 } from '@/components/storefront/themes/atelier-27/adapters';
-import {
-  PersonaPathHeaderAdapter,
-  PersonaPathFooterAdapter,
-  PersonaPathStripAdapter,
-  PersonaPathHomepageAdapter,
-} from '@/components/storefront/themes/personapath-th/adapters';
-import {
-  SmsupPlusHeaderAdapter,
-  SmsupPlusFooterAdapter,
-  SmsupPlusStripAdapter,
-  SmsupPlusHomepageAdapter,
-} from '@/components/storefront/themes/smsup-plus-th/adapters';
 
 
 import {
@@ -511,46 +499,6 @@ export const templates: Record<TemplateId, Template> = {
       pdp: makePdpAdapter('02', '03'),
       cart: makeCartAdapter('02'),
       checkout: makeCheckoutAdapter('01'),
-    },
-  },
-
-  'personapath-th': {
-    id: 'personapath-th',
-    name: 'PersonaPath',
-    description: 'แพลตฟอร์มทดสอบบุคลิกภาพ 16 แบบ violet+coral · เหมาะกับร้านขายรายงาน/คอร์ส/บริการให้คำปรึกษา',
-    group: 'lifestyle',
-    behavior: { bottomNav: 'visible' },
-    chrome: {
-      Header: PersonaPathHeaderAdapter,
-      Footer: PersonaPathFooterAdapter,
-      AnnouncementStrip: PersonaPathStripAdapter,
-    },
-    pages: {
-      home: enhanceHomepage(PersonaPathHomepageAdapter, '04'),
-      catalog: makeCatalogAdapter('04'),
-      pdp: makePdpAdapter('04', '02'),
-      cart: makeCartAdapter('02'),
-      checkout: makeCheckoutAdapter('02'),
-    },
-  },
-
-  'smsup-plus-th': {
-    id: 'smsup-plus-th',
-    name: 'SMSUP+',
-    description: 'แพลตฟอร์ม SMS Marketing สำหรับ SME ไทย blue+orange · เหมาะกับร้าน SaaS/บริการดิจิทัล/เครดิตแพ็ก',
-    group: 'business-model',
-    behavior: { bottomNav: 'visible' },
-    chrome: {
-      Header: SmsupPlusHeaderAdapter,
-      Footer: SmsupPlusFooterAdapter,
-      AnnouncementStrip: SmsupPlusStripAdapter,
-    },
-    pages: {
-      home: enhanceHomepage(SmsupPlusHomepageAdapter, '03'),
-      catalog: makeCatalogAdapter('03'),
-      pdp: makePdpAdapter('05', '03'),
-      cart: makeCartAdapter('03'),
-      checkout: makeCheckoutAdapter('04'),
     },
   },
 

@@ -325,22 +325,6 @@ export const TEMPLATES: Template[] = [
     theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
     behavior: { swatchRow: true },
   },
-  {
-    id: "personapath-th",
-    name: "PersonaPath",
-    description: "บุคลิกภาพ 16 แบบ violet+coral เหมาะกับร้านรายงาน/คอร์ส/coaching",
-    group: "lifestyle",
-    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { bottomNav: "visible" },
-  },
-  {
-    id: "smsup-plus-th",
-    name: "SMSUP+",
-    description: "SMS Marketing blue+orange เหมาะกับร้าน SaaS B2B / เครดิตแพ็ก / บริการดิจิทัล",
-    group: "business-model",
-    theme: { spacing: "default", radius: "default", titleScale: "default", font: "sans" },
-    behavior: { bottomNav: "visible" },
-  },
 ];
 
 // ─── Palettes ──────────────────────────────────────────────────────────────
