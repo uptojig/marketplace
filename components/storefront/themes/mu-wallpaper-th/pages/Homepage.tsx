@@ -172,6 +172,71 @@ export function MuWallpaperHomepage({
     return MU_CATEGORY_GLOW[keys[idx % keys.length]] ?? H.gold;
   };
 
+  const muStyles = `
+    .mu-gold-text{background:${MU_WALLPAPER_GOLD_GRADIENT};-webkit-background-clip:text;background-clip:text;color:transparent}
+    .mu-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 22px;border-radius:999px;font-weight:600;font-size:15px;border:1px solid transparent;transition:0.18s ${H.ease};text-align:center}
+    .mu-btn-gold{background:${MU_WALLPAPER_GOLD_GRADIENT};color:${H.goldInk};box-shadow:0 12px 30px -10px rgba(233,205,132,0.5)}
+    .mu-btn-gold:hover{transform:translateY(-2px);box-shadow:0 18px 36px -10px rgba(233,205,132,0.6)}
+    .mu-btn-ghost{border-color:${H.border2};background:rgba(255,255,255,0.03);color:var(--shop-ink,${H.ink})}
+    .mu-btn-ghost:hover{background:rgba(255,255,255,0.08);border-color:${H.goldDeep}}
+    .mu-hero-art{position:relative;height:320px;display:flex;justify-content:center;align-items:center}
+    .mu-halo{position:absolute;width:290px;height:290px;border-radius:50%;background:radial-gradient(circle,rgba(233,205,132,0.22),transparent 62%);filter:blur(8px)}
+    .mu-wp{position:relative;aspect-ratio:9/16;border-radius:16px;overflow:hidden;background:#0a0820;isolation:isolate}
+    .mu-wp-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+    .mu-wp-bg{position:absolute;inset:0;background:radial-gradient(120% 75% at 50% 14%,color-mix(in oklab,var(--glow) 42%,transparent),transparent 58%),radial-gradient(100% 55% at 50% 122%,#05030f,transparent 60%),linear-gradient(180deg,#1a1340,#0a0820 78%)}
+    .mu-wp-stars{position:absolute;inset:0;opacity:0.5;background-image:radial-gradient(1px 1px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 70% 18%,#fff,transparent),radial-gradient(1px 1px at 40% 70%,#fff,transparent),radial-gradient(1.4px 1.4px at 85% 60%,#fff,transparent),radial-gradient(1px 1px at 12% 82%,#fff,transparent),radial-gradient(1px 1px at 60% 90%,#fff,transparent)}
+    .mu-wp-orb{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:52%;aspect-ratio:1;border-radius:50%;border:1.4px solid #f1d98e;box-shadow:0 0 12px color-mix(in oklab,var(--glow) 70%,transparent),inset 0 0 18px color-mix(in oklab,var(--glow) 30%,transparent)}
+    .mu-wp-bless{position:absolute;left:0;right:0;bottom:9%;text-align:center;font-family:var(--font-kanit),cursive;font-size:clamp(13px,3.6vw,17px);color:${H.gold2};opacity:0.92;text-shadow:0 0 10px rgba(233,205,132,0.5)}
+    .mu-wp-ring{position:absolute;inset:6px;border:1px solid rgba(233,205,132,0.22);border-radius:11px}
+    .mu-wp-float-a,.mu-wp-float-b{position:absolute;width:150px;left:50%;top:50%;box-shadow:${H.shadow}}
+    .mu-wp-float-a{transform:translate(-50%,-50%) rotate(-9deg) translateX(-54px);animation:mu-float-a 7s ${H.ease} infinite}
+    .mu-wp-float-b{transform:translate(-50%,-50%) rotate(7deg) translateX(56px) translateY(18px);z-index:2;animation:mu-float-b 8s ${H.ease} infinite}
+    @keyframes mu-float-a{50%{transform:translate(-50%,-50%) rotate(-9deg) translateX(-54px) translateY(-14px)}}
+    @keyframes mu-float-b{50%{transform:translate(-50%,-50%) rotate(7deg) translateX(56px) translateY(4px)}}
+    .mu-panel-gold{margin-top:4px;border-radius:${H.radiusLg};overflow:hidden;border:1px solid rgba(233,205,132,0.3);background:linear-gradient(135deg,rgba(233,205,132,0.15),rgba(124,102,210,0.16)),var(--shop-card,${H.surface})}
+    .mu-bundle-price{display:inline-flex;align-items:center;gap:7px}
+    .mu-daytool{background:linear-gradient(160deg,var(--shop-card,${H.surface}),${H.bg2});border:1px solid var(--shop-border,${H.border});border-radius:${H.radiusLg};padding:22px 18px}
+    .mu-day{flex:none;min-width:62px;padding:11px 6px;border-radius:14px;border:1px solid var(--shop-border,${H.border});background:rgba(255,255,255,0.03);text-align:center;transition:0.16s ${H.ease}}
+    .mu-day:hover{border-color:${H.border2}}
+    .mu-day.is-active{border-color:${H.gold};background:rgba(233,205,132,0.12);box-shadow:0 0 0 1px ${H.gold} inset}
+    .mu-day-dot{display:block;width:12px;height:12px;border-radius:50%;margin:6px auto 0;border:1px solid rgba(255,255,255,0.25)}
+    .mu-day-result{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid var(--shop-border,${H.border});animation:mu-rise 0.35s ${H.ease}}
+    @keyframes mu-rise{from{opacity:0;transform:translateY(8px)}}
+    .mu-dr-swatch{width:46px;height:46px;border-radius:12px;flex:none;border:1px solid rgba(255,255,255,0.3);box-shadow:0 0 16px -2px currentColor}
+    .mu-shead{margin:32px 0 16px;display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .mu-more{font-size:14px;font-weight:600;color:${H.gold};transition:0.15s}
+    .mu-more:hover{text-decoration:underline;text-underline-offset:4px}
+    .mu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+    .mu-card{display:flex;flex-direction:column;border-radius:${H.radiusLg};overflow:hidden;border:1px solid var(--shop-border,${H.border});background:var(--shop-card,${H.surface});transition:0.22s ${H.ease}}
+    .mu-card:hover{border-color:${H.goldDeep};box-shadow:0 14px 36px -12px rgba(233,205,132,0.18);transform:translateY(-3px)}
+    .mu-card-media{position:relative;aspect-ratio:9/16;max-height:340px;overflow:hidden}
+    .mu-card-badge{position:absolute;top:10px;right:10px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;background:rgba(10,8,32,0.72);color:${H.gold};backdrop-filter:blur(6px);border:1px solid rgba(233,205,132,0.22)}
+    .mu-card-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px}
+    .mu-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;background:rgba(233,205,132,0.12);color:${H.gold2}}
+    .mu-card-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:8px;border-top:1px solid var(--shop-border,${H.border})}
+    .mu-price{font-size:17px;font-weight:700;color:${H.gold}}
+    .mu-add{font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:999px;background:${MU_WALLPAPER_GOLD_GRADIENT};color:${H.goldInk};white-space:nowrap;transition:0.16s}
+    .mu-add:hover{transform:scale(1.04)}
+    .mu-bundle{display:grid;gap:20px;align-items:center}
+    @media(min-width:640px){.mu-bundle{grid-template-columns:1fr auto}}
+    .mu-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:8px}
+    .mu-step{padding:22px 20px;border-radius:${H.radiusLg};border:1px solid var(--shop-border,${H.border});background:var(--shop-card,${H.surface});transition:0.18s ${H.ease}}
+    .mu-step:hover{border-color:${H.goldDeep}}
+    .mu-step-n{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:${MU_WALLPAPER_GOLD_GRADIENT};color:${H.goldInk};font-family:var(--font-kanit),sans-serif;font-size:22px;font-weight:700;margin-bottom:12px}
+    .mu-reviews{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:8px}
+    .mu-review{padding:20px;border-radius:${H.radiusLg};border:1px solid var(--shop-border,${H.border});background:var(--shop-card,${H.surface})}
+    .mu-rv-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;background:rgba(233,205,132,0.16);color:${H.gold};flex:none}
+    .mu-faq{display:flex;flex-direction:column;gap:8px}
+    .mu-q{border-radius:${H.radiusLg};border:1px solid var(--shop-border,${H.border});background:var(--shop-card,${H.surface});overflow:hidden;transition:border-color 0.2s}
+    .mu-q.is-open{border-color:${H.goldDeep}}
+    .mu-q-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;font-size:15px;font-weight:600;text-align:left;background:none;border:none;color:inherit;cursor:pointer}
+    .mu-q-ic{flex:none;transition:transform 0.25s;color:${H.gold}}
+    .mu-q.is-open .mu-q-ic{transform:rotate(45deg)}
+    .mu-q-body{padding:0 18px 16px;font-size:14px;line-height:1.7;color:${H.inkMuted}}
+    @media(max-width:639px){.mu-hero-art{height:240px}.mu-halo{width:200px;height:200px}.mu-wp-float-a,.mu-wp-float-b{width:110px}.mu-card-media{max-height:280px}.mu-daytool{padding:18px 14px}.mu-q-btn{padding:14px 14px}.mu-step{padding:18px 16px}.mu-bundle{padding:22px 18px}.mu-review{padding:16px}}
+    @media(min-width:1024px){.mu-daytool{padding:30px 28px}}
+  `;
+
   return (
     <div
       className="mu-home min-h-screen font-[family:var(--font-prompt)]"
@@ -556,476 +621,7 @@ export function MuWallpaperHomepage({
         </div>
       </div>
 
-      <style jsx>{`
-        .mu-gold-text {
-          background: ${MU_WALLPAPER_GOLD_GRADIENT};
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-        }
-        /* Buttons */
-        .mu-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 14px 22px;
-          border-radius: 999px;
-          font-weight: 600;
-          font-size: 15px;
-          border: 1px solid transparent;
-          transition: 0.18s ${H.ease};
-          text-align: center;
-        }
-        .mu-btn-gold {
-          background: ${MU_WALLPAPER_GOLD_GRADIENT};
-          color: ${H.goldInk};
-          box-shadow: 0 12px 30px -10px rgba(233, 205, 132, 0.5);
-        }
-        .mu-btn-gold:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 18px 36px -10px rgba(233, 205, 132, 0.6);
-        }
-        .mu-btn-ghost {
-          border-color: ${H.border2};
-          background: rgba(255, 255, 255, 0.03);
-          color: var(--shop-ink, ${H.ink});
-        }
-        .mu-btn-ghost:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: ${H.goldDeep};
-        }
-        /* Hero art */
-        .mu-hero-art {
-          position: relative;
-          height: 320px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        .mu-halo {
-          position: absolute;
-          width: 290px;
-          height: 290px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(233, 205, 132, 0.22), transparent 62%);
-          filter: blur(8px);
-        }
-        /* Wallpaper preview tile */
-        .mu-wp {
-          position: relative;
-          aspect-ratio: 9 / 16;
-          border-radius: 16px;
-          overflow: hidden;
-          background: #0a0820;
-          isolation: isolate;
-        }
-        .mu-wp-img {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          /* `contain` keeps marketing-style covers (4:5 / 16:9 graphics
-             with text + mockups at the edges) fully visible inside the
-             9:16 portrait tile. The dark `.mu-wp` background colour
-             absorbs any letterbox so the gap is invisible. */
-          object-fit: contain;
-        }
-        .mu-wp-bg {
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(
-              120% 75% at 50% 14%,
-              color-mix(in oklab, var(--glow) 42%, transparent),
-              transparent 58%
-            ),
-            radial-gradient(100% 55% at 50% 122%, #05030f, transparent 60%),
-            linear-gradient(180deg, #1a1340, #0a0820 78%);
-        }
-        .mu-wp-stars {
-          position: absolute;
-          inset: 0;
-          opacity: 0.5;
-          background-image: radial-gradient(1px 1px at 20% 30%, #fff, transparent),
-            radial-gradient(1px 1px at 70% 18%, #fff, transparent),
-            radial-gradient(1px 1px at 40% 70%, #fff, transparent),
-            radial-gradient(1.4px 1.4px at 85% 60%, #fff, transparent),
-            radial-gradient(1px 1px at 12% 82%, #fff, transparent),
-            radial-gradient(1px 1px at 60% 90%, #fff, transparent);
-        }
-        .mu-wp-orb {
-          position: absolute;
-          left: 50%;
-          top: 44%;
-          transform: translate(-50%, -50%);
-          width: 52%;
-          aspect-ratio: 1;
-          border-radius: 50%;
-          border: 1.4px solid #f1d98e;
-          box-shadow: 0 0 12px color-mix(in oklab, var(--glow) 70%, transparent),
-            inset 0 0 18px color-mix(in oklab, var(--glow) 30%, transparent);
-        }
-        .mu-wp-bless {
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: 9%;
-          text-align: center;
-          font-family: var(--font-kanit), cursive;
-          font-size: clamp(13px, 3.6vw, 17px);
-          color: ${H.gold2};
-          opacity: 0.92;
-          text-shadow: 0 0 10px rgba(233, 205, 132, 0.5);
-        }
-        .mu-wp-ring {
-          position: absolute;
-          inset: 6px;
-          border: 1px solid rgba(233, 205, 132, 0.22);
-          border-radius: 11px;
-        }
-        .mu-wp-float-a,
-        .mu-wp-float-b {
-          position: absolute;
-          width: 150px;
-          left: 50%;
-          top: 50%;
-          box-shadow: ${H.shadow};
-        }
-        .mu-wp-float-a {
-          transform: translate(-50%, -50%) rotate(-9deg) translateX(-54px);
-          animation: mu-float-a 7s ${H.ease} infinite;
-        }
-        .mu-wp-float-b {
-          transform: translate(-50%, -50%) rotate(7deg) translateX(56px) translateY(18px);
-          z-index: 2;
-          animation: mu-float-b 8s ${H.ease} infinite;
-        }
-        @keyframes mu-float-a {
-          50% {
-            transform: translate(-50%, -50%) rotate(-9deg) translateX(-54px) translateY(-14px);
-          }
-        }
-        @keyframes mu-float-b {
-          50% {
-            transform: translate(-50%, -50%) rotate(7deg) translateX(56px) translateY(4px);
-          }
-        }
-        /* Gold panels (wallet + bundle) */
-        .mu-panel-gold {
-          margin-top: 4px;
-          border-radius: ${H.radiusLg};
-          overflow: hidden;
-          border: 1px solid rgba(233, 205, 132, 0.3);
-          background: linear-gradient(
-              135deg,
-              rgba(233, 205, 132, 0.15),
-              rgba(124, 102, 210, 0.16)
-            ),
-            var(--shop-card, ${H.surface});
-        }
-        .mu-bundle-price {
-          display: inline-flex;
-          align-items: center;
-          gap: 7px;
-        }
-        /* Lucky-day tool */
-        .mu-daytool {
-          background: linear-gradient(160deg, var(--shop-card, ${H.surface}), ${H.bg2});
-          border: 1px solid var(--shop-border, ${H.border});
-          border-radius: ${H.radiusLg};
-          padding: 22px 18px;
-        }
-        .mu-day {
-          flex: none;
-          min-width: 62px;
-          padding: 11px 6px;
-          border-radius: 14px;
-          border: 1px solid var(--shop-border, ${H.border});
-          background: rgba(255, 255, 255, 0.03);
-          text-align: center;
-          transition: 0.16s ${H.ease};
-        }
-        .mu-day:hover {
-          border-color: ${H.border2};
-        }
-        .mu-day.is-active {
-          border-color: ${H.gold};
-          background: rgba(233, 205, 132, 0.12);
-          box-shadow: 0 0 0 1px ${H.gold} inset;
-        }
-        .mu-day-dot {
-          display: block;
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          margin: 6px auto 0;
-          border: 1px solid rgba(255, 255, 255, 0.25);
-        }
-        .mu-day-result {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          flex-wrap: wrap;
-          padding: 14px 16px;
-          border-radius: 16px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid var(--shop-border, ${H.border});
-          animation: mu-rise 0.35s ${H.ease};
-        }
-        @keyframes mu-rise {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-        }
-        .mu-dr-swatch {
-          width: 46px;
-          height: 46px;
-          border-radius: 12px;
-          flex: none;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          box-shadow: 0 0 16px -2px currentColor;
-        }
-        /* Section head */
-        .mu-shead {
-          margin: 32px 0 16px;
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          gap: 14px;
-          flex-wrap: wrap;
-        }
-        .mu-more {
-          font-size: 14px;
-          font-weight: 600;
-          color: ${H.gold2};
-          white-space: nowrap;
-        }
-        .mu-more:hover {
-          color: ${H.gold};
-        }
-        /* Product grid + cards */
-        .mu-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 14px;
-          margin-top: 6px;
-        }
-        .mu-card {
-          background: var(--shop-card, ${H.surface});
-          border: 1px solid var(--shop-border, ${H.border});
-          border-radius: ${H.radius};
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          transition: 0.2s ${H.ease};
-          position: relative;
-        }
-        .mu-card:hover {
-          transform: translateY(-4px);
-          border-color: ${H.border2};
-          box-shadow: ${H.shadow};
-        }
-        .mu-card-media {
-          position: relative;
-          padding: 10px 10px 0;
-        }
-        .mu-card-media :global(.mu-wp) {
-          border-radius: 13px;
-        }
-        .mu-card-badge {
-          position: absolute;
-          top: 16px;
-          left: 16px;
-          z-index: 3;
-          font-size: 10.5px;
-          font-weight: 600;
-          letter-spacing: 0.04em;
-          padding: 4px 9px;
-          border-radius: 999px;
-          background: rgba(11, 9, 24, 0.7);
-          border: 1px solid rgba(233, 205, 132, 0.4);
-          color: ${H.gold2};
-          backdrop-filter: blur(4px);
-        }
-        .mu-card-body {
-          padding: 11px 13px 13px;
-          display: flex;
-          flex-direction: column;
-          gap: 7px;
-          flex: 1;
-        }
-        .mu-tag {
-          font-size: 11px;
-          font-weight: 600;
-          padding: 3px 9px;
-          border-radius: 999px;
-          background: color-mix(in oklab, var(--cat) 18%, transparent);
-          color: var(--cat);
-          border: 1px solid color-mix(in oklab, var(--cat) 35%, transparent);
-        }
-        .mu-card-foot {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 8px;
-          margin-top: auto;
-          padding-top: 4px;
-        }
-        .mu-price {
-          font-family: var(--font-kanit);
-          font-weight: 600;
-          font-size: 17px;
-          color: ${H.gold2};
-        }
-        .mu-price small {
-          font-family: var(--font-prompt);
-          font-weight: 500;
-          font-size: 11.5px;
-        }
-        .mu-add {
-          display: inline-flex;
-          align-items: center;
-          padding: 8px 13px;
-          border-radius: 999px;
-          font-size: 13px;
-          font-weight: 600;
-          background: rgba(233, 205, 132, 0.12);
-          border: 1px solid rgba(233, 205, 132, 0.4);
-          color: ${H.gold2};
-          transition: 0.16s ${H.ease};
-          white-space: nowrap;
-        }
-        .mu-card:hover .mu-add {
-          background: ${H.gold};
-          color: ${H.goldInk};
-        }
-        /* Bundle layout */
-        .mu-bundle {
-          display: grid;
-          gap: 18px;
-        }
-        /* Steps */
-        .mu-steps {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 14px;
-          margin-top: 8px;
-        }
-        .mu-step {
-          background: var(--shop-card, ${H.surface});
-          border: 1px solid var(--shop-border, ${H.border});
-          border-radius: ${H.radius};
-          padding: 20px 18px;
-        }
-        .mu-step-n {
-          width: 38px;
-          height: 38px;
-          border-radius: 12px;
-          display: grid;
-          place-items: center;
-          font-family: var(--font-kanit);
-          font-weight: 700;
-          background: rgba(233, 205, 132, 0.14);
-          border: 1px solid rgba(233, 205, 132, 0.35);
-          color: ${H.gold2};
-          margin-bottom: 12px;
-        }
-        /* Reviews */
-        .mu-reviews {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 14px;
-          margin-top: 8px;
-        }
-        .mu-review {
-          background: var(--shop-card, ${H.surface});
-          border: 1px solid var(--shop-border, ${H.border});
-          border-radius: ${H.radius};
-          padding: 20px 18px;
-        }
-        .mu-rv-av {
-          width: 38px;
-          height: 38px;
-          border-radius: 50%;
-          flex: none;
-          display: grid;
-          place-items: center;
-          font-family: var(--font-kanit);
-          font-weight: 600;
-          background: linear-gradient(135deg, ${H.surface2}, ${H.bg2});
-          border: 1px solid ${H.border2};
-          color: ${H.gold2};
-          font-size: 15px;
-        }
-        /* FAQ */
-        .mu-faq {
-          margin-top: 8px;
-          border-top: 1px solid var(--shop-border, ${H.border});
-        }
-        .mu-q {
-          border-bottom: 1px solid var(--shop-border, ${H.border});
-        }
-        .mu-q-btn {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 14px;
-          padding: 18px 4px;
-          background: none;
-          border: 0;
-          text-align: left;
-          font-family: var(--font-kanit);
-          font-weight: 500;
-          font-size: 16px;
-          color: var(--shop-ink, ${H.ink});
-        }
-        .mu-q-ic {
-          flex: none;
-          transition: transform 0.25s ${H.ease};
-          color: ${H.gold};
-        }
-        .mu-q.is-open .mu-q-ic {
-          transform: rotate(45deg);
-        }
-        .mu-q-body {
-          padding: 0 4px 18px;
-          color: ${H.inkMuted};
-          font-size: 14px;
-          animation: mu-rise 0.28s ${H.ease};
-        }
-        /* Responsive */
-        @media (min-width: 560px) {
-          .mu-grid {
-            grid-template-columns: repeat(3, 1fr);
-          }
-          .mu-steps,
-          .mu-reviews {
-            grid-template-columns: repeat(3, 1fr);
-          }
-        }
-        @media (min-width: 860px) {
-          .mu-hero-art {
-            height: 400px;
-          }
-          .mu-wp-float-a,
-          .mu-wp-float-b {
-            width: 184px;
-          }
-          .mu-grid {
-            grid-template-columns: repeat(3, 1fr);
-          }
-          .mu-bundle {
-            grid-template-columns: 1.3fr 1fr;
-            align-items: center;
-            padding: 32px 30px;
-          }
-          .mu-daytool {
-            padding: 30px 28px;
-          }
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{ __html: muStyles }} />
     </div>
   );
 }

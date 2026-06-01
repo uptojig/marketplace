@@ -1593,7 +1593,7 @@ export const templates: Record<TemplateId, Template> = {
       home: SheetlabFormulaHomepageAdapter,
       catalog: sheetlab_formula_Catalog,
       pdp: sheetlab_formula_ProductDetail,
-      cart: makeThaiCartAdapter(),
+      cart: makeThaiCartAdapter({ showTrustStrip: false }),
       checkout: makeThaiCheckoutAdapter({
         // Digital-formula store — CREDIT is the ONLY way to buy a
         // template. Buyers fund the wallet via AnyPay through the

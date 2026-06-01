@@ -12,6 +12,7 @@
  */
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -132,20 +133,34 @@ export default async function DownloadsPage({
               if (p.digitalKind === 'PROMPT') {
                 return (
                   <section key={unlock.id} className="space-y-3">
-                    <header className="flex items-center justify-between gap-3 flex-wrap">
-                      <h2
-                        className="font-[family:var(--font-kanit)] text-lg font-bold"
-                        style={{ color: 'var(--shop-ink,#0a0a0a)' }}
-                      >
-                        {title}
-                      </h2>
-                      <span
-                        className="text-[11px] font-[family:var(--font-prompt)] inline-flex items-center gap-1"
-                        style={{ color: 'var(--shop-ink-muted,#71717a)' }}
-                      >
-                        <KeyRound size={11} />
-                        {unlock.licenseKey.slice(0, 12)}…
-                      </span>
+                    <header className="flex items-start gap-4 flex-wrap">
+                      {p.imageUrl && (
+                        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border" style={{ borderColor: 'var(--shop-border,#e5e5e5)' }}>
+                          <Image
+                            src={p.imageUrl}
+                            alt={title}
+                            fill
+                            className="object-cover"
+                            sizes="64px"
+                            unoptimized
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h2
+                          className="font-[family:var(--font-kanit)] text-lg font-bold truncate"
+                          style={{ color: 'var(--shop-ink,#0a0a0a)' }}
+                        >
+                          {title}
+                        </h2>
+                        <span
+                          className="text-[11px] font-[family:var(--font-prompt)] inline-flex items-center gap-1 mt-1"
+                          style={{ color: 'var(--shop-ink-muted,#71717a)' }}
+                        >
+                          <KeyRound size={11} />
+                          {unlock.licenseKey.slice(0, 12)}…
+                        </span>
+                      </div>
                     </header>
                     <PromptViewer
                       storeSlug={p.store.slug}
@@ -170,20 +185,34 @@ export default async function DownloadsPage({
                   className="rounded-2xl border bg-white p-5"
                   style={{ borderColor: 'var(--shop-border,#e5e5e5)' }}
                 >
-                  <header className="flex items-center justify-between gap-3 flex-wrap mb-3">
-                    <h2
-                      className="font-[family:var(--font-kanit)] text-lg font-bold"
-                      style={{ color: 'var(--shop-ink,#0a0a0a)' }}
-                    >
-                      {title}
-                    </h2>
-                    <span
-                      className="text-[11px] font-[family:var(--font-prompt)] inline-flex items-center gap-1"
-                      style={{ color: 'var(--shop-ink-muted,#71717a)' }}
-                    >
-                      <KeyRound size={11} />
-                      {unlock.licenseKey.slice(0, 12)}…
-                    </span>
+                  <header className="flex items-start gap-4 flex-wrap mb-3">
+                    {p.imageUrl && (
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border" style={{ borderColor: 'var(--shop-border,#e5e5e5)' }}>
+                        <Image
+                          src={p.imageUrl}
+                          alt={title}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                          unoptimized
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h2
+                        className="font-[family:var(--font-kanit)] text-lg font-bold truncate"
+                        style={{ color: 'var(--shop-ink,#0a0a0a)' }}
+                      >
+                        {title}
+                      </h2>
+                      <span
+                        className="text-[11px] font-[family:var(--font-prompt)] inline-flex items-center gap-1 mt-1"
+                        style={{ color: 'var(--shop-ink-muted,#71717a)' }}
+                      >
+                        <KeyRound size={11} />
+                        {unlock.licenseKey.slice(0, 12)}…
+                      </span>
+                    </div>
                   </header>
                   {downloadable.length === 0 ? (
                     <p

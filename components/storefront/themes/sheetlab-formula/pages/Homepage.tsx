@@ -72,7 +72,7 @@ const TRUST_TILES = [
 
 const HOW_IT_WORKS = [
   { step: 1, title: 'เลือกสูตรที่ต้องการ', caption: 'เลือกจากหมวดและพรีวิวก่อนซื้อ' },
-  { step: 2, title: 'ชำระเงินออนไลน์', caption: 'PromptPay · บัตรเครดิต · BNPL' },
+  { step: 2, title: 'ชำระเงินออนไลน์', caption: 'QR Code PromptPay' },
   { step: 3, title: 'ดาวน์โหลด .xlsx ทันที', caption: 'ลิงก์ส่งทางอีเมล + คลังบัญชี' },
 ];
 
@@ -184,21 +184,7 @@ export function SheetlabFormulaHomepage({
                   {ctaLabel}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                {firstProductId ? (
-                  <Link
-                    href={`/stores/${store.slug}/products/${firstProductId}`}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-[#107C41] hover:underline underline-offset-4"
-                  >
-                    ดูตัวอย่าง →
-                  </Link>
-                ) : (
-                  <Link
-                    href={catalogUrl}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-[#107C41] hover:underline underline-offset-4"
-                  >
-                    ดูตัวอย่าง →
-                  </Link>
-                )}
+
               </div>
             </div>
 

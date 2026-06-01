@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Camera, KeyRound, Trash2 } from 'lucide-react';
+import { Camera, KeyRound, Trash2, LogOut } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -124,6 +125,14 @@ export function ProfileForm({
           </Button>
           <Button variant="outline" className="w-full justify-start">
             ดูประวัติการเข้าใช้งาน
+          </Button>
+          <Separator className="my-1" />
+          <Button
+            variant="outline"
+            className="w-full justify-start text-destructive hover:bg-destructive/5"
+            onClick={() => signOut({ callbackUrl: '/' })}
+          >
+            <LogOut className="mr-2 h-4 w-4" /> ออกจากระบบ
           </Button>
         </div>
       </Card>

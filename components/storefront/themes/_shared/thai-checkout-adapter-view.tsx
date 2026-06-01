@@ -24,6 +24,7 @@ import {
   ShoppingBag,
   ShoppingCart,
   Truck,
+  X,
 } from 'lucide-react';
 
 import { useCart, isAllDigitalForStore } from '@/lib/store/cart';
@@ -346,12 +347,10 @@ export function ThaiCheckoutAdapterView({
       //   1. CREDIT + all-digital → /account/downloads
       //   2. CREDIT + physical    → /account/orders
       //   3. ANYPAY               → paymentUrl (gateway redirect)
-      if (data.paid && allDigital) {
-        window.location.href = `/stores/${store.slug}/account/downloads`;
-        return;
-      }
       if (data.paid) {
-        window.location.href = `/stores/${store.slug}/account/orders`;
+        window.location.href = allDigital 
+          ? `/stores/${store.slug}/account/downloads`
+          : `/stores/${store.slug}/account/orders`;
         return;
       }
       if (data.paymentUrl) {
@@ -699,6 +698,7 @@ function CartReviewStep({
   palette: ResolvedPalette;
   onNext: () => void;
 }) {
+  const remove = useCart((s) => s.remove);
   return (
     <Card
       className="rounded-2xl p-6 shadow-none"
@@ -759,25 +759,27 @@ function CartReviewStep({
                 จำนวน {l.qty} × {formatTHB(l.priceTHB)}
               </p>
             </div>
-            <p
-              className="text-sm font-semibold whitespace-nowrap"
-              style={{ color: palette.ink }}
-            >
-              {formatTHB(l.priceTHB * l.qty)}
-            </p>
+            <div className="flex flex-col items-end gap-1">
+              <p
+                className="text-sm font-semibold whitespace-nowrap"
+                style={{ color: palette.ink }}
+              >
+                {formatTHB(l.priceTHB * l.qty)}
+              </p>
+              <button
+                type="button"
+                onClick={() => remove(l.productId, storeSlug)}
+                aria-label={`ลบ ${l.title}`}
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </li>
         ))}
       </ul>
 
-      <div className="flex items-center justify-between gap-3 mt-6">
-        <Button
-          asChild
-          variant="outline"
-          className="text-sm"
-          style={{ color: palette.ink, borderColor: palette.border }}
-        >
-          <Link href={`/stores/${storeSlug}/cart`}>แก้ไขตะกร้า</Link>
-        </Button>
+      <div className="flex items-center justify-end mt-6">
         <Button
           onClick={onNext}
           className="text-sm font-semibold"

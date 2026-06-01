@@ -11,8 +11,10 @@ export async function getPaymentIntent(id: string) {
 }
 
 export async function getOrderByRef(orderRef: string) {
-  return prisma.order.findUnique({
-    where: { orderRef },
+  return prisma.order.findFirst({
+    where: {
+      OR: [{ orderRef }, { id: orderRef }],
+    },
     include: {
       items: true,
       store: { select: { slug: true, name: true, logoUrl: true } },
@@ -97,8 +99,10 @@ export async function getStoreOrders(
 // Vendor-side single-order load by orderRef. Mirrors getOrderByRef but
 // pulls the buyer contact fields the vendor needs to ship the order.
 export async function getStoreOrderByRef(orderRef: string) {
-  return prisma.order.findUnique({
-    where: { orderRef },
+  return prisma.order.findFirst({
+    where: {
+      OR: [{ orderRef }, { id: orderRef }],
+    },
     include: {
       items: true,
       store: { select: { slug: true, name: true, logoUrl: true } },

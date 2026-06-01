@@ -13,6 +13,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   ChevronRight,
@@ -51,6 +52,7 @@ export default function SheetlabFormulaProductDetail({
   related,
 }: ProductDetailProps) {
   const add = useCart((s) => s.add);
+  const router = useRouter();
   const [activeImg, setActiveImg] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
   const [lastAddedMode, setLastAddedMode] = useState<BuyMode>('self');
@@ -171,7 +173,23 @@ export default function SheetlabFormulaProductDetail({
     window.setTimeout(() => setJustAdded(false), 2000);
     // Reset gift form back to defaults after a successful add.
     setRecipients([{ email: '', name: '', message: '' }]);
-    setMode('self');
+    if (mode === 'gift') setMode('self');
+  };
+
+  /** "ซื้อ" = add to cart + go straight to checkout */
+  const handleBuyNow = () => {
+    if (owned) return;
+    add({
+      productId: product.id,
+      storeSlug: store.slug,
+      storeName: store.name,
+      title: product.title,
+      priceTHB: product.priceTHB,
+      imageUrl: product.imageUrl ?? undefined,
+      productType: 'DIGITAL' as const,
+      digitalKind: 'EXCEL' as const,
+    });
+    router.push(`/stores/${store.slug}/checkout`);
   };
 
   const giftTotal = product.priceTHB * recipients.length;
@@ -346,33 +364,21 @@ export default function SheetlabFormulaProductDetail({
               ) : null}
 
               <div
-                role="tablist"
-                aria-label="เลือกวิธีซื้อ"
                 className="flex flex-col sm:flex-row gap-2 mb-4"
               >
                 {!owned && (
                   <button
                     type="button"
-                    role="tab"
-                    aria-selected={mode === 'self'}
-                    onClick={() => setMode('self')}
-                    className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold border transition-colors ${
-                      mode === 'self'
-                        ? 'text-white border-transparent'
-                        : 'bg-white text-[#1F2937] border-[#E5E7EB] hover:border-[#107C41]'
-                    }`}
-                    style={
-                      mode === 'self' ? { background: '#107C41' } : undefined
-                    }
+                    onClick={handleBuyNow}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold text-white border border-transparent transition-opacity hover:opacity-95"
+                    style={{ background: '#107C41' }}
                   >
                     ซื้อ
                   </button>
                 )}
                 <button
                   type="button"
-                  role="tab"
-                  aria-selected={mode === 'gift'}
-                  onClick={() => setMode('gift')}
+                  onClick={() => setMode(mode === 'gift' ? 'self' : 'gift')}
                   className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold border transition-colors ${
                     mode === 'gift'
                       ? 'text-white border-transparent'

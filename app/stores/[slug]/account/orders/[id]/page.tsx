@@ -28,10 +28,10 @@ import { getOrderByRef } from '@/lib/orders/queries';
 import { PAYMENT_METHOD_INFO, toOrderView } from '@/lib/account/order-view';
 import {
   ORDER_STATUS_COLOR,
-  ORDER_STATUS_LABEL,
   ORDER_TIMELINE,
   isTerminalStatus,
   timelineIndex,
+  getDisplayStatus,
 } from '@/lib/orders/status-ui';
 import { cn } from '@/lib/utils';
 
@@ -81,7 +81,7 @@ export default async function OrderDetailPage({ params }: OrderDetailProps) {
           <h1 className="mt-1 font-mono text-lg font-semibold">{order.orderRef}</h1>
         </div>
         <Badge className={ORDER_STATUS_COLOR[order.status]} variant="outline">
-          {ORDER_STATUS_LABEL[order.status]}
+          {getDisplayStatus(order.status, order.shippingAddress === null)}
         </Badge>
       </div>
 
@@ -111,7 +111,7 @@ export default async function OrderDetailPage({ params }: OrderDetailProps) {
                       )}
                     </div>
                     <span className="mt-1 text-center text-[10px] text-muted-foreground">
-                      {ORDER_STATUS_LABEL[s].split(' ')[0]}
+                      {getDisplayStatus(s, order.shippingAddress === null).split(' ')[0]}
                     </span>
                   </div>
                   {i < ORDER_TIMELINE.length - 1 && (

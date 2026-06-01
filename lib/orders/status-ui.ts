@@ -19,6 +19,13 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   RETURNED: 'คืนสินค้าแล้ว',
 };
 
+export function getDisplayStatus(status: OrderStatus, isDigital: boolean = false): string {
+  if (isDigital && status === 'SUPPLIER_PLACED') {
+    return 'พร้อมดาวน์โหลด';
+  }
+  return ORDER_STATUS_LABEL[status];
+}
+
 export const ORDER_STATUS_COLOR: Record<OrderStatus, string> = {
   PENDING_PAYMENT:
     'bg-amber-100 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200',

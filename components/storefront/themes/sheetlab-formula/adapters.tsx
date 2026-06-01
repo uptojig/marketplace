@@ -65,7 +65,10 @@ export function SheetlabFormulaHomepageAdapter(props: ScaffoldHomepageProps) {
         imageUrl: p.imageUrl ?? null,
         categoryName: p.categoryName ?? null,
       }))}
-      categories={(props.categories ?? []).map((name) => ({ id: name, name }))}
+      categories={(props.categories ?? []).map((name) => {
+        const count = props.products.filter((p) => p.categoryName === name).length;
+        return { id: name, name, count };
+      })}
       landingContent={props.landingContent ?? null}
     />
   );

@@ -15,9 +15,9 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import {
   ORDER_STATUS_COLOR,
-  ORDER_STATUS_LABEL,
   ORDER_TABS,
   matchesTab,
+  getDisplayStatus,
   type OrderTabKey,
 } from '@/lib/orders/status-ui';
 import type { OrderView } from '@/lib/account/order-view';
@@ -124,7 +124,7 @@ function OrderCard({ order, base }: { order: OrderView; base: string }) {
           <span className="font-mono text-xs">{order.orderRef}</span>
         </div>
         <Badge className={ORDER_STATUS_COLOR[order.status]} variant="outline">
-          {ORDER_STATUS_LABEL[order.status]}
+          {getDisplayStatus(order.status, order.shippingAddress === null)}
         </Badge>
       </div>
 

@@ -17,6 +17,7 @@ import { SpecialtyCategoryGrid } from "@/components/storefront/themes/specialty/
 import { effectiveTemplateId } from "@/lib/landing/legacy-slug-template";
 import { templates as STORE_TEMPLATES } from "@/lib/templates/registry";
 import type { TemplateId } from "@/lib/templates/types";
+import { CatalogBridge } from "@/components/storefront/CatalogBridge";
 
 export const dynamic = "force-dynamic";
 
@@ -166,8 +167,25 @@ export default async function StoreCategoryPage({
     for (const c of managedCategories) categoryCounts[c.name] = c.activeProductCount;
     for (const [name, count] of legacyCountMap) categoryCounts[name] = count;
     const categoryNames = Object.keys(categoryCounts).sort();
+
+    // Pre-compute URL maps so we don't pass functions across RSC boundary.
+    const _catToggleUrls: Record<string, string> = {};
+    for (const name of categoryNames) {
+      _catToggleUrls[name] = `/stores/${store.slug}/category/${encodeURIComponent(name)}`;
+    }
+    const _clearUrl = `/stores/${store.slug}/category`;
+    const _sortUrls: Record<string, string> = {};
+    for (const sk of ['newest', 'price-asc', 'price-desc', 'recommended', 'popular']) {
+      const sp = new URLSearchParams();
+      if (sk) sp.set("sort", sk);
+      const qs = sp.toString();
+      _sortUrls[sk] = `/stores/${store.slug}/category/${encodeURIComponent(segment)}${qs ? `?${qs}` : ""}`;
+    }
+    const _pageUrls: Record<string, string> = { '1': `/stores/${store.slug}/category/${encodeURIComponent(segment)}` };
+
     return (
-      <TemplateCatalogPage
+      <CatalogBridge
+        Component={TemplateCatalogPage}
         store={{
           id: store.id,
           slug: store.slug,
@@ -195,19 +213,10 @@ export default async function StoreCategoryPage({
         currentPage={1}
         totalPages={1}
         filteredCount={totalInCategory}
-        buildUrl={(toggleCat) => {
-          // Single-category page — toggling another category means
-          // navigating to that category's URL; clearing returns to
-          // the catalog index.
-          if (!toggleCat) return `/stores/${store.slug}/category`;
-          return `/stores/${store.slug}/category/${encodeURIComponent(toggleCat)}`;
-        }}
-        buildSortUrl={(s) => {
-          const sp = new URLSearchParams();
-          if (s) sp.set("sort", s);
-          const qs = sp.toString();
-          return `/stores/${store.slug}/category/${encodeURIComponent(segment)}${qs ? `?${qs}` : ""}`;
-        }}
+        catToggleUrls={_catToggleUrls}
+        clearUrl={_clearUrl}
+        sortUrls={_sortUrls}
+        pageUrls={_pageUrls}
       />
     );
   }

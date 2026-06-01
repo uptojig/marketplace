@@ -326,33 +326,6 @@ export default async function CategoryIndexPage({
     : null;
   const TemplateCatalogPage = template?.pages?.catalog;
   if (TemplateCatalogPage) {
-    if (typeof TemplateCatalogPage === 'function') {
-      const ServerCatalogPage = TemplateCatalogPage as any;
-      return (
-        <ServerCatalogPage
-          store={{
-            id: store.id,
-            slug: store.slug,
-            name: store.name,
-            description: store.description,
-            tagline: store.tagline,
-            logoUrl: store.logoUrl,
-            bannerUrl: store.bannerUrl,
-            primaryColor: store.primaryColor,
-          }}
-          pageProducts={sharedCategoryProps.pageProducts}
-          categoryNames={sharedCategoryProps.categoryNames}
-          categoryCounts={sharedCategoryProps.categoryCounts}
-          selectedCats={sharedCategoryProps.selectedCats}
-          sortKey={sharedCategoryProps.sortKey}
-          currentPage={sharedCategoryProps.currentPage}
-          totalPages={sharedCategoryProps.totalPages}
-          filteredCount={sharedCategoryProps.filteredCount}
-          buildUrl={sharedCategoryProps.buildUrl}
-          buildSortUrl={sharedCategoryProps.buildSortUrl}
-        />
-      );
-    }
 
     // Pre-compute URL maps → all strings, fully serializable.
     const _catToggleUrls: Record<string, string> = {};
