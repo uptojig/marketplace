@@ -43,6 +43,15 @@ export interface PdpAdapterOptions {
    *  device mockups at the edges (mu-wallpaper-th covers, salepage
    *  hero composites, …) — `cover` would crop the readable parts. */
   imageFit?: 'cover' | 'contain';
+  /** Hero / thumbnail / related image aspect ratio. Default `'square'`
+   *  for product photography. Use `'4/3'` for landscape marketing
+   *  covers (mu-wallpaper covers, salepage hero composites). */
+  aspectRatio?: 'square' | '4/3' | '3/4' | '16/9';
+  /** Color used for the big price text. Default `'accent'` uses
+   *  `--primary` (theme's gold/brand color). Pass `'foreground'` for
+   *  dark themes whose admin-chosen palette may not guarantee contrast
+   *  between `--primary` and `--card`, making the price invisible. */
+  priceColor?: 'accent' | 'foreground';
 }
 
 export function makePdpAdapter(
@@ -55,8 +64,18 @@ export function makePdpAdapter(
     ...(palette ? paletteToCssVars(palette) : {}),
   };
   const imageFit = options?.imageFit ?? 'cover';
+  const aspectRatio = options?.aspectRatio ?? 'square';
+  const priceColor = options?.priceColor ?? 'accent';
 
   return function PdpAdapter(props: ProductDetailProps) {
-    return <PdpAdapterView data={props} style={style} imageFit={imageFit} />;
+    return (
+      <PdpAdapterView
+        data={props}
+        style={style}
+        imageFit={imageFit}
+        aspectRatio={aspectRatio}
+        priceColor={priceColor}
+      />
+    );
   };
 }
