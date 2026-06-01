@@ -1785,13 +1785,19 @@ export const templates: Record<TemplateId, Template> = {
     pages: {
       home: MuWallpaperHomepageAdapter,
       catalog: makeCatalogAdapter('04'),
-      // `imageFit: 'contain'` keeps the marketing cover graphics (header
-      // text + device mockups + bottom tag) fully visible inside the
-      // square hero / thumbnails / related rail. The default `'cover'`
-      // would crop the edges where the cover's title and call-out tags
-      // live (mu-wallpaper covers are landscape composites, not square
-      // product photography).
-      pdp: makePdpAdapter('04', '05', undefined, { imageFit: 'contain' }),
+      // mu-wallpaper covers are landscape marketing composites with
+      // header text + device mockups + call-out tags at the edges:
+      //  - `imageFit: 'contain'` so cover edges (title, tags) stay readable
+      //  - `aspectRatio: '4/3'` so the landscape cover fills the frame
+      //    horizontally instead of being letterboxed inside a square
+      //  - `priceColor: 'foreground'` so the price stays readable on the
+      //    dark `--shop-card` surface (the gold `--primary` may be too
+      //    close in luminance to the card bg on some admin palettes)
+      pdp: makePdpAdapter('04', '05', undefined, {
+        imageFit: 'contain',
+        aspectRatio: '4/3',
+        priceColor: 'foreground',
+      }),
       cart: makeThaiCartAdapter(),
       checkout: makeThaiCheckoutAdapter({
         paymentOptions: [{ id: 'CREDIT', name: 'ชำระด้วยเครดิตในร้าน' }],

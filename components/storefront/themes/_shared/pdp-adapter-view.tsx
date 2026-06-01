@@ -34,17 +34,43 @@ import { useCart } from '@/lib/store/cart';
 import { formatTHB } from '@/lib/utils';
 import type { ProductDetailProps } from '@/lib/templates/types';
 
+export type PdpAspectRatio = 'square' | '4/3' | '3/4' | '16/9';
+export type PdpPriceColor = 'accent' | 'foreground';
+
+const ASPECT_CLASS: Record<PdpAspectRatio, string> = {
+  square: 'aspect-square',
+  '4/3': 'aspect-[4/3]',
+  '3/4': 'aspect-[3/4]',
+  '16/9': 'aspect-[16/9]',
+};
+
 export function PdpAdapterView({
   data,
   style,
   imageFit = 'cover',
+  aspectRatio = 'square',
+  priceColor = 'accent',
 }: {
   data: ProductDetailProps;
   style: React.CSSProperties;
   imageFit?: 'cover' | 'contain';
+  /** Hero / thumbnail / related image aspect ratio. Default 'square' for
+   *  product photography. Use '4/3' for landscape marketing covers
+   *  (mu-wallpaper, salepage hero composites). */
+  aspectRatio?: PdpAspectRatio;
+  /** Color used for the big price text. Default 'accent' uses --primary
+   *  (the theme's accent — gold, brand color, etc). Pass 'foreground'
+   *  for themes where --primary may clash with the card bg (e.g. dark
+   *  themes whose admin-chosen palette doesn't guarantee contrast). */
+  priceColor?: PdpPriceColor;
 }) {
   const { store, product, related } = data;
   const imgFitClass = imageFit === 'contain' ? 'object-contain' : 'object-cover';
+  const aspectClass = ASPECT_CLASS[aspectRatio];
+  const priceStyle: React.CSSProperties =
+    priceColor === 'foreground'
+      ? { color: 'var(--card-foreground, var(--foreground, currentColor))' }
+      : { color: 'var(--primary, currentColor)' };
   const add = useCart((s) => s.add);
 
   const gallery = useMemo(() => {
@@ -147,7 +173,7 @@ export function PdpAdapterView({
           {/* Gallery */}
           <div className="lg:col-span-7 space-y-3">
             <div
-              className="bg-[var(--card,#fff)] border aspect-square overflow-hidden"
+              className={`bg-[var(--card,#fff)] border ${aspectClass} overflow-hidden`}
               style={{ borderColor: 'var(--border, #e5e5e5)' }}
             >
               {activeImage ? (
@@ -170,7 +196,7 @@ export function PdpAdapterView({
                     <button
                       type="button"
                       onClick={() => setActiveImage(src)}
-                      className="block w-full aspect-square border overflow-hidden hover:opacity-80 transition"
+                      className={`block w-full ${aspectClass} border overflow-hidden hover:opacity-80 transition`}
                       style={{
                         borderColor:
                           src === activeImage
@@ -211,7 +237,7 @@ export function PdpAdapterView({
               <div className="flex items-baseline gap-3 flex-wrap">
                 <span
                   className="text-3xl font-bold"
-                  style={{ color: 'var(--primary, currentColor)' }}
+                  style={priceStyle}
                 >
                   {formatTHB(effectivePrice)}
                 </span>
@@ -420,7 +446,7 @@ export function PdpAdapterView({
                     href={`/stores/${store.slug}/products/${r.id}`}
                     className="block"
                   >
-                    <div className="aspect-square overflow-hidden">
+                    <div className={`${aspectClass} overflow-hidden`}>
                       {r.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
