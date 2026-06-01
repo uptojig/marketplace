@@ -326,6 +326,42 @@ export default async function CategoryIndexPage({
     : null;
   const TemplateCatalogPage = template?.pages?.catalog;
   if (TemplateCatalogPage) {
+    // Server-component fast path — when the template's catalog adapter is
+    // a plain (non-'use client') function we render it directly, passing
+    // `buildUrl` / `buildSortUrl` AS FUNCTIONS. This is the route ~29
+    // templates take that route through the shared `makeCatalogAdapter`
+    // factory (which has no 'use client' directive). Without this branch,
+    // those stores hit the `<CatalogBridge Component={...}>` path below,
+    // which can't pass a server-component reference across the RSC
+    // boundary as a prop → "/stores/<slug>/category" 500s for every
+    // shared-catalog store (regression from 8f5c64f — restored).
+    if (typeof TemplateCatalogPage === 'function') {
+      const ServerCatalogPage = TemplateCatalogPage as any;
+      return (
+        <ServerCatalogPage
+          store={{
+            id: store.id,
+            slug: store.slug,
+            name: store.name,
+            description: store.description,
+            tagline: store.tagline,
+            logoUrl: store.logoUrl,
+            bannerUrl: store.bannerUrl,
+            primaryColor: store.primaryColor,
+          }}
+          pageProducts={sharedCategoryProps.pageProducts}
+          categoryNames={sharedCategoryProps.categoryNames}
+          categoryCounts={sharedCategoryProps.categoryCounts}
+          selectedCats={sharedCategoryProps.selectedCats}
+          sortKey={sharedCategoryProps.sortKey}
+          currentPage={sharedCategoryProps.currentPage}
+          totalPages={sharedCategoryProps.totalPages}
+          filteredCount={sharedCategoryProps.filteredCount}
+          buildUrl={sharedCategoryProps.buildUrl}
+          buildSortUrl={sharedCategoryProps.buildSortUrl}
+        />
+      );
+    }
 
     // Pre-compute URL maps → all strings, fully serializable.
     const _catToggleUrls: Record<string, string> = {};
