@@ -71,7 +71,9 @@ export type TemplateId =
   | 'tinyhand-wooden-toys'
   | 'trailcraft-outdoors'
   | 'wavelength-audio'
-  | 'yumeiro-lip';
+  | 'yumeiro-lip'
+  | 'personapath-th'
+  | 'smsup-plus-th';
 
 
 
